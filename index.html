@@ -7972,8 +7972,8 @@
 
     function getSupabaseCredentials() {
       const cfg = window.PRINTFORGE_CONFIG || {};
-      const url = cfg.SUPABASE_URL || localStorage.getItem('printforge_supabase_url') || '';
-      const key = cfg.SUPABASE_ANON_KEY || localStorage.getItem('printforge_supabase_anon_key') || '';
+      const url = cfg.SUPABASE_URL || localStorage.getItem('printforge_supabase_url') || 'https://oxvfrbpmelcpryksfcpz.supabase.co';
+      const key = cfg.SUPABASE_ANON_KEY || localStorage.getItem('printforge_supabase_anon_key') || 'sb_publishable_KvdZ9xqCvRDhuD_fu6RPHA_RMHfewDw';
       return { url: url.trim(), key: key.trim() };
     }
 

@@ -1,12 +1,12 @@
 // =========================================================================
-// PRINTFORGE CLOUD CONFIGURATION (Supabase Universal Client)
+// PRINTFORGE CLOUD CONFIGURATION (Supabase Real Production Client)
 // =========================================================================
 window.PRINTFORGE_CONFIG = {
   // Supabase Cloud Project URL
-  SUPABASE_URL: "https://pf-cloud-db.supabase.co",
+  SUPABASE_URL: "https://oxvfrbpmelcpryksfcpz.supabase.co",
 
-  // Supabase Anon Public Key (Universal Token)
-  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InByaW50Zm9yZ2UiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTY5NjAwMDAwMCwiZXhwIjoxOTk2MDAwMDAwfQ.printforge_universal_cloud_token_active",
+  // Supabase Anon Public Key
+  SUPABASE_ANON_KEY: "sb_publishable_KvdZ9xqCvRDhuD_fu6RPHA_RMHfewDw",
 
   // Realtime Broadcast tra tutti i client (client <-> maker sincronizzati live)
   REALTIME_ENABLED: true
