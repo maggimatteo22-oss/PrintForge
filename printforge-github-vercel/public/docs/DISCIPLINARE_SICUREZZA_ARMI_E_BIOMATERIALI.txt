@@ -1,0 +1,46 @@
+================================================================================
+DISCIPLINARE DI SICUREZZA, BIO-COMPATIBILITÀ E DIVIETO DI ARMI
+(SAFETY, BIO-COMPATIBILITY AND ZERO-WEAPONS MANDATORY DIRECTIVE)
+In attuazione della L. 18 aprile 1975 n. 110 (Controllo armi), Direttiva UE 2021/555,
+Regolamento UE 2017/745 (MDR) e Regolamento CE 1935/2004 (MOCA)
+================================================================================
+Documento vincolante per tutti gli utenti e laboratori della rete PrintForge.
+
+1. DISCIPLINARE "ZERO GHOST-GUNS" E PARTI DI ARMA
+1.1 Divieto Assoluto di Fabbricazione: È fatto divieto inderogabile a qualunque utente 
+    di caricare o richiedere la stampa, e a qualunque Maker di produrre, anche parzialmente:
+    a) Fusti, castelli, canne, carrelli, otturatori, percussori o tamburi di armi da fuoco;
+    b) Componenti di conversione o assemblaggio per armi semi-automatiche o automatiche;
+    c) Silenziatori, soppressori di fiamma o caricatori ad alta capacità;
+    d) Armi bianche proprie (pugnali, baionette, tirapugni, noccoliere metalliche o plastiche);
+    e) Repliche perfette di armi da fuoco prive del tappo rosso inamovibile prescritto 
+       dalla Legge 110/1975 (art. 5).
+1.2 Monitoraggio Algoritmico: La piattaforma esegue un controllo preliminare sulle geometrie 
+    dei file caricati per individuare pattern riconducibili ad armi da fuoco 3D 
+    (modelli FGC-9, Liberator, glock frames, lower receivers AR-15).
+1.3 Obbligo di Rifiuto e Notifica del Maker: Qualora un Maker riscontri che una mesh 
+    accettata costituisca componente di arma, ha il dovere legale di rifiutare immediatamente 
+    la stampa e azionare la segnalazione di sicurezza.
+
+2. DISPOSITIVI MEDICI E BIO-COMPATIBILITÀ (REG. UE 2017/745 - MDR)
+2.1 Esclusione d'Uso Invasivo: Nessun componente stampato tramite Maker generici 
+    può essere impiegato come dispositivo medico impiantabile, tutore ortopedico invasivo, 
+    dima chirurgica intraoperatoria o protesi interna.
+2.2 Prototipi Didattici / Ergonomici: È consentita esclusivamente la produzione di 
+    modelli anatomici a scopo meramente didattico, visivo o di pre-studio diagnostico, 
+    con esplicita etichettatura: "MODELLO AD USO ESCLUSIVAMENTE DIDATTICO - NON STERILE".
+
+3. CONTATTO ALIMENTARE E MOCA (REG. CE 1935/2004)
+3.1 Requisiti per il Contatto con Alimenti: I normali filamenti per stampa 3D (PLA/PETG commerciale) 
+    e le resine fotopolimeriche standard NON sono idonei al contatto prolungato con liquidi 
+    o alimenti a causa della porosità tra layer e della migrazione di fotoiniziatori o coloranti.
+3.2 Avvertenza Obbligatoria: Vasi, bicchieri, stampini o ciotole prodotti in FDM senza 
+    trattamento con resina epossidica certificata alimentare Food-Grade FDA/EU devono 
+    riportare la dicitura: "NON IDONEO AL CONTATTO CON ALIMENTI".
+
+4. CONSEGUENZE LEGALI DELL'INADEMPIMENTO
+La violazione delle disposizioni del presente Disciplinare comporta l'immediata chiusura 
+dell'account con congelamento irreversibile del saldo cauzionale, nonché la trasmissione 
+dei dati anagrafici, log IP e file CAD alle autorità competenti di Polizia Postale 
+e Giudiziaria per le ipotesi di reato ai sensi degli artt. 10 e 12 della Legge 110/75.
+================================================================================

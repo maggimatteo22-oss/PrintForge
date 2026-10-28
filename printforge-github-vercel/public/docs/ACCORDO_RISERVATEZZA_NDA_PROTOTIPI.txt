@@ -1,0 +1,70 @@
+================================================================================
+ACCORDO DI RISERVATEZZA E NON DIVULGAZIONE (NDA) PER PROTOTIPAZIONE 3D
+Ai sensi degli artt. 98 e 99 del D.Lgs. 10 febbraio 2005, n. 30 (Codice Proprietà Industriale)
+e della Direttiva UE 2016/943 sulla tutela del Know-how e dei Segreti Commerciali
+================================================================================
+ATTO SCRITTO BILATERALE TRA COMMITTENTE (DISCLOSING PARTY) ED ESECUTORE (RECEIVING PARTY)
+
+TRA:
+PARTE DIVULGANTE ("Committente / Cliente"):
+Nome/Ragione Sociale: [Identificativo Utente Piattaforma PrintForge]
+Email verificata: [Email associata all'ordine]
+ID Richiesta: [Codice Commessa Univoco, es. #PF-804]
+
+E:
+PARTE RICEVENTE ("Maker / Esecutore 3D"):
+Nome Maker / Laboratorio: [Maker Assegnatario Verificato]
+Località Operativa: [Sede di Stampa]
+Identificativo Piattaforma: [ID Maker]
+
+--------------------------------------------------------------------------------
+1. OGGETTO E DEFINIZIONE DI "INFORMAZIONI RISERVATE"
+--------------------------------------------------------------------------------
+1.1 Costituisce "Informazione Riservata" qualunque file digitale, modello matematico 3D 
+    (.STL, .OBJ, .3MF, .STEP, .IGES), disegno tecnico bidimensionale (.DXF, .DWG), 
+    specifica di tolleranza, formulazione di mescola polimerica, applicazione funzionale 
+    e documentazione accessoria trasmessa tramite la piattaforma PrintForge.
+1.2 L'Informazione Riservata include espressamente i prototipi fisici realizzati, 
+    le prove di stampa intermedie, gli scarti di lavorazione e i supporti di stampa.
+
+--------------------------------------------------------------------------------
+2. OBBLIGHI DELLA PARTE RICEVENTE (MAKER)
+--------------------------------------------------------------------------------
+2.1 Divieto di Divulgazione: La Parte Ricevente si impegna a custodire le Informazioni 
+    Riservate con il massimo grado di diligenza professionale (art. 1176 c.c.) e a non 
+    divulgarle, pubblicarle, diffonderle o renderle accessibili a terzi.
+2.2 Divieto di Reverse Engineering e Duplicazione Non Autorizzata: È fatto assoluto 
+    divieto di copiare, clonare, riprodurre per fini propri o commercializzare copie 
+    aggiuntive del manufatto oltre a quelle formalmente ordinate e retribuite.
+2.3 Divieto di Pubblicazione su Social Media e Portfolio: La Parte Ricevente NON può 
+    scattare foto, video o registrazioni del modello per fini promozionali, portfolio 
+    o pubblicazione su social network (Instagram, TikTok, YouTube, ecc.) senza il 
+    previo ed esplicito consenso scritto della Parte Divulgante.
+
+--------------------------------------------------------------------------------
+3. DISTRUZIONE E CANCELLAZIONE DEI RESIDUI DI PRODUZIONE
+--------------------------------------------------------------------------------
+3.1 Cancellazione Dati Elettronici: Entro 72 (settantadue) ore dalla consegna confermata, 
+    la Parte Ricevente deve cancellare irrevocabilmente ogni copia del file sorgente, 
+    dei file di slicing (.gcode, .ctb, .pwmo) e dei rendering da ogni supporto di memoria.
+3.2 Smaltimento Scarti Fisici: Eventuali prototipi difettosi, prove dimensionali o scarti 
+    di supporto devono essere fisicamente distrutti o triturati prima dello smaltimento 
+    per impedirne la ricostruzione geometrica.
+
+--------------------------------------------------------------------------------
+4. DURATA E PENALE CONTRATTUALE
+--------------------------------------------------------------------------------
+4.1 Durata: I vincoli di segretezza rimarranno pienamente efficaci per un periodo di 
+    3 (tre) anni dalla data di ricezione del file, salvo che le informazioni non divengano 
+    di pubblico dominio per causa non imputabile alla Parte Ricevente.
+4.2 Penale Contrattuale (art. 1382 c.c.): In caso di accertata violazione colposa o 
+    dolosa dei divieti di cui all'art. 2, la Parte Ricevente sarà tenuta al pagamento di 
+    una penale forfettaria pari a € 5.000,00 (cinquemila/00 euro), fatto salvo il diritto 
+    al risarcimento del maggior danno subito dal Committente.
+
+--------------------------------------------------------------------------------
+5. ACCETTAZIONE DIGITALE E VALIDITÀ
+--------------------------------------------------------------------------------
+La presa in carico della commessa sulla piattaforma PrintForge equivale a sottoscrizione 
+con firma elettronica semplice ai sensi dell'art. 20 del CAD (D.Lgs. 82/2005).
+================================================================================
