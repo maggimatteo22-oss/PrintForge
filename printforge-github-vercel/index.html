@@ -3804,26 +3804,6 @@
               </p>
             </div>
 
-            <!-- ADMIN GOOGLE FAST ACCESS (CLIENTE) -->
-            <div class="space-y-2">
-              <button type="button" onclick="adminGoogleLogin('client')" class="btn-kowalski-primary w-full py-3.5 px-4 rounded-xl font-cyber font-bold text-xs flex items-center justify-center gap-3 shadow-lg">
-                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span id="i18n-gateGoogleClient">CONTINUA CON GOOGLE</span>
-              </button>
-              <p class="text-[10px] text-zinc-500 text-center font-mono" id="i18n-gateGoogleAdminHint">Accesso rapido verificato con Google</p>
-            </div>
-
-            <div class="relative flex items-center justify-center my-1">
-              <div class="border-t border-white/[0.08] w-full"></div>
-              <span class="bg-[#0A0A0C] px-3 text-[10px] font-mono text-zinc-500 uppercase tracking-widest" id="i18n-gateOrEmail">oppure credenziali</span>
-            </div>
-
-            <!-- Client Form -->
             <form onsubmit="handleGateClientSubmit(event)" class="space-y-4 text-xs font-sans">
               <div class="space-y-1">
                 <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateClientNameLabel">Nome Completo / Ragione Sociale *</label>
@@ -3880,26 +3860,6 @@
               </p>
             </div>
 
-            <!-- ADMIN GOOGLE FAST ACCESS (CREATOR) -->
-            <div class="space-y-2">
-              <button type="button" onclick="adminGoogleLogin('creator')" class="btn-kowalski-primary w-full py-3.5 px-4 rounded-xl font-cyber font-bold text-xs flex items-center justify-center gap-3 shadow-lg">
-                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span id="i18n-gateGoogleCreator">CONTINUA CON GOOGLE</span>
-              </button>
-              <p class="text-[10px] text-zinc-500 text-center font-mono" id="i18n-gateGoogleAdminHintCr">Accesso rapido verificato con Google</p>
-            </div>
-
-            <div class="relative flex items-center justify-center my-1">
-              <div class="border-t border-white/[0.08] w-full"></div>
-              <span class="bg-[#0A0A0C] px-3 text-[10px] font-mono text-zinc-500 uppercase tracking-widest" id="i18n-gateOrEmailCr">oppure registrazione hub</span>
-            </div>
-
-            <!-- Creator Form with Dual Profile Selector (Maker Privato vs Azienda/Service) -->
             <form onsubmit="handleGateCreatorSubmit(event)" class="space-y-3.5 text-xs font-sans">
               
               <!-- Selettore Profilo Chiaro: Maker Privato vs Azienda con P.IVA -->
@@ -8177,13 +8137,132 @@
             loadRequestsFromSupabase();
           })
           .subscribe();
-      } catch (err) {
+      }
+
+    // =========================================================================
+    // REALTIME CREATOR PRESENCE SYSTEM (Sincronizzazione Creator Live in Rete)
+    // =========================================================================
+    const CREATOR_PRESENCE_CHANNEL = 'printforge_creators_presence';
+    const CREATOR_STORAGE_KEY = 'printforge_active_creators_map';
+    let pfCreatorPresenceChannel = null;
+    try {
+      if (typeof window.BroadcastChannel !== 'undefined') {
+        pfCreatorPresenceChannel = new BroadcastChannel(CREATOR_PRESENCE_CHANNEL);
+        pfCreatorPresenceChannel.onmessage = function(e) {
+          if (e && e.data) {
+            updateLiveCreatorsCountDisplay();
+          }
+        };
+      }
+    } catch(e) {}
+
+    window.pf_creator_session_id = window.pf_creator_session_id || ('hub_' + Math.random().toString(36).substring(2, 9));
+
+    function getActiveCreatorsCount() {
+      let activeSessions = 0;
+      const now = Date.now();
+      try {
+        const raw = localStorage.getItem(CREATOR_STORAGE_KEY);
+        const map = raw ? JSON.parse(raw) : {};
+        let modified = false;
+        Object.keys(map).forEach(id => {
+          if (now - map[id].lastSeen < 35000) {
+            activeSessions++;
+          } else {
+            delete map[id];
+            modified = true;
+          }
+        });
+        if (modified) {
+          localStorage.setItem(CREATOR_STORAGE_KEY, JSON.stringify(map));
+        }
+      } catch (e) {}
+
+      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
+        activeSessions = Math.max(1, activeSessions);
+      }
+      return activeSessions;
+    }
+
+    function updateLiveCreatorsCountDisplay() {
+      const count = getActiveCreatorsCount();
+      const els = document.querySelectorAll('#navLiveCreatorsCount, .nav-live-creators-count');
+      els.forEach(el => {
+        if (!el) return;
+        const prev = parseInt(el.innerText, 10);
+        el.innerText = count;
+        if (!isNaN(prev) && prev !== count) {
+          el.classList.add('scale-125', 'text-cyan-300');
+          setTimeout(() => {
+            el.classList.remove('scale-125', 'text-cyan-300');
+          }, 400);
+        }
+      });
+    }
+
+    function registerCreatorPresence() {
+      if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') return;
+      const now = Date.now();
+      try {
+        const raw = localStorage.getItem(CREATOR_STORAGE_KEY);
+        const map = raw ? JSON.parse(raw) : {};
+        map[window.pf_creator_session_id] = {
+          name: AppState.user.name || 'Maker Hub',
+          email: AppState.user.email || 'creator@printforge.it',
+          lastSeen: now
+        };
+        localStorage.setItem(CREATOR_STORAGE_KEY, JSON.stringify(map));
+      } catch (e) {}
+
+      try {
+        if (pfCreatorPresenceChannel) {
+          pfCreatorPresenceChannel.postMessage({ type: 'CREATOR_ONLINE', id: window.pf_creator_session_id, time: now });
+        }
+      } catch (e) {}
+
+      updateLiveCreatorsCountDisplay();
+    }
+
+    function unregisterCreatorPresence() {
+      try {
+        const raw = localStorage.getItem(CREATOR_STORAGE_KEY);
+        if (raw) {
+          const map = JSON.parse(raw);
+          delete map[window.pf_creator_session_id];
+          localStorage.setItem(CREATOR_STORAGE_KEY, JSON.stringify(map));
+        }
+      } catch (e) {}
+
+      try {
+        if (pfCreatorPresenceChannel) {
+          pfCreatorPresenceChannel.postMessage({ type: 'CREATOR_OFFLINE', id: window.pf_creator_session_id, time: Date.now() });
+        }
+      } catch (e) {}
+
+      updateLiveCreatorsCountDisplay();
+    }
+
+    setInterval(() => {
+      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
+        registerCreatorPresence();
+      } else {
+        updateLiveCreatorsCountDisplay();
+      }
+    }, 12000);
+
+    window.addEventListener('beforeunload', () => {
+      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
+        unregisterCreatorPresence();
+      }
+    });
+ catch (err) {
         console.warn('Errore setup Realtime:', err);
       }
     }
 
     // Sincronizzazione Cross-Window & Multi-Tab IRL in tempo reale per Creator e Clienti
     window.addEventListener('storage', (e) => {
+      if (e.key === CREATOR_STORAGE_KEY) { updateLiveCreatorsCountDisplay(); }
       if (e.key === 'printforge_broadcast_requests' && e.newValue) {
         try {
           const parsed = JSON.parse(e.newValue);
@@ -19173,6 +19252,7 @@ END-ISO-10303-21;`;
 
       renderNavUserArea();
       updateLaptopBarButtons();
+      if (role === 'creator') { registerCreatorPresence(); } else { unregisterCreatorPresence(); }
       showToast(currentLang === 'it' 
         ? 'Accesso Google autorizzato! Piattaforma sbloccata.' 
         : 'Google access granted! Platform unlocked.');
@@ -19213,6 +19293,7 @@ END-ISO-10303-21;`;
 
       renderNavUserArea();
       updateLaptopBarButtons();
+      unregisterCreatorPresence();
       sendRegistrationWelcomeEmail(AppState.user);
       showToast(currentLang === 'it' ? 'Accesso completato! Stripe Escrow attivo.' : 'Sign in complete! Stripe Escrow active.');
 
@@ -19418,6 +19499,7 @@ END-ISO-10303-21;`;
       closeAuthModal();
       renderNavUserArea();
       updateLaptopBarButtons();
+      registerCreatorPresence();
       showToast(currentLang === 'it' ? 'Accesso completato! Stripe Escrow attivo.' : currentLang === 'es' ? '¡Inicio de sesión completado! Garantía Stripe activa.' : 'Sign in complete! Stripe Escrow active.');
 
       const redirectTarget = AppState.postLoginRedirect || (function() {
@@ -19507,6 +19589,7 @@ END-ISO-10303-21;`;
       if (!AppState.user.isAdmin) return;
       const newRole = AppState.user.role === 'creator' ? 'client' : 'creator';
       AppState.user.role = newRole;
+      if (newRole === 'creator') { registerCreatorPresence(); } else { unregisterCreatorPresence(); }
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch(e) {}
@@ -19541,6 +19624,7 @@ END-ISO-10303-21;`;
       try {
         localStorage.removeItem('printforge_auth_session');
       } catch (e) {}
+      unregisterCreatorPresence();
       renderNavUserArea();
       updateNavigationTabs();
       updateLaptopBarButtons();
@@ -24781,6 +24865,7 @@ END-ISO-10303-21;`;
             AppState.user = JSON.parse(stored);
           }
         } catch (e) {}
+      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') { registerCreatorPresence(); } else { updateLiveCreatorsCountDisplay(); }
       }
 
       // Broadcast RFPs Restoration
