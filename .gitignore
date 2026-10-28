@@ -1,0 +1,34 @@
+# Dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# Testing, Scratch & Logs
+/scratch
+/tests
+*.log
+*.tmp
+*.bak
+*.working_backup
+*.backup*
+chrome_log*.txt
+dom_out.txt
+dom_dump.html
+
+# Next.js Build Output
+/.next/
+/out/
+/build
+
+# Environment Variables (keep .env.example only)
+.env*.local
+.env
+
+# Vercel
+.vercel
+
+# Operating System & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

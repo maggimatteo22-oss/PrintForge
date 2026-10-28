@@ -2810,23 +2810,18 @@
         color: #374151 !important;
       }
 
-      /* Card Paesaggistica: display allargato e proporzionato per smartphone */
+      /* Card Paesaggistica: display perfettamente adattato e proporzionato senza uscire dai bordi */
       .scenic-hero-container {
         position: relative !important;
-        width: calc(100% - 6px) !important;
-        max-width: 440px !important;
-        height: 292px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        height: auto !important;
+        min-height: 270px !important;
         margin: 0 auto 16px auto !important;
-        padding: 12px 10px 42px 10px !important;
-        border-radius: 24px !important;
+        padding: 10px 8px 40px 8px !important;
+        border-radius: 20px !important;
         overflow: hidden !important;
-        display: flex !important;
-        flex-direction: column !important;
-        align-items: center !important;
-        justify-content: flex-start !important;
-        border: 1px solid rgba(255, 255, 255, 0.16) !important;
-        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8) !important;
-        background-color: #040507 !important;
       }
 
       /* Dipinto a olio visibile e nitido su tutti i lati della finestra */
@@ -2843,57 +2838,56 @@
         opacity: 0.65 !important;
       }
 
-      /* Finestra software fluttuante mockup ingrandita */
+      /* Finestra software fluttuante mockup perfettamente allineata ai bordi */
       #heroSoftwareWindow,
       .scenic-hero-container > .relative.z-10.max-w-5xl {
-        width: calc(100% - 10px) !important;
-        max-width: 370px !important;
-        height: 205px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        height: auto !important;
         margin: 0 auto !important;
         border-radius: 14px !important;
         overflow: hidden !important;
-        border: 1px solid rgba(255, 255, 255, 0.22) !important;
-        background: #09090D !important;
-        box-shadow: 0 16px 36px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.4) !important;
-        display: flex !important;
-        flex-direction: column !important;
-        flex-shrink: 0 !important;
+        border: 1px solid rgba(255, 255, 255, 0.14) !important;
       }
 
       /* Barra superiore HUD ridimensionata */
       #heroSoftwareWindow > div:first-child,
       .scenic-hero-container > .relative.z-10.max-w-5xl > div:first-child {
-        height: 24px !important;
-        padding: 3px 10px !important;
+        height: 25px !important;
+        padding: 3px 8px !important;
         background: #0F0F14 !important;
         border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
         display: flex !important;
         align-items: center !important;
         justify-content: space-between !important;
+        overflow: hidden !important;
         flex-shrink: 0 !important;
       }
-      #heroSoftwareWindow .w-2\\.5,
-      .scenic-hero-container > .relative.z-10.max-w-5xl .w-2\\.5 {
+      #heroSoftwareWindow .w-2\.5,
+      .scenic-hero-container > .relative.z-10.max-w-5xl .w-2\.5 {
         width: 6.5px !important;
         height: 6.5px !important;
       }
       #vHudTitle {
-        font-size: 10px !important;
+        font-size: 9.5px !important;
         letter-spacing: -0.01em !important;
       }
       .pipeline-live-pill {
-        padding: 2px 6px !important;
-        font-size: 8px !important;
+        padding: 2px 5px !important;
+        font-size: 7.5px !important;
       }
-      .pipeline-live-pill .w-1\\.5 {
+      .pipeline-live-pill .w-1\.5 {
         width: 4px !important;
         height: 4px !important;
       }
 
-      /* Viewport Video scalato ad alta definizione e display ingrandito */
+      /* Viewport Video responsive dinamico: scala perfetta a filo con i bordi */
       #videoViewportContainer {
         width: 100% !important;
-        height: 181px !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
+        height: var(--mobile-video-h, 175px) !important;
         position: relative !important;
         overflow: hidden !important;
         background: #060609 !important;
@@ -2903,7 +2897,7 @@
       #mobileVideoScaler {
         width: 710px !important;
         height: 355px !important;
-        transform: scale(0.508) !important;
+        transform: scale(var(--mobile-video-scale, 0.46)) !important;
         transform-origin: top left !important;
         position: absolute !important;
         top: 0 !important;
@@ -2913,14 +2907,14 @@
         width: 710px !important;
         height: 355px !important;
       }
-      #mobileVideoScaler .grid.md\\:grid-cols-12 {
+      #mobileVideoScaler .grid.md\:grid-cols-12 {
         display: grid !important;
         grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
       }
-      #mobileVideoScaler .md\\:col-span-7 {
+      #mobileVideoScaler .md\:col-span-7 {
         grid-column: span 7 / span 7 !important;
       }
-      #mobileVideoScaler .md\\:col-span-5 {
+      #mobileVideoScaler .md\:col-span-5 {
         grid-column: span 5 / span 5 !important;
       }
 
@@ -3757,7 +3751,7 @@
     <!-- ===================================================================== -->
     <!-- VISTA 0: LOGIN GATE DEDICATA (MOBILE & DESKTOP // CLIENTE & CREATOR) -->
     <!-- ===================================================================== -->
-    <section id="view-login-gate" class="py-4 sm:py-8">
+    <section id="view-login-gate" class="py-4 sm:py-8 hidden">
       <div class="max-w-xl mx-auto space-y-6 px-3 sm:px-0">
         
         <!-- Brand Header with Security Shield -->
@@ -8137,7 +8131,10 @@
             loadRequestsFromSupabase();
           })
           .subscribe();
+      } catch (err) {
+        console.warn('Errore setup Realtime:', err);
       }
+    }
 
     // =========================================================================
     // REALTIME CREATOR PRESENCE SYSTEM (Sincronizzazione Creator Live in Rete)
@@ -8255,10 +8252,6 @@
         unregisterCreatorPresence();
       }
     });
- catch (err) {
-        console.warn('Errore setup Realtime:', err);
-      }
-    }
 
     // Sincronizzazione Cross-Window & Multi-Tab IRL in tempo reale per Creator e Clienti
     window.addEventListener('storage', (e) => {
@@ -24167,6 +24160,45 @@ END-ISO-10303-21;`;
       }
     };
 
+    
+    // =========================================================================
+    // DYNAMIC MOBILE VIDEO SCALER (Adattamento perfetto ai bordi dello smartphone)
+    // =========================================================================
+    function adjustMobileVideoScale() {
+      const container = document.getElementById('videoViewportContainer');
+      const scaler = document.getElementById('mobileVideoScaler');
+      if (!container || !scaler) return;
+      if (window.innerWidth < 768) {
+        const rect = container.getBoundingClientRect();
+        const containerWidth = rect.width;
+        if (containerWidth > 50) {
+          const virtualWidth = 710;
+          const virtualHeight = 355;
+          const scale = containerWidth / virtualWidth;
+          const calcHeight = Math.round(virtualHeight * scale);
+          
+          document.documentElement.style.setProperty('--mobile-video-scale', scale.toString());
+          document.documentElement.style.setProperty('--mobile-video-h', calcHeight + 'px');
+          scaler.style.transform = 'scale(' + scale + ')';
+          scaler.style.transformOrigin = 'top left';
+          container.style.height = calcHeight + 'px';
+        }
+      } else {
+        scaler.style.transform = '';
+        scaler.style.width = '100%';
+        scaler.style.height = '100%';
+        container.style.height = '';
+      }
+    }
+
+    window.addEventListener('resize', adjustMobileVideoScale);
+    window.addEventListener('orientationchange', function() { setTimeout(adjustMobileVideoScale, 120); });
+    document.addEventListener('DOMContentLoaded', adjustMobileVideoScale);
+    window.addEventListener('load', adjustMobileVideoScale);
+    setTimeout(adjustMobileVideoScale, 100);
+    setTimeout(adjustMobileVideoScale, 400);
+    setTimeout(adjustMobileVideoScale, 1000);
+
     const RemotionVideoEngine = {
       fps: 60,
       currentFrame: 0,
@@ -24190,6 +24222,7 @@ END-ISO-10303-21;`;
       timeline: [],
 
       init() {
+        adjustMobileVideoScale();
         this.computeTimeline();
         initRemotion3D();
         this.startLoop();
@@ -24955,8 +24988,8 @@ END-ISO-10303-21;`;
 
       try { VideoDemoPlayer.init(); } catch (e) { console.warn('VideoDemoPlayer:', e); }
       
-      let targetView = urlParams.get('view') || window.location.hash.replace('#', '');
-      if (targetView === 'home') targetView = 'client-home';
+      let targetView = urlParams.get('view') || (window.location.hash ? window.location.hash.replace('#', '') : '');
+      if (!targetView || targetView === 'home') targetView = 'client-home';
 
       if (urlParams.get('deal') === 'true') {
         adminGoogleLogin('creator');
