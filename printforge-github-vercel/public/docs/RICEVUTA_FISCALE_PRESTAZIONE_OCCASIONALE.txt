@@ -1,0 +1,55 @@
+================================================================================
+RICEVUTA PER PRESTAZIONE DI LAVORO AUTONOMO OCCASIONALE
+Ai sensi dell'art. 2222 e segg. del Codice Civile
+e dell'art. 67, comma 1, lett. l) del D.P.R. 22 dicembre 1986, n. 917 (T.U.I.R.)
+Operazione fuori campo IVA ai sensi dell'art. 5 del D.P.R. 26 ottobre 1972, n. 633
+================================================================================
+
+Ricevuta Numero: NOTA-[NUM_COMMESSA]/2026               Data: [DATA_ODIERNA]
+
+PRESTATORE (MAKER - LAVORATORE AUTONOMO OCCASIONALE):
+Nome e Cognome: [NOME_MAKER]
+Codice Fiscale: [CODICE_FISCALE_MAKER]
+Luogo e Data di Nascita: [LUOGO_NASCITA], [DATA_NASCITA]
+Residenza: [INDIRIZZO_RESIDENZA_MAKER]
+
+COMMITTENTE:
+Nome e Cognome / Ragione Sociale: [NOME_CLIENTE]
+Codice Fiscale / Partita IVA: [CF_O_PIVA_CLIENTE]
+Indirizzo: [INDIRIZZO_CLIENTE]
+
+OGGETTO DELLA PRESTAZIONE:
+Prestazione occasionale consistente nell'attività manuale/tecnica di slicing, calibrazione 
+macchina e fabbricazione additiva 3D in relazione alla commessa identificata con ID: #[ID_COMMESSA]
+Titolo: [TITOLO_COMMESSA] (Pezzi N. [QTA], Materiale: [MATERIALE]).
+Prestazione resa in totale autonomia operativa e tecnica, senza vincolo di orario né subordinazione.
+
+--------------------------------------------------------------------------------
+COMPOSIZIONE ECONOMICA DEL CORRISPETTIVO:
+--------------------------------------------------------------------------------
+1. Compenso Lordo Pattuito:                                     € [COMPENSO_LORDO]
+2. Spese documentate e rimborsi vivi (spedizione/imballo):      € [SPESE_SPEDIZIONE]
+--------------------------------------------------------------------------------
+   TOTALE IMPONIBILE:                                           € [TOTALE_IMPONIBILE]
+3. Ritenuta d'acconto IRPEF del 20% (art. 25 D.P.R. 600/1973)*: - € [RITENUTA_ACCONTO]
+--------------------------------------------------------------------------------
+   NETTO A PAGARE PERCEPITO DAL MAKER:                          € [NETTO_PERCEPITO]
+================================================================================
+(*) Nota: La ritenuta d'acconto è dovuta solo nel caso in cui il Committente sia 
+    un sostituto d'imposta (Società, Professionista o Ditta Individuale con P.IVA).
+    Se il Committente è un privato consumatore finale, la ritenuta non è applicabile 
+    e l'importo lordo coincide con il netto percepito, da dichiarare nel quadro RL.
+
+IMPOSTA DI BOLLO:
+Marca da bollo da € 2,00 assolta sull'originale per importi complessivi 
+superiori a € 77,47 (ai sensi dell'art. 13 della Tariffa, Parte I, allegata al D.P.R. 642/1972).
+Identificativo Marca da Bollo Digitale: [0120260000000000]
+
+DICHIARAZIONE DEL PRESTATORE:
+Il sottoscritto dichiara, sotto la propria personale responsabilità, di non essere 
+titolare di partita IVA, di svolgere tale attività con carattere di assoluta 
+occasionalità e di non aver superato il limite fiscale annuo di € 5.000,00 
+di cui all'art. 44 del D.L. 269/2003 (convertito in Legge 326/2003).
+
+Firma del Prestatore: _____________________________________
+================================================================================

@@ -1,0 +1,50 @@
+================================================================================
+DOCUMENTO DI TRASPORTO (D.D.T.) • MERCI IN VIAGGIO
+Ai sensi del D.P.R. 14 agosto 1996, n. 472 e dell'art. 21 D.P.R. 633/1972
+Accompagna la merce fabbricata tramite la piattaforma PrintForge
+================================================================================
+
+D.D.T. Numero: DDT-PF-2026/[NUM_COMMESSA]               Data di Emissione: [DATA_ODIERNA]
+
+MITTENTE (MAKER / LABORATORIO 3D):
+Ragione Sociale / Nominativo: [NOME_MAKER_ESECUTORE]
+Codice Fiscale / P.IVA: [CF_O_PIVA_MAKER]
+Indirizzo di Spedizione: [VIA_MAKER, CITTA_MAKER]
+Riferimento Laboratorio: Stazione di Fabbricazione Additiva PrintForge #MK-[ID]
+
+DESTINATARIO (CLIENTE / COMMITTENTE):
+Nominativo / Ragione Sociale: [NOME_CLIENTE]
+Indirizzo di Destinazione: [INDIRIZZO_CLIENTE]
+Località e CAP: [CITTA_DESTINAZIONE]
+Recapito Telefonico: [TEL_CLIENTE]
+
+DATI DI TRASPORTO E SPEDIZIONE:
+Vettore Incaricato: [NOME_CORRIERE, es. GLS Express / Poste / DHL]
+Codice Lettera di Vettura (Tracking): [NUMERO_TRACKING]
+Causale del Trasporto: Conto Lavorazione / Vendita Manufatto Fabbricazione Additiva
+Porto: Franco (Spedizione prepagata tramite piattaforma)
+Aspetto Esteriore dei Beni: Scatola di cartone sigillata con nastro protettivo
+Numero Colli: 1 (uno)
+Peso Totale Lordo: [PESO_TOTALE] kg
+
+--------------------------------------------------------------------------------
+DETTAGLIO ARTICOLI E SPECIFICHE TECNICHE DI FABBRICAZIONE:
+--------------------------------------------------------------------------------
+Pos. | Descrizione Articolo                        | Mat. | Q.tà | Peso Netto | Conforme
+-----+---------------------------------------------+------+------+------------+---------
+ 01  | [TITOLO_COMMESSA_3D]                        | [MAT]| [QTA]| [PESO_G] g | CONFORME
+     | Riferimento Mesh: [NOME_FILE_STL]           |      |      |            | ISO 2768-m
+     | Specifiche: Infill [INFILL]%, Layer [LAYER]mm
+     | Dimensioni: [DIMENSIONI_XYZ]
+--------------------------------------------------------------------------------
+
+ATTESTAZIONE DI CONFORMITÀ TECNICA (MAKER):
+Si attesta che il manufatto sopra descritto è stato prodotto nel pieno rispetto dei 
+parametri geometrici del file digitale fornito e dei requisiti di resistenza meccanica.
+Il materiale polimerico impiegato è esente da piombo, cadmio e sostanze SVHC 
+in conformità al Regolamento REACH (CE 1907/2006) e alla Direttiva RoHS 2011/65/UE.
+
+Firma del Conducente / Vettore: ___________________________   Data/Ora Ritiro: ___/___/______
+
+Firma per Ricevuta del Destinatario: ______________________   Data/Ora Consegna: ___/___/______
+================================================================================

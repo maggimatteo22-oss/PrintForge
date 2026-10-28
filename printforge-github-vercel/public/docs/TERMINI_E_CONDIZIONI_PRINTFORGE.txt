@@ -1,0 +1,90 @@
+================================================================================
+PRINTFORGE TECHNOLOGIES • PIATTAFORMA DI FABBRICAZIONE ADDITIVA P2P
+CONTRATTO QUADRO DI SERVIZIO E CONDIZIONI GENERALI DI CONTRATTO (ToS)
+Ai sensi degli artt. 1341, 1342, 2222 e segg. del Codice Civile Italiano
+e del D.Lgs. 9 aprile 2003, n. 70 (Direttiva sul Commercio Elettronico)
+================================================================================
+Ultimo aggiornamento: 15 Ottobre 2026 | Versione: 2.4-IT
+
+PREMESSO CHE:
+a) PrintForge opera quale piattaforma software abilitatrice per la mediazione 
+   tecnologica e la connessione diretta Peer-to-Peer (P2P) tra utenti committenti 
+   ("Clienti") e possessori indipendenti di apparati di manifattura additiva ("Maker");
+b) La prestazione materiale di fabbricazione additiva (stampa 3D FDM/SLA) è eseguita 
+   in piena autonomia organizzativa e senza vincolo di subordinazione dal Maker 
+   assegnatario, configurandosi come contratto d'opera manuale/intellettuale (art. 2222 c.c.);
+c) L'accesso alla piattaforma comporta l'accettazione integrale, incondizionata e vincolante 
+   delle presenti clausole.
+
+--------------------------------------------------------------------------------
+ARTICOLO 1 - DEFINIZIONI
+--------------------------------------------------------------------------------
+1.1 "Piattaforma": l'infrastruttura web PrintForge, accessibile via browser e API.
+1.2 "Cliente / Richiedente": persona fisica o giuridica che carica un file tridimensionale 
+    (.STL, .OBJ, .3MF, .STEP) per richiederne la fabbricazione fisica.
+1.3 "Maker / Esecutore": soggetto terzo indipendente qualificato (artigiano, hobbista o 
+    impresa) dotato di stampanti 3D, che accetta la commessa.
+1.4 "Mesh / File Sorgente": il modello digitale matematico destinato allo slicing.
+1.5 "Deposito Fiduciario / Escrow": sistema di segregazione temporanea del corrispettivo 
+    versato dal Cliente, rilasciato al Maker solo all'esito della verifica visiva e 
+    della consegna accertata.
+
+--------------------------------------------------------------------------------
+ARTICOLO 2 - PROPRIETÀ INTELLETTUALE, LICENZA D'USO E CANCELLAZIONE
+--------------------------------------------------------------------------------
+2.1 Titolarità dei Diritti: Il Cliente garantisce e dichiara, sotto la propria esclusiva 
+    responsabilità civile e penale, di essere pieno titolare del diritto d'autore, 
+    brevetto o licenza commerciale sul file 3D caricato, o che l'opera è di pubblico 
+    dominio o concessa con licenza compatibile (es. Creative Commons).
+2.2 Licenza d'Uso Temporanea: Il Cliente concede al Maker una licenza limitata, revocabile, 
+    non esclusiva e a titolo gratuito al solo scopo di generare il g-code e stampare 
+    il numero di copie ordinate.
+2.3 Obbligo di Cancellazione (Data Erasure): Il Maker si impegna formalmente a cancellare 
+    permanentemente ogni copia locale del file 3D e dei g-code dalle proprie memorie di massa, 
+    cloud e memorie SD delle stampanti entro 72 ore dall'avvenuta consegna.
+
+--------------------------------------------------------------------------------
+ARTICOLO 3 - STANDARD QUALITATIVI, TOLLERANZE E CRITERI DI ACCETTAZIONE
+--------------------------------------------------------------------------------
+3.1 Tolleranze Dimensionali Industriali:
+    - Tecnologia FDM: precisione dimensionale conforme allo standard ISO 2768-m (tolleranza 
+      tipica ±0.2 mm o ±0.5% delle dimensioni esterne).
+    - Tecnologia SLA (Resina): precisione dimensionale ±0.05 mm su layer da 50 micron.
+3.2 Ispezione Fotografica Obbligatoria (Quality Gate): Prima della spedizione, il Maker 
+    ha l'obbligo contrattuale di caricare nella Stanza dell'Ordine una fotografia 
+    ad alta risoluzione del pezzo finito sul piatto di stampa, attestante l'assenza 
+    di warping, delaminazione, stringing o difetti geometrici visibili.
+3.3 Contestazioni e Ristampa: In caso di non conformità evidente rispetto alle specifiche 
+    tecniche pattuite, il Cliente ha facoltà di richiedere entro 48 ore dalla ricezione 
+    la ristampa gratuita o il rimborso integrale dal Deposito Fiduciario.
+
+--------------------------------------------------------------------------------
+ARTICOLO 4 - FLUSSO FINANZIARIO, DEPOSITO FIDUCIARIO E COMMISSIONI
+--------------------------------------------------------------------------------
+4.1 Blocco Fondi: Al momento della conferma dell'ordine, l'importo totale viene 
+    trattenuto a titolo di garanzia fiduciaria nel conto vincolato della piattaforma.
+4.2 Sblocco del Compenso: I fondi vengono liquidati a favore del Maker a seguito di:
+    a) Conferma esplicita di conformità rilasciata dal Cliente tramite interfaccia; oppure
+    b) Decorsi 5 giorni lavorativi dalla consegna tracciata dal corriere (silent-acceptance).
+4.3 Spese di Spedizione: Le tariffe di spedizione con corriere espresso tracciabile 
+    sono a carico del Cliente e corrisposte al Maker a titolo di rimborso spese vive.
+
+--------------------------------------------------------------------------------
+ARTICOLO 5 - DIVIETO ASSOLUTO DI FABBRICAZIONE ILLECITA (ZERO-WEAPONS POLICY)
+--------------------------------------------------------------------------------
+5.1 È tassativamente vietato caricare, elaborare o stampare:
+    - Componenti, telai, percussori o accessori per armi da fuoco (L. 110/1975 e Dir. UE 2021/555);
+    - Armi bianche, noccoliere o strumenti atti a offendere;
+    - Dispositivi medici invasivi non certificati CE ai sensi del Regolamento UE 2017/745 (MDR);
+    - Contenitori per contatto alimentare privi di resine/filamenti certificati MOCA (Reg. CE 1935/2004).
+5.2 La violazione del presente divieto comporta l'immediata cancellazione dell'account 
+    e la segnalazione d'ufficio alle competenti Autorità Giudiziarie.
+
+--------------------------------------------------------------------------------
+ARTICOLO 6 - FORO COMPETENTE E LEGGE APPLICABILE
+--------------------------------------------------------------------------------
+6.1 Il presente contratto è regolato in via esclusiva dalla Legge Italiana.
+6.2 Per ogni controversia concernente l'interpretazione, validità o esecuzione del servizio, 
+    qualora il Cliente sia un Consumatore (D.Lgs. 206/2005), il foro competente è quello 
+    di residenza del consumatore; in ogni altro caso è competente in via esclusiva il Foro di Milano.
+================================================================================
