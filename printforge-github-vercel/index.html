@@ -224,6 +224,13 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* Masking anonimo password con puntini discreti */
+    input[type="password"],
+    .password-masked {
+      -webkit-text-security: disc !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      letter-spacing: 0.18em;
+    }
     #navEmailConnectedContainer,
     #laptopFounderBar,
     #clientEmailReassuranceBar {
@@ -3825,7 +3832,12 @@
 
               <div class="space-y-1">
                 <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateClientPassLabel">Password *</label>
-                <input type="password" id="gateClientPass" placeholder="••••••••••••" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-white outline-none transition" />
+                <div class="relative">
+                  <input type="password" id="gateClientPass" placeholder="••••••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-masked" />
+                  <button type="button" onclick="togglePasswordVisibility('gateClientPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 text-xs cursor-pointer" title="Mostra/Nascondi password">
+                    <i data-lucide="eye-off" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </div>
 
               <!-- STRIPE ESCROW CONNECTION CARD FOR CLIENT -->
@@ -3957,7 +3969,12 @@
               <!-- Campo 4: Password -->
               <div class="space-y-1">
                 <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrPassLabel">Password *</label>
-                <input type="password" id="gateCrPass" placeholder="••••••••••••" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-white outline-none transition" />
+                <div class="relative">
+                  <input type="password" id="gateCrPass" placeholder="••••••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-masked" />
+                  <button type="button" onclick="togglePasswordVisibility('gateCrPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 text-xs cursor-pointer" title="Mostra/Nascondi password">
+                    <i data-lucide="eye-off" class="w-4 h-4"></i>
+                  </button>
+                </div>
               </div>
 
               <!-- STRIPE CONNECT PAYOUTS CARD FOR CREATOR -->
@@ -6544,6 +6561,12 @@
             </div>
             <h3 class="font-cyber font-bold text-white text-base sm:text-lg md:text-xl tracking-wide break-words leading-tight" id="escrowOrderTitle">Componente Personalizzato</h3>
             <span class="text-[11px] sm:text-xs font-mono text-zinc-300 block truncate" id="escrowOrderMaker">Maker: Rete Hub Verificata // In Assegnazione</span>
+            <div class="pt-2 flex items-center gap-2 flex-wrap">
+              <button type="button" onclick="openDealChatFromEscrow()" class="btn-kowalski-secondary py-1.5 px-3 rounded-lg text-white font-mono text-[11px] font-bold flex items-center gap-1.5 hover:border-emerald-400 hover:text-emerald-300 transition active:scale-95 shadow-sm">
+                <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span id="escrowBtnOpenChat">APRI CHAT 1-1 CON IL MAKER &amp; FOTO</span>
+              </button>
+            </div>
           </div>
 
           <!-- Total Funds & Timer Dual Badges -->
@@ -8125,6 +8148,101 @@
       }
     }
 
+    // =========================================================================
+    // SUPABASE HELPERS: COMPRESSION, PAYLOAD & REALTIME SYNC
+    // =========================================================================
+    function togglePasswordVisibility(inputId, btn) {
+      const el = document.getElementById(inputId);
+      if (!el) return;
+      const isPass = el.type === 'password';
+      el.type = isPass ? 'text' : 'password';
+      if (!isPass) {
+        el.style.webkitTextSecurity = 'disc';
+      } else {
+        el.style.webkitTextSecurity = 'none';
+      }
+      btn.innerHTML = `<i data-lucide="${isPass ? 'eye' : 'eye-off'}" class="w-4 h-4"></i>`;
+      if (window.lucide) lucide.createIcons();
+    }
+    window.togglePasswordVisibility = togglePasswordVisibility;
+
+    function compressImage(fileOrDataUrl, maxWidth = 1200, maxHeight = 1200, quality = 0.8) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          let { width, height } = img;
+          if (width > maxWidth || height > maxHeight) {
+            if (width / height > maxWidth / maxHeight) {
+              height = Math.round((height * maxWidth) / width);
+              width = maxWidth;
+            } else {
+              width = Math.round((width * maxHeight) / height);
+              height = maxHeight;
+            }
+          }
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(typeof fileOrDataUrl === 'string' ? fileOrDataUrl : null);
+        if (typeof fileOrDataUrl === 'string') {
+          img.src = fileOrDataUrl;
+        } else {
+          const reader = new FileReader();
+          reader.onload = (e) => { img.src = e.target.result; };
+          reader.readAsDataURL(fileOrDataUrl);
+        }
+      });
+    }
+    window.compressImage = compressImage;
+
+    function buildNotesPayload(rfp, extra = {}) {
+      const existingNotes = (rfp && typeof rfp.notes === 'string' && !rfp.notes.startsWith('{')) 
+        ? rfp.notes 
+        : (rfp && rfp.rawUserNotes ? rfp.rawUserNotes : '');
+      const payload = {
+        userNotes: existingNotes,
+        messages: (rfp && Array.isArray(rfp.messages)) ? rfp.messages : [],
+        qcPhotos: (AppState.cadQcFiles && AppState.cadQcFiles.length > 0) ? AppState.cadQcFiles : ((rfp && rfp.qcPhotos) || []),
+        agreements: (rfp && rfp.agreements) || {},
+        isAccepted: Boolean(rfp && rfp.isAccepted),
+        makerName: (rfp && (rfp.maker || rfp.acceptedBy)) || (AppState.user?.name) || '',
+        ...extra
+      };
+      return JSON.stringify(payload);
+    }
+    window.buildNotesPayload = buildNotesPayload;
+
+    let supabaseRealtimeChannel = null;
+
+    function broadcastRealtimeEvent(event, payload) {
+      if (supabaseRealtimeChannel && typeof supabaseRealtimeChannel.send === 'function') {
+        try {
+          supabaseRealtimeChannel.send({
+            type: 'broadcast',
+            event: event,
+            payload: payload
+          });
+        } catch (e) {
+          console.warn('Broadcast send failed:', e);
+        }
+      }
+    }
+    window.broadcastRealtimeEvent = broadcastRealtimeEvent;
+
+    function openDealChatFromEscrow() {
+      const rfpId = AppState.activeEscrowOrder?.id || AppState.activeDealRfpId || (AppState.broadcastRequests.find(r => r.isAccepted)?.id) || (AppState.broadcastRequests[0]?.id);
+      if (rfpId) {
+        openDealChat(rfpId);
+      } else {
+        showToast('Nessuna commessa attiva selezionata.');
+      }
+    }
+    window.openDealChatFromEscrow = openDealChatFromEscrow;
+
     async function loadRequestsFromSupabase() {
       if (!supabaseClient) return;
       try {
@@ -8136,28 +8254,98 @@
         if (!error && Array.isArray(data)) {
           console.log(`📦 [Supabase] Caricate ${data.length} richieste dal Cloud`);
           if (data.length > 0) {
-            AppState.broadcastRequests = data.map(dbR => ({
-              id: dbR.id,
-              title: dbR.title,
-              clientName: dbR.client_name || 'Cliente Verificato',
-              clientCity: dbR.client_city || 'Italia',
-              clientEmail: dbR.client_email || 'cliente@printforge.dev',
-              material: dbR.material || 'PETG',
-              color: dbR.color || 'Nero Opaco',
-              colorHex: dbR.color_hex || '#FFFFFF',
-              tolerance: dbR.tolerance || 'Alta Precisione ±0.05 mm',
-              infill: dbR.infill || '50%',
-              quantity: dbR.quantity || '1 pezzo',
-              dimensions: dbR.dimensions || '80 × 60 × 25 mm',
-              budget: dbR.budget || '€ 0,00',
-              notes: dbR.notes || '',
-              status: dbR.status || 'IN ATTESA',
-              fileName: dbR.file_name || 'modello.stl',
-              maker: dbR.maker_name || null,
-              timestamp: 'Cloud Sync'
-            }));
+            AppState.broadcastRequests = data.map(dbR => {
+              let meta = {};
+              try {
+                if (dbR.notes && (dbR.notes.startsWith('{') || dbR.notes.startsWith('{"'))) {
+                  meta = JSON.parse(dbR.notes);
+                }
+              } catch(e) {}
+
+              const isAcc = Boolean(
+                meta.isAccepted ||
+                (dbR.status && (
+                  dbR.status.includes('ACCETTATA') ||
+                  dbR.status.includes('LAVORAZIONE') ||
+                  dbR.status.includes('PRODUCTION') ||
+                  dbR.status.includes('PRODUZIONE') ||
+                  dbR.status.includes('SPEDITO') ||
+                  dbR.status.includes('APPROVATA')
+                )) ||
+                dbR.maker_name
+              );
+
+              const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
+              const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
+              const parsedAgreements = meta.agreements || { cadVerified: false, toleranceConfirmed: false, qcPhotosAgreed: false, orientationAgreed: false, shippingLocked: false };
+              const cleanNotes = meta.userNotes !== undefined ? meta.userNotes : dbR.notes;
+
+              // Sincronizza foto collaudo se presenti nel record
+              if (parsedQcPhotos.length > 0 && (!AppState.cadQcFiles || AppState.cadQcFiles.length === 0 || isAcc)) {
+                AppState.cadQcFiles = parsedQcPhotos;
+              }
+
+              return {
+                id: dbR.id,
+                title: dbR.title,
+                clientName: dbR.client_name || 'Cliente Verificato',
+                clientCity: dbR.client_city || 'Italia',
+                clientEmail: dbR.client_email || 'cliente@printforge.dev',
+                material: dbR.material || 'PETG',
+                color: dbR.color || 'Nero Opaco',
+                colorHex: dbR.color_hex || '#FFFFFF',
+                tolerance: dbR.tolerance || 'Alta Precisione ±0.05 mm',
+                infill: dbR.infill || '50%',
+                quantity: dbR.quantity || '1 pezzo',
+                dimensions: dbR.dimensions || '80 × 60 × 25 mm',
+                budget: dbR.budget || '€ 0,00',
+                notes: cleanNotes,
+                rawUserNotes: cleanNotes,
+                status: dbR.status || (isAcc ? 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)' : 'IN ATTESA'),
+                fileName: dbR.file_name || 'modello.stl',
+                maker: dbR.maker_name || (meta.makerName || null),
+                isAccepted: isAcc,
+                isRejected: Boolean(dbR.status && dbR.status.includes('RIFIUTATA')),
+                messages: parsedMessages,
+                agreements: parsedAgreements,
+                qcPhotos: parsedQcPhotos,
+                timestamp: 'Cloud Sync'
+              };
+            });
+
+            // Se c'è almeno una richiesta accettata, impostiamo AppState.activeEscrowOrder
+            const activeOrderReq = AppState.broadcastRequests.find(r => r.isAccepted);
+            if (activeOrderReq) {
+              const isEn = currentLang === 'en';
+              const isEs = currentLang === 'es';
+              AppState.activeEscrowOrder = {
+                id: activeOrderReq.id,
+                title: activeOrderReq.title,
+                budget: activeOrderReq.budget,
+                itemBudget: activeOrderReq.budget,
+                shippingCost: isEn ? 'Included (UPS / Poste)' : isEs ? 'Incluido (UPS / Correos)' : 'Inclusa (UPS / Poste)',
+                maker: activeOrderReq.maker || 'Maker Certificato PrintForge',
+                clientName: activeOrderReq.clientName,
+                clientEmail: activeOrderReq.clientEmail,
+                trackingNumber: activeOrderReq.trackingNumber || 'PF-UPS-892104',
+                carrier: activeOrderReq.shippingCarrier || 'UPS Standard',
+                timestamp: isEn ? 'In Production' : isEs ? 'En Producción' : 'In Lavorazione',
+                isAccepted: true
+              };
+              AppState.activeDealRfpId = activeOrderReq.id;
+              if (activeOrderReq.qcPhotos && activeOrderReq.qcPhotos.length > 0) {
+                AppState.cadQcFiles = activeOrderReq.qcPhotos;
+              }
+            }
+
             renderBroadcastTable();
             renderCreatorRequestsFeed();
+            updateEscrowRoom();
+            updateCadQcStatusUI();
+            updateNavigationTabs();
+            if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId) {
+              renderDealChat(AppState.activeDealRfpId);
+            }
             const navCount = document.getElementById('navLiveRequestsCount');
             if (navCount) navCount.innerText = AppState.broadcastRequests.length;
           }
@@ -8170,13 +8358,95 @@
     function setupSupabaseRealtime() {
       if (!supabaseClient) return;
       try {
-        supabaseClient
-          .channel('public:broadcast_requests')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'broadcast_requests' }, payload => {
-            console.log('🔔 [Supabase Realtime Event]:', payload);
-            loadRequestsFromSupabase();
-          })
-          .subscribe();
+        if (supabaseRealtimeChannel) {
+          try { supabaseClient.removeChannel(supabaseRealtimeChannel); } catch (e) {}
+        }
+        supabaseRealtimeChannel = supabaseClient.channel('printforge_global_sync');
+
+        // 1. Ascolto modifiche al DB PostgreSQL (INSERT, UPDATE, DELETE)
+        supabaseRealtimeChannel.on('postgres_changes', { event: '*', schema: 'public', table: 'broadcast_requests' }, payload => {
+          console.log('🔔 [Supabase DB Change]:', payload);
+          loadRequestsFromSupabase();
+        });
+
+        // 2. Ascolto broadcast realtime per Chat 1-1 tra dispositivi
+        supabaseRealtimeChannel.on('broadcast', { event: 'deal_chat_msg' }, ({ payload }) => {
+          console.log('💬 [Realtime Chat Msg]:', payload);
+          if (!payload || !payload.rfpId || !payload.message) return;
+          const rfp = AppState.broadcastRequests.find(r => r.id === payload.rfpId);
+          if (rfp) {
+            if (!rfp.messages) rfp.messages = [];
+            if (!rfp.messages.some(m => m.id === payload.message.id)) {
+              rfp.messages.push(payload.message);
+              if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId === payload.rfpId) {
+                renderDealChatMessages(rfp);
+              }
+              if (payload.message.senderRole !== AppState.user?.role) {
+                showToast(`💬 ${payload.message.senderName}: "${(payload.message.text || 'Foto allegata').slice(0, 30)}..."`);
+              }
+            }
+          }
+        });
+
+        // 3. Ascolto broadcast foto collaudo QC per la Escrow Room
+        supabaseRealtimeChannel.on('broadcast', { event: 'qc_photos_sync' }, ({ payload }) => {
+          console.log('📸 [Realtime QC Photos Sync]:', payload);
+          if (!payload || !payload.rfpId || !payload.photos) return;
+          const rfp = AppState.broadcastRequests.find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.qcPhotos = payload.photos;
+          }
+          AppState.cadQcFiles = payload.photos;
+          updateCadQcStatusUI();
+          updateEscrowRoom();
+          showToast('📸 Foto collaudo caricate dal Maker! Disponibili nella Escrow Room.', 'success');
+        });
+
+        // 4. Ascolto broadcast accordi trattativa
+        supabaseRealtimeChannel.on('broadcast', { event: 'deal_agreements_sync' }, ({ payload }) => {
+          if (!payload || !payload.rfpId || !payload.agreements) return;
+          const rfp = AppState.broadcastRequests.find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.agreements = payload.agreements;
+            if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId === payload.rfpId) {
+              renderDealChat(rfp.id);
+            }
+          }
+        });
+
+        // 5. Ascolto presa in carico richiesta
+        supabaseRealtimeChannel.on('broadcast', { event: 'request_accepted' }, ({ payload }) => {
+          console.log('🎉 [Realtime Request Accepted]:', payload);
+          if (!payload || !payload.rfpId) return;
+          const rfp = AppState.broadcastRequests.find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.isAccepted = true;
+            rfp.status = payload.status || 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)';
+            rfp.maker = payload.makerName;
+            AppState.activeEscrowOrder = {
+              id: rfp.id,
+              title: rfp.title,
+              budget: rfp.budget,
+              itemBudget: rfp.budget,
+              shippingCost: 'Inclusa (UPS / Poste)',
+              maker: payload.makerName || 'Maker Certificato PrintForge',
+              clientName: rfp.clientName,
+              clientEmail: rfp.clientEmail,
+              trackingNumber: 'PF-UPS-892104',
+              carrier: 'UPS Standard',
+              timestamp: 'In Lavorazione',
+              isAccepted: true
+            };
+            AppState.activeDealRfpId = rfp.id;
+            updateEscrowRoom();
+            updateNavigationTabs();
+            showToast('🎉 Il Maker ha accettato la tua richiesta! La Escrow Room è sbloccata!', 'success');
+          }
+        });
+
+        supabaseRealtimeChannel.subscribe((status) => {
+          console.log('📡 [Supabase Channel Status]:', status);
+        });
       } catch (err) {
         console.warn('Errore setup Realtime:', err);
       }
@@ -15858,7 +16128,7 @@ END-ISO-10303-21;`;
         return true;
       }
       if (Array.isArray(AppState.broadcastRequests)) {
-        const accepted = AppState.broadcastRequests.find(r => r && r.isAccepted === true && !r.isDelivered && !r.isClosed);
+        const accepted = AppState.broadcastRequests.find(r => r && (r.isAccepted === true || (r.status && (r.status.includes('ACCETTATA') || r.status.includes('LAVORAZIONE') || r.status.includes('PRODUCTION') || r.status.includes('SPEDITO')))) && !r.isDelivered && !r.isClosed);
         if (accepted) {
           const isEn = currentLang === 'en';
           const isEs = currentLang === 'es';
@@ -17132,7 +17402,14 @@ END-ISO-10303-21;`;
 
       updateRequestInSupabase(req.id, {
         status: req.status,
-        maker_name: req.acceptedBy
+        maker_name: req.acceptedBy,
+        notes: buildNotesPayload(req, { isAccepted: true })
+      });
+
+      broadcastRealtimeEvent('request_accepted', {
+        rfpId: req.id,
+        makerName: req.acceptedBy,
+        status: req.status
       });
 
       // 3. Set as Active Escrow Order & load in Studio CAD
@@ -21375,13 +21652,9 @@ END-ISO-10303-21;`;
         ))
       );
 
-      if (!isCreatorViewer && !hasCreatorTaken) {
-        showToast(currentLang === 'it'
-          ? 'La chat 1-1 sarà attiva non appena un Creator prenderà in carico la tua richiesta.'
-          : currentLang === 'es'
-          ? 'El chat 1-a-1 se activará tan pronto como un Creador asuma tu pedido.'
-          : '1-on-1 chat will unlock once a Creator takes charge of your request.');
-        return;
+      // La chat 1-1 è sempre aperta e accessibile sia al Creator che al Cliente
+      if (!isCreatorViewer && isPending && !hasCreatorTaken) {
+        console.log('Chat 1-1 aperta per la richiesta cliente:', rfp.id);
       }
 
       AppState.activeDealRfpId = rfp.id;
@@ -21614,14 +21887,12 @@ END-ISO-10303-21;`;
         return;
       }
 
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        const sizeStr = (file.size / (1024 * 1024) >= 1)
-          ? (file.size / (1024 * 1024)).toFixed(2) + ' MB'
-          : Math.round(file.size / 1024) + ' KB';
+      compressImage(file, 1024, 1024, 0.8).then(compUrl => {
+        const sizeKb = Math.round((compUrl.length * 3 / 4) / 1024);
+        const sizeStr = sizeKb >= 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : sizeKb + ' KB';
 
         currentPendingDealPhoto = {
-          dataUrl: evt.target.result,
+          dataUrl: compUrl,
           name: file.name,
           size: sizeStr
         };
@@ -21641,8 +21912,7 @@ END-ISO-10303-21;`;
 
         const chatInput = document.getElementById('dealChatInput');
         if (chatInput) chatInput.focus();
-      };
-      reader.readAsDataURL(file);
+      });
     }
 
     function cancelDealPhotoAttachment() {
@@ -21818,23 +22088,26 @@ END-ISO-10303-21;`;
       container.scrollTop = container.scrollHeight;
     }
 
-    function handleSendDealMessage(event) {
+    async function handleSendDealMessage(event) {
       if (event) event.preventDefault();
       const input = document.getElementById('dealChatInput');
       const text = input ? input.value.trim() : '';
 
       if (!text && !currentPendingDealPhoto) return;
 
-      const rfpId = AppState.activeDealRfpId;
-      const rfp = AppState.broadcastRequests.find(x => x.id === rfpId);
+      const rfpId = AppState.activeDealRfpId || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id);
+      let rfp = AppState.broadcastRequests.find(x => x.id === rfpId);
+      if (!rfp) {
+        rfp = AppState.broadcastRequests[0];
+      }
       if (!rfp) return;
 
-      const currentRole = AppState.user.role; // 'client' or 'creator'
-      const senderName = AppState.user.name || (currentRole === 'creator' ? 'PrintForge Hub Creator' : 'Cliente');
+      const currentRole = (AppState.user && AppState.user.isLoggedIn) ? AppState.user.role : 'client';
+      const senderName = (AppState.user && AppState.user.name) || (currentRole === 'creator' ? 'Maker PrintForge' : 'Cliente');
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
       const msgObj = {
-        id: 'msg-' + Date.now(),
+        id: 'msg-' + Date.now() + '-' + Math.floor(Math.random()*1000),
         senderRole: currentRole,
         senderName: senderName,
         time: timeStr,
@@ -21848,16 +22121,23 @@ END-ISO-10303-21;`;
         msgObj.photoSize = sentPhoto.size;
       }
 
+      if (!rfp.messages) rfp.messages = [];
       rfp.messages.push(msgObj);
 
       if (input) input.value = '';
       cancelDealPhotoAttachment();
       renderDealChatMessages(rfp);
 
-      // Automated counterparty simulated reply after 950ms
-      setTimeout(() => {
-        triggerSimulatedDealCounterReply(rfp, currentRole, text, sentPhoto);
-      }, 950);
+      // 1. Sincronizzazione immediata su Supabase Cloud (Persistente)
+      updateRequestInSupabase(rfp.id, {
+        notes: buildNotesPayload(rfp)
+      });
+
+      // 2. Broadcast istantaneo Realtime all'altro dispositivo
+      broadcastRealtimeEvent('deal_chat_msg', {
+        rfpId: rfp.id,
+        message: msgObj
+      });
     }
 
     function triggerSimulatedDealCounterReply(rfp, sentByRole, userText, sentPhoto) {
@@ -22281,19 +22561,44 @@ END-ISO-10303-21;`;
         readPromises.push(p);
       }
 
-      Promise.all(readPromises).then((loaded) => {
+      Promise.all(readPromises).then(async (loaded) => {
         const validPhotos = loaded.filter(x => x && x.dataUrl);
         if (validPhotos.length === 0 && files.length > 0) {
-          const isEn = currentLang === 'en';
-          const isEs = currentLang === 'es';
-          showToast(isEn ? 'Please upload only valid image files (.jpg, .png, .webp).' : isEs ? 'Por favor suba únicamente archivos de imagen válidos (.jpg, .png, .webp).' : 'Carica solo file immagine validi (.jpg, .png, .webp).', 'warning');
+          showToast('Carica solo file immagine validi (.jpg, .png, .webp).', 'warning');
           return;
         }
-        AppState.cadQcFiles.push(...validPhotos);
+
+        // Compressione immagini per sync cloud ultrarapido
+        const compressedPhotos = [];
+        for (const p of validPhotos) {
+          const comp = await compressImage(p.dataUrl, 1200, 1200, 0.8);
+          compressedPhotos.push({
+            dataUrl: comp,
+            name: p.name,
+            size: p.size
+          });
+        }
+
+        AppState.cadQcFiles.push(...compressedPhotos);
         if (AppState.cadQcFiles.length > 3) {
           AppState.cadQcFiles = AppState.cadQcFiles.slice(0, 3);
         }
+
+        // Sincronizzazione immediata sul Cloud Supabase
+        const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+        if (activeReq) {
+          activeReq.qcPhotos = AppState.cadQcFiles;
+          updateRequestInSupabase(activeReq.id, {
+            notes: buildNotesPayload(activeReq, { qcPhotos: AppState.cadQcFiles })
+          });
+          broadcastRealtimeEvent('qc_photos_sync', {
+            rfpId: activeReq.id,
+            photos: AppState.cadQcFiles
+          });
+        }
+
         updateCadQcStatusUI();
+        updateEscrowRoom();
         const count = AppState.cadQcFiles.length;
         const isEn = currentLang === 'en';
         const isEs = currentLang === 'es';
