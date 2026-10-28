@@ -7061,6 +7061,70 @@
   <!-- ========================================================================= -->
   <!-- MODALE: AUTENTICAZIONE GOOGLE, CLIENTE, CREATOR & PORTALE ADMIN           -->
   <!-- ========================================================================= -->
+  
+  <!-- ========================================================================= -->
+  <!-- MODAL SINCRONIZZAZIONE DISPOSITIVI (PC <-> SMARTPHONE)                   -->
+  <!-- ========================================================================= -->
+  <div id="modalDeviceSync" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="w-full max-w-md cyber-card p-6 space-y-5 modal-spring-enter max-h-[90vh] overflow-y-auto bg-[#0E0E12] border border-white/10 rounded-2xl shadow-2xl">
+      <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+            <i data-lucide="smartphone" class="w-4 h-4"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-cyber font-bold text-white tracking-wide">SINCRONIZZA CON IL TELEFONO</h3>
+            <p class="text-[10px] text-zinc-400 font-mono">Collega PC e Smartphone in tempo reale</p>
+          </div>
+        </div>
+        <button type="button" onclick="closeDeviceSyncModal()" class="text-zinc-500 hover:text-white p-1 rounded-lg hover:bg-white/5 transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs font-sans">
+        <div class="p-3.5 rounded-xl bg-emerald-950/20 border border-emerald-500/30 text-emerald-300 space-y-1">
+          <p class="font-bold flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Stesso Account & Stessi Ordini su Entrambi i Dispositivi
+          </p>
+          <p class="text-[11px] text-emerald-400/80 leading-relaxed font-sans">
+            Tutto ciò che fai su PC (ordini, accettazione commesse, chat 1-a-1 e foto) è sincronizzato all'istante anche sul tuo smartphone.
+          </p>
+        </div>
+
+        <!-- Metodo 1: Accesso con la stessa Email -->
+        <div class="space-y-1.5 p-3 rounded-xl bg-[#141418] border border-white/5">
+          <span class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block font-bold">Metodo 1: Accesso Immediato</span>
+          <p class="text-[11px] text-zinc-300">
+            Apri il sito sul telefono e inserisci la stessa email: <strong id="syncAccountEmailDisplay" class="text-white font-mono"></strong>. Il profilo verrà caricato automaticamente dal cloud!
+          </p>
+        </div>
+
+        <!-- Metodo 2: Link Diretto 1-Click -->
+        <div class="space-y-2 p-3 rounded-xl bg-[#141418] border border-white/5">
+          <span class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block font-bold">Metodo 2: Link 1-Click per Smartphone</span>
+          <p class="text-[11px] text-zinc-400">
+            Invia questo link al tuo telefono (su WhatsApp, Telegram o SMS) e aprilo per sincronizzare l'accesso senza digitare nulla:
+          </p>
+          <div class="flex items-center gap-2">
+            <input type="text" id="syncDirectLinkInput" readonly class="w-full bg-[#09090C] border border-white/10 rounded-lg px-2.5 py-2 text-zinc-300 font-mono text-[10px] select-all outline-none" />
+            <button type="button" onclick="copyDeviceSyncLink()" id="btnCopySyncLink" class="px-3 py-2 rounded-lg bg-white text-black font-bold text-xs hover:bg-zinc-200 transition shrink-0 flex items-center gap-1.5 active:scale-95">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>COPIA</span>
+            </button>
+          </div>
+          <div class="pt-1">
+            <a id="btnShareWhatsApp" href="#" target="_blank" class="w-full py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs text-center flex items-center justify-center gap-2 transition">
+              <i data-lucide="share-2" class="w-3.5 h-3.5"></i>
+              <span>INVIA LINK SU WHATSAPP</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div id="modalAuth" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="w-full max-w-md cyber-card p-6 space-y-5 modal-spring-enter max-h-[90vh] overflow-y-auto">
       
@@ -8151,6 +8215,134 @@
     // =========================================================================
     // SUPABASE HELPERS: COMPRESSION, PAYLOAD & REALTIME SYNC
     // =========================================================================
+    
+    /* ========================================================================= */
+    /* 1.2. CROSS-DEVICE CLOUD PROFILE SYNC (PC <-> SMARTPHONE)                  */
+    /* ========================================================================= */
+    async function syncUserProfileToCloud(userObj, pass) {
+      if (!supabaseClient || !userObj || !userObj.email) return;
+      try {
+        const cleanId = 'USER-PROFILE-' + userObj.email.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+        const profilePayload = {
+          id: cleanId,
+          title: 'PF Profile: ' + (userObj.name || userObj.email),
+          client_name: userObj.name || (userObj.role === 'creator' ? 'Maker' : 'Cliente'),
+          client_email: userObj.email.toLowerCase().trim(),
+          status: 'SYSTEM_USER_PROFILE',
+          maker_name: userObj.role === 'creator' ? (userObj.name || 'Maker') : null,
+          notes: JSON.stringify({
+            isLoggedIn: true,
+            role: userObj.role || 'client',
+            isAdmin: Boolean(userObj.isAdmin),
+            name: userObj.name || '',
+            email: userObj.email.toLowerCase().trim(),
+            avatar: (userObj.name ? userObj.name.charAt(0) : 'U').toUpperCase(),
+            stripeConnected: true,
+            creatorData: userObj.creatorData || null,
+            password: pass || '',
+            syncedAt: new Date().toISOString()
+          })
+        };
+
+        const { error } = await supabaseClient
+          .from('broadcast_requests')
+          .upsert(profilePayload, { onConflict: 'id' });
+
+        if (!error) {
+          console.log('☁️ [Supabase Cloud] Profilo utente salvato nel cloud:', cleanId);
+        }
+      } catch(e) {
+        console.warn('Errore syncUserProfileToCloud:', e);
+      }
+    }
+    window.syncUserProfileToCloud = syncUserProfileToCloud;
+
+    async function fetchUserProfileFromCloud(email) {
+      if (!supabaseClient || !email) return null;
+      try {
+        const cleanId = 'USER-PROFILE-' + email.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+        const { data, error } = await supabaseClient
+          .from('broadcast_requests')
+          .select('*')
+          .eq('id', cleanId)
+          .limit(1);
+
+        if (!error && Array.isArray(data) && data.length > 0) {
+          const record = data[0];
+          if (record && record.notes) {
+            try {
+              const prof = JSON.parse(record.notes);
+              console.log('☁️ [Supabase Cloud] Profilo recuperato per:', prof.email);
+              return prof;
+            } catch(e) {}
+          }
+        }
+      } catch(e) {
+        console.warn('Errore fetchUserProfileFromCloud:', e);
+      }
+      return null;
+    }
+    window.fetchUserProfileFromCloud = fetchUserProfileFromCloud;
+
+    function openDeviceSyncModal() {
+      const modal = document.getElementById('modalDeviceSync');
+      if (!modal) return;
+      const emailDisp = document.getElementById('syncAccountEmailDisplay');
+      const inputLink = document.getElementById('syncDirectLinkInput');
+      const waBtn = document.getElementById('btnShareWhatsApp');
+
+      const user = AppState.user || {};
+      const userEmail = user.email || 'tuo-account@printforge.it';
+      if (emailDisp) emailDisp.innerText = userEmail;
+
+      let token = '';
+      try {
+        token = btoa(encodeURIComponent(JSON.stringify(user)));
+      } catch(e) {
+        token = btoa(userEmail);
+      }
+
+      const syncUrl = window.location.origin + window.location.pathname + '?pf_sync=' + token;
+      if (inputLink) inputLink.value = syncUrl;
+      if (waBtn) {
+        const waMsg = encodeURIComponent('Accedi a PrintForge dal tuo telefono con questo link diretto: ' + syncUrl);
+        waBtn.href = 'https://api.whatsapp.com/send?text=' + waMsg;
+      }
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+    window.openDeviceSyncModal = openDeviceSyncModal;
+
+    function closeDeviceSyncModal() {
+      const modal = document.getElementById('modalDeviceSync');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.closeDeviceSyncModal = closeDeviceSyncModal;
+
+    function copyDeviceSyncLink() {
+      const input = document.getElementById('syncDirectLinkInput');
+      if (!input) return;
+      input.select();
+      input.setSelectionRange(0, 99999);
+      try {
+        navigator.clipboard.writeText(input.value);
+      } catch(e) {
+        document.execCommand('copy');
+      }
+      const btn = document.getElementById('btnCopySyncLink');
+      if (btn) {
+        btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> <span>COPIATO!</span>';
+        if (window.lucide) lucide.createIcons();
+        setTimeout(() => {
+          btn.innerHTML = '<i data-lucide="copy" class="w-3.5 h-3.5"></i> <span>COPIA</span>';
+          if (window.lucide) lucide.createIcons();
+        }, 2000);
+      }
+      showToast('✓ Link rapido copiato negli appunti! Invialo al tuo telefono per sincronizzare l\'account.', 'success');
+    }
+    window.copyDeviceSyncLink = copyDeviceSyncLink;
+
     function togglePasswordVisibility(inputId, btn) {
       const el = document.getElementById(inputId);
       if (!el) return;
@@ -8252,102 +8444,111 @@
           .order('created_at', { ascending: false });
 
         if (!error && Array.isArray(data)) {
-          console.log(`📦 [Supabase] Caricate ${data.length} richieste dal Cloud`);
-          if (data.length > 0) {
-            AppState.broadcastRequests = data.map(dbR => {
-              let meta = {};
-              try {
-                if (dbR.notes && (dbR.notes.startsWith('{') || dbR.notes.startsWith('{"'))) {
-                  meta = JSON.parse(dbR.notes);
-                }
-              } catch(e) {}
-
-              const isAcc = Boolean(
-                meta.isAccepted ||
-                (dbR.status && (
-                  dbR.status.includes('ACCETTATA') ||
-                  dbR.status.includes('LAVORAZIONE') ||
-                  dbR.status.includes('PRODUCTION') ||
-                  dbR.status.includes('PRODUZIONE') ||
-                  dbR.status.includes('SPEDITO') ||
-                  dbR.status.includes('APPROVATA')
-                )) ||
-                dbR.maker_name
-              );
-
-              const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
-              const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
-              const parsedAgreements = meta.agreements || { cadVerified: false, toleranceConfirmed: false, qcPhotosAgreed: false, orientationAgreed: false, shippingLocked: false };
-              const cleanNotes = meta.userNotes !== undefined ? meta.userNotes : dbR.notes;
-
-              // Sincronizza foto collaudo se presenti nel record
-              if (parsedQcPhotos.length > 0 && (!AppState.cadQcFiles || AppState.cadQcFiles.length === 0 || isAcc)) {
-                AppState.cadQcFiles = parsedQcPhotos;
+          // Escludi i record di profilo di sistema
+          const actualRequests = data.filter(dbR => !dbR.id.startsWith('USER-PROFILE-') && dbR.status !== 'SYSTEM_USER_PROFILE');
+          console.log(`📦 [Supabase] Caricate ${actualRequests.length} richieste dal Cloud`);
+          
+          AppState.broadcastRequests = actualRequests.map(dbR => {
+            let meta = {};
+            try {
+              if (dbR.notes && (dbR.notes.startsWith('{') || dbR.notes.startsWith('{"'))) {
+                meta = JSON.parse(dbR.notes);
               }
+            } catch(e) {}
 
-              return {
-                id: dbR.id,
-                title: dbR.title,
-                clientName: dbR.client_name || 'Cliente Verificato',
-                clientCity: dbR.client_city || 'Italia',
-                clientEmail: dbR.client_email || 'cliente@printforge.dev',
-                material: dbR.material || 'PETG',
-                color: dbR.color || 'Nero Opaco',
-                colorHex: dbR.color_hex || '#FFFFFF',
-                tolerance: dbR.tolerance || 'Alta Precisione ±0.05 mm',
-                infill: dbR.infill || '50%',
-                quantity: dbR.quantity || '1 pezzo',
-                dimensions: dbR.dimensions || '80 × 60 × 25 mm',
-                budget: dbR.budget || '€ 0,00',
-                notes: cleanNotes,
-                rawUserNotes: cleanNotes,
-                status: dbR.status || (isAcc ? 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)' : 'IN ATTESA'),
-                fileName: dbR.file_name || 'modello.stl',
-                maker: dbR.maker_name || (meta.makerName || null),
-                isAccepted: isAcc,
-                isRejected: Boolean(dbR.status && dbR.status.includes('RIFIUTATA')),
-                messages: parsedMessages,
-                agreements: parsedAgreements,
-                qcPhotos: parsedQcPhotos,
-                timestamp: 'Cloud Sync'
-              };
-            });
+            const isAcc = Boolean(
+              meta.isAccepted === true ||
+              (dbR.maker_name && dbR.maker_name.trim().length > 0) ||
+              (meta.makerName && meta.makerName.trim().length > 0) ||
+              (dbR.status && (
+                dbR.status.toUpperCase().includes('ACCETTAT') ||
+                dbR.status.toUpperCase().includes('LAVORAZION') ||
+                dbR.status.toUpperCase().includes('PRODUCTION') ||
+                dbR.status.toUpperCase().includes('PRODUZION') ||
+                dbR.status.toUpperCase().includes('SPEDIT') ||
+                dbR.status.toUpperCase().includes('APPROVAT')
+              ))
+            );
 
-            // Se c'è almeno una richiesta accettata, impostiamo AppState.activeEscrowOrder
-            const activeOrderReq = AppState.broadcastRequests.find(r => r.isAccepted);
-            if (activeOrderReq) {
-              const isEn = currentLang === 'en';
-              const isEs = currentLang === 'es';
-              AppState.activeEscrowOrder = {
-                id: activeOrderReq.id,
-                title: activeOrderReq.title,
-                budget: activeOrderReq.budget,
-                itemBudget: activeOrderReq.budget,
-                shippingCost: isEn ? 'Included (UPS / Poste)' : isEs ? 'Incluido (UPS / Correos)' : 'Inclusa (UPS / Poste)',
-                maker: activeOrderReq.maker || 'Maker Certificato PrintForge',
-                clientName: activeOrderReq.clientName,
-                clientEmail: activeOrderReq.clientEmail,
-                trackingNumber: activeOrderReq.trackingNumber || 'PF-UPS-892104',
-                carrier: activeOrderReq.shippingCarrier || 'UPS Standard',
-                timestamp: isEn ? 'In Production' : isEs ? 'En Producción' : 'In Lavorazione',
-                isAccepted: true
-              };
-              AppState.activeDealRfpId = activeOrderReq.id;
-              if (activeOrderReq.qcPhotos && activeOrderReq.qcPhotos.length > 0) {
-                AppState.cadQcFiles = activeOrderReq.qcPhotos;
-              }
+            const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
+            const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
+            const parsedAgreements = meta.agreements || { cadVerified: false, toleranceConfirmed: false, qcPhotosAgreed: false, orientationAgreed: false, shippingLocked: false };
+            const cleanNotes = meta.userNotes !== undefined ? meta.userNotes : dbR.notes;
+
+            if (parsedQcPhotos.length > 0 && (!AppState.cadQcFiles || AppState.cadQcFiles.length === 0 || isAcc)) {
+              AppState.cadQcFiles = parsedQcPhotos;
             }
 
-            renderBroadcastTable();
-            renderCreatorRequestsFeed();
-            updateEscrowRoom();
-            updateCadQcStatusUI();
-            updateNavigationTabs();
-            if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId) {
-              renderDealChat(AppState.activeDealRfpId);
+            return {
+              id: dbR.id,
+              title: dbR.title,
+              clientName: dbR.client_name || 'Cliente Verificato',
+              clientCity: dbR.client_city || 'Italia',
+              clientEmail: dbR.client_email || 'cliente@printforge.dev',
+              material: dbR.material || 'PETG',
+              color: dbR.color || 'Nero Opaco',
+              colorHex: dbR.color_hex || '#FFFFFF',
+              tolerance: dbR.tolerance || 'Alta Precisione ±0.05 mm',
+              infill: dbR.infill || '50%',
+              quantity: dbR.quantity || '1 pezzo',
+              dimensions: dbR.dimensions || '80 × 60 × 25 mm',
+              budget: dbR.budget || '€ 0,00',
+              notes: cleanNotes,
+              rawUserNotes: cleanNotes,
+              status: dbR.status || (isAcc ? 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)' : 'IN ATTESA'),
+              fileName: dbR.file_name || 'modello.stl',
+              maker: dbR.maker_name || (meta.makerName || null),
+              isAccepted: isAcc,
+              isRejected: Boolean(dbR.status && dbR.status.includes('RIFIUTATA')),
+              messages: parsedMessages,
+              agreements: parsedAgreements,
+              qcPhotos: parsedQcPhotos,
+              timestamp: 'Cloud Sync'
+            };
+          });
+
+          // Salva in localStorage per evitare cache stale
+          try {
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+
+          // Se c'è una richiesta accettata, impostiamo AppState.activeEscrowOrder
+          const activeOrderReq = AppState.broadcastRequests.find(r => r.isAccepted);
+          if (activeOrderReq) {
+            const isEn = currentLang === 'en';
+            const isEs = currentLang === 'es';
+            AppState.activeEscrowOrder = {
+              id: activeOrderReq.id,
+              title: activeOrderReq.title,
+              budget: activeOrderReq.budget,
+              itemBudget: activeOrderReq.budget,
+              shippingCost: isEn ? 'Included (UPS / Poste)' : isEs ? 'Incluido (UPS / Correos)' : 'Inclusa (UPS / Poste)',
+              maker: activeOrderReq.maker || 'Maker Certificato PrintForge',
+              clientName: activeOrderReq.clientName,
+              clientEmail: activeOrderReq.clientEmail,
+              trackingNumber: activeOrderReq.trackingNumber || 'PF-UPS-892104',
+              carrier: activeOrderReq.shippingCarrier || 'UPS Standard',
+              timestamp: isEn ? 'In Production' : isEs ? 'En Producción' : 'In Lavorazione',
+              isAccepted: true
+            };
+            AppState.activeDealRfpId = activeOrderReq.id;
+            AppState.loadedRequestInStudio = activeOrderReq;
+            if (activeOrderReq.qcPhotos && activeOrderReq.qcPhotos.length > 0) {
+              AppState.cadQcFiles = activeOrderReq.qcPhotos;
             }
-            const navCount = document.getElementById('navLiveRequestsCount');
-            if (navCount) navCount.innerText = AppState.broadcastRequests.length;
+          }
+
+          renderBroadcastTable();
+          renderCreatorRequestsFeed();
+          updateEscrowRoom();
+          updateCadQcStatusUI();
+          updateNavigationTabs();
+          if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId) {
+            renderDealChat(AppState.activeDealRfpId);
+          }
+          const navCount = document.getElementById('navLiveRequestsCount');
+          if (navCount) {
+            navCount.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected).length;
           }
         }
       } catch (err) {
@@ -16348,6 +16549,11 @@ END-ISO-10303-21;`;
                 <span class="text-[9px] text-zinc-400 font-bold hidden xl:inline-block">${roleLabel} • <span class="${AppState.user.stripeConnected ? 'text-zinc-200' : 'text-zinc-500'}">${stripeLabel}</span></span>
               </div>
             </div>
+            
+            <button type="button" onclick="openDeviceSyncModal()" class="px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] flex items-center gap-1.5 transition active:scale-95 shrink-0" title="Collega questo account al tuo smartphone per vedere tutto in tempo reale">
+              <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
+              <span class="hidden md:inline">Collega Telefono</span>
+            </button>
             <button onclick="logoutUser()" class="btn-kowalski-secondary p-1.5 rounded-full text-zinc-400 hover:text-white shrink-0" title="${logoutTitle}">
               <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
             </button>
@@ -19589,29 +19795,45 @@ END-ISO-10303-21;`;
     }
     window.adminGoogleLogin = adminGoogleLogin;
 
-    function handleGateClientSubmit(e) {
-      e.preventDefault();
+    async function handleGateClientSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
       const name = document.getElementById('gateClientName')?.value?.trim() || 'Cliente';
-      const email = document.getElementById('gateClientEmail')?.value?.trim() || 'cliente@printforge.it';
-      AppState.user = {
-        isLoggedIn: true,
-        role: 'client',
-        isAdmin: false,
-        name: name,
-        email: email,
-        avatar: name.charAt(0).toUpperCase(),
-        stripeConnected: true,
-        creatorData: null
-      };
+      const email = (document.getElementById('gateClientEmail')?.value?.trim() || 'cliente@printforge.it').toLowerCase();
+      const pass = document.getElementById('gateClientPass')?.value || '';
+
+      // Cerca profilo cloud esistente per sincronizzare cross-device
+      let userProfile = await fetchUserProfileFromCloud(email);
+      if (!userProfile) {
+        userProfile = {
+          isLoggedIn: true,
+          role: 'client',
+          isAdmin: false,
+          name: name,
+          email: email,
+          avatar: name.charAt(0).toUpperCase(),
+          stripeConnected: true,
+          creatorData: null
+        };
+      } else {
+        userProfile.isLoggedIn = true;
+        if (name && name !== 'Cliente') userProfile.name = name;
+      }
+
+      AppState.user = userProfile;
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch (e) {}
 
+      // Sincronizza nel cloud Supabase per lo smartphone
+      syncUserProfileToCloud(AppState.user, pass);
+
       renderNavUserArea();
       updateLaptopBarButtons();
+      updateNavigationTabs();
       unregisterCreatorPresence();
       sendRegistrationWelcomeEmail(AppState.user);
-      showToast(currentLang === 'it' ? 'Accesso completato! Stripe Escrow attivo.' : 'Sign in complete! Stripe Escrow active.');
+      loadRequestsFromSupabase();
+      showToast(currentLang === 'it' ? 'Accesso completato! Account sincronizzato su PC e Smartphone.' : 'Sign in complete! Account synced across PC & Mobile.', 'success');
 
       const redirectTarget = AppState.postLoginRedirect || (function() {
         try { return sessionStorage.getItem('pf_post_login_target'); } catch (e) { return null; }
@@ -19832,11 +20054,12 @@ END-ISO-10303-21;`;
     }
     window.handleClientAuthSubmit = handleClientAuthSubmit;
 
-    function handleGateCreatorSubmit(e) {
+    async function handleGateCreatorSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
       const isBusiness = (window.currentCreatorProfileType || 'private') === 'business';
       const labName = document.getElementById('gateCrLabName')?.value?.trim() || document.getElementById('crAuthLabName')?.value?.trim() || (isBusiness ? 'Hub Additivo' : 'Maker 3D');
-      const email = document.getElementById('gateCrEmail')?.value?.trim() || 'maker@printforge.it';
+      const email = (document.getElementById('gateCrEmail')?.value?.trim() || 'maker@printforge.it').toLowerCase();
+      const pass = document.getElementById('gateCrPass')?.value || '';
       const printers = document.getElementById('gateCrPrinters')?.value?.trim() || document.getElementById('crAuthPrinters')?.value?.trim() || 'Bambu Lab X1-Carbon, Prusa MK4';
       const iban = document.getElementById('gateCrIban')?.value?.trim() || document.getElementById('crAuthIban')?.value?.trim() || '';
       
@@ -19855,31 +20078,52 @@ END-ISO-10303-21;`;
         cf = document.getElementById('gateCrCf')?.value || document.getElementById('crAuthCf')?.value || '';
       }
 
-      AppState.user = {
-        isLoggedIn: true,
-        role: 'creator',
-        isAdmin: false,
-        name: labName,
-        email: email,
-        avatar: labName.charAt(0).toUpperCase(),
-        stripeConnected: true,
-        creatorData: { profileType: window.currentCreatorProfileType || 'private', piva, sdi, cf, printers, iban }
-      };
+      // Cerca profilo cloud esistente per sincronizzare cross-device
+      let userProfile = await fetchUserProfileFromCloud(email);
+      if (!userProfile) {
+        userProfile = {
+          isLoggedIn: true,
+          role: 'creator',
+          isAdmin: false,
+          name: labName,
+          email: email,
+          avatar: labName.charAt(0).toUpperCase(),
+          stripeConnected: true,
+          creatorData: { profileType: window.currentCreatorProfileType || 'private', piva, sdi, cf, printers, iban }
+        };
+      } else {
+        userProfile.isLoggedIn = true;
+        userProfile.role = 'creator';
+        if (labName && labName !== 'Maker 3D') userProfile.name = labName;
+        userProfile.creatorData = userProfile.creatorData || {};
+        if (printers) userProfile.creatorData.printers = printers;
+        if (iban) userProfile.creatorData.iban = iban;
+      }
+
+      AppState.user = userProfile;
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch (e) {}
 
+      // Sincronizza nel cloud Supabase per lo smartphone
+      syncUserProfileToCloud(AppState.user, pass);
+
       closeAuthModal();
       renderNavUserArea();
+      updateNavigationTabs();
       updateLaptopBarButtons();
+      registerCreatorPresence();
+      loadRequestsFromSupabase();
       
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
-      const welcomeMsg = (window.currentCreatorProfileType || 'private') === 'private'
-        ? (isEn ? 'Welcome Maker! Registered as private hobbyist (Zero VAT or SDI required).' : isEs ? '¡Bienvenido Maker! Registrado como particular (Sin CIF/NIF requerido).' : 'Benvenuto Maker! Registrato come privato/hobbista (Zero P.IVA o SDI richiesta).')
-        : (isEn ? 'Business Hub registered! Full CAD Studio unlocked.' : isEs ? '¡Empresa registrada con CIF/NIF! Estudio CAD desbloqueado.' : 'Profilo Aziendale con P.IVA registrato! Studio CAD sbloccato.');
+      const welcomeMsg = isEn 
+        ? 'Welcome Maker! Account synced across PC & Mobile.' 
+        : isEs 
+        ? '¡Bienvenido Maker! Cuenta sincronizada en PC y Móvil.' 
+        : 'Benvenuto Maker! Account sincronizzato tra PC e Smartphone.';
       sendRegistrationWelcomeEmail(AppState.user);
-      showToast(welcomeMsg);
+      showToast(welcomeMsg, 'success');
       navigateTo('creator-requests');
     }
     window.handleGateCreatorSubmit = handleGateCreatorSubmit;
@@ -21439,15 +21683,36 @@ END-ISO-10303-21;`;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
-      // Mostra solo le richieste NON ancora accettate e NON rifiutate
-      const visibleRequests = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected);
+      // 1. Filtro rigoroso: mostra solo le richieste NON ancora accettate da nessun creator e NON rifiutate
+      const visibleRequests = AppState.broadcastRequests.filter(r => {
+        if (!r || !r.id) return false;
+        if (r.id.startsWith('USER-PROFILE-')) return false;
+        if (r.isRejected) return false;
+        if (r.isAccepted === true) return false;
+        if (r.maker && typeof r.maker === 'string' && r.maker.trim() !== '') return false;
+        if (r.maker_name && typeof r.maker_name === 'string' && r.maker_name.trim() !== '') return false;
+        if (r.acceptedBy && typeof r.acceptedBy === 'string' && r.acceptedBy.trim() !== '') return false;
+        if (typeof r.status === 'string') {
+          const s = r.status.toUpperCase();
+          if (s.includes('ACCETTAT') || s.includes('LAVORAZION') || s.includes('PRODUCTION') || s.includes('PRODUZION') || s.includes('SPEDIT') || s.includes('APPROVAT') || s.includes('COMPLETAT')) {
+            return false;
+          }
+        }
+        return true;
+      });
+
+      // 2. Controlla se il Maker loggato ha una commessa presa in carico
+      const activeCreatorJob = AppState.broadcastRequests.find(r => {
+        if (!r || !r.id || r.id.startsWith('USER-PROFILE-')) return false;
+        return r.isAccepted === true || (typeof r.status === 'string' && (r.status.toUpperCase().includes('ACCETTAT') || r.status.toUpperCase().includes('LAVORAZION')));
+      });
 
       if (countLabel) {
         const jobsTxt = isEn ? 'Available Jobs' : isEs ? 'Trabajos Disponibles' : 'Richieste Disponibili';
         countLabel.innerText = `${visibleRequests.length} ${jobsTxt}`;
       }
 
-      // Sincronizza sempre il counter live HUD nella navbar in alto
+      // Sincronizza il counter live nella navbar in alto (solo richieste disponibili aperte)
       const navLiveReq = document.getElementById('navLiveRequestsCount');
       if (navLiveReq) navLiveReq.innerText = visibleRequests.length;
 
@@ -21460,20 +21725,81 @@ END-ISO-10303-21;`;
         }
       }
 
+      let activeJobBannerHtml = '';
+      if (activeCreatorJob) {
+        const assignedMakerName = activeCreatorJob.maker || 'La tua Officina';
+        activeJobBannerHtml = `
+          <div class="col-span-full p-5 rounded-2xl bg-[#091510] border border-emerald-500/40 shadow-xl space-y-4">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/20 pb-3">
+              <div class="flex items-center gap-3">
+                <span class="w-3 h-3 rounded-full bg-emerald-400 animate-ping"></span>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold uppercase">COMMESSA PRESA IN CARICO</span>
+                    <span class="text-xs font-mono text-zinc-400">#${escapeHtml(activeCreatorJob.id)}</span>
+                  </div>
+                  <h3 class="text-sm sm:text-base font-cyber font-bold text-white mt-0.5">${escapeHtml(activeCreatorJob.title)}</h3>
+                </div>
+              </div>
+              <div class="text-right sm:text-right">
+                <span class="text-xs font-mono text-emerald-400 font-bold block">${escapeHtml(activeCreatorJob.budget || '€ 46,00')}</span>
+                <span class="text-[10px] font-mono text-zinc-400">Cliente: ${escapeHtml(activeCreatorJob.clientName || 'Cliente')}</span>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                <span class="text-[10px] text-zinc-400 block">Materiale:</span>
+                <span class="text-white font-bold truncate block">${escapeHtml(activeCreatorJob.material || 'PETG')}</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                <span class="text-[10px] text-zinc-400 block">Colore:</span>
+                <span class="text-white font-bold truncate block">${escapeHtml(activeCreatorJob.color || 'Nero')}</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                <span class="text-[10px] text-zinc-400 block">Stato Escrow:</span>
+                <span class="text-emerald-400 font-bold block">Fondi Bloccati ✓</span>
+              </div>
+              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+                <span class="text-[10px] text-zinc-400 block">Foto Collaudo QC:</span>
+                <span class="text-amber-400 font-bold block">${(activeCreatorJob.qcPhotos && activeCreatorJob.qcPhotos.length) || (AppState.cadQcFiles && AppState.cadQcFiles.length) || 0}/3 Caricate</span>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-2 pt-1">
+              <button type="button" onclick="openDealChat('${activeCreatorJob.id}')" class="px-3.5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-cyber font-bold text-xs flex items-center gap-2 transition shadow-lg active:scale-95">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+                <span>CHAT 1-1 & FOTO CLIENTE</span>
+              </button>
+              <button type="button" onclick="navigateTo('order-room')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-cyber text-xs flex items-center gap-2 transition active:scale-95">
+                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+                <span>STANZA ESCROW & VERIFICA</span>
+              </button>
+              <button type="button" onclick="navigateTo('studio')" class="px-3.5 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-cyber text-xs flex items-center gap-2 transition active:scale-95">
+                <i data-lucide="box" class="w-4 h-4 text-cyan-400"></i>
+                <span>STUDIO CAD 3D</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }
+
       if (visibleRequests.length === 0) {
         const emptyHead = isEn 
           ? '0 Open Client Jobs (All Jobs Taken or Cleared)' 
           : isEs 
           ? '0 Trabajos Disponibles (Todos Asumidos o Restablecidos)' 
           : '0 Richieste Disponibili (Tutte Prese in Carico o Azzerate)';
-        const emptySub = isEn 
-          ? 'There are currently no pending client requests. When a client submits a new project, it will appear here instantly.' 
-          : isEs 
-          ? 'Actualmente no hay pedidos pendientes. Cuando un cliente envíe un nuevo proyecto, aparecerá aquí al instante.' 
-          : 'Non ci sono richieste in sospeso al momento. Quando un cliente invierà un nuovo progetto, apparirà qui in tempo reale.';
+        const emptySub = activeCreatorJob
+          ? 'La richiesta accettata è in lavorazione sopra. Quando un altro cliente invierà un nuovo progetto, apparirà qui in tempo reale.'
+          : (isEn 
+              ? 'There are currently no pending client requests. When a client submits a new project, it will appear here instantly.' 
+              : isEs 
+              ? 'Actualmente no hay pedidos pendientes. Cuando un cliente envíe un nuevo proyecto, aparecerá aquí al instante.' 
+              : 'Non ci sono richieste in sospeso al momento. Quando un cliente invierà un nuovo progetto, apparirà qui in tempo reale.');
 
-        container.innerHTML = `
-          <div class="col-span-full cyber-card p-12 text-center space-y-3 bg-[#0A0A0E] border border-white/10 rounded-2xl">
+        container.innerHTML = activeJobBannerHtml + `
+          <div class="col-span-full cyber-card p-10 text-center space-y-3 bg-[#0A0A0E] border border-white/10 rounded-2xl">
             <div class="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 mx-auto flex items-center justify-center text-zinc-500 shadow-inner">
               <i data-lucide="inbox" class="w-6 h-6 text-zinc-500"></i>
             </div>
@@ -21485,7 +21811,7 @@ END-ISO-10303-21;`;
             </p>
           </div>
         `;
-        lucide.createIcons();
+        if (window.lucide) lucide.createIcons();
         return;
       }
 
@@ -21499,110 +21825,79 @@ END-ISO-10303-21;`;
       const titleAccept = isEn ? 'Accept job and send confirmation email to client' : isEs ? 'Aceptar pedido y enviar correo de confirmación al cliente' : 'Accetta commessa e invia email di conferma presa in carico al cliente';
       const titleReject = isEn ? 'Decline job and remove from available list' : isEs ? 'Rechazar pedido y eliminar de la lista disponible' : 'Rifiuta commessa e rimuovi dalla lista';
 
-      container.innerHTML = visibleRequests.map((rawR, idx) => {
+      const cardsHtml = visibleRequests.map((rawR, idx) => {
         const r = getLocalizedRequest(rawR);
         const safeId = escapeHtml(r.id);
         const hexColor = r.colorHex 
           ? (typeof r.colorHex === 'number' ? '#' + r.colorHex.toString(16).padStart(6, '0') : r.colorHex) 
           : '#F97316';
-        const displayDimensions = r.dimensions || (isEn ? 'Dimensions: ~85×85×42 mm' : isEs ? 'Dimensiones: ~85×85×42 mm' : 'Dimensioni: ~85×85×42 mm');
-        const isNewest = idx === 0;
+        const displayColor = escapeHtml(r.color || 'Standard');
+        const displayMaterial = escapeHtml(r.material || 'PETG Tecnico');
+        const displayDimensions = escapeHtml(r.dimensions || '80 × 60 × 25 mm');
+        const displayTolerance = escapeHtml(r.tolerance || 'Standard ±0.20 mm');
+        const displayInfill = escapeHtml(r.infill || '100% Pieno Massiccio Solido');
+        const displayQuantity = escapeHtml(r.quantity || '1 pezzo');
+        const displayBudget = escapeHtml(r.budget || '€ 46,00');
+        const displayFileName = escapeHtml(r.fileName || 'progetto.stl');
+        const displayCity = escapeHtml(r.clientCity || 'Italia');
+        const displayClientName = escapeHtml(r.clientName || 'Cliente PrintForge');
+        const displayNotes = escapeHtml(r.notes || r.userNotes || 'Nessuna specifica particolare');
 
         return `
-        <div class="cyber-card p-5 flex flex-col justify-between space-y-4 relative ${isNewest ? 'border-emerald-500/40 ring-1 ring-emerald-500/20 shadow-[0_0_25px_rgba(16,185,129,0.08)]' : ''}">
-          <div class="space-y-3">
-            
-            <div class="p-3.5 rounded-xl border border-white/10 bg-[#08080A] space-y-2 relative overflow-hidden">
-              <div class="flex items-center justify-between">
-                <div class="flex items-center gap-2">
-                  <div class="w-8 h-8 rounded-lg bg-[#252927] border border-white/15 flex items-center justify-center text-[#FFFFFF] shrink-0">
-                    <i data-lucide="box" class="w-4 h-4"></i>
-                  </div>
-                  <div>
-                    <div class="flex items-center gap-1.5">
-                      <span class="text-[11px] font-mono text-[#FFFFFF] font-bold block">${safeId}</span>
-                      ${isNewest ? '<span class="px-1.5 py-0.2 rounded bg-emerald-500/20 text-emerald-400 font-mono text-[8px] font-bold border border-emerald-500/30 animate-pulse">LIVE</span>' : ''}
-                    </div>
-                    <span class="text-[9px] text-zinc-400 font-mono">FILE: ${escapeHtml(r.fileName || r.file || 'part.stl')}</span>
-                  </div>
+          <div class="cyber-card p-5 space-y-4 bg-[#0E0E12] border border-white/10 rounded-2xl hover:border-white/20 transition flex flex-col justify-between" id="creator-card-${safeId}">
+            <div class="space-y-3">
+              <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
+                <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300">#${safeId}</span>
+                <span class="text-sm font-cyber font-bold text-white">${displayBudget}</span>
+              </div>
+              <div>
+                <h4 class="text-sm font-cyber font-bold text-white tracking-wide truncate">${escapeHtml(r.title)}</h4>
+                <p class="text-[11px] text-zinc-400 font-sans mt-0.5 flex items-center gap-1.5">
+                  <i data-lucide="map-pin" class="w-3 h-3 text-zinc-500"></i>
+                  <span>${displayCity} • ${displayClientName}</span>
+                </p>
+              </div>
+              <div class="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1">
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span class="text-[9px] text-zinc-400 block">${lblMat}:</span>
+                  <span class="text-zinc-200 truncate block">${displayMaterial}</span>
                 </div>
-                <div class="px-2.5 py-1 rounded bg-[#121214] border border-emerald-500/40 text-emerald-400 font-mono font-bold text-xs tabular-nums">
-                  ${escapeHtml(r.budget)}
-                </div>
-              </div>
-              <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 pt-1.5 border-t border-white/[0.06]">
-                <span class="text-cyan-300 font-mono flex items-center gap-1"><i data-lucide="ruler" class="w-3 h-3 text-cyan-400"></i> ${escapeHtml(displayDimensions)}</span>
-                <span class="text-emerald-400 font-bold">✓ WATERTIGHT STL</span>
-              </div>
-            </div>
-
-            <div>
-              <h3 class="font-cyber font-bold text-white text-base leading-snug">${escapeHtml(r.title)}</h3>
-              <span class="text-[11px] font-mono text-zinc-400">${lblClient}: ${escapeHtml(r.clientName)} • ${escapeHtml(r.clientCity)}</span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 text-[11px] font-mono">
-              <div class="p-2 rounded-lg bg-[#1E2120] border border-white/[0.06]">
-                <span class="text-zinc-500 text-[9px] uppercase block">${lblMat}</span>
-                <span class="text-[#FFFFFF] font-bold truncate block">${escapeHtml(r.material)}</span>
-              </div>
-              <div class="p-2 rounded-lg bg-[#1E2120] border border-white/[0.06]">
-                <span class="text-zinc-500 text-[9px] uppercase block">${lblCol}</span>
-                <div class="flex items-center gap-1.5 truncate">
-                  <span class="w-2.5 h-2.5 rounded-full border border-white/20 shrink-0" style="background-color: ${hexColor};"></span>
-                  <span class="text-white truncate block">${escapeHtml(r.color)}</span>
+                <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
+                  <span class="text-[9px] text-zinc-400 block">${lblCol}:</span>
+                  <span class="text-zinc-200 flex items-center gap-1.5 truncate">
+                    <span class="w-2 h-2 rounded-full shrink-0" style="background-color: ${hexColor}"></span>
+                    <span class="truncate">${displayColor}</span>
+                  </span>
                 </div>
               </div>
-              <div class="p-2 rounded-lg bg-[#1E2120] border border-white/[0.06]">
-                <span class="text-zinc-500 text-[9px] uppercase block">${lblTol}</span>
-                <span class="text-emerald-400 font-bold truncate block">${escapeHtml(r.tolerance || '±0.05 mm')}</span>
+              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] font-mono">
+                <span class="text-[9px] text-zinc-400 block">${lblTol} & ${lblQty}:</span>
+                <span class="text-zinc-300">${displayTolerance} • ${displayQuantity}</span>
               </div>
-              <div class="p-2 rounded-lg bg-[#1E2120] border border-white/[0.06]">
-                <span class="text-zinc-500 text-[9px] uppercase block">${lblQty}</span>
-                <span class="text-white truncate block">${escapeHtml(r.quantity)}</span>
+              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5 text-[10px] text-zinc-400 font-sans line-clamp-2">
+                "${displayNotes}"
               </div>
             </div>
 
-            <!-- Opzione Infill al posto delle note tecniche -->
-            <div class="p-2.5 rounded-lg bg-[#1E2120] border border-white/[0.06] text-[11px] font-mono flex items-center justify-between">
-              <span class="text-zinc-400 text-[10px] uppercase font-cyber flex items-center gap-1.5">
-                <i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span>${isEn ? 'Infill Density:' : isEs ? 'Relleno Infill:' : 'Infill Richiesto:'}</span>
-              </span>
-              <span class="text-emerald-400 font-bold text-xs bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20 font-mono">
-                ${escapeHtml(r.infill || '50% Meccanico Strutturale')}
-              </span>
+            <div class="pt-3 border-t border-white/[0.06] flex items-center gap-2">
+              <button type="button" onclick="acceptCreatorRequest('${safeId}')" class="flex-1 py-2 px-3 rounded-xl bg-white text-black font-cyber font-bold text-xs hover:bg-zinc-200 transition text-center shadow active:scale-95" title="${titleAccept}">
+                ${btnAccept}
+              </button>
+              <button type="button" onclick="openDealChat('${safeId}')" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition" title="Apri Chat 1-1 con Cliente">
+                <i data-lucide="message-square" class="w-4 h-4"></i>
+              </button>
+              <button type="button" onclick="rejectCreatorRequest('${safeId}')" class="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition" title="${titleReject}">
+                <i data-lucide="x" class="w-4 h-4"></i>
+              </button>
             </div>
-
           </div>
-
-          <!-- Pulsanti ACCETTA e RIFIUTA con Invio Email di Conferma al Cliente -->
-          <div class="grid grid-cols-2 gap-2 pt-3 border-t border-white/[0.08]">
-            <button type="button" 
-                    onclick="acceptCreatorRequest('${safeId}')" 
-                    class="btn-kowalski-primary py-2.5 px-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition" 
-                    title="${titleAccept}">
-              <i data-lucide="check" class="w-4 h-4 text-black shrink-0"></i>
-              <span>${btnAccept}</span>
-            </button>
-            <button type="button" 
-                    onclick="rejectCreatorRequest('${safeId}')" 
-                    class="btn-kowalski-secondary py-2.5 px-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white border border-white/10 hover:border-red-500/50 hover:bg-red-500/10 active:scale-95 transition" 
-                    title="${titleReject}">
-              <i data-lucide="x" class="w-4 h-4 text-zinc-400 hover:text-red-400 shrink-0"></i>
-              <span>${btnReject}</span>
-            </button>
-          </div>
-        </div>
-      `;
+        `;
       }).join('');
 
-      lucide.createIcons();
+      container.innerHTML = activeJobBannerHtml + cardsHtml;
+      if (window.lucide) lucide.createIcons();
     }
 
-    /* ========================================================================= */
-    /* 6.5. 1-TO-1 DEAL CHAT & TECHNICAL AGREEMENT SYSTEM                        */
-    /* ========================================================================= */
     function openDealChat(rfpId) {
       if (!AppState.user.isLoggedIn) {
         showToast(currentLang === 'it' 
@@ -25226,6 +25521,36 @@ END-ISO-10303-21;`;
       // Session Management: Ripristino sessione da localStorage per lo stesso dispositivo/browser
       const urlParams = new URLSearchParams(window.location.search);
       let sessionRestored = false;
+
+      // Ripristino istantaneo via Link Sincronizzazione Smartphone (?pf_sync=...)
+      try {
+        const syncToken = urlParams.get('pf_sync');
+        if (syncToken) {
+          let tokenStr = '';
+          try {
+            tokenStr = decodeURIComponent(atob(syncToken));
+          } catch(e) {
+            tokenStr = atob(syncToken);
+          }
+          const syncedUser = JSON.parse(tokenStr);
+          if (syncedUser && syncedUser.email) {
+            AppState.user = syncedUser;
+            AppState.user.isLoggedIn = true;
+            try { localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user)); } catch(e) {}
+            sessionRestored = true;
+            console.log('📱 [Sync] Sessione smartphone ripristinata con successo:', AppState.user.email);
+            // Pulisci l'URL senza ricaricare la pagina
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, document.title, cleanUrl);
+            setTimeout(() => {
+              showToast('📱 Smartphone sincronizzato con successo con il tuo PC!', 'success');
+            }, 600);
+          }
+        }
+      } catch(e) {
+        console.warn('Errore lettura pf_sync:', e);
+      }
+
       try {
         const stored = localStorage.getItem('printforge_auth_session');
         if (stored) {
