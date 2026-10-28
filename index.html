@@ -3521,6 +3521,20 @@
       width: 100%;
     }
   </style>
+<style id="desktop-scaling-style">
+    /* Desktop UI Scale: Rende gli elementi a schermo un pelo più grandi su PC (tranne il video) */
+    @media (min-width: 1024px) {
+      html {
+        font-size: 17.6px;
+      }
+      #heroSoftwareWindow {
+        max-width: 1024px !important;
+      }
+      #videoViewportContainer {
+        height: 415px !important;
+      }
+    }
+  </style>
 </head>
 <body class="min-h-screen relative overflow-x-hidden selection:bg-[#FFFFFF]/25 selection:text-[#FFFFFF] font-sans antialiased text-zinc-100">
 
@@ -24872,12 +24886,24 @@ END-ISO-10303-21;`;
       initCardSpotlights();
       initKowalskiButtons();
 
-      // Session Management: Ingresso sempre disconnesso (Home senza accesso)
+      // Session Management: Ripristino sessione da localStorage per lo stesso dispositivo/browser
       const urlParams = new URLSearchParams(window.location.search);
-      const hasExplicitAuthParam = urlParams.get('deal') || urlParams.get('deal-client') || urlParams.get('admin') || urlParams.get('auth');
-      
-      if (!hasExplicitAuthParam) {
-        // All'ingresso nel sito, mostra sempre la Home page senza accesso (disconnesso)
+      let sessionRestored = false;
+      try {
+        const stored = localStorage.getItem('printforge_auth_session');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          if (parsed && parsed.isLoggedIn) {
+            AppState.user = parsed;
+            sessionRestored = true;
+          }
+        }
+      } catch (e) {
+        console.warn('Errore lettura sessione salvata:', e);
+      }
+
+      if (!sessionRestored) {
+        // Se non c'è una sessione attiva salvata, l'utente è un visitatore non autenticato
         AppState.user = {
           isLoggedIn: false,
           role: 'client',
@@ -24888,17 +24914,12 @@ END-ISO-10303-21;`;
           stripeConnected: false,
           creatorData: null
         };
-        try {
-          localStorage.removeItem('printforge_auth_session');
-        } catch (e) {}
+      }
+
+      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
+        registerCreatorPresence();
       } else {
-        try {
-          const stored = localStorage.getItem('printforge_auth_session');
-          if (stored) {
-            AppState.user = JSON.parse(stored);
-          }
-        } catch (e) {}
-      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') { registerCreatorPresence(); } else { updateLiveCreatorsCountDisplay(); }
+        updateLiveCreatorsCountDisplay();
       }
 
       // Broadcast RFPs Restoration
