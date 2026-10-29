@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="it" class="dark">
 <head>
   <meta charset="UTF-8" />
@@ -8414,6 +8414,9 @@
         : (rfp && rfp.rawUserNotes ? rfp.rawUserNotes : '');
       const payload = {
         userNotes: existingNotes,
+        userId: (rfp && rfp.userId) || (AppState.user && (AppState.user.userId || AppState.user.id)) || '',
+        makerEmail: (rfp && rfp.makerEmail) || (AppState.user && AppState.user.role === 'creator' ? AppState.user.email : '') || '',
+        makerUserId: (rfp && rfp.makerUserId) || (AppState.user && AppState.user.role === 'creator' ? (AppState.user.userId || AppState.user.id) : '') || '',
         messages: (rfp && Array.isArray(rfp.messages)) ? rfp.messages : [],
         qcPhotos: (AppState.cadQcFiles && AppState.cadQcFiles.length > 0) ? AppState.cadQcFiles : ((rfp && rfp.qcPhotos) || []),
         agreements: (rfp && rfp.agreements) || {},
@@ -8461,8 +8464,17 @@
           .order('created_at', { ascending: false });
 
         if (!error && Array.isArray(data)) {
-          // Escludi i record di profilo di sistema
-          const actualRequests = data.filter(dbR => !dbR.id.startsWith('USER-PROFILE-') && dbR.status !== 'SYSTEM_USER_PROFILE');
+          const deletedIds = (typeof getDeletedRequestIds === 'function') ? getDeletedRequestIds() : new Set();
+
+          // Escludi i record di profilo di sistema e le richieste cancellate definitivamente
+          const actualRequests = data.filter(dbR => {
+            if (!dbR || !dbR.id) return false;
+            if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE') return false;
+            if (deletedIds.has(dbR.id)) return false;
+            if (dbR.status === 'CANCELLATA_DEFINITIVAMENTE' || dbR.status === 'DELETED') return false;
+            return true;
+          });
+
           console.log(`📦 [Supabase] Caricate ${actualRequests.length} richieste dal Cloud`);
           
           AppState.broadcastRequests = actualRequests.map(dbR => {
@@ -8492,12 +8504,9 @@
             const parsedAgreements = meta.agreements || { cadVerified: false, toleranceConfirmed: false, qcPhotosAgreed: false, orientationAgreed: false, shippingLocked: false };
             const cleanNotes = meta.userNotes !== undefined ? meta.userNotes : dbR.notes;
 
-            if (parsedQcPhotos.length > 0 && (!AppState.cadQcFiles || AppState.cadQcFiles.length === 0 || isAcc)) {
-              AppState.cadQcFiles = parsedQcPhotos;
-            }
-
             return {
               id: dbR.id,
+              userId: meta.userId || dbR.user_id || '',
               title: dbR.title,
               clientName: dbR.client_name || 'Cliente Verificato',
               clientCity: dbR.client_city || 'Italia',
@@ -8520,6 +8529,8 @@
               shippingFull: meta.shippingFull || (meta.shippingStreet ? `${meta.shippingStreet}, ${meta.shippingCap || '20121'} ${meta.shippingCity || dbR.client_city || 'Milano'} (${meta.shippingProv || 'MI'})` : (dbR.client_city ? `${dbR.client_city}` : 'Via Dante 18, 20121 Milano (MI)')),
               fileName: dbR.file_name || 'modello.stl',
               maker: dbR.maker_name || (meta.makerName || null),
+              makerEmail: meta.makerEmail || '',
+              makerUserId: meta.makerUserId || '',
               isAccepted: isAcc,
               isRejected: Boolean(dbR.status && dbR.status.includes('RIFIUTATA')),
               messages: parsedMessages,
@@ -8534,8 +8545,34 @@
             localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
           } catch(e) {}
 
-          // Se c'è una richiesta accettata, impostiamo AppState.activeEscrowOrder
-          const activeOrderReq = AppState.broadcastRequests.find(r => r.isAccepted);
+          // ISOLAMENTO MULTI-TENANT: Imposta activeEscrowOrder e loadedRequestInStudio
+          // ESCLUSIVAMENTE se la commessa appartiene a QUESTO utente
+          const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+          const myName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
+          const myUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+          const isClient = AppState.user && AppState.user.role === 'client';
+          const isCreator = AppState.user && AppState.user.role === 'creator';
+          const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
+
+          const activeOrderReq = AppState.broadcastRequests.find(r => {
+            if (!r || !r.isAccepted) return false;
+            if (isAdmin) return true;
+            if (isClient) {
+              const reqEmail = (r.clientEmail || '').toLowerCase().trim();
+              const reqUid = (r.userId || '').toLowerCase().trim();
+              return (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid);
+            }
+            if (isCreator) {
+              const assigned = (r.maker || r.acceptedBy || '').toLowerCase().trim();
+              const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
+              const assignedUid = (r.makerUserId || '').toLowerCase().trim();
+              return (assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
+                     (assignedEmail && assignedEmail === myEmail) ||
+                     (assignedUid && assignedUid === myUid);
+            }
+            return false;
+          });
+
           if (activeOrderReq) {
             const isEn = currentLang === 'en';
             const isEs = currentLang === 'es';
@@ -8560,9 +8597,12 @@
             };
             AppState.activeDealRfpId = activeOrderReq.id;
             AppState.loadedRequestInStudio = activeOrderReq;
-            if (activeOrderReq.qcPhotos && activeOrderReq.qcPhotos.length > 0) {
-              AppState.cadQcFiles = activeOrderReq.qcPhotos;
-            }
+            AppState.cadQcFiles = (activeOrderReq.qcPhotos && activeOrderReq.qcPhotos.length > 0) ? activeOrderReq.qcPhotos : [];
+          } else {
+            AppState.activeEscrowOrder = null;
+            AppState.loadedRequestInStudio = null;
+            AppState.activeDealRfpId = null;
+            AppState.cadQcFiles = [];
           }
 
           renderBroadcastTable();
@@ -8818,6 +8858,17 @@
     async function saveRequestToSupabase(req) {
       if (!supabaseClient) return;
       try {
+        const payloadNotes = (typeof buildNotesPayload === 'function') 
+          ? buildNotesPayload(req, {
+              userId: req.userId || (AppState.user && (AppState.user.userId || AppState.user.id)) || '',
+              shippingStreet: req.shippingStreet || '',
+              shippingCity: req.shippingCity || req.clientCity || '',
+              shippingCap: req.shippingCap || '',
+              shippingProv: req.shippingProv || '',
+              shippingFull: req.shippingFull || ''
+            })
+          : (req.notes || '');
+
         const dbPayload = {
           id: req.id,
           title: req.title,
@@ -8832,7 +8883,7 @@
           quantity: req.quantity,
           dimensions: req.dimensions,
           budget: req.budget,
-          notes: req.notes,
+          notes: payloadNotes,
           status: req.status || 'IN ATTESA',
           file_name: req.fileName || 'part.stl'
         };
@@ -8843,7 +8894,6 @@
         console.warn('Errore insert Supabase:', e);
       }
     }
-
     async function updateRequestInSupabase(reqId, updateData) {
       if (!supabaseClient) return;
       try {
@@ -9171,29 +9221,151 @@
     }
     window.onRfpSuccessGoEscrow = onRfpSuccessGoEscrow;
 
-    function clearAllBroadcastRequests() {
-      AppState.broadcastRequests = [];
-      AppState.activeDealRfpId = null;
-      AppState.loadedRequestInStudio = null;
+    async function clearAllBroadcastRequests() {
+      const userEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const userId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+      const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
+
+      // Trova le richieste da eliminare: per cliente elimina le proprie, per admin tutte
+      const targets = (AppState.broadcastRequests || []).filter(r => {
+        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-')) return false;
+        if (isAdmin) return true;
+        const reqEmail = (r.clientEmail || '').toLowerCase().trim();
+        const reqUid = (r.userId || '').toLowerCase().trim();
+        return (userEmail && reqEmail === userEmail) || (userId && reqUid === userId);
+      });
+
+      const idsToDelete = targets.map(r => r.id);
+
+      // 1. DELETE definitivo da Supabase Cloud
+      if (supabaseClient && idsToDelete.length > 0) {
+        try {
+          const { error } = await supabaseClient
+            .from('broadcast_requests')
+            .delete()
+            .in('id', idsToDelete);
+          if (error) console.warn('[PrintForge] Supabase delete error:', error);
+          else console.log('[PrintForge] Permanently deleted from Supabase:', idsToDelete);
+        } catch(e) {
+          console.warn('[PrintForge] Supabase delete exception:', e);
+        }
+      }
+
+      // 2. Blacklist locale permanente degli ID eliminati
+      recordDeletedRequestIds(idsToDelete);
+
+      // 3. Rimuovi dall'AppState locale
+      AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => !idsToDelete.includes(r.id));
       try {
-        localStorage.removeItem('printforge_broadcast_requests');
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
       } catch (e) {}
+
+      // 4. CASCADE RESET STANZA ESCROW: Azzeramento totale e svuotamento fondi
+      AppState.activeEscrowOrder = null;
+      AppState.loadedRequestInStudio = null;
+      AppState.activeDealRfpId = null;
+      AppState.cadQcFiles = [];
+      AppState.stage2Completed = false;
+      AppState.isShipped = false;
+      AppState.isDelivered = false;
+      if (typeof stopEscrow72hTimer === 'function') stopEscrow72hTimer();
+
+      try {
+        localStorage.removeItem('printforge_escrow_order');
+        localStorage.removeItem('printforge_qc_files');
+      } catch (e) {}
+
+      // Broadcast evento di cancellazione cross-device
+      broadcastRealtimeEvent('requests_cleared', { deletedIds: idsToDelete });
+
+      // 5. Aggiorna UI
+      renderBroadcastTable();
+      renderCreatorRequestsFeed();
+      updateNavigationTabs();
+      updateEscrowRoom();
+      updateCadQcStatusUI();
+      syncPipelineUI();
+      const navLiveReq = document.getElementById('navLiveRequestsCount');
+      if (navLiveReq) navLiveReq.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected).length;
+      renderStudioSpecs();
+      updateHeroActionArea();
+      if (['deal-chat', 'order-room', 'studio', 'activity'].includes(AppState.currentView)) {
+        navigateTo(AppState.user && AppState.user.role === 'creator' ? 'creator-requests' : 'client-request');
+      }
+      showToast(currentLang === 'it' 
+        ? '✓ Tutte le richieste eliminate definitivamente dal database (Escrow azzerato).' 
+        : currentLang === 'es'
+        ? '✓ Todas las solicitudes eliminadas permanentemente (Escrow restablecido).'
+        : '✓ All requests permanently deleted from database (Escrow reset).', 'success');
+    }
+    window.clearAllBroadcastRequests = clearAllBroadcastRequests;
+
+    async function deleteSingleBroadcastRequest(requestId) {
+      if (!requestId) return;
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+
+      // 1. DELETE da Supabase Cloud
+      if (supabaseClient) {
+        try {
+          const { error } = await supabaseClient
+            .from('broadcast_requests')
+            .delete()
+            .eq('id', requestId);
+          if (error) console.warn('[PrintForge] Delete single error:', error);
+          else console.log('[PrintForge] Deleted single from Supabase:', requestId);
+        } catch(e) {
+          console.warn('[PrintForge] Delete single exception:', e);
+        }
+      }
+
+      // 2. Blacklist perenne
+      recordDeletedRequestIds([requestId]);
+
+      // 3. Rimuovi da AppState
+      AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== requestId);
+      try {
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+      } catch(e) {}
+
+      // 4. CASCADE RESET se era la commessa attiva in Escrow
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id === requestId) {
+        AppState.activeEscrowOrder = null;
+        AppState.loadedRequestInStudio = null;
+        AppState.activeDealRfpId = null;
+        AppState.cadQcFiles = [];
+        AppState.stage2Completed = false;
+        AppState.isShipped = false;
+        AppState.isDelivered = false;
+        if (typeof stopEscrow72hTimer === 'function') stopEscrow72hTimer();
+        try {
+          localStorage.removeItem('printforge_escrow_order');
+          localStorage.removeItem('printforge_qc_files');
+        } catch(e) {}
+        updateEscrowRoom();
+        updateCadQcStatusUI();
+        syncPipelineUI();
+        if (['deal-chat', 'order-room', 'studio', 'activity'].includes(AppState.currentView)) {
+          navigateTo(AppState.user && AppState.user.role === 'creator' ? 'creator-requests' : 'client-request');
+        }
+      }
+
+      broadcastRealtimeEvent('request_deleted', { rfpId: requestId });
+
       renderBroadcastTable();
       renderCreatorRequestsFeed();
       updateNavigationTabs();
       const navLiveReq = document.getElementById('navLiveRequestsCount');
-      if (navLiveReq) navLiveReq.innerText = 0;
-      renderStudioSpecs();
-      updateHeroActionArea();
-      if (AppState.currentView === 'deal-chat') {
-        renderDealChat(null);
-      }
-      showToast(currentLang === 'it' 
-        ? 'Tutte le richieste broadcast sono state azzerate (0 richieste attive).' 
-        : currentLang === 'es'
-        ? 'Todas las solicitudes broadcast han sido restablecidas (0 solicitudes activas).'
-        : 'All broadcast requests have been cleared (0 active requests).');
+      if (navLiveReq) navLiveReq.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected).length;
+
+      const toastMsg = isEn 
+        ? `✓ Request #${requestId} permanently deleted from database.` 
+        : isEs 
+        ? `✓ Solicitud #${requestId} eliminada permanentemente.` 
+        : `✓ Richiesta #${requestId} eliminata definitivamente dal database.`;
+      showToast(toastMsg, 'success');
     }
+    window.deleteSingleBroadcastRequest = deleteSingleBroadcastRequest;
 
     function populateDemoRequests() {
       AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
@@ -19382,9 +19554,22 @@ END-ISO-10303-21;`;
       if (window.lucide && typeof lucide.createIcons === 'function') {
         lucide.createIcons();
       }
+
+      // DEMO ONLY: Auto-completamento del 4° passaggio (Consegna & Svincolo fondi) dopo 4.5 secondi
+      setTimeout(() => {
+        try {
+          if (AppState.isShipped || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isShipped)) {
+            console.log('[PrintForge Demo] Auto-completing Stage 4 (Courier Delivery & Escrow Release)...');
+            if (typeof scanCourierDelivery === 'function') {
+              scanCourierDelivery();
+            }
+          }
+        } catch(e) {
+          console.warn('[PrintForge Demo] Auto-complete error:', e);
+        }
+      }, 4500);
     }
     window.shipParcelAndCloseActivity = shipParcelAndCloseActivity;
-
     /* Scansione pacco corriere e avanzamento alla Fase 4 (Consegna & Svincolo) */
     function scanCourierDelivery() {
       const isEn = currentLang === 'en';
@@ -20049,10 +20234,64 @@ END-ISO-10303-21;`;
     }
     window.handleFaiUnaRichiestaClick = handleFaiUnaRichiestaClick;
 
-    function adminGoogleLogin(role = 'client') {
-      const googleName = role === 'creator' ? 'Maker Hub' : 'Cliente PrintForge';
-      const googleEmail = role === 'creator' ? 'creator@printforge.it' : 'cliente@printforge.it';
+    
+    /* ========================================================================= */
+    /* MULTI-TENANT ISOLATION & SESSION MANAGEMENT                                */
+    /* ========================================================================= */
+    function getOrCreateDeviceId() {
+      let devId = null;
+      try {
+        devId = localStorage.getItem('printforge_device_uid');
+        if (!devId) {
+          devId = 'dev_' + Math.random().toString(36).substring(2, 8) + '_' + Date.now().toString(36).substring(4);
+          localStorage.setItem('printforge_device_uid', devId);
+        }
+      } catch(e) {
+        devId = 'dev_' + Math.random().toString(36).substring(2, 8);
+      }
+      return devId;
+    }
+    window.getOrCreateDeviceId = getOrCreateDeviceId;
+
+    function generateUserIdForAccount(email, role) {
+      if (email && typeof email === 'string' && email.trim() !== '' && !email.includes('@printforge.it')) {
+        const clean = email.toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+        return (role === 'creator' ? 'maker_' : 'cli_') + clean.substring(0, 16);
+      }
+      const devId = getOrCreateDeviceId();
+      return (role === 'creator' ? 'maker_' : 'cli_') + devId.replace(/[^a-z0-9]/g, '');
+    }
+    window.generateUserIdForAccount = generateUserIdForAccount;
+
+    function getDeletedRequestIds() {
+      try {
+        const raw = localStorage.getItem('printforge_deleted_request_ids');
+        if (raw) return new Set(JSON.parse(raw));
+      } catch(e) {}
+      return new Set();
+    }
+    window.getDeletedRequestIds = getDeletedRequestIds;
+
+    function recordDeletedRequestIds(ids) {
+      if (!Array.isArray(ids) || ids.length === 0) return;
+      try {
+        const set = getDeletedRequestIds();
+        ids.forEach(id => { if (id) set.add(id); });
+        localStorage.setItem('printforge_deleted_request_ids', JSON.stringify(Array.from(set)));
+      } catch(e) {}
+    }
+    window.recordDeletedRequestIds = recordDeletedRequestIds;
+
+function adminGoogleLogin(role = 'client') {
+      const devId = getOrCreateDeviceId();
+      const shortId = devId.replace('dev_', '').substring(0, 4).toUpperCase();
+      const googleName = role === 'creator' ? ('Maker Hub #' + shortId) : ('Cliente PrintForge #' + shortId);
+      const googleEmail = role === 'creator' ? ('creator_' + shortId.toLowerCase() + '@printforge.it') : ('cliente_' + shortId.toLowerCase() + '@printforge.it');
+      const userId = generateUserIdForAccount(googleEmail, role);
+
       AppState.user = {
+        userId: userId,
+        id: userId,
         isLoggedIn: true,
         role: role,
         isAdmin: false,
@@ -20068,10 +20307,13 @@ END-ISO-10303-21;`;
 
       renderNavUserArea();
       updateLaptopBarButtons();
+      updateNavigationTabs();
       if (role === 'creator') { registerCreatorPresence(); } else { unregisterCreatorPresence(); }
+      loadRequestsFromSupabase();
+
       showToast(currentLang === 'it' 
-        ? 'Accesso Google autorizzato! Piattaforma sbloccata.' 
-        : 'Google access granted! Platform unlocked.');
+        ? ('Accesso Google autorizzato! Account #' + shortId + ' attivo.') 
+        : ('Google access granted! Account #' + shortId + ' active.'));
 
       const redirectTarget = AppState.postLoginRedirect || (function() {
         try { return sessionStorage.getItem('pf_post_login_target'); } catch (e) { return null; }
@@ -20099,6 +20341,8 @@ END-ISO-10303-21;`;
       let userProfile = await fetchUserProfileFromCloud(email);
       if (!userProfile) {
         userProfile = {
+          userId: generateUserIdForAccount(email, 'client'),
+          id: generateUserIdForAccount(email, 'client'),
           isLoggedIn: true,
           role: 'client',
           isAdmin: false,
@@ -20376,6 +20620,8 @@ END-ISO-10303-21;`;
       let userProfile = await fetchUserProfileFromCloud(email);
       if (!userProfile) {
         userProfile = {
+          userId: generateUserIdForAccount(email, 'creator'),
+          id: generateUserIdForAccount(email, 'creator'),
           isLoggedIn: true,
           role: 'creator',
           isAdmin: false,
@@ -21208,6 +21454,7 @@ END-ISO-10303-21;`;
 
       const newRequest = {
         id: rfpId,
+        userId: (AppState.user && (AppState.user.userId || AppState.user.id)) || generateUserIdForAccount(draft.clientEmail, 'client'),
         title: draft.title,
         clientName: AppState.user.name || (isEn ? 'Client' : 'Cliente'),
         clientCity: draft.shippingCity ? `${draft.shippingCity} (${draft.shippingProv || 'IT'})` : 'Milano (MI)',
@@ -21759,20 +22006,21 @@ END-ISO-10303-21;`;
 
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
-      const userEmail = (AppState.user && AppState.user.email) ? AppState.user.email.toLowerCase().trim() : '';
+      const userEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const userId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
       const isClient = AppState.user && AppState.user.role === 'client';
       const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
 
-      // MULTI-TENANT ISOLATION: il cliente vede ESCLUSIVAMENTE le proprie richieste (nessuna interferenza da altri account)
-      const visibleRequests = AppState.broadcastRequests.filter(r => {
-        if (!r || !r.id || r.id.startsWith('USER-PROFILE-')) return false;
-        if (isAdmin) return true; // Founder vede tutte le richieste
+      // MULTI-TENANT ISOLATION: il cliente vede ESCLUSIVAMENTE le proprie richieste
+      const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
+        if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return false;
+        if (isAdmin) return true;
         if (isClient) {
-          if (!userEmail) return false;
-          const reqEmail = (r.clientEmail || r.client_email || '').toLowerCase().trim();
-          return reqEmail === userEmail;
+          const reqEmail = (r.clientEmail || '').toLowerCase().trim();
+          const reqUid = (r.userId || '').toLowerCase().trim();
+          return (userEmail && reqEmail === userEmail) || (userId && reqUid === userId);
         }
-        return true;
+        return false;
       });
 
       if (countBadge) {
@@ -21814,7 +22062,7 @@ END-ISO-10303-21;`;
               <p class="text-xs font-mono text-zinc-400 max-w-md mx-auto">
                 ${emptyMsg}
               </p>
-              <p class="text-[11px] font-sans text-zinc-500 max-w-sm mx-auto pt-0.5">
+              <p class="text-[11px] text-zinc-500 font-sans max-w-md mx-auto pt-1">
                 ${emptySub}
               </p>
             </div>
@@ -21866,19 +22114,27 @@ END-ISO-10303-21;`;
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
               <span class="text-[10px] font-mono text-zinc-400">
-                Maker Assegnato: <strong class="text-zinc-200">${escapeHtml(r.maker || r.maker_name || 'In attesa di presa in carico')}</strong>
+                Maker Assegnato: <strong class="text-zinc-200">${escapeHtml(r.maker || r.maker_name || (isAcc ? 'Maker Certificato' : 'In attesa di presa in carico'))}</strong>
               </span>
               <div class="flex items-center gap-2">
-                <button type="button" onclick="openDealChat('${safeId}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 transition">
-                  <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-                  <span>Chat 1-1 & Foto</span>
-                </button>
                 ${isAcc ? `
-                  <button type="button" onclick="navigateTo('order-room')" class="px-3 py-1.5 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition">
+                  <button type="button" onclick="openDealChat('${safeId}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 transition active:scale-95">
+                    <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                    <span>Chat 1-1 & Foto</span>
+                  </button>
+                  <button type="button" onclick="navigateTo('order-room')" class="px-3 py-1.5 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition active:scale-95">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
                     <span>Stanza Escrow</span>
                   </button>
-                ` : ''}
+                ` : `
+                  <span class="text-[10px] font-mono text-zinc-500 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/5 flex items-center gap-1">
+                    <i data-lucide="clock" class="w-3 h-3 text-zinc-500"></i>
+                    <span>${isEn ? 'Pending Maker Pickup' : isEs ? 'Esperando Creador' : 'In attesa del Maker'}</span>
+                  </span>
+                `}
+                <button type="button" onclick="deleteSingleBroadcastRequest('${safeId}')" class="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs transition active:scale-95" title="${isEn ? 'Delete request permanently' : 'Elimina richiesta definitivamente'}">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
               </div>
             </div>
           </div>
@@ -21892,7 +22148,6 @@ END-ISO-10303-21;`;
       `;
       if (window.lucide) lucide.createIcons();
     }
-
     /* 6. Creator Requests Feed & Approve directly to CAD Studio */
     function renderCreatorRequestsFeed() {
       const container = document.getElementById('creatorRequestsCardsContainer');
@@ -21902,28 +22157,39 @@ END-ISO-10303-21;`;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
-      // 1. Filtro rigoroso: mostra solo le richieste NON ancora accettate da nessun creator e NON rifiutate
-      const visibleRequests = AppState.broadcastRequests.filter(r => {
+      // 1. Filtro rigoroso: mostra solo le richieste NON ancora accettate e NON rifiutate e NON cancellate
+      const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
         if (!r || !r.id) return false;
         if (r.id.startsWith('USER-PROFILE-')) return false;
-        if (r.isRejected) return false;
+        if (r.isRejected || r.isDeleted) return false;
         if (r.isAccepted === true) return false;
         if (r.maker && typeof r.maker === 'string' && r.maker.trim() !== '') return false;
         if (r.maker_name && typeof r.maker_name === 'string' && r.maker_name.trim() !== '') return false;
         if (r.acceptedBy && typeof r.acceptedBy === 'string' && r.acceptedBy.trim() !== '') return false;
         if (typeof r.status === 'string') {
           const s = r.status.toUpperCase();
-          if (s.includes('ACCETTAT') || s.includes('LAVORAZION') || s.includes('PRODUCTION') || s.includes('PRODUZION') || s.includes('SPEDIT') || s.includes('APPROVAT') || s.includes('COMPLETAT')) {
+          if (s.includes('ACCETTAT') || s.includes('LAVORAZION') || s.includes('PRODUCTION') || s.includes('PRODUZION') || s.includes('SPEDIT') || s.includes('APPROVAT') || s.includes('COMPLETAT') || s.includes('CANCELLAT')) {
             return false;
           }
         }
         return true;
       });
 
-      // 2. Controlla se il Maker loggato ha una commessa presa in carico
-      const activeCreatorJob = AppState.broadcastRequests.find(r => {
-        if (!r || !r.id || r.id.startsWith('USER-PROFILE-')) return false;
-        return r.isAccepted === true || (typeof r.status === 'string' && (r.status.toUpperCase().includes('ACCETTAT') || r.status.toUpperCase().includes('LAVORAZION')));
+      // 2. Controlla se il Maker loggato ha una commessa presa in carico (ISOLAMENTO CREATOR)
+      const myMakerName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
+      const myMakerEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const myMakerUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+
+      const activeCreatorJob = (AppState.broadcastRequests || []).find(r => {
+        if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isRejected || r.isDeleted) return false;
+        const isAcc = r.isAccepted === true || (typeof r.status === 'string' && (r.status.toUpperCase().includes('ACCETTAT') || r.status.toUpperCase().includes('LAVORAZION')));
+        if (!isAcc) return false;
+        const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
+        const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
+        const assignedUid = (r.makerUserId || '').toLowerCase().trim();
+        return (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
+               (assignedEmail && assignedEmail === myMakerEmail) ||
+               (assignedUid && assignedUid === myMakerUid);
       });
 
       if (countLabel) {
@@ -21931,7 +22197,6 @@ END-ISO-10303-21;`;
         countLabel.innerText = `${visibleRequests.length} ${jobsTxt}`;
       }
 
-      // Sincronizza il counter live nella navbar in alto (solo richieste disponibili aperte)
       const navLiveReq = document.getElementById('navLiveRequestsCount');
       if (navLiveReq) navLiveReq.innerText = visibleRequests.length;
 
@@ -21946,7 +22211,6 @@ END-ISO-10303-21;`;
 
       let activeJobBannerHtml = '';
       if (activeCreatorJob) {
-        const assignedMakerName = activeCreatorJob.maker || 'La tua Officina';
         activeJobBannerHtml = `
           <div class="col-span-full p-5 rounded-2xl bg-[#091510] border border-emerald-500/40 shadow-xl space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-emerald-500/20 pb-3">
@@ -22008,75 +22272,72 @@ END-ISO-10303-21;`;
           ? '0 Open Client Jobs (All Jobs Taken or Cleared)' 
           : isEs 
           ? '0 Trabajos Disponibles (Todos Asumidos o Restablecidos)' 
-          : '0 Richieste Disponibili (Tutte Prese in Carico o Azzerate)';
-        const emptySub = activeCreatorJob
-          ? 'La richiesta accettata è in lavorazione sopra. Quando un altro cliente invierà un nuovo progetto, apparirà qui in tempo reale.'
-          : (isEn 
-              ? 'There are currently no pending client requests. When a client submits a new project, it will appear here instantly.' 
-              : isEs 
-              ? 'Actualmente no hay pedidos pendientes. Cuando un cliente envíe un nuevo proyecto, aparecerá aquí al instante.' 
-              : 'Non ci sono richieste in sospeso al momento. Quando un cliente invierà un nuovo progetto, apparirà qui in tempo reale.');
+          : '0 Richieste Aperte dai Clienti (Tutte Prese in Carico o Azzerate)';
+        const emptyMsg = isEn 
+          ? 'There are currently no new manufacturing requests waiting for a Maker.' 
+          : isEs 
+          ? 'Actualmente no hay nuevas solicitudes de fabricación en espera de un Creador.' 
+          : 'Al momento non ci sono nuove richieste di manifattura 3D in attesa di un Maker.';
+        const emptySub = isEn
+          ? 'When a client submits an order, it will appear here in real-time. Once accepted, it moves exclusively to your Workshop.'
+          : isEs
+          ? 'Cuando un cliente envíe un pedido, aparecerá aquí en tiempo real. Una vez aceptado, pasará exclusivamente a su Taller.'
+          : 'Non appena un cliente invia una richiesta, apparirà qui in tempo reale. Dopo l\'accettazione, diventerà esclusiva della tua Officina.';
 
         container.innerHTML = activeJobBannerHtml + `
-          <div class="col-span-full cyber-card p-10 text-center space-y-3 bg-[#0A0A0E] border border-white/10 rounded-2xl">
-            <div class="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 mx-auto flex items-center justify-center text-zinc-500 shadow-inner">
-              <i data-lucide="inbox" class="w-6 h-6 text-zinc-500"></i>
+          <div class="col-span-full p-8 sm:p-12 text-center flex flex-col items-center justify-center space-y-3 rounded-2xl bg-white/[0.02] border border-white/5">
+            <div class="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-zinc-400 shadow-inner">
+              <i data-lucide="inbox" class="w-6 h-6"></i>
             </div>
-            <p class="text-sm font-cyber font-bold text-white">
-              ${emptyHead}
-            </p>
-            <p class="text-xs text-zinc-400 font-sans max-w-md mx-auto leading-relaxed">
-              ${emptySub}
-            </p>
+            <div class="space-y-1">
+              <span class="text-sm font-cyber font-bold text-white block">
+                ${emptyHead}
+              </span>
+              <p class="text-xs font-mono text-zinc-400 max-w-md mx-auto">
+                ${emptyMsg}
+              </p>
+              <p class="text-[11px] text-zinc-500 font-sans max-w-md mx-auto pt-1">
+                ${emptySub}
+              </p>
+            </div>
           </div>
         `;
         if (window.lucide) lucide.createIcons();
         return;
       }
 
-      const lblClient = isEn ? 'Client' : isEs ? 'Cliente' : 'Richiedente';
-      const lblMat = isEn ? 'Selected Material' : isEs ? 'Material Elegido' : 'Materiale Scelto';
-      const lblCol = isEn ? 'Selected Color' : isEs ? 'Color Elegido' : 'Colore Scelto';
-      const lblTol = isEn ? 'Tolerance' : isEs ? 'Tolerancia' : 'Tolleranza';
-      const lblQty = isEn ? 'Quantity' : isEs ? 'Cantidad' : 'Quantità';
-      const btnAccept = isEn ? 'ACCEPT' : isEs ? 'ACEPTAR' : 'ACCETTA';
-      const btnReject = isEn ? 'DECLINE' : isEs ? 'RECHAZAR' : 'RIFIUTA';
-      const titleAccept = isEn ? 'Accept job and send confirmation email to client' : isEs ? 'Aceptar pedido y enviar correo de confirmación al cliente' : 'Accetta commessa e invia email di conferma presa in carico al cliente';
-      const titleReject = isEn ? 'Decline job and remove from available list' : isEs ? 'Rechazar pedido y eliminar de la lista disponible' : 'Rifiuta commessa e rimuovi dalla lista';
-
-      const cardsHtml = visibleRequests.map((rawR, idx) => {
-        const r = getLocalizedRequest(rawR);
+      const cardsHtml = visibleRequests.map((r, idx) => {
+        const displayBudget = r.budget || '€ 46,00';
+        const displayMaterial = r.material || 'PETG';
+        const displayColor = r.color || 'Nero Opaco';
+        const displayTolerance = r.tolerance || '±0.05 mm';
+        const displayQuantity = r.quantity || '1 pezzo';
+        const displayNotes = r.notes || r.rawUserNotes || (isEn ? 'No extra instructions provided.' : isEs ? 'Sin instrucciones adicionales.' : 'Nessuna specifica aggiuntiva.');
+        const hexColor = r.colorHex || '#222222';
         const safeId = escapeHtml(r.id);
-        const hexColor = r.colorHex 
-          ? (typeof r.colorHex === 'number' ? '#' + r.colorHex.toString(16).padStart(6, '0') : r.colorHex) 
-          : '#F97316';
-        const displayColor = escapeHtml(r.color || 'Standard');
-        const displayMaterial = escapeHtml(r.material || 'PETG Tecnico');
-        const displayDimensions = escapeHtml(r.dimensions || '80 × 60 × 25 mm');
-        const displayTolerance = escapeHtml(r.tolerance || 'Standard ±0.20 mm');
-        const displayInfill = escapeHtml(r.infill || '100% Pieno Massiccio Solido');
-        const displayQuantity = escapeHtml(r.quantity || '1 pezzo');
-        const displayBudget = escapeHtml(r.budget || '€ 46,00');
-        const displayFileName = escapeHtml(r.fileName || 'progetto.stl');
-        const displayCity = escapeHtml(r.clientCity || 'Italia');
-        const displayClientName = escapeHtml(r.clientName || 'Cliente PrintForge');
-        const displayNotes = escapeHtml(r.notes || r.userNotes || 'Nessuna specifica particolare');
+
+        const btnAccept = isEn ? 'ACCEPT JOB' : isEs ? 'ASUMIR PEDIDO' : 'PRENDI IN CARICO';
+        const titleAccept = isEn ? 'Accept this request and open 3D Studio' : isEs ? 'Aceptar y abrir en Studio 3D' : 'Prendi in carico questa richiesta e apri lo Studio 3D';
+        const titleReject = isEn ? 'Decline request' : isEs ? 'Rechazar solicitud' : 'Rifiuta richiesta';
+        const lblMat = isEn ? 'Material' : isEs ? 'Material' : 'Materiale';
+        const lblCol = isEn ? 'Color' : isEs ? 'Color' : 'Colore';
+        const lblTol = isEn ? 'Tolerance' : isEs ? 'Tolerancia' : 'Tolleranza';
+        const lblQty = isEn ? 'Qty' : isEs ? 'Cant' : 'Qtà';
 
         return `
-          <div class="cyber-card p-5 space-y-4 bg-[#0E0E12] border border-white/10 rounded-2xl hover:border-white/20 transition flex flex-col justify-between" id="creator-card-${safeId}">
+          <div class="p-4 sm:p-5 rounded-2xl bg-[#0D0D12] border border-white/10 hover:border-white/20 transition space-y-4 flex flex-col justify-between">
             <div class="space-y-3">
               <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <span class="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300">#${safeId}</span>
-                <span class="text-sm font-cyber font-bold text-white">${displayBudget}</span>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded-md bg-white/5 text-[10px] font-mono text-zinc-400">#${safeId}</span>
+                  <span class="text-xs font-mono text-emerald-400 font-bold">${escapeHtml(displayBudget)}</span>
+                </div>
+                <span class="text-[10px] font-mono text-zinc-400">${escapeHtml(r.clientCity || 'Milano')}</span>
               </div>
-              <div>
-                <h4 class="text-sm font-cyber font-bold text-white tracking-wide truncate">${escapeHtml(r.title)}</h4>
-                <p class="text-[11px] text-zinc-400 font-sans mt-0.5 flex items-center gap-1.5">
-                  <i data-lucide="map-pin" class="w-3 h-3 text-zinc-500"></i>
-                  <span>${displayCity} • ${displayClientName}</span>
-                </p>
-              </div>
-              <div class="grid grid-cols-2 gap-2 text-[11px] font-mono pt-1">
+
+              <h4 class="text-sm font-cyber font-bold text-white line-clamp-1">${escapeHtml(r.title)}</h4>
+
+              <div class="grid grid-cols-2 gap-2 text-xs font-mono">
                 <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
                   <span class="text-[9px] text-zinc-400 block">${lblMat}:</span>
                   <span class="text-zinc-200 truncate block">${displayMaterial}</span>
@@ -22098,12 +22359,10 @@ END-ISO-10303-21;`;
               </div>
             </div>
 
+            <!-- CHAT 1-1 COMPLETAMENTE NASCOSTA PER RICHIESTE IN ATTESA: SOLO BOTTONE ACCETTA E RIFIUTA -->
             <div class="pt-3 border-t border-white/[0.06] flex items-center gap-2">
               <button type="button" onclick="acceptCreatorRequest('${safeId}')" class="flex-1 py-2 px-3 rounded-xl bg-white text-black font-cyber font-bold text-xs hover:bg-zinc-200 transition text-center shadow active:scale-95" title="${titleAccept}">
                 ${btnAccept}
-              </button>
-              <button type="button" onclick="openDealChat('${safeId}')" class="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white transition" title="Apri Chat 1-1 con Cliente">
-                <i data-lucide="message-square" class="w-4 h-4"></i>
               </button>
               <button type="button" onclick="rejectCreatorRequest('${safeId}')" class="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition" title="${titleReject}">
                 <i data-lucide="x" class="w-4 h-4"></i>
@@ -22119,56 +22378,96 @@ END-ISO-10303-21;`;
 
     function openDealChat(rfpId) {
       if (!AppState.user.isLoggedIn) {
-        showToast(currentLang === 'it' 
-          ? 'Accesso richiesto: effettua l\'accesso per visualizzare la chat della richiesta.' 
+        showToast(currentLang === 'it'
+          ? "Accesso richiesto: effettua l'accesso per visualizzare la chat della richiesta."
           : currentLang === 'es'
-          ? 'Acceso requerido: inicia sesión para ver el chat del pedido.'
+          ? 'Acceso requerido: inicia sesi\u00f3n para ver el chat del pedido.'
           : 'Sign in required: please log in to access the deal chat.');
         navigateTo('login-gate');
         return;
       }
 
       let rfp = AppState.broadcastRequests.find(x => x.id === rfpId);
+      if (!rfp && rfpId) {
+        showToast(currentLang === 'it' ? 'Richiesta non trovata.' : 'Request not found.', 'warning');
+        return;
+      }
       if (!rfp) {
-        rfp = AppState.broadcastRequests[0];
-        if (!rfp) {
-          showToast(currentLang === 'it' ? 'Nessuna richiesta disponibile per la chat.' : currentLang === 'es' ? 'No hay pedidos disponibles para el chat.' : 'No jobs available for deal chat.');
-          return;
-        }
+        showToast(currentLang === 'it' ? 'Nessuna richiesta disponibile per la chat.' : 'No jobs available for deal chat.', 'warning');
+        return;
       }
 
-      // Per il cliente la chat 1-1 è accessibile solo dopo la presa in carico del creator
-      const isCreatorViewer = Boolean(AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator');
+      // FIX 2: Visibilita condizionale stretta Chat 1-1
+      const userEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const userName  = ((AppState.user && AppState.user.name)  || '').toLowerCase().trim();
+      const userRole  = ((AppState.user && AppState.user.role)  || '').toLowerCase();
+      const isAdmin   = Boolean(AppState.user && AppState.user.isAdmin);
+      const isCreator = userRole === 'creator';
+      const isClient  = userRole === 'client';
+
       const statusUpper = String(rfp.status || '').toUpperCase();
-      const isPending = statusUpper.includes('ATTESA') || 
-                        statusUpper.includes('APERTA') || 
-                        statusUpper.includes('AWAITING') || 
-                        statusUpper.includes('PENDING') || 
+      const isPending = statusUpper.includes('ATTESA') ||
+                        statusUpper.includes('APERTA') ||
+                        statusUpper.includes('AWAITING') ||
+                        statusUpper.includes('PENDING') ||
                         statusUpper.includes('ESPERA');
-      const hasCreatorTaken = Boolean(
-        (rfp.isAccepted && !isPending) ||
+      const isAccepted = Boolean(
+        rfp.isAccepted === true ||
         rfp.acceptedBy ||
         rfp.isShipped ||
-        (rfp.status && !isPending && (
+        (rfp.maker && rfp.maker.trim().length > 0) ||
+        (!isPending && (
           statusUpper.includes('LAVORAZIONE') ||
           statusUpper.includes('ACCETTATA') ||
           statusUpper.includes('APPROVATA') ||
           statusUpper.includes('PRODUCTION') ||
-          statusUpper.includes('PRODUCCIÓN') ||
           statusUpper.includes('PRODUZIONE') ||
           statusUpper.includes('ACCORDI') ||
           statusUpper.includes('SIGLATI') ||
           statusUpper.includes('SEALED') ||
-          statusUpper.includes('FIRMADO') ||
           statusUpper.includes('TRATTATIVA') ||
           statusUpper.includes('SPEDITO') ||
           statusUpper.includes('SHIPPED')
         ))
       );
 
-      // La chat 1-1 è sempre aperta e accessibile sia al Creator che al Cliente
-      if (!isCreatorViewer && isPending && !hasCreatorTaken) {
-        console.log('Chat 1-1 aperta per la richiesta cliente:', rfp.id);
+      // a) La chat e visibile SOLO se un creator ha accettato
+      if (!isAccepted && !isAdmin) {
+        showToast(
+          currentLang === 'it'
+            ? '\uD83D\uDD12 La chat si sblocca solo dopo che un Creator accetta la richiesta.'
+            : '\uD83D\uDD12 Chat unlocks only after a Creator accepts this request.',
+          'warning'
+        );
+        return;
+      }
+
+      // b) Il cliente puo accedere solo alla propria richiesta
+      if (isClient && !isAdmin) {
+        const reqEmail = (rfp.clientEmail || rfp.client_email || '').toLowerCase().trim();
+        if (reqEmail && reqEmail !== userEmail) {
+          showToast(
+            currentLang === 'it'
+              ? '\uD83D\uDD12 Puoi accedere solo alla chat delle tue richieste.'
+              : '\uD83D\uDD12 You can only access chat for your own requests.',
+            'warning'
+          );
+          return;
+        }
+      }
+
+      // c) Il creator puo accedere solo alla commessa assegnata a lui
+      if (isCreator && !isAdmin) {
+        const assigned = (rfp.maker || rfp.maker_name || rfp.acceptedBy || '').toLowerCase().trim();
+        if (assigned && assigned !== userName && !assigned.includes(userName) && !userName.includes(assigned)) {
+          showToast(
+            currentLang === 'it'
+              ? '\uD83D\uDD12 Puoi accedere solo alla chat delle commesse assegnate a te.'
+              : '\uD83D\uDD12 You can only access chat for jobs assigned to you.',
+            'warning'
+          );
+          return;
+        }
       }
 
       AppState.activeDealRfpId = rfp.id;
