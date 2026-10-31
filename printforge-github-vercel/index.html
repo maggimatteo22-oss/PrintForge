@@ -4093,6 +4093,10 @@
           </div>
           
           <div class="flex items-center gap-2">
+            <button type="button" onclick="initiateStripeConnectOnboarding()" class="px-3.5 py-2 rounded-xl bg-violet-600/30 hover:bg-violet-600/50 text-violet-300 border border-violet-500/40 font-cyber font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-md">
+              <i data-lucide="credit-card" class="w-4 h-4 text-violet-400"></i>
+              <span>Collega Conto Bancario (Stripe)</span>
+            </button>
             <button type="button" onclick="navigateTo('creator-requests')" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-cyber font-bold text-xs flex items-center gap-2 border border-white/10 transition">
               <i data-lucide="inbox" class="w-4 h-4"></i>
               <span>Bacheca Richieste</span>
@@ -8834,16 +8838,28 @@
       const existingNotes = (rfp && typeof rfp.notes === 'string' && !rfp.notes.startsWith('{')) 
         ? rfp.notes 
         : (rfp && rfp.rawUserNotes ? rfp.rawUserNotes : '');
+      
+      const isAccepted = Boolean(extra.isAccepted !== undefined ? extra.isAccepted : (rfp && rfp.isAccepted === true));
+      const makerName = isAccepted 
+        ? (extra.makerName || (rfp && (rfp.maker || rfp.acceptedBy)) || (AppState.user && AppState.user.role === 'creator' ? AppState.user.name : '') || '')
+        : '';
+      const makerEmail = isAccepted
+        ? (extra.makerEmail || (rfp && rfp.makerEmail) || (AppState.user && AppState.user.role === 'creator' ? AppState.user.email : '') || '')
+        : '';
+      const makerUserId = isAccepted
+        ? (extra.makerUserId || (rfp && (rfp.makerUserId || rfp.assigned_creator_id)) || (AppState.user && AppState.user.role === 'creator' ? (AppState.user.userId || AppState.user.id) : '') || '')
+        : '';
+
       const payload = {
         userNotes: existingNotes,
         userId: (rfp && rfp.userId) || (AppState.user && (AppState.user.userId || AppState.user.id)) || '',
-        makerEmail: (rfp && rfp.makerEmail) || (AppState.user && AppState.user.role === 'creator' ? AppState.user.email : '') || '',
-        makerUserId: (rfp && rfp.makerUserId) || (AppState.user && AppState.user.role === 'creator' ? (AppState.user.userId || AppState.user.id) : '') || '',
+        makerEmail: makerEmail,
+        makerUserId: makerUserId,
         messages: (rfp && Array.isArray(rfp.messages)) ? rfp.messages : [],
         qcPhotos: (AppState.cadQcFiles && AppState.cadQcFiles.length > 0) ? AppState.cadQcFiles : ((rfp && rfp.qcPhotos) || []),
         agreements: (rfp && rfp.agreements) || {},
-        isAccepted: Boolean(rfp && rfp.isAccepted),
-        makerName: (rfp && (rfp.maker || rfp.acceptedBy)) || (AppState.user?.name) || '',
+        isAccepted: isAccepted,
+        makerName: makerName,
         ...extra
       };
       return JSON.stringify(payload);
@@ -8907,19 +8923,12 @@
               }
             } catch(e) {}
 
-            const isAcc = Boolean(
-              meta.isAccepted === true ||
-              (dbR.maker_name && dbR.maker_name.trim().length > 0) ||
-              (meta.makerName && meta.makerName.trim().length > 0) ||
-              (dbR.status && (
-                dbR.status.toUpperCase().includes('ACCETTAT') ||
-                dbR.status.toUpperCase().includes('LAVORAZION') ||
-                dbR.status.toUpperCase().includes('PRODUCTION') ||
-                dbR.status.toUpperCase().includes('PRODUZION') ||
-                dbR.status.toUpperCase().includes('SPEDIT') ||
-                dbR.status.toUpperCase().includes('APPROVAT')
-              ))
-            );
+            const clientNameVal = (dbR.client_name || '').trim().toLowerCase();
+            const makerFromMeta = (meta.makerName || '').trim();
+            const makerFromDb = (dbR.maker_name || '').trim();
+            const hasRealMaker = Boolean((makerFromMeta && makerFromMeta.toLowerCase() !== clientNameVal) || (makerFromDb && makerFromDb.toLowerCase() !== clientNameVal) || meta.makerUserId || meta.assigned_creator_id || dbR.assigned_creator_id);
+
+            const isAcc = Boolean(meta.isAccepted === true && hasRealMaker);
 
             const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
@@ -9441,7 +9450,7 @@
         aiImage: null,
         timestamp: '10:45',
         status: 'IN TRATTATIVA // CHAT ATTIVA',
-        creatorAssigned: 'PrintForge Milano Hub (Creator)',
+        creatorAssigned: '',
         agreements: {
           cadVerified: false,
           toleranceConfirmed: false,
@@ -22814,13 +22823,15 @@ END-ISO-10303-21;`;
       }
 
       const cardsHtml = visibleRequests.map((r, idx) => {
-        const isAcc = Boolean(r.isAccepted || (r.status && r.status.includes('ACCETTATA')));
+        const isAcc = Boolean(r.isAccepted === true && (r.maker || r.acceptedBy || r.assigned_creator_id));
         const statusBadge = isAcc
           ? '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> IN LAVORAZIONE (PRESA IN CARICO)</span>'
           : '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse">IN ATTESA DEL MAKER</span>';
 
         const addressText = r.shippingFull || (r.shippingStreet ? `${r.shippingStreet}, ${r.shippingCap || ''} ${r.shippingCity || ''} (${r.shippingProv || ''})` : (r.clientCity || 'Milano (MI)'));
         const safeId = escapeHtml(r.id);
+        const realMakerName = escapeHtml(r.maker || r.acceptedBy || 'Maker Certificato');
+        const realMakerUid = escapeHtml(r.makerUserId || r.assigned_creator_id || 'maker_milano_hub');
 
         return `
           <div class="p-4 sm:p-5 rounded-2xl bg-[#0D0D12] border border-white/10 hover:border-white/20 transition space-y-3">
@@ -22854,9 +22865,34 @@ END-ISO-10303-21;`;
             </div>
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
-              <span class="text-[10px] font-mono text-zinc-400">
-                Maker Assegnato: <strong class="text-zinc-200">${escapeHtml(r.maker || r.maker_name || (isAcc ? 'Maker Certificato' : 'In attesa di presa in carico'))}</strong>
-              </span>
+              <div class="text-[10px] font-mono text-zinc-400 flex items-center gap-1.5">
+                <span>Maker Assegnato:</span>
+                ${isAcc ? `
+                  <div class="relative inline-block text-left" id="dropdown-wrapper-${safeId}">
+                    <button type="button" onclick="toggleMakerDropdown('${safeId}')" class="font-bold text-white hover:text-emerald-400 underline decoration-dotted flex items-center gap-1 cursor-pointer">
+                      <span>${realMakerName}</span>
+                      <i data-lucide="chevron-down" class="w-3 h-3 text-zinc-400"></i>
+                    </button>
+                    <div id="maker-menu-${safeId}" class="hidden absolute left-0 bottom-full mb-1.5 w-44 rounded-xl bg-[#121218] border border-white/15 shadow-2xl py-1.5 z-50 text-xs font-sans">
+                      <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="w-full text-left px-3 py-1.5 hover:bg-white/10 text-zinc-200 flex items-center gap-2">
+                        <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400"></i>
+                        <span>Recensioni</span>
+                      </button>
+                      <button type="button" onclick="showCompletedJobsToast('${realMakerName}')" class="w-full text-left px-3 py-1.5 hover:bg-white/10 text-zinc-200 flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
+                        <span>Lavori completati</span>
+                      </button>
+                      <button type="button" onclick="openCreatorPortfolioReadOnly('${realMakerUid}', '${realMakerName}')" class="w-full text-left px-3 py-1.5 hover:bg-white/10 text-zinc-200 flex items-center gap-2">
+                        <i data-lucide="external-link" class="w-3.5 h-3.5 text-blue-400"></i>
+                        <span>I miei lavori</span>
+                      </button>
+                    </div>
+                  </div>
+                ` : `
+                  <span class="text-zinc-500 font-mono italic">In attesa di presa in carico da un Maker</span>
+                `}
+              </div>
+
               <div class="flex items-center gap-2">
                 ${isAcc ? `
                   <button type="button" onclick="openDealChat('${safeId}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 transition active:scale-95">
@@ -22870,10 +22906,10 @@ END-ISO-10303-21;`;
                 ` : `
                   <span class="text-[10px] font-mono text-zinc-500 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/5 flex items-center gap-1">
                     <i data-lucide="clock" class="w-3 h-3 text-zinc-500"></i>
-                    <span>${isEn ? 'Pending Maker Pickup' : isEs ? 'Esperando Creador' : 'In attesa del Maker'}</span>
+                    <span>In attesa del Maker (Chat protetta)</span>
                   </span>
                 `}
-                <button type="button" onclick="deleteSingleBroadcastRequest('${safeId}')" class="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs transition active:scale-95" title="${isEn ? 'Delete request permanently' : 'Elimina richiesta definitivamente'}">
+                <button type="button" onclick="deleteSingleBroadcastRequest('${safeId}')" class="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs transition active:scale-95" title="Elimina richiesta definitivamente">
                   <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                 </button>
               </div>
@@ -22889,6 +22925,7 @@ END-ISO-10303-21;`;
       `;
       if (window.lucide) lucide.createIcons();
     }
+
     /* 6. Creator Requests Feed & Approve directly to CAD Studio */
     function renderCreatorRequestsFeed() {
       const container = document.getElementById('creatorRequestsCardsContainer');
