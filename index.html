@@ -4024,6 +4024,369 @@
       </div>
     </section>
 
+    
+    <!-- ===================================================================== -->
+    <!-- MODULO 4: VISTA VETRINA GLOBALE 2D (/esplora)                         -->
+    <!-- ===================================================================== -->
+    <section id="view-explore" class="space-y-6 hidden py-4 sm:py-6">
+      <div class="max-w-6xl mx-auto space-y-6 px-3 sm:px-0">
+        
+        <!-- Header Vetrina -->
+        <div class="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/[0.08] pb-5">
+          <div class="space-y-2">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="uppercase tracking-wider font-bold">VETRINA UFFICIALE // PEZZI REALIZZATI DAI MAKER</span>
+            </div>
+            <h1 class="text-2xl sm:text-4xl font-bold tracking-tight text-white font-cyber">
+              Esplora i Lavori dei Creator
+            </h1>
+            <p class="text-xs sm:text-sm text-zinc-400 font-sans max-w-xl">
+              Sfoglia i componenti reali realizzati con manifattura additiva dai laboratori certificati. Ordina direttamente con specifiche pre-compilate e custodia protetta Escrow.
+            </p>
+          </div>
+
+          <!-- Filtri Rapidi Materiale -->
+          <div class="flex flex-wrap items-center gap-2">
+            <button type="button" onclick="filterExploreCategory('ALL')" id="filterBtnAll" class="px-3 py-1.5 rounded-full bg-white text-black font-cyber font-bold text-xs shadow-sm transition">
+              TUTTI
+            </button>
+            <button type="button" onclick="filterExploreCategory('PETG')" id="filterBtnPetg" class="px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition">
+              PETG
+            </button>
+            <button type="button" onclick="filterExploreCategory('PLA+')" id="filterBtnPla" class="px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition">
+              PLA+
+            </button>
+            <button type="button" onclick="filterExploreCategory('CARBON')" id="filterBtnCarbon" class="px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition">
+              PA12-CF
+            </button>
+          </div>
+        </div>
+
+        <!-- Griglia Cards Vetrina -->
+        <div id="exploreCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <!-- Renderizzato dinamicamente da renderExploreShowcase() -->
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODULO 4: VISTA CREATOR PORTFOLIO ("I MIEI PROGETTI")                 -->
+    <!-- ===================================================================== -->
+    <section id="view-creator-portfolio" class="space-y-6 hidden py-4 sm:py-6">
+      <div class="max-w-6xl mx-auto space-y-8 px-3 sm:px-0">
+        
+        <!-- Header Sezione Creator -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-5">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300">
+              <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
+              <span class="uppercase tracking-wider font-bold">GESTIONE PORTFOLIO // CREATOR HUB</span>
+            </div>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-cyber">
+              I Miei Progetti & Vetrina
+            </h1>
+            <p class="text-xs text-zinc-400 font-sans">
+              Carica le tue migliori realizzazioni per metterle in mostra nella Vetrina Globale (/esplora) e ricevere ordini diretti.
+            </p>
+          </div>
+          
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="navigateTo('creator-requests')" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-cyber font-bold text-xs flex items-center gap-2 border border-white/10 transition">
+              <i data-lucide="inbox" class="w-4 h-4"></i>
+              <span>Bacheca Richieste</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- FORM RAPIDO UPLOAD VETRINA CREATOR -->
+        <div id="creatorUploadFormContainer" class="cyber-card p-5 sm:p-7 bg-[#0A0A0E] border border-white/10 rounded-2xl shadow-xl space-y-5">
+          <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+            <h3 class="font-cyber font-bold text-sm text-white flex items-center gap-2">
+              <i data-lucide="upload-cloud" class="w-4 h-4 text-emerald-400"></i>
+              <span>PUBBLICA UN NUOVO LAVORO REALIZZATO</span>
+            </h3>
+            <span class="text-[10px] font-mono text-zinc-500 uppercase">FOTO 2D REALE // SPECS TECNICHE</span>
+          </div>
+
+          <form onsubmit="handleCreatorWorkUpload(event)" class="space-y-4 text-xs font-sans">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              
+              <!-- Colonna Sinistra: Foto 2D -->
+              <div class="space-y-2">
+                <label class="text-[11px] font-mono text-zinc-400 block font-bold">
+                  Fotografia 2D Reale del Pezzo Stampato *
+                </label>
+                <div onclick="document.getElementById('portfolioPhotoInput').click()" 
+                     class="border-2 border-dashed border-white/15 hover:border-white/40 rounded-2xl p-4 text-center cursor-pointer bg-white/[0.02] hover:bg-white/[0.04] transition flex flex-col items-center justify-center min-h-[170px]">
+                  <input type="file" id="portfolioPhotoInput" accept="image/png,image/jpeg,image/webp" onchange="previewPortfolioPhoto(event)" class="hidden" />
+                  <div id="portfolioPhotoPreviewBox" class="space-y-2 flex flex-col items-center">
+                    <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-white">
+                      <i data-lucide="image" class="w-5 h-5"></i>
+                    </div>
+                    <span class="text-xs text-zinc-300 font-medium block">Trascina o clicca per caricare la foto</span>
+                    <span class="text-[10px] font-mono text-zinc-500 block">Formati JPG, PNG, WebP (Max 5MB)</span>
+                  </div>
+                  <img id="portfolioPhotoPreviewImg" class="hidden max-h-40 rounded-xl object-contain shadow-md" alt="Anteprima opera" />
+                </div>
+              </div>
+
+              <!-- Colonna Destra: Titolo e Descrizione -->
+              <div class="space-y-3">
+                <div class="space-y-1">
+                  <label class="text-[11px] font-mono text-zinc-400 block font-bold">Titolo dell'Opera / Componente *</label>
+                  <input type="text" id="portfolioTitle" required placeholder="Es. Supporto Motore Rinforzato con Bussole" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
+                </div>
+
+                <div class="space-y-1">
+                  <label class="text-[11px] font-mono text-zinc-400 block font-bold">Descrizione Tecnica & Collaudo *</label>
+                  <textarea id="portfolioDesc" rows="3" required placeholder="Descrivi il pezzo, le tolleranze raggiunte e la destinazione d'uso..." class="w-full bg-[#121217] border border-white/10 rounded-xl p-3 text-white font-sans text-xs focus:border-white outline-none resize-none"></textarea>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Parametri Tecnici da Menu a Tendina -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2">
+              <div class="space-y-1">
+                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold">Materiale *</label>
+                <select id="portfolioMaterial" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none">
+                  <option value="PETG Tecnico">PETG Tecnico</option>
+                  <option value="PLA+ Alta Resistenza">PLA+ Alta Resistenza</option>
+                  <option value="ABS Strutturale">ABS Strutturale</option>
+                  <option value="PA12-CF Carbonio">PA12-CF Carbonio</option>
+                  <option value="Resina Tough High-Res">Resina Tough High-Res</option>
+                  <option value="TPU 95A Flessibile">TPU 95A Flessibile</option>
+                </select>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold">Colore *</label>
+                <select id="portfolioColor" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none">
+                  <option value="Nero Cyber">Nero Cyber</option>
+                  <option value="Bianco Puro">Bianco Puro</option>
+                  <option value="Grigio Industriale">Grigio Industriale</option>
+                  <option value="Arancione Meccanico">Arancione Meccanico</option>
+                  <option value="Blu Elettrico">Blu Elettrico</option>
+                  <option value="Rosso Corsa">Rosso Corsa</option>
+                </select>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold">Dimensioni (mm) *</label>
+                <input type="text" id="portfolioDimensions" required placeholder="80 × 60 × 25 mm" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none" />
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold">Prezzo Indicativo *</label>
+                <input type="text" id="portfolioPrice" required placeholder="€ 35,00" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none font-bold" />
+              </div>
+            </div>
+
+            <div class="flex justify-end pt-3">
+              <button type="submit" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg active:scale-95">
+                <i data-lucide="plus" class="w-4 h-4 text-black"></i>
+                <span>Aggiungi al Portfolio & Vetrina</span>
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- I tuoi Lavori Pubblicati -->
+        <div class="space-y-4">
+          <h3 class="font-cyber font-bold text-sm text-white flex items-center gap-2 border-b border-white/[0.08] pb-2">
+            <i data-lucide="layers" class="w-4 h-4 text-zinc-400"></i>
+            <span>LE TUE PUBBLICAZIONI IN VETRINA</span>
+          </h3>
+          <div id="creatorPublishedCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Popolato dinamicamente -->
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ===================================================================== -->
+    <!-- MODALE: DETTAGLIO OPERA VETRINA 2D                                    -->
+    <!-- ===================================================================== -->
+    <div id="modalItemDetail" class="fixed inset-0 z-[9999] bg-[#070709]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+      <div class="w-full max-w-2xl bg-[#0E0E12] border border-white/15 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full bg-white/10 text-white font-mono text-[10px] uppercase font-bold" id="itemDetailCategoryBadge">SCHEDA TECNICA</span>
+            <span class="text-xs font-mono text-zinc-400" id="itemDetailId">#SHOWCASE</span>
+          </div>
+          <button onclick="closeItemDetailModal()" class="text-zinc-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Foto Ingrandita 2D -->
+        <div class="w-full max-h-72 rounded-2xl overflow-hidden bg-black/40 border border-white/10 flex items-center justify-center">
+          <img id="itemDetailPhoto" src="" alt="Dettaglio componente" class="max-h-72 w-auto object-contain" />
+        </div>
+
+        <div class="space-y-2">
+          <h2 class="text-xl sm:text-2xl font-cyber font-bold text-white" id="itemDetailTitle">Titolo Opera</h2>
+          <p class="text-xs text-zinc-400 font-sans leading-relaxed" id="itemDetailDesc">Descrizione tecnica</p>
+        </div>
+
+        <!-- Specifiche Tecniche Monospace -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+          <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <span class="text-[9px] text-zinc-400 block uppercase">Materiale</span>
+            <span class="text-white font-bold block" id="itemDetailMaterial">PETG</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <span class="text-[9px] text-zinc-400 block uppercase">Colore</span>
+            <span class="text-white font-bold block" id="itemDetailColor">Nero Cyber</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <span class="text-[9px] text-zinc-400 block uppercase">Dimensioni</span>
+            <span class="text-white font-bold block" id="itemDetailDimensions">80x60x25 mm</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <span class="text-[9px] text-zinc-400 block uppercase">Prezzo Indicativo</span>
+            <span class="text-emerald-400 font-bold block" id="itemDetailPrice">€ 35,00</span>
+          </div>
+        </div>
+
+        <!-- Maker Info e Azione Ordina -->
+        <div class="flex items-center justify-between pt-3 border-t border-white/[0.08]">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs text-white" id="itemDetailMakerAvatar">M</div>
+            <div>
+              <span class="text-[10px] font-mono text-zinc-400 block">Creator Ufficiale:</span>
+              <span class="text-xs font-cyber font-bold text-white block" id="itemDetailMakerName">Maker Hub</span>
+            </div>
+          </div>
+          <button type="button" id="itemDetailOrderBtn" onclick="" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center gap-2">
+            <span>Ordina Adesso</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5 text-black"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODULO 5: MODALE LASCIA RECENSIONE CERTIFICATA                         -->
+    <!-- ===================================================================== -->
+    <div id="modalLeaveReview" class="fixed inset-0 z-[9999] bg-[#070709]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+      <div class="w-full max-w-lg bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
+        <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <h3 class="font-cyber font-bold text-sm text-white uppercase tracking-wider">RECENSIONE CERTIFICATA // ACQUISTO VERIFICATO</h3>
+          </div>
+          <button onclick="closeLeaveReviewModal()" class="text-zinc-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <p class="text-xs text-zinc-400 font-sans">
+          Il tuo ordine è stato completato e svincolato con successo. Lascia una valutazione trasparente sul Creator per aiutare la community.
+        </p>
+
+        <form onsubmit="handleReviewSubmit(event)" class="space-y-4 text-xs font-sans">
+          <input type="hidden" id="reviewOrderId" value="" />
+          <input type="hidden" id="reviewMakerId" value="" />
+
+          <!-- Voto Generale (1-5 Stelle) -->
+          <div class="space-y-1.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center">
+            <label class="text-[11px] font-mono text-zinc-300 block uppercase font-bold">Valutazione Generale *</label>
+            <div class="flex items-center justify-center gap-2 text-2xl py-1 cursor-pointer" id="starRatingGeneral">
+              <span onclick="setReviewRating('general', 1)" class="star-rating text-zinc-600 hover:text-amber-400 transition">&#9733;</span>
+              <span onclick="setReviewRating('general', 2)" class="star-rating text-zinc-600 hover:text-amber-400 transition">&#9733;</span>
+              <span onclick="setReviewRating('general', 3)" class="star-rating text-zinc-600 hover:text-amber-400 transition">&#9733;</span>
+              <span onclick="setReviewRating('general', 4)" class="star-rating text-zinc-600 hover:text-amber-400 transition">&#9733;</span>
+              <span onclick="setReviewRating('general', 5)" class="star-rating text-zinc-600 hover:text-amber-400 transition">&#9733;</span>
+            </div>
+            <input type="hidden" id="ratingValGeneral" value="5" />
+          </div>
+
+          <!-- 3 Sotto-Rating -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
+            <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+              <span class="text-zinc-400 block uppercase">Qualità Stampa</span>
+              <div class="flex justify-center gap-1 text-sm cursor-pointer" id="starRatingQuality">
+                <span onclick="setReviewRating('quality', 1)">&#9733;</span>
+                <span onclick="setReviewRating('quality', 2)">&#9733;</span>
+                <span onclick="setReviewRating('quality', 3)">&#9733;</span>
+                <span onclick="setReviewRating('quality', 4)">&#9733;</span>
+                <span onclick="setReviewRating('quality', 5)">&#9733;</span>
+              </div>
+              <input type="hidden" id="ratingValQuality" value="5" />
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+              <span class="text-zinc-400 block uppercase">Comunicazione</span>
+              <div class="flex justify-center gap-1 text-sm cursor-pointer" id="starRatingComms">
+                <span onclick="setReviewRating('comms', 1)">&#9733;</span>
+                <span onclick="setReviewRating('comms', 2)">&#9733;</span>
+                <span onclick="setReviewRating('comms', 3)">&#9733;</span>
+                <span onclick="setReviewRating('comms', 4)">&#9733;</span>
+                <span onclick="setReviewRating('comms', 5)">&#9733;</span>
+              </div>
+              <input type="hidden" id="ratingValComms" value="5" />
+            </div>
+
+            <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
+              <span class="text-zinc-400 block uppercase">Velocità</span>
+              <div class="flex justify-center gap-1 text-sm cursor-pointer" id="starRatingSpeed">
+                <span onclick="setReviewRating('speed', 1)">&#9733;</span>
+                <span onclick="setReviewRating('speed', 2)">&#9733;</span>
+                <span onclick="setReviewRating('speed', 3)">&#9733;</span>
+                <span onclick="setReviewRating('speed', 4)">&#9733;</span>
+                <span onclick="setReviewRating('speed', 5)">&#9733;</span>
+              </div>
+              <input type="hidden" id="ratingValSpeed" value="5" />
+            </div>
+          </div>
+
+          <!-- Commento Testuale -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-400 block font-bold">Commento Testuale *</label>
+            <textarea id="reviewComment" rows="3" required placeholder="Condividi la tua esperienza sulla precisione delle quote e sui tempi di consegna..." class="w-full bg-[#121217] border border-white/10 rounded-xl p-3 text-white font-sans text-xs focus:border-white outline-none resize-none"></textarea>
+          </div>
+
+          <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2">
+            <i data-lucide="check" class="w-4 h-4 text-black"></i>
+            <span>Pubblica Recensione Certificata</span>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- MODULO 5: MODALE RECENSIONI PUBBLICHE CREATOR                          -->
+    <!-- ===================================================================== -->
+    <div id="modalCreatorReviews" class="fixed inset-0 z-[9999] bg-[#070709]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+      <div class="w-full max-w-xl bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto">
+        <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            <h3 class="font-cyber font-bold text-sm text-white" id="creatorReviewsModalTitle">RECENSIONI CERTIFICATE</h3>
+          </div>
+          <button onclick="closeCreatorReviewsModal()" class="text-zinc-400 hover:text-white p-1">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <div id="creatorReviewsStatsBanner" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
+          <div>
+            <span class="text-2xl font-bold font-mono text-white" id="creatorReviewsAverageScore">5.0</span>
+            <span class="text-amber-400 text-lg ml-1">★ ★ ★ ★ ★</span>
+          </div>
+          <span class="text-xs font-mono text-zinc-400" id="creatorReviewsCount">0 recensioni verificate</span>
+        </div>
+
+        <div id="creatorReviewsListContainer" class="space-y-3">
+          <!-- Renderizzato dinamicamente -->
+        </div>
+      </div>
+    </div>
+  
     <!-- ===================================================================== -->
     <!-- VISTA 1: HOME PAGE RINNOVATA & UNICA (SOLUZIONE ALLE 4 MANCANZE)      -->
     <!-- ===================================================================== -->
