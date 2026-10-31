@@ -20842,41 +20842,91 @@ END-ISO-10303-21;`;
 
     
     /* ========================================================================= */
+    /* ========================================================================= */
     /* MODULO 1: GOOGLE OAUTH & ISOLAMENTO RIGOROSO SESSIONI                     */
     /* ========================================================================= */
-    async function openGoogleLoginModal() {
-      if (!supabaseClient) {
-        initSupabase();
-      }
-      if (!supabaseClient || !supabaseClient.auth) {
-        showToast('Inizializzazione Supabase Auth in corso...', 'warning');
-        return;
-      }
-      try {
-        showToast(currentLang === 'it' ? 'Apertura Google Auth...' : 'Opening Google Auth...', 'info');
-        const redirectUrl = window.location.origin + window.location.pathname;
-        const { data, error } = await supabaseClient.auth.signInWithOAuth({
-          provider: 'google',
-          options: {
-            redirectTo: redirectUrl
-          }
-        });
-        if (error) {
-          console.warn('OAuth notice:', error.message);
-          // If Google provider is not enabled in Supabase project dashboard, inform clearly
-          if (error.message.includes('not enabled') || error.message.includes('disabled')) {
-            showToast('Google OAuth in attesa di credenziali nel dashboard Supabase. Utilizza il login con email/password.', 'warning');
-          } else {
-            showToast('Google Auth: ' + error.message, 'warning');
-          }
-        }
-      } catch (err) {
-        console.error('Google Auth Exception:', err);
-        showToast('Errore durante il login con Google.', 'error');
+    function openGoogleLoginModal() {
+      const modal = document.getElementById('modalGoogleLogin');
+      if (modal) {
+        modal.classList.remove('hidden');
+        if (window.lucide) lucide.createIcons();
       }
     }
+    window.openGoogleLoginModal = openGoogleLoginModal;
+
+    function closeGoogleLoginModal() {
+      const modal = document.getElementById('modalGoogleLogin');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.closeGoogleLoginModal = closeGoogleLoginModal;
+
+    function loginWithGoogleOAuth() {
+      openGoogleLoginModal();
+    }
     window.loginWithGoogleOAuth = loginWithGoogleOAuth;
-    window.simulateGoogleLogin = loginWithGoogleOAuth;
+    window.simulateGoogleLogin = openGoogleLoginModal;
+
+    async function handleGoogleModalSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const email = (document.getElementById('googleModalEmail')?.value || '').toLowerCase().trim();
+      const rawName = (document.getElementById('googleModalName')?.value || '').trim();
+      if (!email || !email.includes('@')) {
+        showToast('Inserisci un indirizzo email valido.', 'warning');
+        return;
+      }
+      closeGoogleLoginModal();
+
+      const userId = 'goog_' + email.replace(/[^a-z0-9]/g, '_');
+      const name = rawName || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+      // Cerca profilo salvato in cloud
+      const cloudProfile = await fetchUserProfileFromCloud(email);
+
+      if (cloudProfile && cloudProfile.role && (cloudProfile.role === 'client' || cloudProfile.role === 'creator')) {
+        AppState.user = {
+          userId: userId,
+          id: userId,
+          isLoggedIn: true,
+          role: cloudProfile.role,
+          isAdmin: Boolean(cloudProfile.isAdmin),
+          name: cloudProfile.name || name,
+          email: email,
+          avatar: (cloudProfile.name || name).charAt(0).toUpperCase(),
+          stripeConnected: true,
+          creatorData: cloudProfile.creatorData || null
+        };
+        try {
+          localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+        } catch(e) {}
+        renderNavUserArea();
+        updateNavigationTabs();
+        loadRequestsFromSupabase();
+
+        showToast('Accesso Google eseguito con successo!', 'success');
+        if (cloudProfile.role === 'creator') {
+          registerCreatorPresence();
+          navigateTo('creator-portfolio');
+        } else {
+          unregisterCreatorPresence();
+          navigateTo('esplora');
+        }
+      } else {
+        // Primo login assoluto: apri il modale di Onboarding bloccante
+        window._pendingOnboardingUser = {
+          userId: userId,
+          id: userId,
+          email: email,
+          name: name,
+          avatar: name.charAt(0).toUpperCase()
+        };
+        const modal = document.getElementById('roleOnboardingModal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+    window.handleGoogleModalSubmit = handleGoogleModalSubmit;
 
     async function handleAuthenticatedSession(user) {
       if (!user || !user.email) return;
