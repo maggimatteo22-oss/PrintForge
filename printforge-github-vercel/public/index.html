@@ -8212,6 +8212,16 @@
       updateCloudSyncStatusBadge(true);
       setupSupabaseRealtime();
       loadRequestsFromSupabase();
+
+      // Polling di sincronizzazione universale continuo ogni 3.5 secondi (Garantisce sync anche su mobile o se i websocket sono instabili)
+      if (!window.__printforge_global_poll_started) {
+        window.__printforge_global_poll_started = true;
+        setInterval(() => {
+          if (supabaseClient && typeof loadRequestsFromSupabase === 'function') {
+            loadRequestsFromSupabase();
+          }
+        }, 3500);
+      }
       return true;
     }
 
@@ -8629,15 +8639,15 @@
         if (supabaseRealtimeChannel) {
           try { supabaseClient.removeChannel(supabaseRealtimeChannel); } catch (e) {}
         }
-        supabaseRealtimeChannel = supabaseClient.channel('printforge_global_sync');
 
-        // 1. Ascolto modifiche al DB PostgreSQL (INSERT, UPDATE, DELETE)
-        supabaseRealtimeChannel.on('postgres_changes', { event: '*', schema: 'public', table: 'broadcast_requests' }, payload => {
-          console.log('🔔 [Supabase DB Change]:', payload);
-          loadRequestsFromSupabase();
+        // Creiamo il canale con configurazione broadcast dedicata e resiliente
+        supabaseRealtimeChannel = supabaseClient.channel('printforge_global_sync', {
+          config: {
+            broadcast: { self: true, ack: false }
+          }
         });
 
-        // 2. Ascolto broadcast realtime per Chat 1-1 tra dispositivi
+        // 1. Ascolto broadcast realtime per Chat 1-1 e Foto tra dispositivi
         supabaseRealtimeChannel.on('broadcast', { event: 'deal_chat_msg' }, ({ payload }) => {
           console.log('💬 [Realtime Chat Msg]:', payload);
           if (!payload || !payload.rfpId || !payload.message) return;
@@ -8656,7 +8666,7 @@
           }
         });
 
-        // 3. Ascolto broadcast foto collaudo QC per la Escrow Room
+        // 2. Ascolto broadcast foto collaudo QC per la Escrow Room
         supabaseRealtimeChannel.on('broadcast', { event: 'qc_photos_sync' }, ({ payload }) => {
           console.log('📸 [Realtime QC Photos Sync]:', payload);
           if (!payload || !payload.rfpId || !payload.photos) return;
@@ -8670,19 +8680,7 @@
           showToast('📸 Foto collaudo caricate dal Maker! Disponibili nella Escrow Room.', 'success');
         });
 
-        // 4. Ascolto broadcast accordi trattativa
-        supabaseRealtimeChannel.on('broadcast', { event: 'deal_agreements_sync' }, ({ payload }) => {
-          if (!payload || !payload.rfpId || !payload.agreements) return;
-          const rfp = AppState.broadcastRequests.find(r => r.id === payload.rfpId);
-          if (rfp) {
-            rfp.agreements = payload.agreements;
-            if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId === payload.rfpId) {
-              renderDealChat(rfp.id);
-            }
-          }
-        });
-
-        // 5. Ascolto presa in carico richiesta
+        // 3. Ascolto presa in carico richiesta
         supabaseRealtimeChannel.on('broadcast', { event: 'request_accepted' }, ({ payload }) => {
           console.log('🎉 [Realtime Request Accepted]:', payload);
           if (!payload || !payload.rfpId) return;
@@ -8691,6 +8689,8 @@
             rfp.isAccepted = true;
             rfp.status = payload.status || 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)';
             rfp.maker = payload.makerName;
+            rfp.makerEmail = payload.makerEmail || '';
+            rfp.makerUserId = payload.makerUserId || '';
             AppState.activeEscrowOrder = {
               id: rfp.id,
               title: rfp.title,
@@ -8698,8 +8698,11 @@
               itemBudget: rfp.budget,
               shippingCost: 'Inclusa (UPS / Poste)',
               maker: payload.makerName || 'Maker Certificato PrintForge',
+              makerEmail: payload.makerEmail || '',
+              makerUserId: payload.makerUserId || '',
               clientName: rfp.clientName,
               clientEmail: rfp.clientEmail,
+              userId: rfp.userId || '',
               trackingNumber: 'PF-UPS-892104',
               carrier: 'UPS Standard',
               timestamp: 'In Lavorazione',
@@ -8708,9 +8711,37 @@
             AppState.activeDealRfpId = rfp.id;
             updateEscrowRoom();
             updateNavigationTabs();
+            renderBroadcastTable();
             showToast('🎉 Il Maker ha accettato la tua richiesta! La Escrow Room è sbloccata!', 'success');
           }
         });
+
+        // 4. Ascolto cancellazione o pulizia richieste a cascata
+        supabaseRealtimeChannel.on('broadcast', { event: 'requests_cleared' }, ({ payload }) => {
+          console.log('🧹 [Realtime Requests Cleared]:', payload);
+          if (payload && Array.isArray(payload.deletedIds)) {
+            recordDeletedRequestIds(payload.deletedIds);
+            AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => !payload.deletedIds.includes(r.id));
+          }
+          loadRequestsFromSupabase();
+        });
+
+        supabaseRealtimeChannel.on('broadcast', { event: 'request_deleted' }, ({ payload }) => {
+          console.log('🗑️ [Realtime Request Deleted]:', payload);
+          if (payload && payload.rfpId) {
+            recordDeletedRequestIds([payload.rfpId]);
+            AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r.id !== payload.rfpId);
+          }
+          loadRequestsFromSupabase();
+        });
+
+        // 5. Postgres Changes (con try-catch resiliente per non bloccare il canale se la replica non è attiva)
+        try {
+          supabaseRealtimeChannel.on('postgres_changes', { event: '*', schema: 'public', table: 'broadcast_requests' }, payload => {
+            console.log('🔔 [Supabase DB Change]:', payload);
+            loadRequestsFromSupabase();
+          });
+        } catch(e) {}
 
         supabaseRealtimeChannel.subscribe((status) => {
           console.log('📡 [Supabase Channel Status]:', status);
