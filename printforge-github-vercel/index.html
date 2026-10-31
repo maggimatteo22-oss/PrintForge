@@ -21481,7 +21481,7 @@ END-ISO-10303-21;`;
       }
 
       // Se l'utente non è autenticato, può visualizzare liberamente la Home / Showcase prototipo
-      if (!AppState.user.isLoggedIn && viewId !== 'login-gate' && viewId !== 'client-home') {
+      if (!AppState.user.isLoggedIn && viewId !== 'login-gate' && viewId !== 'client-home' && viewId !== 'explore') {
         const promptMsg = currentLang === 'it' 
           ? 'Per configurare richieste o accedere all\'area Creator è necessario autenticarsi.' 
           : currentLang === 'es'
