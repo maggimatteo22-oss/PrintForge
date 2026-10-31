@@ -13,14 +13,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'makerId ed email sono obbligatori' }, { status: 400 });
     }
 
-    // 1. Check if maker already has a Stripe Express account in profiles
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('stripe_account_id')
-      .eq('id', makerId)
-      .single();
+    let accountId: string | null = null;
 
-    let accountId = profile?.stripe_account_id;
+    // 1. Check if maker already has a Stripe Express account in profiles
+    try {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('stripe_account_id')
+        .eq('id', makerId)
+        .single();
+      accountId = profile?.stripe_account_id || null;
+    } catch (err) {
+      console.warn('Could not read stripe_account_id from profiles:', err);
+    }
 
     // 2. If not, create a new Stripe Express Account
     if (!accountId) {
@@ -37,15 +42,19 @@ export async function POST(req: NextRequest) {
 
       accountId = account.id;
 
-      // Save to Supabase profile
-      await supabaseAdmin
-        .from('profiles')
-        .update({ stripe_account_id: accountId })
-        .eq('id', makerId);
+      // Save to Supabase profile if possible
+      try {
+        await supabaseAdmin
+          .from('profiles')
+          .update({ stripe_account_id: accountId })
+          .eq('id', makerId);
+      } catch (err) {
+        console.warn('Could not update stripe_account_id in profiles:', err);
+      }
     }
 
     // 3. Create Stripe-hosted KYC onboarding link
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://print-forge-seven.vercel.app';
     const accountLink = await stripe.accountLinks.create({
       account: accountId,
       refresh_url: `${appUrl}/maker/onboarding?retry=true`,

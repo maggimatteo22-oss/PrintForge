@@ -3868,14 +3868,14 @@
                 <div class="relative flex justify-center text-xs uppercase"><span class="bg-[#0A0A0C] px-3 text-zinc-500 font-mono text-[9px] tracking-wider">OPPURE</span></div>
               </div>
 
-              <button type="button" onclick="adminGoogleLogin('client')" class="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 bg-[#121215] hover:bg-[#1A1A20] text-white border border-white/15 transition shadow-sm cursor-pointer transform active:scale-95">
+              <button type="button" onclick="loginWithGoogleOAuth()" class="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 bg-[#121215] hover:bg-[#1A1A20] text-white border border-white/15 transition shadow-sm cursor-pointer transform active:scale-95">
                 <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
-                <span id="i18n-gateGoogleClient">CONTINUA CON GOOGLE (DEMO)</span>
+                <span id="i18n-gateGoogleClient">ACCEDI CON GOOGLE</span>
               </button>
 
             </form>
@@ -3984,7 +3984,7 @@
                     <span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-[#635BFF] text-white">STRIPE CONNECT</span>
                     <span class="text-xs font-semibold text-white" id="i18n-gateStripeCrHead">Accrediti Bancari Diretti (IBAN)</span>
                   </div>
-                  <span class="text-[10px] font-mono text-zinc-400 font-bold" id="gateCrStripeStatus">STRIPE CONNECT READY</span>
+                  <button type="button" onclick="triggerStripeConnectOnboarding()" class="px-2.5 py-1 rounded bg-[#635BFF] hover:bg-[#7a73ff] text-white font-mono font-bold text-[10px] transition cursor-pointer">COLLEGA IBAN (STRIPE EXPRESS)</button>
                 </div>
                 <p class="text-[11px] text-zinc-400 font-sans leading-relaxed" id="i18n-gateStripeCrDesc">
                   Collega il conto bancario per ricevere bonifici automatici su Stripe Connect per ogni pezzo approvato dal cliente.
@@ -4005,14 +4005,14 @@
                 <div class="relative flex justify-center text-xs uppercase"><span class="bg-[#0A0A0C] px-3 text-zinc-500 font-mono text-[9px] tracking-wider">OPPURE</span></div>
               </div>
 
-              <button type="button" onclick="adminGoogleLogin('creator')" class="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 bg-[#121215] hover:bg-[#1A1A20] text-white border border-white/15 transition shadow-sm cursor-pointer transform active:scale-95">
+              <button type="button" onclick="loginWithGoogleOAuth()" class="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 bg-[#121215] hover:bg-[#1A1A20] text-white border border-white/15 transition shadow-sm cursor-pointer transform active:scale-95">
                 <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
                   <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
                   <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
                   <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
                   <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
                 </svg>
-                <span id="i18n-gateGoogleCreator">CONTINUA CON GOOGLE (DEMO)</span>
+                <span id="i18n-gateGoogleCreator">ACCEDI CON GOOGLE</span>
               </button>
 
             </form>
@@ -7167,14 +7167,14 @@
       <!-- TAB 1: CLIENTE (Univoco - Rapido con Connessione Stripe) -->
       <div id="tabContentClient" class="space-y-4">
         <div class="space-y-2">
-          <button onclick="simulateGoogleLogin()" class="btn-kowalski-primary w-full py-3 px-4 rounded-xl font-cyber font-bold text-xs flex items-center justify-center gap-3 shadow-md">
+          <button onclick="loginWithGoogleOAuth()" class="btn-kowalski-primary w-full py-3 px-4 rounded-xl font-cyber font-bold text-xs flex items-center justify-center gap-3 shadow-md">
             <svg class="w-4 h-4" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
               <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
               <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
             </svg>
-            <span id="i18n-authGoogle">ACCEDI CON GOOGLE (CLIENTE)</span>
+            <span id="i18n-authGoogle">ACCEDI CON GOOGLE</span>
           </button>
         </div>
 
@@ -8680,7 +8680,29 @@
           showToast('📸 Foto collaudo caricate dal Maker! Disponibili nella Escrow Room.', 'success');
         });
 
-        // 3. Ascolto presa in carico richiesta
+        // 2b. Ascolto creazione nuova richiesta da client in tempo reale (Modulo 2)
+        supabaseRealtimeChannel.on('broadcast', { event: 'request_created' }, ({ payload }) => {
+          console.log('📢 [Realtime Request Created]:', payload);
+          if (payload && payload.request && payload.request.id) {
+            const exists = (AppState.broadcastRequests || []).some(r => r && r.id === payload.request.id);
+            if (!exists) {
+              AppState.broadcastRequests.unshift(payload.request);
+              renderBroadcastTable();
+              renderCreatorRequestsFeed();
+              updateNavigationTabs();
+              const navLiveReq = document.getElementById('navLiveRequestsCount');
+              if (navLiveReq) navLiveReq.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected).length;
+              if (AppState.user && AppState.user.role === 'creator') {
+                showToast(currentLang === 'it' 
+                  ? ('🔔 Nuova richiesta ricevuta: #' + payload.request.id) 
+                  : ('🔔 New request received: #' + payload.request.id), 'info');
+              }
+            }
+          }
+          loadRequestsFromSupabase();
+        });
+
+        // 3. Ascolto presa in carico richiesta (Lock di Assegnazione in tempo reale)
         supabaseRealtimeChannel.on('broadcast', { event: 'request_accepted' }, ({ payload }) => {
           console.log('🎉 [Realtime Request Accepted]:', payload);
           if (!payload || !payload.rfpId) return;
@@ -9245,7 +9267,7 @@
           ? 'La sala Escrow se desbloquea tras la toma a cargo de la solicitud por parte de un Creador.' 
           : 'La pagina Escrow Room si sblocca dopo la presa in carico della richiesta da parte di un Creator.';
         showToast(msg, 'warning');
-        navigateTo('client-request');
+        navigateTo('esplora');
         return;
       }
       navigateTo('order-room');
@@ -17896,14 +17918,16 @@ END-ISO-10303-21;`;
         return;
       }
 
-      // 1. Mark request as accepted
+      // 1. Mark request as accepted with Lock di Assegnazione
       req.isAccepted = true;
-      req.status = isEn ? 'IN PRODUCTION (CREATOR ACCEPTED)' : isEs ? 'EN PRODUCCIÓN (ACEPTADA POR EL CREADOR)' : 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)';
+      req.status = 'IN LAVORAZIONE (PRESA IN CARICO)';
       req.acceptedBy = AppState.user.name || (isEn ? 'PrintForge Certified Maker' : 'Maker Certificato PrintForge');
       req.acceptedAt = new Date().toISOString();
       req.maker = req.acceptedBy;
       req.makerEmail = AppState.user.email || '';
-      req.makerUserId = AppState.user.userId || AppState.user.id || '';
+      const creatorUid = AppState.user.userId || AppState.user.id || '';
+      req.makerUserId = creatorUid;
+      req.assigned_creator_id = creatorUid;
 
       // 2. Persist to localStorage & Supabase
       try {
@@ -17911,10 +17935,11 @@ END-ISO-10303-21;`;
       } catch(e) {}
 
       updateRequestInSupabase(req.id, {
-        status: req.status,
+        status: 'IN LAVORAZIONE (PRESA IN CARICO)',
         maker_name: req.acceptedBy,
         notes: buildNotesPayload(req, {
           isAccepted: true,
+          assigned_creator_id: req.assigned_creator_id,
           makerName: req.acceptedBy,
           makerEmail: req.makerEmail,
           makerUserId: req.makerUserId
@@ -19709,6 +19734,26 @@ END-ISO-10303-21;`;
       renderEscrowResolutionBanner();
       syncPipelineUI();
 
+      // MODULO 5: TRIGGER STRIPE TRANSFER CON TAKE-RATE & RECENSIONE CERTIFICATA
+      try {
+        const orderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || 'RFP-3891';
+        const rawBudget = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 46.00';
+        const numEur = parseFloat(String(rawBudget).replace(/[^0-9.]/g, '')) || 46.0;
+        const makerId = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.makerUserId || AppState.activeEscrowOrder.maker)) || 'maker_certified';
+
+        if (typeof executeStripeEscrowTransfer === 'function') {
+          executeStripeEscrowTransfer(orderId, numEur, 'acct_test_maker_express');
+        }
+
+        if (AppState.user && AppState.user.role === 'client' && typeof openLeaveReviewModal === 'function') {
+          setTimeout(() => {
+            openLeaveReviewModal(orderId, makerId);
+          }, 800);
+        }
+      } catch(e) {
+        console.warn('Errore trigger Step 4 Modulo 5:', e);
+      }
+
       // Rimozione della richiesta dalle richieste broadcast attive alla conferma del 4 passaggio
       const completedReqId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
       if (completedReqId) {
@@ -20381,59 +20426,154 @@ END-ISO-10303-21;`;
     window.recordDeletedRequestIds = recordDeletedRequestIds;
 
 
-    function simulateGoogleLogin() {
-      adminGoogleLogin('client');
+    
+    /* ========================================================================= */
+    /* MODULO 1: GOOGLE OAUTH & ISOLAMENTO RIGOROSO SESSIONI                     */
+    /* ========================================================================= */
+    async function loginWithGoogleOAuth() {
+      if (!supabaseClient) {
+        initSupabase();
+      }
+      if (!supabaseClient || !supabaseClient.auth) {
+        showToast('Inizializzazione Supabase Auth in corso...', 'warning');
+        return;
+      }
+      try {
+        showToast(currentLang === 'it' ? 'Apertura Google Auth...' : 'Opening Google Auth...', 'info');
+        const redirectUrl = window.location.origin + window.location.pathname;
+        const { data, error } = await supabaseClient.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: redirectUrl
+          }
+        });
+        if (error) {
+          console.warn('OAuth notice:', error.message);
+          // If Google provider is not enabled in Supabase project dashboard, inform clearly
+          if (error.message.includes('not enabled') || error.message.includes('disabled')) {
+            showToast('Google OAuth in attesa di credenziali nel dashboard Supabase. Utilizza il login con email/password.', 'warning');
+          } else {
+            showToast('Google Auth: ' + error.message, 'warning');
+          }
+        }
+      } catch (err) {
+        console.error('Google Auth Exception:', err);
+        showToast('Errore durante il login con Google.', 'error');
+      }
     }
-    window.simulateGoogleLogin = simulateGoogleLogin;
+    window.loginWithGoogleOAuth = loginWithGoogleOAuth;
+    window.simulateGoogleLogin = loginWithGoogleOAuth;
 
-function adminGoogleLogin(role = 'client') {
-      const devId = getOrCreateDeviceId();
-      const shortId = devId.replace('dev_', '').substring(0, 4).toUpperCase();
-      const googleName = role === 'creator' ? ('Maker Hub #' + shortId) : ('Cliente PrintForge #' + shortId);
-      const googleEmail = role === 'creator' ? ('creator_' + shortId.toLowerCase() + '@printforge.it') : ('cliente_' + shortId.toLowerCase() + '@printforge.it');
-      const userId = generateUserIdForAccount(googleEmail, role);
+    async function handleAuthenticatedSession(user) {
+      if (!user || !user.email) return;
+      const email = user.email.toLowerCase().trim();
+      const userId = user.id || generateUserIdForAccount(email, 'client');
+      const name = user.user_metadata?.full_name || user.user_metadata?.name || email.split('@')[0];
+      const avatar = user.user_metadata?.avatar_url || (name ? name.charAt(0).toUpperCase() : 'U');
 
+      // Cerca profilo cloud esistente
+      const cloudProfile = await fetchUserProfileFromCloud(email);
+
+      if (cloudProfile && cloudProfile.role && (cloudProfile.role === 'client' || cloudProfile.role === 'creator')) {
+        // Ruolo già configurato: ripristina la sessione dell'utente
+        AppState.user = {
+          userId: userId,
+          id: userId,
+          isLoggedIn: true,
+          role: cloudProfile.role,
+          isAdmin: Boolean(cloudProfile.isAdmin),
+          name: cloudProfile.name || name,
+          email: email,
+          avatar: avatar,
+          stripeConnected: true,
+          creatorData: cloudProfile.creatorData || (cloudProfile.role === 'creator' ? { profileType: 'private', piva: '', sdi: '', cf: '', printers: 'Bambu Lab X1-Carbon, Prusa MK4', iban: '' } : null)
+        };
+        try {
+          localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+        } catch(e) {}
+
+        renderNavUserArea();
+        updateNavigationTabs();
+        updateLaptopBarButtons();
+        loadRequestsFromSupabase();
+
+        // Routing post-login obbligatorio
+        if (cloudProfile.role === 'creator') {
+          registerCreatorPresence();
+          navigateTo('creator-requests');
+        } else {
+          unregisterCreatorPresence();
+          navigateTo('esplora');
+        }
+        showToast(currentLang === 'it' ? ('Accesso eseguito: ' + AppState.user.name) : ('Signed in: ' + AppState.user.name), 'success');
+      } else {
+        // Primo login assoluto: apri il modale di Onboarding bloccante
+        window._pendingOnboardingUser = {
+          userId: userId,
+          id: userId,
+          email: email,
+          name: name,
+          avatar: avatar
+        };
+        const modal = document.getElementById('roleOnboardingModal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          if (window.lucide) lucide.createIcons();
+        }
+      }
+    }
+    window.handleAuthenticatedSession = handleAuthenticatedSession;
+
+    async function selectOnboardingRole(chosenRole) {
+      const pending = window._pendingOnboardingUser || (AppState.user && AppState.user.email ? AppState.user : null);
+      if (!pending) {
+        showToast('Nessun utente autenticato in attesa.', 'warning');
+        return;
+      }
+      const role = chosenRole === 'creator' ? 'creator' : 'client';
       AppState.user = {
-        userId: userId,
-        id: userId,
+        userId: pending.userId || pending.id || generateUserIdForAccount(pending.email, role),
+        id: pending.userId || pending.id || generateUserIdForAccount(pending.email, role),
         isLoggedIn: true,
         role: role,
         isAdmin: false,
-        name: googleName,
-        email: googleEmail,
-        avatar: googleName.charAt(0).toUpperCase(),
+        name: pending.name || (role === 'creator' ? 'Maker Hub' : 'Cliente PrintForge'),
+        email: pending.email,
+        avatar: pending.avatar || (pending.name ? pending.name.charAt(0).toUpperCase() : 'U'),
         stripeConnected: true,
         creatorData: role === 'creator' ? { profileType: 'private', piva: '', sdi: '', cf: '', printers: 'Bambu Lab X1-Carbon, Prusa MK4', iban: '' } : null
       };
+
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-      } catch (e) {}
+      } catch(e) {}
+
+      // Salva definitivamente il ruolo nel DB Cloud
+      await syncUserProfileToCloud(AppState.user);
+
+      // Nascondi modale onboarding
+      const modal = document.getElementById('roleOnboardingModal');
+      if (modal) modal.classList.add('hidden');
 
       renderNavUserArea();
-      updateLaptopBarButtons();
       updateNavigationTabs();
-      if (role === 'creator') { registerCreatorPresence(); } else { unregisterCreatorPresence(); }
+      updateLaptopBarButtons();
       loadRequestsFromSupabase();
 
       showToast(currentLang === 'it' 
-        ? ('Accesso Google autorizzato! Account #' + shortId + ' attivo.') 
-        : ('Google access granted! Account #' + shortId + ' active.'));
+        ? ('Profilo configurato con successo come ' + (role === 'creator' ? 'Creator' : 'Cliente') + '!') 
+        : ('Profile configured as ' + (role === 'creator' ? 'Creator' : 'Client') + '!'), 'success');
 
-      const redirectTarget = AppState.postLoginRedirect || (function() {
-        try { return sessionStorage.getItem('pf_post_login_target'); } catch (e) { return null; }
-      })();
-      AppState.postLoginRedirect = null;
-      try { sessionStorage.removeItem('pf_post_login_target'); } catch (e) {}
-
-      if (redirectTarget) {
-        navigateTo(redirectTarget);
-      } else if (role === 'creator') {
+      if (role === 'creator') {
+        registerCreatorPresence();
         navigateTo('creator-requests');
       } else {
-        navigateTo('client-request');
+        unregisterCreatorPresence();
+        navigateTo('esplora');
       }
     }
-    window.adminGoogleLogin = adminGoogleLogin;
+    window.selectOnboardingRole = selectOnboardingRole;
+
 
     async function handleGateClientSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
@@ -20843,6 +20983,18 @@ function adminGoogleLogin(role = 'client') {
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
       if (viewId === 'home') viewId = 'client-home';
+      if (viewId === 'esplora') viewId = 'explore';
+      if (viewId === 'explore') {
+        try {
+          if (window.location.pathname !== '/esplora') {
+            window.history.pushState(null, '', '/esplora');
+          }
+        } catch(e) {}
+        setTimeout(() => { if (typeof renderExploreShowcase === 'function') renderExploreShowcase(); }, 20);
+      }
+      if (viewId === 'creator-portfolio') {
+        setTimeout(() => { if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView(); }, 20);
+      }
 
       // Se la Fase 4 è stata completata (consegna avvenuta e fondi svincolati)
       // e l'utente (cliente o creator) clicca un'altra opzione nel sito (viewId !== 'order-room'),
@@ -20940,7 +21092,7 @@ function adminGoogleLogin(role = 'client') {
           headerBarEl.classList.add('header-relative');
         }
       }
-      ['login-gate', 'client-home', 'client-request', 'creator-requests', 'deal-chat', 'studio', 'order-room'].forEach(v => {
+      ['login-gate', 'client-home', 'client-request', 'creator-requests', 'deal-chat', 'studio', 'order-room', 'explore', 'creator-portfolio'].forEach(v => {
         const sec = document.getElementById(`view-${v}`);
         if (sec) {
           sec.classList.add('hidden');
@@ -21612,6 +21764,17 @@ function adminGoogleLogin(role = 'client') {
         ]
       };
 
+      // MODULO 4: Se ordine diretto da vetrina, assegna direttamente senza broadcast globale
+      if (window._directAssignedCreator) {
+        newRequest.assigned_creator_id = window._directAssignedCreator.id || '';
+        newRequest.maker = window._directAssignedCreator.name || 'Maker Certificato';
+        newRequest.makerEmail = window._directAssignedCreator.email || '';
+        newRequest.makerUserId = window._directAssignedCreator.id || '';
+        newRequest.isAccepted = true;
+        newRequest.status = 'IN LAVORAZIONE (PRESA IN CARICO)';
+        console.log('🎯 Ordine diretto assegnato esclusivamente a:', window._directAssignedCreator.name);
+        window._directAssignedCreator = null;
+      }
       AppState.broadcastRequests.unshift(newRequest);
       try {
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
@@ -22102,6 +22265,16 @@ function adminGoogleLogin(role = 'client') {
         messages: rfp.messages || []
       };
     }
+
+    
+    function toggleMakerDropdown(safeId) {
+      const drop = document.getElementById('makerDropdown_' + safeId);
+      if (drop) {
+        drop.classList.toggle('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+    window.toggleMakerDropdown = toggleMakerDropdown;
 
     function renderBroadcastTable() {
       const container = document.getElementById('broadcastTableContainer');
