@@ -16515,27 +16515,34 @@ END-ISO-10303-21;`;
     function hasAcceptedRequest() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       if (AppState.user.role !== 'creator') return false;
-
-      // Founder / Admin vede per monitoraggio globale
-      if (AppState.user.isAdmin) {
-        if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted) return true;
-        const active = AppState.broadcastRequests.find(r => r && r.isAccepted === true && !r.isShipped);
-        if (active) { AppState.loadedRequestInStudio = active; return true; }
-        return false;
-      }
+      if (AppState.user.isAdmin) return true;
 
       const myMakerName = (AppState.user.name || '').toLowerCase().trim();
       const myMakerEmail = (AppState.user.email || '').toLowerCase().trim();
+      const myMakerUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
 
-      // Verifica se questo specifico creator ha accettato una commessa
-      const myAcceptedJob = AppState.broadcastRequests.find(r => {
-        if (!r || !r.id || r.id.startsWith('USER-PROFILE-')) return false;
-        if (!r.isAccepted && (!r.status || !r.status.toUpperCase().includes('ACCETTAT'))) return false;
+      const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
+        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
+        const isAcc = Boolean(
+          r.isAccepted === true ||
+          (r.maker && r.maker.trim().length > 0) ||
+          (r.maker_name && r.maker_name.trim().length > 0) ||
+          (r.acceptedBy && r.acceptedBy.trim().length > 0) ||
+          (typeof r.status === 'string' && (
+            r.status.toUpperCase().includes('ACCETTAT') ||
+            r.status.toUpperCase().includes('LAVORAZION') ||
+            r.status.toUpperCase().includes('PRODUCTION') ||
+            r.status.toUpperCase().includes('PRODUZION') ||
+            r.status.toUpperCase().includes('SPEDIT')
+          ))
+        );
+        if (!isAcc) return false;
         const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
-        if (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) {
-          return true;
-        }
-        return false;
+        const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
+        const assignedUid = (r.makerUserId || '').toLowerCase().trim();
+        return (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
+               (assignedEmail && assignedEmail === myMakerEmail) ||
+               (assignedUid && assignedUid === myMakerUid);
       });
 
       if (myAcceptedJob) {
@@ -16547,7 +16554,6 @@ END-ISO-10303-21;`;
     }
     window.hasAcceptedRequest = hasAcceptedRequest;
 
-    /* Helper: Verifica se la stanza Escrow è sbloccata (richiesta presa in carico dal Creator) */
     function hasActiveEscrowOrder() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       if (AppState.user.isAdmin) return true; // Founder / Admin bypass
@@ -16555,24 +16561,66 @@ END-ISO-10303-21;`;
       const isCreator = AppState.user.role === 'creator';
       const myEmail = (AppState.user.email || '').toLowerCase().trim();
       const myName = (AppState.user.name || '').toLowerCase().trim();
+      const myUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
+
+      // Se activeEscrowOrder è già presente e appartiene a questo account, è sempre valido!
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) {
+        if (isCreator) {
+          const assigned = (AppState.activeEscrowOrder.maker || '').toLowerCase().trim();
+          if (assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) return true;
+        } else {
+          const ordEmail = (AppState.activeEscrowOrder.clientEmail || '').toLowerCase().trim();
+          const ordUid = (AppState.activeEscrowOrder.userId || '').toLowerCase().trim();
+          if ((myEmail && ordEmail === myEmail) || (myUid && ordUid === myUid)) return true;
+        }
+      }
 
       if (isCreator) {
         // Per il Creator: ha accesso solo se la commessa è stata assegnata a LUI
-        return AppState.broadcastRequests.some(r => {
-          if (!r || !r.id || r.id.startsWith('USER-PROFILE-')) return false;
-          const isAcc = r.isAccepted === true || (typeof r.status === 'string' && r.status.toUpperCase().includes('ACCETTAT'));
+        return (AppState.broadcastRequests || []).some(r => {
+          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
+          const isAcc = Boolean(
+            r.isAccepted === true ||
+            (r.maker && r.maker.trim().length > 0) ||
+            (r.maker_name && r.maker_name.trim().length > 0) ||
+            (r.acceptedBy && r.acceptedBy.trim().length > 0) ||
+            (typeof r.status === 'string' && (
+              r.status.toUpperCase().includes('ACCETTAT') ||
+              r.status.toUpperCase().includes('LAVORAZION') ||
+              r.status.toUpperCase().includes('PRODUCTION') ||
+              r.status.toUpperCase().includes('PRODUZION') ||
+              r.status.toUpperCase().includes('SPEDIT')
+            ))
+          );
           if (!isAcc) return false;
           const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
-          return assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned));
+          const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
+          const assignedUid = (r.makerUserId || '').toLowerCase().trim();
+          return (assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
+                 (assignedEmail && assignedEmail === myEmail) ||
+                 (assignedUid && assignedUid === myUid);
         });
       } else {
-        // Per il Cliente: ha accesso solo se un Creator ha accettato una commessa di QUESTO cliente
-        return AppState.broadcastRequests.some(r => {
-          if (!r || !r.id || r.id.startsWith('USER-PROFILE-')) return false;
-          const isAcc = r.isAccepted === true || (typeof r.status === 'string' && r.status.toUpperCase().includes('ACCETTAT'));
+        // Per il Cliente: ha accesso se un Creator ha preso in carico una commessa di QUESTO cliente
+        return (AppState.broadcastRequests || []).some(r => {
+          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted) return false;
+          const isAcc = Boolean(
+            r.isAccepted === true ||
+            (r.maker && r.maker.trim().length > 0) ||
+            (r.maker_name && r.maker_name.trim().length > 0) ||
+            (r.acceptedBy && r.acceptedBy.trim().length > 0) ||
+            (typeof r.status === 'string' && (
+              r.status.toUpperCase().includes('ACCETTAT') ||
+              r.status.toUpperCase().includes('LAVORAZION') ||
+              r.status.toUpperCase().includes('PRODUCTION') ||
+              r.status.toUpperCase().includes('PRODUZION') ||
+              r.status.toUpperCase().includes('SPEDIT')
+            ))
+          );
           if (!isAcc) return false;
           const reqEmail = (r.clientEmail || r.client_email || '').toLowerCase().trim();
-          return reqEmail === myEmail;
+          const reqUid = (r.userId || '').toLowerCase().trim();
+          return (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid);
         });
       }
     }
@@ -17812,7 +17860,7 @@ END-ISO-10303-21;`;
 
       // Ensure maker identity
       if (!AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
-        showToast(isEn ? 'Please sign in as Creator to accept this order.' : isEs ? 'Inicia sesión como Creador para aceptar este pedido.' : 'Accedi come Creator per prendere in carico questa richiesta.', 'warning');
+        showToast(isEn ? 'Please sign in as Creator to accept this order.' : 'Accedi come Creator per prendere in carico questa richiesta.', 'warning');
         navigateTo('login-gate');
         return;
       }
@@ -17820,8 +17868,11 @@ END-ISO-10303-21;`;
       // 1. Mark request as accepted
       req.isAccepted = true;
       req.status = isEn ? 'IN PRODUCTION (CREATOR ACCEPTED)' : isEs ? 'EN PRODUCCIÓN (ACEPTADA POR EL CREADOR)' : 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)';
-      req.acceptedBy = AppState.user.name || (isEn ? 'PrintForge Certified Maker' : isEs ? 'Creador Certificado PrintForge' : 'Maker Certificato PrintForge');
+      req.acceptedBy = AppState.user.name || (isEn ? 'PrintForge Certified Maker' : 'Maker Certificato PrintForge');
       req.acceptedAt = new Date().toISOString();
+      req.maker = req.acceptedBy;
+      req.makerEmail = AppState.user.email || '';
+      req.makerUserId = AppState.user.userId || AppState.user.id || '';
 
       // 2. Persist to localStorage & Supabase
       try {
@@ -17831,12 +17882,19 @@ END-ISO-10303-21;`;
       updateRequestInSupabase(req.id, {
         status: req.status,
         maker_name: req.acceptedBy,
-        notes: buildNotesPayload(req, { isAccepted: true })
+        notes: buildNotesPayload(req, {
+          isAccepted: true,
+          makerName: req.acceptedBy,
+          makerEmail: req.makerEmail,
+          makerUserId: req.makerUserId
+        })
       });
 
       broadcastRealtimeEvent('request_accepted', {
         rfpId: req.id,
         makerName: req.acceptedBy,
+        makerEmail: req.makerEmail,
+        makerUserId: req.makerUserId,
         status: req.status
       });
 
@@ -17848,13 +17906,22 @@ END-ISO-10303-21;`;
         title: req.title,
         budget: req.budget,
         itemBudget: req.itemBudget || req.budget,
-        shippingCost: req.shippingCost || (isEn ? 'Included (UPS / Poste)' : isEs ? 'Incluido (UPS / Correos)' : 'Inclusa (UPS / Poste)'),
+        shippingCost: req.shippingCost || (isEn ? 'Included (UPS / Poste)' : 'Inclusa (UPS / Poste)'),
         maker: req.acceptedBy,
+        makerEmail: req.makerEmail,
+        makerUserId: req.makerUserId,
         clientName: req.clientName,
         clientEmail: req.clientEmail,
+        userId: req.userId || '',
         trackingNumber: req.trackingNumber || 'PF-UPS-892104',
         carrier: req.shippingCarrier || 'UPS Standard',
-        timestamp: isEn ? 'Just now' : isEs ? 'Ahora' : 'Adesso'
+        timestamp: isEn ? 'Just now' : 'Adesso',
+        shippingStreet: req.shippingStreet || '',
+        shippingCity: req.shippingCity || 'Milano',
+        shippingCap: req.shippingCap || '20121',
+        shippingProv: req.shippingProv || 'MI',
+        shippingFull: req.shippingFull || 'Via Dante 18, 20121 Milano (MI)',
+        isAccepted: true
       };
       updateEscrowRoom();
 
@@ -20282,6 +20349,12 @@ END-ISO-10303-21;`;
     }
     window.recordDeletedRequestIds = recordDeletedRequestIds;
 
+
+    function simulateGoogleLogin() {
+      adminGoogleLogin('client');
+    }
+    window.simulateGoogleLogin = simulateGoogleLogin;
+
 function adminGoogleLogin(role = 'client') {
       const devId = getOrCreateDeviceId();
       const shortId = devId.replace('dev_', '').substring(0, 4).toUpperCase();
@@ -22378,11 +22451,9 @@ function adminGoogleLogin(role = 'client') {
 
     function openDealChat(rfpId) {
       if (!AppState.user.isLoggedIn) {
-        showToast(currentLang === 'it'
-          ? "Accesso richiesto: effettua l'accesso per visualizzare la chat della richiesta."
-          : currentLang === 'es'
-          ? 'Acceso requerido: inicia sesi\u00f3n para ver el chat del pedido.'
-          : 'Sign in required: please log in to access the deal chat.');
+        showToast(currentLang === 'it' 
+          ? "Accesso richiesto: effettua l'accesso per visualizzare la chat della richiesta." 
+          : "Sign in required: please log in to access the deal chat.");
         navigateTo('login-gate');
         return;
       }
@@ -22397,10 +22468,11 @@ function adminGoogleLogin(role = 'client') {
         return;
       }
 
-      // FIX 2: Visibilita condizionale stretta Chat 1-1
+      // FIX 2: Visibilità condizionale stretta per la Chat 1-1
       const userEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
       const userName  = ((AppState.user && AppState.user.name)  || '').toLowerCase().trim();
       const userRole  = ((AppState.user && AppState.user.role)  || '').toLowerCase();
+      const userId    = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
       const isAdmin   = Boolean(AppState.user && AppState.user.isAdmin);
       const isCreator = userRole === 'creator';
       const isClient  = userRole === 'client';
@@ -22431,39 +22503,45 @@ function adminGoogleLogin(role = 'client') {
         ))
       );
 
-      // a) La chat e visibile SOLO se un creator ha accettato
+      // a) La chat è visibile ESCLUSIVAMENTE se il Creator ha accettato la richiesta
       if (!isAccepted && !isAdmin) {
         showToast(
           currentLang === 'it'
-            ? '\uD83D\uDD12 La chat si sblocca solo dopo che un Creator accetta la richiesta.'
-            : '\uD83D\uDD12 Chat unlocks only after a Creator accepts this request.',
+            ? '🔒 La chat 1-1 si sblocca solo dopo che un Creator accetta la richiesta.'
+            : '🔒 1-on-1 Chat unlocks only after a Creator accepts this request.',
           'warning'
         );
         return;
       }
 
-      // b) Il cliente puo accedere solo alla propria richiesta
+      // b) Se Client: deve essere il proprietario della richiesta
       if (isClient && !isAdmin) {
         const reqEmail = (rfp.clientEmail || rfp.client_email || '').toLowerCase().trim();
-        if (reqEmail && reqEmail !== userEmail) {
+        const reqUid = (rfp.userId || '').toLowerCase().trim();
+        if ((reqEmail && reqEmail !== userEmail) && (reqUid && reqUid !== userId)) {
           showToast(
             currentLang === 'it'
-              ? '\uD83D\uDD12 Puoi accedere solo alla chat delle tue richieste.'
-              : '\uD83D\uDD12 You can only access chat for your own requests.',
+              ? '🔒 Puoi accedere solo alla chat delle tue richieste personali.'
+              : '🔒 You can only access chat for your own requests.',
             'warning'
           );
           return;
         }
       }
 
-      // c) Il creator puo accedere solo alla commessa assegnata a lui
+      // c) Se Creator: deve essere il Maker che ha preso in carico la commessa
       if (isCreator && !isAdmin) {
         const assigned = (rfp.maker || rfp.maker_name || rfp.acceptedBy || '').toLowerCase().trim();
-        if (assigned && assigned !== userName && !assigned.includes(userName) && !userName.includes(assigned)) {
+        const assignedEmail = (rfp.makerEmail || '').toLowerCase().trim();
+        const assignedUid = (rfp.makerUserId || '').toLowerCase().trim();
+        const matches = (assigned && (assigned === userName || assigned.includes(userName) || userName.includes(assigned))) ||
+                        (assignedEmail && assignedEmail === userEmail) ||
+                        (assignedUid && assignedUid === userId);
+        if (!matches) {
           showToast(
             currentLang === 'it'
-              ? '\uD83D\uDD12 Puoi accedere solo alla chat delle commesse assegnate a te.'
-              : '\uD83D\uDD12 You can only access chat for jobs assigned to you.',
+              ? '🔒 Puoi accedere solo alla chat delle commesse assegnate alla tua officina.'
+              : '🔒 You can only access chat for jobs assigned to you.',
             'warning'
           );
           return;
@@ -22483,7 +22561,44 @@ function adminGoogleLogin(role = 'client') {
       }
     }
 
-    function renderDealChat(rfpId) {
+    
+    let dealChatPollingInterval = null;
+    function startDealChatPolling() {
+      if (dealChatPollingInterval) clearInterval(dealChatPollingInterval);
+      dealChatPollingInterval = setInterval(() => {
+        if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId && supabaseClient) {
+          supabaseClient
+            .from('broadcast_requests')
+            .select('notes, status, maker_name')
+            .eq('id', AppState.activeDealRfpId)
+            .limit(1)
+            .then(({ data, error }) => {
+              if (!error && Array.isArray(data) && data.length > 0) {
+                const rec = data[0];
+                if (rec && rec.notes) {
+                  try {
+                    const parsed = JSON.parse(rec.notes);
+                    const rfp = AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId);
+                    if (rfp && parsed.messages && Array.isArray(parsed.messages)) {
+                      const curCount = (rfp.messages || []).length;
+                      if (parsed.messages.length !== curCount) {
+                        rfp.messages = parsed.messages;
+                        renderDealChatMessages(rfp);
+                      }
+                    }
+                  } catch(e) {}
+                }
+              }
+            }).catch(() => {});
+        } else if (AppState.currentView !== 'deal-chat' && dealChatPollingInterval) {
+          clearInterval(dealChatPollingInterval);
+          dealChatPollingInterval = null;
+        }
+      }, 3500);
+    }
+
+function renderDealChat(rfpId) {
+      if (typeof startDealChatPolling === "function") startDealChatPolling();
       const rawRfp = rfpId ? AppState.broadcastRequests.find(x => x.id === rfpId) : null;
       if (!rawRfp) {
         const headTitle = document.getElementById('dealChatHeaderRfpTitle');
@@ -22688,19 +22803,16 @@ function adminGoogleLogin(role = 'client') {
     }
 
     function handleDealPhotoSelected(e) {
-      const file = e.target.files && e.target.files[0];
+      const file = e.target?.files?.[0];
       if (!file) return;
 
       if (!file.type.startsWith('image/')) {
-        showToast(currentLang === 'it' 
-          ? 'Seleziona un file immagine valido (PNG, JPG, WEBP, GIF).' 
-          : currentLang === 'es' 
-          ? 'Por favor selecciona un archivo de imagen válido (PNG, JPG, WEBP, GIF).' 
-          : 'Please select a valid image file (PNG, JPG, WEBP, GIF).');
+        showToast(currentLang === 'it' ? 'Carica un file immagine valido (JPG, PNG, WebP)' : 'Please select an image file', 'warning');
         return;
       }
 
-      compressImage(file, 1024, 1024, 0.8).then(compUrl => {
+      // Comprimiamo a max 640x640 con qualità 0.65 per un payload leggero (< 45KB) compatibile con Supabase Realtime
+      compressImage(file, 640, 640, 0.65).then(compUrl => {
         const sizeKb = Math.round((compUrl.length * 3 / 4) / 1024);
         const sizeStr = sizeKb >= 1024 ? (sizeKb / 1024).toFixed(1) + ' MB' : sizeKb + ' KB';
 
@@ -22718,13 +22830,16 @@ function adminGoogleLogin(role = 'client') {
         if (tray && img && nameEl && sizeEl) {
           img.src = currentPendingDealPhoto.dataUrl;
           nameEl.innerText = currentPendingDealPhoto.name;
-          sizeEl.innerText = `${sizeStr} • ${currentLang === 'it' ? 'Foto pronta per l\'invio' : currentLang === 'es' ? 'Foto lista para enviar' : 'Photo ready to send'}`;
+          sizeEl.innerText = `${sizeStr} • ${currentLang === 'it' ? 'Foto pronta per l\'invio' : 'Photo ready to send'}`;
           tray.classList.remove('hidden');
-          lucide.createIcons();
+          if (window.lucide) lucide.createIcons();
         }
 
         const chatInput = document.getElementById('dealChatInput');
         if (chatInput) chatInput.focus();
+      }).catch(err => {
+        console.warn('Compress error:', err);
+        showToast('Errore nel caricamento della foto. Riprova.', 'warning');
       });
     }
 
