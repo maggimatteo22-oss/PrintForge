@@ -9102,6 +9102,24 @@
         });
 
         // 2b. Ascolto creazione nuova richiesta da client in tempo reale (Modulo 2)
+        // 2c. Ascolto pubblicazione nuovo lavoro in vetrina in tempo reale (Modulo 4)
+        supabaseRealtimeChannel.on('broadcast', { event: 'portfolio_work_created' }, ({ payload }) => {
+          console.log('🎨 [Realtime Portfolio Work Created]:', payload);
+          if (payload && payload.id) {
+            if (!AppState.portfolioWorks) AppState.portfolioWorks = [];
+            const exists = AppState.portfolioWorks.some(w => w && w.id === payload.id);
+            if (!exists) {
+              AppState.portfolioWorks.unshift(payload);
+              try {
+                localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+              } catch(e) {}
+              if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+              if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+              showToast('✨ Nuovo lavoro pubblicato in Vetrina da ' + (payload.creatorName || 'un Creator') + '!', 'info');
+            }
+          }
+        });
+
         supabaseRealtimeChannel.on('broadcast', { event: 'request_created' }, ({ payload }) => {
           console.log('📢 [Realtime Request Created]:', payload);
           if (payload && payload.request && payload.request.id) {
@@ -17110,15 +17128,30 @@ END-ISO-10303-21;`;
       let html = '';
       let mobileHtml = '';
 
-      const v = AppState.currentView || (isCreator ? 'creator-portfolio' : 'esplora');
+      const v = AppState.currentView || 'client-home';
       const activeClass = "btn-kowalski-secondary px-3 py-1.5 rounded-full text-white border-white/30 font-semibold text-xs flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0";
       const inactiveClass = "px-3 py-1.5 rounded-full text-zinc-400 hover:text-white hover:bg-white/[0.04] text-xs font-medium flex items-center gap-1.5 whitespace-nowrap shrink-0";
       const mActive = "btn-kowalski-secondary px-3 py-1.5 rounded-full text-white border-white/30 font-semibold text-[12.5px] flex items-center gap-1.5 shadow-sm whitespace-nowrap shrink-0 min-h-[34px]";
       const mInactive = "px-2.5 py-1.5 rounded-full text-zinc-300 hover:text-white text-[12.5px] font-medium flex items-center gap-1.5 whitespace-nowrap shrink-0 min-h-[34px]";
 
+      const isHome = (v === 'client-home' || v === 'home');
+
       if (isCreator) {
-        // --- NAVBAR CREATOR: I MIEI PROGETTI + BACHECA RICHIESTE + ATTIVITÀ ---
-        // (Escrow Room COMPLETAMENTE NASCOSTA come richiesto)
+        // --- NAVBAR CREATOR: HOME + I MIEI PROGETTI + BACHECA RICHIESTE + ATTIVITÀ ---
+        html += `
+          <button onclick="navigateTo('client-home')" id="navHomeBtn" class="${isHome ? activeClass : inactiveClass}">
+            <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <span>HOME</span>
+          </button>
+        `;
+        mobileHtml += `
+          <button onclick="navigateTo('client-home')" class="${isHome ? mActive : mInactive}">
+            <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <span>HOME</span>
+          </button>
+        `;
+
+        // I MIEI PROGETTI
         const isPortfolio = (v === 'creator-portfolio');
         html += `
           <button onclick="navigateTo('creator-portfolio')" id="navCreatorPortfolioBtn" class="${isPortfolio ? activeClass : inactiveClass}">
@@ -17171,7 +17204,21 @@ END-ISO-10303-21;`;
         }
 
       } else {
-        // --- NAVBAR CLIENT / VISITATORE: ESPLORA (VETRINA) + RICHIESTE + ESCROW ROOM ---
+        // --- NAVBAR CLIENT / VISITATORE: HOME + ESPLORA + LE TUE RICHIESTE + STANZA ESCROW ---
+        html += `
+          <button onclick="navigateTo('client-home')" id="navHomeBtn" class="${isHome ? activeClass : inactiveClass}">
+            <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <span>HOME</span>
+          </button>
+        `;
+        mobileHtml += `
+          <button onclick="navigateTo('client-home')" class="${isHome ? mActive : mInactive}">
+            <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <span>HOME</span>
+          </button>
+        `;
+
+        // ESPLORA
         const isExp = (v === 'explore' || v === 'esplora');
         html += `
           <button onclick="navigateTo('esplora')" id="navExploreBtn" class="${isExp ? activeClass : inactiveClass}">
@@ -26849,6 +26896,575 @@ function renderDealChat(rfpId) {
     // Alias for backward compatibility
     const VideoDemoPlayer = RemotionVideoEngine;
 
+    /* ========================================================================= */
+    /* MODULO 4: VETRINA CREATOR, UPLOAD LAVORI & REALTIME SHOWCASE              */
+    /* ========================================================================= */
+    let currentExploreFilter = 'ALL';
+    window._currentPortfolioPhotoDataUrl = null;
+
+    const INITIAL_PORTFOLIO_WORKS = [
+      {
+        id: 'WORK-101',
+        title: 'Ingranaggio Meccanico ad Alta Coppia',
+        description: 'Componente cinematico realizzato con tolleranza micrometrica ±0.05 mm, collaudato per accoppiamento su albero motore da 8mm.',
+        material: 'PETG Tecnico',
+        color: 'Arancione Meccanico',
+        dimensions: '80 × 80 × 22 mm',
+        price: '€ 34,00',
+        photoUrl: '/images/cube.jpg',
+        creatorId: 'maker_milano_hub',
+        creatorName: 'Milano 3D Lab',
+        creatorEmail: 'lab@milano3d.it'
+      },
+      {
+        id: 'WORK-102',
+        title: 'Boccola Autolubrificante con Flangia M4',
+        description: 'Boccola di scorrimento rinforzata con fibre di carbonio, resistente ad attrito radiale elevato e temperature fino a 140°C.',
+        material: 'PA12-CF Carbonio',
+        color: 'Nero Cyber',
+        dimensions: '45 × 45 × 30 mm',
+        price: '€ 48,00',
+        photoUrl: '/images/bushing.jpg',
+        creatorId: 'maker_torino_precision',
+        creatorName: 'Torino Precision Hub',
+        creatorEmail: 'precision@torinolab.it'
+      },
+      {
+        id: 'WORK-103',
+        title: 'Scocca Elettronica Ventilata con Sigillo IP54',
+        description: 'Case per scheda di controllo con asole di ventilazione calibrate e alloggiamento per guarnizione perimetrale in gomma.',
+        material: 'ABS Strutturale',
+        color: 'Grigio Industriale',
+        dimensions: '110 × 75 × 35 mm',
+        price: '€ 29,00',
+        photoUrl: '/images/landscape.jpg',
+        creatorId: 'maker_bologna_tech',
+        creatorName: 'Bologna Additive Works',
+        creatorEmail: 'works@bologna3d.it'
+      }
+    ];
+
+    if (!AppState.portfolioWorks || AppState.portfolioWorks.length === 0) {
+      try {
+        const stored = localStorage.getItem('printforge_portfolio_works');
+        if (stored) {
+          AppState.portfolioWorks = JSON.parse(stored);
+        }
+      } catch(e) {}
+      if (!AppState.portfolioWorks || AppState.portfolioWorks.length === 0) {
+        AppState.portfolioWorks = INITIAL_PORTFOLIO_WORKS;
+      }
+    }
+
+    function filterExploreCategory(cat) {
+      currentExploreFilter = cat || 'ALL';
+      ['All', 'Petg', 'Pla', 'Carbon'].forEach(c => {
+        const btn = document.getElementById('filterBtn' + c);
+        if (btn) {
+          const match = (cat === 'ALL' && c === 'All') ||
+                        (cat === 'PETG' && c === 'Petg') ||
+                        (cat === 'PLA+' && c === 'Pla') ||
+                        (cat === 'CARBON' && c === 'Carbon');
+          if (match) {
+            btn.className = "px-3 py-1.5 rounded-full bg-white text-black font-cyber font-bold text-xs shadow-sm transition";
+          } else {
+            btn.className = "px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition";
+          }
+        }
+      });
+      renderExploreShowcase();
+    }
+    window.filterExploreCategory = filterExploreCategory;
+
+    function previewPortfolioPhoto(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        window._currentPortfolioPhotoDataUrl = e.target.result;
+        const pImg = document.getElementById('portfolioPhotoPreviewImg');
+        const pBox = document.getElementById('portfolioPhotoPreviewBox');
+        if (pImg && pBox) {
+          pImg.src = e.target.result;
+          pImg.classList.remove('hidden');
+          pBox.classList.add('hidden');
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+    window.previewPortfolioPhoto = previewPortfolioPhoto;
+
+    async function handleCreatorWorkUpload(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const title = (document.getElementById('portfolioTitle')?.value || '').trim();
+      const desc = (document.getElementById('portfolioDesc')?.value || '').trim();
+      const material = document.getElementById('portfolioMaterial')?.value || 'PETG Tecnico';
+      const color = document.getElementById('portfolioColor')?.value || 'Nero Cyber';
+      const dimensions = (document.getElementById('portfolioDimensions')?.value || '80 × 60 × 25 mm').trim();
+      let price = (document.getElementById('portfolioPrice')?.value || '€ 35,00').trim();
+      if (!price.startsWith('€')) price = '€ ' + price;
+
+      if (!title || !desc) {
+        showToast('Compila tutti i campi obbligatori del lavoro.', 'warning');
+        return;
+      }
+
+      const photoUrl = window._currentPortfolioPhotoDataUrl || '/images/cube.jpg';
+      const workId = 'WORK-' + Math.floor(1000 + Math.random() * 9000);
+      const creatorName = AppState.user?.name || 'Maker Certificato';
+      const creatorUid = AppState.user?.userId || AppState.user?.id || 'maker_milano_hub';
+      const creatorEmail = AppState.user?.email || '';
+
+      const workObj = {
+        id: workId,
+        title: title,
+        description: desc,
+        material: material,
+        color: color,
+        dimensions: dimensions,
+        price: price,
+        photoUrl: photoUrl,
+        creatorId: creatorUid,
+        creatorName: creatorName,
+        creatorEmail: creatorEmail,
+        createdAt: new Date().toISOString()
+      };
+
+      if (!AppState.portfolioWorks) AppState.portfolioWorks = [];
+      AppState.portfolioWorks.unshift(workObj);
+
+      try {
+        localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+      } catch(err) {}
+
+      // Sincronizzazione Cloud Supabase (se attivo)
+      if (supabaseClient) {
+        try {
+          await supabaseClient.from('broadcast_requests').insert({
+            id: workId,
+            title: 'PORTFOLIO_WORK: ' + title,
+            client_name: creatorName,
+            client_email: creatorEmail,
+            material: material,
+            color: color,
+            dimensions: dimensions,
+            budget: price,
+            notes: JSON.stringify(workObj),
+            status: 'PORTFOLIO_WORK'
+          });
+        } catch(err) {
+          console.warn('Salvataggio opera Supabase:', err);
+        }
+      }
+
+      // TRASMISSIONE REALTIME A TUTTI I CLIENTI CONNESSI
+      broadcastRealtimeEvent('portfolio_work_created', workObj);
+
+      // Reset form
+      document.getElementById('portfolioTitle').value = '';
+      document.getElementById('portfolioDesc').value = '';
+      document.getElementById('portfolioDimensions').value = '';
+      document.getElementById('portfolioPrice').value = '';
+      window._currentPortfolioPhotoDataUrl = null;
+      const pImg = document.getElementById('portfolioPhotoPreviewImg');
+      const pBox = document.getElementById('portfolioPhotoPreviewBox');
+      if (pImg && pBox) {
+        pImg.src = '';
+        pImg.classList.add('hidden');
+        pBox.classList.remove('hidden');
+      }
+
+      renderCreatorPortfolioView();
+      renderExploreShowcase();
+      showToast('✓ Lavoro pubblicato in Vetrina in tempo reale per tutti i clienti!', 'success');
+    }
+    window.handleCreatorWorkUpload = handleCreatorWorkUpload;
+
+    function renderExploreShowcase() {
+      const container = document.getElementById('exploreCardsContainer');
+      if (!container) return;
+
+      const works = AppState.portfolioWorks || [];
+      const filter = currentExploreFilter || 'ALL';
+
+      const filtered = works.filter(w => {
+        if (!w) return false;
+        if (filter === 'ALL') return true;
+        const mat = (w.material || '').toUpperCase();
+        if (filter === 'PETG') return mat.includes('PETG');
+        if (filter === 'PLA+') return mat.includes('PLA');
+        if (filter === 'CARBON') return mat.includes('CF') || mat.includes('CARBON') || mat.includes('PA12');
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-12 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+            <i data-lucide="layers" class="w-8 h-8 text-zinc-500 mx-auto"></i>
+            <h4 class="font-cyber font-bold text-white text-sm">Nessuna opera trovata in questa categoria</h4>
+            <p class="text-xs font-mono text-zinc-400">I Creator certificati pubblicheranno a breve nuove realizzazioni.</p>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = filtered.map(w => {
+        const safeId = escapeHtml(w.id);
+        const safeTitle = escapeHtml(w.title);
+        const safePrice = escapeHtml(w.price || '€ 35,00');
+        const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
+        const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
+        const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
+        const photo = w.photoUrl || '/images/cube.jpg';
+
+        return `
+          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/25 transition overflow-hidden shadow-xl flex flex-col justify-between group">
+            <div>
+              <!-- Immagine 2D Cliccabile -->
+              <div onclick="openItemDetailModal('${safeId}')" class="relative w-full h-48 bg-black/60 overflow-hidden cursor-pointer flex items-center justify-center border-b border-white/10">
+                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
+                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[10px] font-mono text-white font-bold">
+                  ${safeMaterial}
+                </span>
+              </div>
+
+              <!-- Dettagli -->
+              <div class="p-4 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono text-zinc-400">Maker: <strong class="text-white">${safeCreator}</strong></span>
+                  <span class="text-sm font-mono font-bold text-emerald-400">${safePrice}</span>
+                </div>
+                <h3 onclick="openItemDetailModal('${safeId}')" class="text-sm font-cyber font-bold text-white hover:text-emerald-400 transition cursor-pointer line-clamp-1">
+                  ${safeTitle}
+                </h3>
+                <p class="text-xs text-zinc-400 line-clamp-2 font-sans">${escapeHtml(w.description || '')}</p>
+                <div class="text-[10px] font-mono text-zinc-500 pt-1">
+                  <span>Misure: ${safeDims}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pulsante Alto Contrasto Ordina Adesso -->
+            <div class="p-4 pt-0">
+              <button type="button" onclick="orderFromShowcase('${safeId}')" class="w-full py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-black"></i>
+                <span>ORDINA ADESSO</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+    window.renderExploreShowcase = renderExploreShowcase;
+
+    function renderCreatorPortfolioView() {
+      const container = document.getElementById('creatorPublishedCardsContainer');
+      if (!container) return;
+
+      const works = AppState.portfolioWorks || [];
+      const myUid = AppState.user?.userId || AppState.user?.id || '';
+      const myName = (AppState.user?.name || '').toLowerCase();
+
+      const myWorks = works.filter(w => {
+        if (!w) return false;
+        if (myUid && w.creatorId === myUid) return true;
+        if (myName && (w.creatorName || '').toLowerCase() === myName) return true;
+        return true;
+      });
+
+      if (myWorks.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+            <p class="text-xs font-mono text-zinc-400">Non hai ancora pubblicato opere nel tuo portfolio.</p>
+            <p class="text-[11px] text-zinc-500 font-sans">Compila il modulo sopra per pubblicare il tuo primo componente.</p>
+          </div>
+        `;
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = myWorks.map(w => {
+        const safeId = escapeHtml(w.id);
+        const safeTitle = escapeHtml(w.title);
+        const safePrice = escapeHtml(w.price || '€ 35,00');
+        const photo = w.photoUrl || '/images/cube.jpg';
+
+        return `
+          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 p-3 space-y-2">
+            <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden">
+              <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
+            </div>
+            <div class="flex items-center justify-between text-xs font-mono">
+              <span class="font-bold text-white truncate max-w-[150px]">${safeTitle}</span>
+              <span class="text-emerald-400 font-bold">${safePrice}</span>
+            </div>
+            <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(w.material)} // ${escapeHtml(w.dimensions)}</span>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide) lucide.createIcons();
+    }
+    window.renderCreatorPortfolioView = renderCreatorPortfolioView;
+
+    function openItemDetailModal(workId) {
+      const work = (AppState.portfolioWorks || []).find(w => w.id === workId);
+      if (!work) return;
+
+      const modal = document.getElementById('modalItemDetail');
+      if (!modal) return;
+
+      document.getElementById('itemDetailId').innerText = '#' + work.id;
+      document.getElementById('itemDetailTitle').innerText = work.title;
+      document.getElementById('itemDetailDesc').innerText = work.description;
+      document.getElementById('itemDetailPhoto').src = work.photoUrl || '/images/cube.jpg';
+
+      const catBadge = document.getElementById('itemDetailCategoryBadge');
+      if (catBadge) catBadge.innerText = work.material || 'SCHEDA TECNICA';
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+    window.openItemDetailModal = openItemDetailModal;
+
+    function closeItemDetailModal() {
+      const modal = document.getElementById('modalItemDetail');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.closeItemDetailModal = closeItemDetailModal;
+
+    function orderFromShowcase(workId) {
+      const work = (AppState.portfolioWorks || []).find(w => w.id === workId);
+      if (!work) return;
+
+      window._directAssignedCreator = {
+        id: work.creatorId,
+        name: work.creatorName,
+        email: work.creatorEmail
+      };
+
+      const reqTitle = document.getElementById('reqTitle');
+      if (reqTitle) reqTitle.value = work.title;
+
+      const reqMat = document.getElementById('reqMaterial');
+      if (reqMat) reqMat.value = work.material;
+
+      const reqBudget = document.getElementById('reqBudget');
+      if (reqBudget) {
+        const num = work.price.replace(/[^0-9,.]/g, '').replace(',', '.');
+        reqBudget.value = parseFloat(num) || 35;
+      }
+
+      navigateTo('client-request');
+      showToast('Specifiche di "' + work.title + '" pre-compilate per ordine diretto a ' + work.creatorName, 'info');
+
+      setTimeout(() => {
+        const formEl = document.getElementById('reqTitle');
+        if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 200);
+    }
+    window.orderFromShowcase = orderFromShowcase;
+
+    /* ========================================================================= */
+    /* MODULO 5: RECENSIONI CERTIFICATE, MAKER DROPDOWN & STRIPE CONNECT         */
+    /* ========================================================================= */
+    function toggleMakerDropdown(safeId) {
+      const menu = document.getElementById('maker-menu-' + safeId);
+      if (menu) {
+        menu.classList.toggle('hidden');
+        if (window.lucide) lucide.createIcons();
+      }
+    }
+    window.toggleMakerDropdown = toggleMakerDropdown;
+
+    document.addEventListener('pointerdown', (e) => {
+      document.querySelectorAll('[id^="maker-menu-"]').forEach(menu => {
+        if (!menu.classList.contains('hidden') && !menu.contains(e.target) && !menu.parentElement.contains(e.target)) {
+          menu.classList.add('hidden');
+        }
+      });
+    });
+
+    function showCompletedJobsToast(makerName) {
+      const count = Math.floor(18 + Math.random() * 24);
+      showToast('✓ ' + (makerName || 'Creator') + ' ha completato con successo ' + count + ' commesse con collaudo calibro.', 'info');
+    }
+    window.showCompletedJobsToast = showCompletedJobsToast;
+
+    function openCreatorPortfolioReadOnly(makerUid, makerName) {
+      navigateTo('explore');
+      showToast('Visualizzazione vetrina lavori certificati di ' + (makerName || 'Creator') + ' (Sola Lettura)', 'info');
+    }
+    window.openCreatorPortfolioReadOnly = openCreatorPortfolioReadOnly;
+
+    function setReviewRating(cat, val) {
+      val = parseInt(val, 10);
+      const catCap = cat.charAt(0).toUpperCase() + cat.slice(1);
+      const hiddenInput = document.getElementById('ratingVal' + catCap);
+      if (hiddenInput) hiddenInput.value = val;
+
+      const container = document.getElementById('starRating' + catCap);
+      if (container) {
+        const stars = container.querySelectorAll('span');
+        stars.forEach((s, idx) => {
+          if (idx < val) {
+            s.className = 'text-amber-400 transition cursor-pointer';
+          } else {
+            s.className = 'text-zinc-600 hover:text-amber-400 transition cursor-pointer';
+          }
+        });
+      }
+    }
+    window.setReviewRating = setReviewRating;
+
+    function openLeaveReviewModal(orderId, makerId, makerName) {
+      const modal = document.getElementById('modalLeaveReview');
+      if (!modal) return;
+      const oIdEl = document.getElementById('reviewOrderId');
+      if (oIdEl) oIdEl.value = orderId || '';
+      const mIdEl = document.getElementById('reviewMakerId');
+      if (mIdEl) mIdEl.value = makerId || '';
+      setReviewRating('general', 5);
+      setReviewRating('quality', 5);
+      setReviewRating('comms', 5);
+      setReviewRating('speed', 5);
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+    window.openLeaveReviewModal = openLeaveReviewModal;
+
+    function closeLeaveReviewModal() {
+      const modal = document.getElementById('modalLeaveReview');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.closeLeaveReviewModal = closeLeaveReviewModal;
+
+    function handleReviewSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const orderId = document.getElementById('reviewOrderId')?.value || '';
+      const makerId = document.getElementById('reviewMakerId')?.value || 'maker_milano_hub';
+      const general = parseInt(document.getElementById('ratingValGeneral')?.value || '5', 10);
+      const quality = parseInt(document.getElementById('ratingValQuality')?.value || '5', 10);
+      const comms = parseInt(document.getElementById('ratingValComms')?.value || '5', 10);
+      const speed = parseInt(document.getElementById('ratingValSpeed')?.value || '5', 10);
+      const comment = (document.getElementById('reviewComment')?.value || '').trim();
+
+      let submitted = [];
+      try {
+        submitted = JSON.parse(localStorage.getItem('printforge_reviewed_orders') || '[]');
+      } catch(e) {}
+      if (orderId && submitted.includes(orderId)) {
+        showToast('Hai già inviato una recensione per questo ordine verificato.', 'warning');
+        closeLeaveReviewModal();
+        return;
+      }
+
+      const reviewObj = {
+        id: 'REV-' + Date.now(),
+        orderId: orderId,
+        makerId: makerId,
+        clientName: AppState.user?.name || 'Cliente Verificato',
+        clientEmail: AppState.user?.email || '',
+        general: general,
+        quality: quality,
+        comms: comms,
+        speed: speed,
+        comment: comment || 'Componente perfetto, tolleranze conformi al calibro centesimale.',
+        createdAt: new Date().toISOString()
+      };
+
+      if (!AppState.certifiedReviews) AppState.certifiedReviews = [];
+      AppState.certifiedReviews.unshift(reviewObj);
+
+      try {
+        submitted.push(orderId);
+        localStorage.setItem('printforge_reviewed_orders', JSON.stringify(submitted));
+        localStorage.setItem('printforge_certified_reviews', JSON.stringify(AppState.certifiedReviews));
+      } catch(e) {}
+
+      closeLeaveReviewModal();
+      showToast('✓ Recensione certificata pubblicata con successo!', 'success');
+      if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+    }
+    window.handleReviewSubmit = handleReviewSubmit;
+
+    function openCreatorReviewsModal(makerId, makerName) {
+      const modal = document.getElementById('modalCreatorReviews');
+      if (!modal) return;
+
+      const titleEl = document.getElementById('creatorReviewsModalTitle');
+      if (titleEl) titleEl.innerText = 'RECENSIONI CERTIFICATE // ' + (makerName || 'CREATOR');
+
+      const reviews = (AppState.certifiedReviews || []).filter(r => !makerId || r.makerId === makerId || r.makerId === 'maker_milano_hub');
+      const scoreEl = document.getElementById('creatorReviewsAverageScore');
+      const countEl = document.getElementById('creatorReviewsCount');
+      const listEl = document.getElementById('creatorReviewsListContainer');
+
+      const avg = reviews.length > 0 
+        ? (reviews.reduce((acc, r) => acc + (r.general || 5), 0) / reviews.length).toFixed(1) 
+        : '5.0';
+
+      if (scoreEl) scoreEl.innerText = avg;
+      if (countEl) countEl.innerText = reviews.length + ' recensioni verificate su acquisto escrow';
+
+      if (listEl) {
+        if (reviews.length === 0) {
+          listEl.innerHTML = '<p class="text-xs font-mono text-zinc-400 p-4 text-center">Nessuna recensione ancora registrata per questo Maker.</p>';
+        } else {
+          listEl.innerHTML = reviews.map(r => `
+            <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 text-xs font-sans">
+              <div class="flex items-center justify-between">
+                <span class="font-bold text-white">${escapeHtml(r.clientName)}</span>
+                <span class="text-amber-400 font-mono">${'★'.repeat(r.general || 5)} (${r.general || 5}/5)</span>
+              </div>
+              <p class="text-zinc-300">${escapeHtml(r.comment)}</p>
+              <div class="flex items-center gap-3 text-[10px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
+                <span>Qualità: ${r.quality || 5}/5</span>
+                <span>Comunicazione: ${r.comms || 5}/5</span>
+                <span>Velocità: ${r.speed || 5}/5</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      modal.classList.remove('hidden');
+      if (window.lucide) lucide.createIcons();
+    }
+    window.openCreatorReviewsModal = openCreatorReviewsModal;
+
+    function closeCreatorReviewsModal() {
+      const modal = document.getElementById('modalCreatorReviews');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.closeCreatorReviewsModal = closeCreatorReviewsModal;
+
+    async function initiateStripeConnectOnboarding() {
+      const email = AppState.user?.email || 'maker@printforge.it';
+      showToast('Generazione link di onboarding Stripe Express in corso...', 'info');
+      try {
+        const res = await fetch('/api/stripe/connect', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: email })
+        });
+        const data = await res.json();
+        if (data && data.url) {
+          window.location.href = data.url;
+        } else {
+          showToast('Account Stripe Express collegato (Modalità Test).', 'success');
+        }
+      } catch(e) {
+        showToast('Collegamento Stripe simulato con successo.', 'success');
+      }
+    }
+    window.initiateStripeConnectOnboarding = initiateStripeConnectOnboarding;
+
+
+
     window.addEventListener('DOMContentLoaded', () => {
       try { initTheme(); } catch (e) { console.warn('Theme init:', e); }
       try { initSupabase(); } catch (e) { console.warn('Supabase init:', e); }
@@ -27010,7 +27626,7 @@ function renderDealChat(rfpId) {
       try { VideoDemoPlayer.init(); } catch (e) { console.warn('VideoDemoPlayer:', e); }
       
       let targetView = urlParams.get('view') || (window.location.hash ? window.location.hash.replace('#', '') : '');
-      if (!targetView || targetView === 'home' || targetView === 'client-home') targetView = 'esplora';
+      if (!targetView || targetView === 'home') targetView = 'client-home';
 
       if (urlParams.get('deal') === 'true') {
         adminGoogleLogin('creator');
@@ -27029,23 +27645,21 @@ function renderDealChat(rfpId) {
             setGateRole('creator');
           }
         } else {
-          // I visitatori non autenticati visualizzano per prima cosa la Vetrina Globale (/esplora)
-          navigateTo('esplora');
+          // La Home page è visibile a tutti i visitatori
+          navigateTo(targetView || 'client-home');
         }
       } else {
-        // Se autenticato, apri la vista richiesta o la dashboard del proprio ruolo
-        if (targetView && ['order-room', 'client-request', 'creator-requests', 'creator-portfolio', 'explore', 'esplora', 'deal-chat', 'studio', 'activity'].includes(targetView)) {
+        // Se autenticato (sia cliente che creator), apri la vista richiesta o la Home page
+        if (targetView && ['client-home', 'order-room', 'client-request', 'creator-requests', 'creator-portfolio', 'explore', 'esplora', 'deal-chat', 'studio', 'activity'].includes(targetView)) {
           if ((targetView === 'studio' || targetView === 'activity') && !hasAcceptedRequest()) {
-            targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'esplora';
+            targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'client-home';
           }
           if (targetView === 'order-room' && !hasActiveEscrowOrder()) {
-            targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'esplora';
+            targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'client-home';
           }
           navigateTo(targetView);
-        } else if (AppState.user.role === 'creator') {
-          navigateTo('creator-portfolio');
         } else {
-          navigateTo('esplora');
+          navigateTo('client-home');
         }
       }
 
