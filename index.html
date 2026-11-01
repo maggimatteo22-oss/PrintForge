@@ -8952,16 +8952,18 @@
               budget: dbR.budget || '€ 0,00',
               notes: cleanNotes,
               rawUserNotes: cleanNotes,
-              status: dbR.status || (isAcc ? 'IN LAVORAZIONE (ACCETTATA DAL CREATOR)' : 'IN ATTESA'),
+              status: isAcc ? (dbR.status || 'IN LAVORAZIONE (PRESA IN CARICO)') : 'APERTA (IN ATTESA CREATOR)',
               shippingStreet: meta.shippingStreet || '',
               shippingCity: meta.shippingCity || dbR.client_city || 'Milano',
               shippingCap: meta.shippingCap || '20121',
               shippingProv: meta.shippingProv || 'MI',
               shippingFull: meta.shippingFull || (meta.shippingStreet ? `${meta.shippingStreet}, ${meta.shippingCap || '20121'} ${meta.shippingCity || dbR.client_city || 'Milano'} (${meta.shippingProv || 'MI'})` : (dbR.client_city ? `${dbR.client_city}` : 'Via Dante 18, 20121 Milano (MI)')),
               fileName: dbR.file_name || 'modello.stl',
-              maker: dbR.maker_name || (meta.makerName || null),
-              makerEmail: meta.makerEmail || '',
-              makerUserId: meta.makerUserId || '',
+              maker: isAcc ? (dbR.maker_name || meta.makerName || 'Maker Certificato') : null,
+              makerEmail: isAcc ? (meta.makerEmail || '') : '',
+              makerUserId: isAcc ? (meta.makerUserId || '') : '',
+              targetCreatorId: meta.targetCreatorId || null,
+              targetCreatorName: meta.targetCreatorName || null,
               isAccepted: isAcc,
               isRejected: Boolean(dbR.status && dbR.status.includes('RIFIUTATA')),
               messages: parsedMessages,
@@ -9381,7 +9383,10 @@
         };
         const { error } = await supabaseClient.from('broadcast_requests').insert([dbPayload]);
         if (error) console.warn('Errore salvataggio Supabase Cloud:', error);
-        else console.log('✅ Richiesta pubblicata su Supabase Cloud:', req.id);
+        else {
+          console.log('✅ Richiesta pubblicata su Supabase Cloud:', req.id);
+          broadcastRealtimeEvent('request_created', { request: req });
+        }
       } catch (e) {
         console.warn('Errore insert Supabase:', e);
       }
@@ -22266,7 +22271,13 @@ END-ISO-10303-21;`;
         timestamp: timeNow,
         status: statusOpen,
         isAccepted: false,
-        creatorAssigned: 'PrintForge Milano Hub (Creator)',
+        creatorAssigned: '',
+        maker: '',
+        maker_name: '',
+        acceptedBy: '',
+        assigned_creator_id: '',
+        makerUserId: '',
+        makerEmail: '',
         agreements: {
           cadVerified: true,
           toleranceConfirmed: false,
@@ -22285,14 +22296,18 @@ END-ISO-10303-21;`;
       };
 
       // MODULO 4: Se ordine diretto da vetrina, assegna direttamente senza broadcast globale
+      // MODULO 4: Se ordine da vetrina ("Ordina adesso"), memorizza targetCreator ma NON accettare automaticamente!
       if (window._directAssignedCreator) {
-        newRequest.assigned_creator_id = window._directAssignedCreator.id || '';
-        newRequest.maker = window._directAssignedCreator.name || 'Maker Certificato';
-        newRequest.makerEmail = window._directAssignedCreator.email || '';
-        newRequest.makerUserId = window._directAssignedCreator.id || '';
-        newRequest.isAccepted = true;
-        newRequest.status = 'IN LAVORAZIONE (PRESA IN CARICO)';
-        console.log('🎯 Ordine diretto assegnato esclusivamente a:', window._directAssignedCreator.name);
+        newRequest.targetCreatorId = window._directAssignedCreator.id || '';
+        newRequest.targetCreatorName = window._directAssignedCreator.name || '';
+        newRequest.targetCreatorEmail = window._directAssignedCreator.email || '';
+        newRequest.isAccepted = false;
+        newRequest.status = statusOpen;
+        newRequest.maker = '';
+        newRequest.maker_name = '';
+        newRequest.acceptedBy = '';
+        newRequest.assigned_creator_id = '';
+        console.log('🎯 Ordine da vetrina indirizzato a:', window._directAssignedCreator.name);
         window._directAssignedCreator = null;
       }
       AppState.broadcastRequests.unshift(newRequest);
@@ -22305,6 +22320,7 @@ END-ISO-10303-21;`;
 
       // Sync insert to Supabase Cloud
       saveRequestToSupabase(newRequest);
+      broadcastRealtimeEvent('request_created', { request: newRequest });
 
       // Aggiornamento contatore live HUD navbar e badge feed
       const navLiveReq = document.getElementById('navLiveRequestsCount');
@@ -26902,58 +26918,20 @@ function renderDealChat(rfpId) {
     let currentExploreFilter = 'ALL';
     window._currentPortfolioPhotoDataUrl = null;
 
-    const INITIAL_PORTFOLIO_WORKS = [
-      {
-        id: 'WORK-101',
-        title: 'Ingranaggio Meccanico ad Alta Coppia',
-        description: 'Componente cinematico realizzato con tolleranza micrometrica ±0.05 mm, collaudato per accoppiamento su albero motore da 8mm.',
-        material: 'PETG Tecnico',
-        color: 'Arancione Meccanico',
-        dimensions: '80 × 80 × 22 mm',
-        price: '€ 34,00',
-        photoUrl: '/images/cube.jpg',
-        creatorId: 'maker_milano_hub',
-        creatorName: 'Milano 3D Lab',
-        creatorEmail: 'lab@milano3d.it'
-      },
-      {
-        id: 'WORK-102',
-        title: 'Boccola Autolubrificante con Flangia M4',
-        description: 'Boccola di scorrimento rinforzata con fibre di carbonio, resistente ad attrito radiale elevato e temperature fino a 140°C.',
-        material: 'PA12-CF Carbonio',
-        color: 'Nero Cyber',
-        dimensions: '45 × 45 × 30 mm',
-        price: '€ 48,00',
-        photoUrl: '/images/bushing.jpg',
-        creatorId: 'maker_torino_precision',
-        creatorName: 'Torino Precision Hub',
-        creatorEmail: 'precision@torinolab.it'
-      },
-      {
-        id: 'WORK-103',
-        title: 'Scocca Elettronica Ventilata con Sigillo IP54',
-        description: 'Case per scheda di controllo con asole di ventilazione calibrate e alloggiamento per guarnizione perimetrale in gomma.',
-        material: 'ABS Strutturale',
-        color: 'Grigio Industriale',
-        dimensions: '110 × 75 × 35 mm',
-        price: '€ 29,00',
-        photoUrl: '/images/landscape.jpg',
-        creatorId: 'maker_bologna_tech',
-        creatorName: 'Bologna Additive Works',
-        creatorEmail: 'works@bologna3d.it'
-      }
-    ];
+    const INITIAL_PORTFOLIO_WORKS = [];
 
-    if (!AppState.portfolioWorks || AppState.portfolioWorks.length === 0) {
-      try {
-        const stored = localStorage.getItem('printforge_portfolio_works');
-        if (stored) {
-          AppState.portfolioWorks = JSON.parse(stored);
+    try {
+      const stored = localStorage.getItem('printforge_portfolio_works');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          AppState.portfolioWorks = parsed.filter(w => w && w.id && !w.id.startsWith('WORK-10'));
+          localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
         }
-      } catch(e) {}
-      if (!AppState.portfolioWorks || AppState.portfolioWorks.length === 0) {
-        AppState.portfolioWorks = INITIAL_PORTFOLIO_WORKS;
       }
+    } catch(e) {}
+    if (!AppState.portfolioWorks) {
+      AppState.portfolioWorks = [];
     }
 
     function filterExploreCategory(cat) {
