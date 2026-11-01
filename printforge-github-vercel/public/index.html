@@ -26824,60 +26824,24 @@ function renderDealChat(rfpId) {
     let currentExploreFilter = 'ALL';
     window._currentPortfolioPhotoDataUrl = null;
 
-    const INITIAL_PORTFOLIO_WORKS = [
-      {
-        id: 'WORK-101',
-        title: 'Ingranaggio Meccanico ad Alta Coppia',
-        description: 'Componente cinematico realizzato con tolleranza micrometrica ±0.05 mm, collaudato per accoppiamento su albero motore da 8mm.',
-        material: 'PETG Tecnico',
-        color: 'Arancione Meccanico',
-        dimensions: '80 × 80 × 22 mm',
-        price: '€ 34,00',
-        photoUrl: '/images/cube.jpg',
-        creatorId: 'maker_milano_hub',
-        creatorName: 'Milano 3D Lab',
-        creatorEmail: 'lab@milano3d.it'
-      },
-      {
-        id: 'WORK-102',
-        title: 'Boccola Autolubrificante con Flangia M4',
-        description: 'Boccola di scorrimento rinforzata con fibre di carbonio, resistente ad attrito radiale elevato e temperature fino a 140°C.',
-        material: 'PA12-CF Carbonio',
-        color: 'Nero Cyber',
-        dimensions: '45 × 45 × 30 mm',
-        price: '€ 48,00',
-        photoUrl: '/images/bushing.jpg',
-        creatorId: 'maker_torino_precision',
-        creatorName: 'Torino Precision Hub',
-        creatorEmail: 'precision@torinolab.it'
-      },
-      {
-        id: 'WORK-103',
-        title: 'Scocca Elettronica Ventilata con Sigillo IP54',
-        description: 'Case per scheda di controllo con asole di ventilazione calibrate e alloggiamento per guarnizione perimetrale in gomma.',
-        material: 'ABS Strutturale',
-        color: 'Grigio Industriale',
-        dimensions: '110 × 75 × 35 mm',
-        price: '€ 29,00',
-        photoUrl: '/images/landscape.jpg',
-        creatorId: 'maker_bologna_tech',
-        creatorName: 'Bologna Additive Works',
-        creatorEmail: 'works@bologna3d.it'
-      }
-    ];
+    const INITIAL_PORTFOLIO_WORKS = [];
 
+    // Epurazione totale e definitiva di tutti i mock demo (WORK-101, WORK-102, WORK-103)
     try {
       const stored = localStorage.getItem('printforge_portfolio_works');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          AppState.portfolioWorks = parsed;
+        if (Array.isArray(parsed)) {
+          const fakeWorkIds = ['WORK-101', 'WORK-102', 'WORK-103'];
+          AppState.portfolioWorks = parsed.filter(w => w && w.id && !fakeWorkIds.includes(w.id) && !w.id.startsWith('WORK-10'));
+          localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
         }
       }
     } catch(e) {}
-    if (!AppState.portfolioWorks || AppState.portfolioWorks.length === 0) {
-      AppState.portfolioWorks = INITIAL_PORTFOLIO_WORKS;
+    if (!AppState.portfolioWorks) {
+      AppState.portfolioWorks = [];
     }
+
     function filterExploreCategory(cat) {
       currentExploreFilter = cat || 'ALL';
       ['All', 'Petg', 'Pla', 'Carbon'].forEach(c => {
@@ -27459,6 +27423,19 @@ function renderDealChat(rfpId) {
       } else {
         updateLiveCreatorsCountDisplay();
       }
+
+      // Vetrina 2D & Portfolio: epurazione totale opere demo
+      try {
+        const storedWorks = localStorage.getItem('printforge_portfolio_works');
+        if (storedWorks) {
+          const pWorks = JSON.parse(storedWorks);
+          if (Array.isArray(pWorks)) {
+            const fakeWorkIds = ['WORK-101', 'WORK-102', 'WORK-103'];
+            AppState.portfolioWorks = pWorks.filter(w => w && w.id && !fakeWorkIds.includes(w.id) && !w.id.startsWith('WORK-10'));
+            localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+          }
+        }
+      } catch(e) {}
 
       // Broadcast RFPs Restoration - Epurazione annunci fake/demo
       try {
