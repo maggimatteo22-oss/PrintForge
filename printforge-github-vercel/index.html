@@ -8907,7 +8907,8 @@
           // Escludi i record di profilo di sistema e le richieste cancellate definitivamente
           const actualRequests = data.filter(dbR => {
             if (!dbR || !dbR.id) return false;
-            if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE') return false;
+            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829'];
+            if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE' || fakeIds.includes(dbR.id)) return false;
             if (deletedIds.has(dbR.id)) return false;
             if (dbR.status === 'CANCELLATA_DEFINITIVAMENTE' || dbR.status === 'DELETED') return false;
             return true;
@@ -9446,117 +9447,7 @@
     window.resetSupabaseConfig = resetSupabaseConfig;
 
     // Modelli demo archiviati per eventuale ripopolamento di test
-    const PRESET_DEMO_REQUESTS = [
-      {
-        id: 'RFP-3891',
-        title: 'Componente Meccanico Personalizzato',
-        clientName: 'Ing. Marco Ferraris',
-        clientCity: 'Torino (TO)',
-        clientEmail: 'm.ferraris@precisionlab.it',
-        usage: 'Parte Meccanica Funzionale',
-        material: 'PETG Tecnico',
-        color: 'Arancione Meccanico',
-        colorHex: 0xff6600,
-        presetKind: 'gear',
-        dimensions: '80 × 60 × 25 mm',
-        dimX: 80,
-        dimY: 60,
-        dimZ: 25,
-        quantity: '1 pezzo (Prototipo)',
-        tolerance: 'Alta Precisione ±0.05 mm',
-        infill: '50% Meccanico Strutturale',
-        postProcess: 'Grezzo (Rimozione supporti standard)',
-        budget: '€ 48.00',
-        deadline: 'Standard 3-5 giorni',
-        notes: 'Richiesta precisione sui denti dell\'ingranaggio e tenuta del perno centrale con asse da 8mm.',
-        fileName: 'ingranaggio_planetario.stl',
-        aiImage: null,
-        timestamp: '10:45',
-        status: 'IN TRATTATIVA // CHAT ATTIVA',
-        creatorAssigned: '',
-        agreements: {
-          cadVerified: false,
-          toleranceConfirmed: false,
-          qcPhotosAgreed: false,
-          orientationAgreed: false,
-          shippingLocked: false
-        },
-        messages: []
-      },
-      {
-        id: 'RFP-4120',
-        title: 'Cubo di Calibrazione XYZ 20mm & Collaudo',
-        clientName: 'Studio Design Andrea Riva',
-        clientCity: 'Milano (MI)',
-        shippingStreet: 'Via Dante 18',
-        shippingCity: 'Milano',
-        shippingCap: '20121',
-        shippingProv: 'MI',
-        shippingFull: 'Via Dante 18, 20121 Milano (MI)',
-        clientEmail: 'a.riva@studioriva.design',
-        usage: 'Prototipo di Validazione',
-        material: 'PLA+ Alta Resistenza',
-        color: 'Bianco Naturale Puro',
-        colorHex: 0xffffff,
-        presetKind: 'cube',
-        dimensions: '20 × 20 × 20 mm',
-        dimX: 20,
-        dimY: 20,
-        dimZ: 20,
-        quantity: '2 - 5 pezzi',
-        tolerance: 'Meccanica Fine ±0.10 mm',
-        infill: '20% Leggero / Standard',
-        postProcess: 'Grezzo (Rimozione supporti standard)',
-        budget: '€ 22.00',
-        deadline: 'Urgente Flash 24-48h',
-        notes: 'Verifica della planarità del piatto e calibrazione assi X, Y, Z con calibro digitale.',
-        fileName: 'cubo_calibrazione_xyz_20mm.stl',
-        aiImage: '/images/cube.jpg',
-        timestamp: '09:20',
-        status: 'APERTA (IN ATTESA CREATOR)',
-        creatorAssigned: 'PrintForge Maker Pool',
-        agreements: {
-          cadVerified: false,
-          toleranceConfirmed: false,
-          qcPhotosAgreed: false,
-          orientationAgreed: false,
-          shippingLocked: false
-        },
-        messages: []
-      },
-      {
-        id: 'RFP-1044',
-        title: 'Boccola Meccanica Flangiata con Fori di Fissaggio',
-        clientName: 'Dott. Roberto Conti',
-        clientCity: 'Bologna (BO)',
-        clientEmail: 'r.conti@automotive-lab.it',
-        usage: 'Componente Meccanico di Scorrimento',
-        material: 'PA12-CF Carbonio',
-        color: 'Nero Opaco Cyber',
-        colorHex: 0x1a1a1c,
-        presetKind: 'bushing',
-        quantity: '6 - 20 pezzi',
-        tolerance: 'Alta Precisione ±0.05 mm',
-        infill: '100% Pieno Massiccio Solido',
-        postProcess: 'Inserti filettati termo-fissati',
-        budget: '€ 85.00',
-        deadline: 'Standard 3-5 giorni',
-        notes: 'Foro interno calibrato per albero da 22mm e 4 fori su flangia per viti M4 con inserti filettati in ottone.',
-        fileName: 'boccola_flangiata_meccanica.stl',
-        aiImage: '/images/bushing.jpg',
-        timestamp: '08:40',
-        status: 'APERTA (IN ATTESA CREATOR)',
-        creatorAssigned: 'PrintForge Maker Pool',
-        agreements: {
-          cadVerified: false,
-          toleranceConfirmed: false,
-          qcPhotosAgreed: false,
-          orientationAgreed: false,
-          shippingLocked: false
-        },
-        messages: []
-      }
-    ];
+    const PRESET_DEMO_REQUESTS = [];
 
     let currentSuccessRfpId = null;
 
@@ -17153,6 +17044,21 @@ END-ISO-10303-21;`;
           <button onclick="navigateTo('client-home')" class="${isHome ? mActive : mInactive}">
             <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
             <span>HOME</span>
+          </button>
+        `;
+
+        // ESPLORA (Vetrina 2D per tutti)
+        const isExp = (v === 'explore' || v === 'esplora');
+        html += `
+          <button onclick="navigateTo('esplora')" id="navExploreBtn" class="${isExp ? activeClass : inactiveClass}">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
+            <span>ESPLORA</span>
+          </button>
+        `;
+        mobileHtml += `
+          <button onclick="navigateTo('esplora')" class="${isExp ? mActive : mInactive}">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
+            <span>ESPLORA</span>
           </button>
         `;
 
@@ -26918,22 +26824,60 @@ function renderDealChat(rfpId) {
     let currentExploreFilter = 'ALL';
     window._currentPortfolioPhotoDataUrl = null;
 
-    const INITIAL_PORTFOLIO_WORKS = [];
+    const INITIAL_PORTFOLIO_WORKS = [
+      {
+        id: 'WORK-101',
+        title: 'Ingranaggio Meccanico ad Alta Coppia',
+        description: 'Componente cinematico realizzato con tolleranza micrometrica ±0.05 mm, collaudato per accoppiamento su albero motore da 8mm.',
+        material: 'PETG Tecnico',
+        color: 'Arancione Meccanico',
+        dimensions: '80 × 80 × 22 mm',
+        price: '€ 34,00',
+        photoUrl: '/images/cube.jpg',
+        creatorId: 'maker_milano_hub',
+        creatorName: 'Milano 3D Lab',
+        creatorEmail: 'lab@milano3d.it'
+      },
+      {
+        id: 'WORK-102',
+        title: 'Boccola Autolubrificante con Flangia M4',
+        description: 'Boccola di scorrimento rinforzata con fibre di carbonio, resistente ad attrito radiale elevato e temperature fino a 140°C.',
+        material: 'PA12-CF Carbonio',
+        color: 'Nero Cyber',
+        dimensions: '45 × 45 × 30 mm',
+        price: '€ 48,00',
+        photoUrl: '/images/bushing.jpg',
+        creatorId: 'maker_torino_precision',
+        creatorName: 'Torino Precision Hub',
+        creatorEmail: 'precision@torinolab.it'
+      },
+      {
+        id: 'WORK-103',
+        title: 'Scocca Elettronica Ventilata con Sigillo IP54',
+        description: 'Case per scheda di controllo con asole di ventilazione calibrate e alloggiamento per guarnizione perimetrale in gomma.',
+        material: 'ABS Strutturale',
+        color: 'Grigio Industriale',
+        dimensions: '110 × 75 × 35 mm',
+        price: '€ 29,00',
+        photoUrl: '/images/landscape.jpg',
+        creatorId: 'maker_bologna_tech',
+        creatorName: 'Bologna Additive Works',
+        creatorEmail: 'works@bologna3d.it'
+      }
+    ];
 
     try {
       const stored = localStorage.getItem('printforge_portfolio_works');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          AppState.portfolioWorks = parsed.filter(w => w && w.id && !w.id.startsWith('WORK-10'));
-          localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          AppState.portfolioWorks = parsed;
         }
       }
     } catch(e) {}
-    if (!AppState.portfolioWorks) {
-      AppState.portfolioWorks = [];
+    if (!AppState.portfolioWorks || AppState.portfolioWorks.length === 0) {
+      AppState.portfolioWorks = INITIAL_PORTFOLIO_WORKS;
     }
-
     function filterExploreCategory(cat) {
       currentExploreFilter = cat || 'ALL';
       ['All', 'Petg', 'Pla', 'Carbon'].forEach(c => {
@@ -27516,18 +27460,15 @@ function renderDealChat(rfpId) {
         updateLiveCreatorsCountDisplay();
       }
 
-      // Broadcast RFPs Restoration
+      // Broadcast RFPs Restoration - Epurazione annunci fake/demo
       try {
         const storedReqs = localStorage.getItem('printforge_broadcast_requests');
         if (storedReqs) {
           const parsed = JSON.parse(storedReqs);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            AppState.broadcastRequests = parsed.map(req => {
-              if (req.title && (req.title.toLowerCase().includes('alta precisione') || req.title.toLowerCase().includes('alta coppia') || req.title.toLowerCase().includes('planetario'))) {
-                req.title = 'Componente Personalizzato';
-              }
-              return req;
-            });
+          if (Array.isArray(parsed)) {
+            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829'];
+            AppState.broadcastRequests = parsed.filter(req => req && req.id && !fakeIds.includes(req.id) && !req.id.startsWith('USER-PROFILE-'));
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
           }
         }
       } catch (e) {}
