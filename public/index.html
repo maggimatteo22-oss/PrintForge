@@ -7219,6 +7219,21 @@
       </p>
 
       <form onsubmit="handleGoogleModalSubmit(event)" class="space-y-4 text-xs font-sans">
+        <!-- Selettore Ruolo Diretto nel Modale Google -->
+        <div class="space-y-1.5">
+          <label class="text-[11px] font-mono text-zinc-300 block font-bold">Accedi con Ruolo:</label>
+          <div class="grid grid-cols-2 gap-2 p-1 rounded-xl bg-[#121217] border border-white/10 font-mono text-xs">
+            <button type="button" onclick="selectGoogleModalRole('client')" id="btnGoogleRoleClient" class="py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 bg-white text-black transition cursor-pointer">
+              <i data-lucide="user" class="w-3.5 h-3.5"></i>
+              <span>Cliente</span>
+            </button>
+            <button type="button" onclick="selectGoogleModalRole('creator')" id="btnGoogleRoleCreator" class="py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white transition cursor-pointer">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Creator</span>
+            </button>
+          </div>
+        </div>
+
         <div class="space-y-1">
           <label class="text-[11px] font-mono text-zinc-300 block font-bold">Email Account Google *</label>
           <input type="email" id="googleModalEmail" required placeholder="tuonome@gmail.com" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
@@ -17258,6 +17273,18 @@ END-ISO-10303-21;`;
               </div>
             </div>
             
+            ${isCreator ? `
+              <button type="button" onclick="switchUserRole('client')" class="px-2.5 py-1 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-mono text-[11px] flex items-center gap-1 transition active:scale-95 shrink-0 cursor-pointer" title="Passa alla modalità Cliente per inviare commesse">
+                <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Passa a Cliente</span>
+              </button>
+            ` : `
+              <button type="button" onclick="switchUserRole('creator')" class="px-2.5 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] flex items-center gap-1 transition active:scale-95 shrink-0 cursor-pointer" title="Passa alla modalità Creator per prendere in carico ordini">
+                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+                <span class="hidden sm:inline">Passa a Creator</span>
+              </button>
+            `}
+
             <button type="button" onclick="openDeviceSyncModal()" class="px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] flex items-center gap-1.5 transition active:scale-95 shrink-0" title="Collega questo account al tuo smartphone per vedere tutto in tempo reale">
               <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
               <span class="hidden md:inline">Collega Telefono</span>
@@ -20816,6 +20843,55 @@ END-ISO-10303-21;`;
     /* ========================================================================= */
     /* MODULO 1: GOOGLE OAUTH & ISOLAMENTO RIGOROSO SESSIONI                     */
     /* ========================================================================= */
+    let currentGoogleModalRole = 'client';
+    function selectGoogleModalRole(role) {
+      currentGoogleModalRole = role;
+      const bCli = document.getElementById('btnGoogleRoleClient');
+      const bCr = document.getElementById('btnGoogleRoleCreator');
+      if (role === 'client') {
+        if (bCli) bCli.className = 'py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 bg-white text-black transition cursor-pointer';
+        if (bCr) bCr.className = 'py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white transition cursor-pointer';
+      } else {
+        if (bCr) bCr.className = 'py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 bg-white text-black transition cursor-pointer';
+        if (bCli) bCli.className = 'py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white transition cursor-pointer';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+    window.selectGoogleModalRole = selectGoogleModalRole;
+
+    function switchUserRole(newRole) {
+      if (!AppState.user || !AppState.user.isLoggedIn) {
+        if (newRole) setGateRole(newRole);
+        navigateTo('login-gate');
+        return;
+      }
+      const targetRole = newRole || (AppState.user.role === 'creator' ? 'client' : 'creator');
+      AppState.user.role = targetRole;
+      if (targetRole === 'creator') {
+        registerCreatorPresence();
+      } else {
+        unregisterCreatorPresence();
+      }
+      try {
+        localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+      } catch(e) {}
+      if (AppState.user.email) {
+        syncUserProfileToCloud(AppState.user);
+      }
+      renderNavUserArea();
+      updateNavigationTabs();
+      updateLaptopBarButtons();
+      loadRequestsFromSupabase();
+      if (targetRole === 'client') {
+        showToast(currentLang === 'it' ? 'Modalità CLIENTE attiva. Ora puoi inviare le tue richieste.' : 'CLIENT Mode active. You can create orders now.', 'success');
+        navigateTo('client-request');
+      } else {
+        showToast(currentLang === 'it' ? 'Modalità CREATOR attiva. Accesso a Bacheca e Lavorazioni.' : 'CREATOR Mode active.', 'success');
+        navigateTo('creator-requests');
+      }
+    }
+    window.switchUserRole = switchUserRole;
+
     function openGoogleLoginModal() {
       const modal = document.getElementById('modalGoogleLogin');
       if (modal) {
@@ -20858,7 +20934,7 @@ END-ISO-10303-21;`;
           userId: userId,
           id: userId,
           isLoggedIn: true,
-          role: cloudProfile.role,
+          role: currentGoogleModalRole || cloudProfile.role || 'client',
           isAdmin: Boolean(cloudProfile.isAdmin),
           name: cloudProfile.name || name,
           email: email,
@@ -27453,6 +27529,19 @@ function renderDealChat(rfpId) {
           AppState.loadedRequestInStudio = null;
           AppState.activeDealRfpId = null;
           localStorage.removeItem('printforge_escrow_order');
+        }
+      } catch(e) {}
+
+      // Ripristino e allineamento sessione: priorità accesso Cliente
+      try {
+        const storedAuth = localStorage.getItem('printforge_auth_session');
+        if (storedAuth) {
+          const u = JSON.parse(storedAuth);
+          if (u && (u.email === 'maggimatteo22@gmail.com' || window.location.hash === '#client' || urlParams.get('role') === 'client')) {
+            u.role = 'client';
+            AppState.user = u;
+            localStorage.setItem('printforge_auth_session', JSON.stringify(u));
+          }
         }
       } catch(e) {}
 
