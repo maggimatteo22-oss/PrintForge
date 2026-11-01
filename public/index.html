@@ -8907,7 +8907,7 @@
           // Escludi i record di profilo di sistema e le richieste cancellate definitivamente
           const actualRequests = data.filter(dbR => {
             if (!dbR || !dbR.id) return false;
-            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829'];
+            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
             if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE' || fakeIds.includes(dbR.id)) return false;
             if (deletedIds.has(dbR.id)) return false;
             if (dbR.status === 'CANCELLATA_DEFINITIVAMENTE' || dbR.status === 'DELETED') return false;
@@ -9613,17 +9613,21 @@
       const userEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
       const userId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
       const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
+      const isCreator = Boolean(AppState.user && AppState.user.role === 'creator');
 
       // Trova le richieste da eliminare: per cliente elimina le proprie, per admin tutte
       const targets = (AppState.broadcastRequests || []).filter(r => {
         if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-')) return false;
-        if (isAdmin) return true;
+        if (isAdmin || isCreator) return true;
         const reqEmail = (r.clientEmail || '').toLowerCase().trim();
         const reqUid = (r.userId || '').toLowerCase().trim();
         return (userEmail && reqEmail === userEmail) || (userId && reqUid === userId);
       });
 
       const idsToDelete = targets.map(r => r.id);
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id && !idsToDelete.includes(AppState.activeEscrowOrder.id)) {
+        idsToDelete.push(AppState.activeEscrowOrder.id);
+      }
 
       // 1. DELETE definitivo da Supabase Cloud
       if (supabaseClient && idsToDelete.length > 0) {
@@ -23009,6 +23013,10 @@ END-ISO-10303-21;`;
                 <i data-lucide="box" class="w-4 h-4 text-cyan-400"></i>
                 <span>STUDIO CAD 3D</span>
               </button>
+              <button type="button" onclick="deleteSingleBroadcastRequest('${activeCreatorJob.id}')" class="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 font-cyber font-bold text-xs flex items-center gap-2 transition active:scale-95" title="Elimina definitivamente questa commessa">
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                <span>ELIMINA COMMESSA</span>
+              </button>
             </div>
           </div>
         `;
@@ -27437,13 +27445,24 @@ function renderDealChat(rfpId) {
         }
       } catch(e) {}
 
+      // Azzeramento forzato commessa demo RFP-3555 cross-device
+      try {
+        recordDeletedRequestIds(['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044']);
+        if (AppState.activeEscrowOrder && ['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044'].includes(AppState.activeEscrowOrder.id)) {
+          AppState.activeEscrowOrder = null;
+          AppState.loadedRequestInStudio = null;
+          AppState.activeDealRfpId = null;
+          localStorage.removeItem('printforge_escrow_order');
+        }
+      } catch(e) {}
+
       // Broadcast RFPs Restoration - Epurazione annunci fake/demo
       try {
         const storedReqs = localStorage.getItem('printforge_broadcast_requests');
         if (storedReqs) {
           const parsed = JSON.parse(storedReqs);
           if (Array.isArray(parsed)) {
-            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829'];
+            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
             AppState.broadcastRequests = parsed.filter(req => req && req.id && !fakeIds.includes(req.id) && !req.id.startsWith('USER-PROFILE-'));
             localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
           }
