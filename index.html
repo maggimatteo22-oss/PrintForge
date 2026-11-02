@@ -9124,6 +9124,7 @@
           const actualRequests = data.filter(dbR => {
             if (!dbR || !dbR.id) return false;
             if (dbR.status === 'PORTFOLIO_WORK' || String(dbR.id).startsWith('WORK-')) return false;
+            if (dbR.status === 'CERTIFIED_REVIEW' || String(dbR.id).startsWith('REV-') || String(dbR.title || '').startsWith('CREATOR_REVIEW:')) return false;
             const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
             if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE' || fakeIds.includes(dbR.id)) return false;
             if (deletedIds.has(dbR.id)) return false;
@@ -20927,28 +20928,35 @@ END-ISO-10303-21;`;
         console.warn('Errore trigger Step 4 Modulo 5:', e);
       }
 
-      // Rimozione della richiesta dalle richieste broadcast attive alla conferma del 4 passaggio
+      // 1. Elimina recensioni REV- e imposta la commessa come COMPLETATO
       const completedReqId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
-      if (completedReqId) {
-        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== completedReqId);
-        try {
-          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
-        } catch(e) {}
-
-        if (typeof updateRequestInSupabase === 'function') {
-          updateRequestInSupabase(completedReqId, {
-            status: 'CONSEGNATO // FONDI SVINCOLATI',
-            is_delivered: true,
-            is_closed: true
-          });
+      AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && !String(r.id).startsWith('REV-') && !(r.title && String(r.title).startsWith('CREATOR_REVIEW:')));
+      AppState.broadcastRequests.forEach(r => {
+        if (r && (r.id === completedReqId || r.isAccepted || (typeof r.status === 'string' && r.status.includes('LAVORAZION')))) {
+          r.status = 'COMPLETATO';
+          r.isCompleted = true;
+          r.isDelivered = true;
+          r.budget = '€ 0,00';
         }
+      });
+      try {
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+      } catch(e) {}
 
-        renderBroadcastTable();
-        renderCreatorRequestsFeed();
-        const navLiveReq = document.getElementById('navLiveRequestsCount');
-        if (navLiveReq) {
-          navLiveReq.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected).length;
-        }
+      if (completedReqId && typeof updateRequestInSupabase === 'function') {
+        updateRequestInSupabase(completedReqId, {
+          status: 'COMPLETATO',
+          is_delivered: true,
+          is_completed: true,
+          is_closed: true
+        });
+      }
+
+      renderBroadcastTable();
+      renderCreatorRequestsFeed();
+      const navLiveReq = document.getElementById('navLiveRequestsCount');
+      if (navLiveReq) {
+        navLiveReq.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted).length;
       }
 
       const toastDelivery = isEn 
@@ -22489,21 +22497,31 @@ END-ISO-10303-21;`;
         AppState.stage4Completed = true;
         if (AppState.activeEscrowOrder) {
           AppState.activeEscrowOrder.isDelivered = true;
+          AppState.activeEscrowOrder.isCompleted = true;
+          AppState.activeEscrowOrder.status = 'COMPLETATO';
           AppState.activeEscrowOrder.budget = '€ 0,00';
         }
         const budgetEl = document.getElementById('escrowOrderBudget');
         if (budgetEl) budgetEl.innerText = '€ 0,00';
 
-        // Purge completed request from broadcast requests and sync
+        // 1. Elimina qualsiasi record recensione REV- da broadcastRequests
+        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && !String(r.id).startsWith('REV-') && !(r.title && String(r.title).startsWith('CREATOR_REVIEW:')));
+
+        // 2. Imposta la commessa attiva come COMPLETATO
         const completedReqId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
-        if (completedReqId) {
-          AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== completedReqId && !r.isCompleted && !r.isDelivered && !r.isClosed);
-          try {
-            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
-          } catch(e) {}
-          if (typeof renderBroadcastTable === 'function') renderBroadcastTable();
-          if (typeof renderCreatorRequestsFeed === 'function') renderCreatorRequestsFeed();
-        }
+        AppState.broadcastRequests.forEach(r => {
+          if (r && (r.id === completedReqId || r.isAccepted || (typeof r.status === 'string' && r.status.includes('LAVORAZION')))) {
+            r.status = 'COMPLETATO';
+            r.isCompleted = true;
+            r.isDelivered = true;
+            r.budget = '€ 0,00';
+          }
+        });
+        try {
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } catch(e) {}
+        if (typeof renderBroadcastTable === 'function') renderBroadcastTable();
+        if (typeof renderCreatorRequestsFeed === 'function') renderCreatorRequestsFeed();
 
         renderEscrowResolutionBanner();
 
@@ -24766,11 +24784,15 @@ END-ISO-10303-21;`;
       // MULTI-TENANT ISOLATION: il cliente vede ESCLUSIVAMENTE le proprie richieste
       const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
         if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return false;
-        if (r.isCompleted || r.isDelivered || r.isClosed) return false;
-        if (typeof r.status === 'string') {
-          const s = r.status.toUpperCase();
-          if (s.includes('CONSEGNAT') || s.includes('SVINCOLAT') || s.includes('ARCHIVIAT') || s.includes('COMPLETAT')) return false;
+        // Elimina sempre recensioni inserite erroneamente come richieste
+        if (String(r.id).startsWith('REV-') || (r.title && String(r.title).startsWith('CREATOR_REVIEW:')) || r.status === 'CERTIFIED_REVIEW') return false;
+
+        // Se lo stage 4 è completato, elimina la richiesta in attesa e mostra solo la commessa completata
+        if (AppState.stage4Completed || AppState.isDelivered) {
+          const isCompOrAcc = r.isCompleted || r.isDelivered || r.isAccepted || (typeof r.status === 'string' && (r.status.includes('COMPLETAT') || r.status.includes('LAVORAZION')));
+          if (!isCompOrAcc) return false; // Elimina quella in attesa
         }
+
         if (isAdmin) return true;
         if (isClient) {
           const reqEmail = (r.clientEmail || '').toLowerCase().trim();
@@ -24831,9 +24853,25 @@ END-ISO-10303-21;`;
 
       const cardsHtml = visibleRequests.map((r, idx) => {
         const isAcc = Boolean(r.isAccepted === true && (r.maker || r.acceptedBy || r.assigned_creator_id));
-        const statusBadge = isAcc
-          ? '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> IN LAVORAZIONE (PRESA IN CARICO)</span>'
-          : '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse">IN ATTESA DEL MAKER</span>';
+        const isCompleted = Boolean(
+          r.isCompleted === true ||
+          r.isDelivered === true ||
+          AppState.stage4Completed === true ||
+          (typeof r.status === 'string' && (
+            r.status.toUpperCase().includes('COMPLETAT') ||
+            r.status.toUpperCase().includes('CONSEGNAT') ||
+            r.status.toUpperCase().includes('SVINCOLAT')
+          ))
+        );
+
+        let statusBadge = '';
+        if (isCompleted) {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> COMPLETATO</span>';
+        } else if (isAcc) {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> IN LAVORAZIONE (PRESA IN CARICO)</span>';
+        } else {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse">IN ATTESA DEL MAKER</span>';
+        }
 
         const addressText = r.shippingFull || (r.shippingStreet ? `${r.shippingStreet}, ${r.shippingCap || ''} ${r.shippingCity || ''} (${r.shippingProv || ''})` : (r.clientCity || 'Milano (MI)'));
         const safeId = escapeHtml(r.id);
@@ -29814,7 +29852,7 @@ function renderDealChat(rfpId) {
           const parsed = JSON.parse(storedReqs);
           if (Array.isArray(parsed)) {
             const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
-            AppState.broadcastRequests = parsed.filter(req => req && req.id && !fakeIds.includes(req.id) && !req.id.startsWith('USER-PROFILE-'));
+            AppState.broadcastRequests = parsed.filter(req => req && req.id && !fakeIds.includes(req.id) && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW');
             localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
           }
         }
