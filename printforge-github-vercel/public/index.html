@@ -1,6 +1,8 @@
 ﻿<!DOCTYPE html>
 <html lang="it" class="dark">
 <head>
+  <meta name="google" content="notranslate" />
+  <meta name="googlebot" content="notranslate" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <!-- Primary SEO Meta Tags (ECC / claude-seo Optimized) -->
@@ -3576,7 +3578,7 @@
       <div class="flex items-center gap-1.5 sm:gap-2.5 lg:gap-4 min-w-0 flex-1 overflow-hidden">
         <!-- Navbar Brand: Wordmark Only (No logo icon, text only) -->
         <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center shrink-0 group cursor-pointer select-none py-1 mr-0.5 sm:mr-1.5 transition-transform active:scale-95" title="PrintForge P2P - Home">
-          <span class="font-display font-black text-sm sm:text-base md:text-lg tracking-tight select-none pf-brand-text">Print<span class="pf-brand-sub font-bold">Forge</span></span>
+          <span class="font-display font-black text-sm sm:text-base md:text-lg tracking-tight select-none pf-brand-text notranslate" translate="no">Print<span class="pf-brand-sub font-bold">Forge</span></span>
         </a>
 
         
@@ -4439,7 +4441,7 @@
 
           <!-- Minimal, Flawless Title & P2P Badge -->
           <div class="flex items-center justify-center gap-2.5">
-            <h1 class="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl tracking-tight text-white">
+            <h1 class="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl tracking-tight text-white notranslate" translate="no">
               Print<span class="text-zinc-400 font-bold">Forge</span>
               <span class="sr-only"> - Stampa 3D Online &amp; Prototipazione Rapida P2P</span>
             </h1>
@@ -17098,70 +17100,87 @@ END-ISO-10303-21;`;
 
       const isHome = (v === 'client-home' || v === 'home');
 
+      // Traduzioni dinamiche richieste espressamente dall'utente:
+      // - PrintForge, HOME e ESCROW ROOM non vanno tradotte (rimangono fisse e protette)
+      // - VETRINA e RICHIESTE vanno tradotte nelle lingue appropriate (IT, EN, ES)
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+
+      const showcaseLabel = isEn ? '2D SHOWCASE' : isEs ? 'VITRINA 2D' : 'VETRINA 2D';
+      const mShowcaseLabel = isEn ? 'SHOWCASE' : isEs ? 'VITRINA' : 'VETRINA';
+
+      const requestsLabel = isEn ? 'YOUR REQUESTS' : isEs ? 'TUS SOLICITUDES' : 'LE TUE RICHIESTE';
+      const mRequestsLabel = isEn ? 'REQUESTS' : isEs ? 'SOLICITUDES' : 'RICHIESTE';
+
+      const creatorRequestsLabel = isEn ? 'REQUESTS BOARD' : isEs ? 'PANEL SOLICITUDES' : 'BACHECA RICHIESTE';
+      const creatorProjectsLabel = isEn ? 'MY PROJECTS' : isEs ? 'MIS PROYECTOS' : 'I MIEI PROGETTI';
+      const mCreatorProjectsLabel = isEn ? 'PROJECTS' : isEs ? 'PROYECTOS' : 'PROGETTI';
+
       if (isCreator) {
-        // --- NAVBAR CREATOR: HOME + I MIEI PROGETTI + BACHECA RICHIESTE + ATTIVITÀ ---
+        // --- NAVBAR CREATOR: HOME + VETRINA 2D + I MIEI PROGETTI + BACHECA RICHIESTE + ATTIVITÀ ---
+        // 1. HOME (Fissa, non traducibile)
         html += `
           <button onclick="navigateTo('client-home')" id="navHomeBtn" class="${isHome ? activeClass : inactiveClass}">
             <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>HOME</span>
+            <span class="notranslate" translate="no">HOME</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('client-home')" class="${isHome ? mActive : mInactive}">
             <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>HOME</span>
+            <span class="notranslate" translate="no">HOME</span>
           </button>
         `;
 
-        // ESPLORA (Vetrina 2D per tutti)
+        // 2. VETRINA 2D (Tradotta)
         const isExp = (v === 'explore' || v === 'esplora');
         html += `
           <button onclick="navigateTo('esplora')" id="navExploreBtn" class="${isExp ? activeClass : inactiveClass}">
             <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
-            <span>ESPLORA</span>
+            <span>${showcaseLabel}</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('esplora')" class="${isExp ? mActive : mInactive}">
             <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
-            <span>ESPLORA</span>
+            <span>${mShowcaseLabel}</span>
           </button>
         `;
 
-        // I MIEI PROGETTI
+        // 3. I MIEI PROGETTI
         const isPortfolio = (v === 'creator-portfolio');
         html += `
           <button onclick="navigateTo('creator-portfolio')" id="navCreatorPortfolioBtn" class="${isPortfolio ? activeClass : inactiveClass}">
             <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>I MIEI PROGETTI</span>
+            <span>${creatorProjectsLabel}</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('creator-portfolio')" class="${isPortfolio ? mActive : mInactive}">
             <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>PROGETTI</span>
+            <span>${mCreatorProjectsLabel}</span>
           </button>
         `;
 
-        // BACHECA RICHIESTE
+        // 4. BACHECA RICHIESTE
         const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected).length;
         const isReqs = (v === 'creator-requests');
         html += `
           <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
             <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>BACHECA RICHIESTE</span>
+            <span>${creatorRequestsLabel}</span>
             <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
             <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>RICHIESTE</span>
+            <span>${mRequestsLabel}</span>
             <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
           </button>
         `;
 
-        // ATTIVITÀ (se ha commessa presa in carico)
+        // 5. ATTIVITÀ (se ha commessa presa in carico)
         if (hasAcceptedRequest()) {
           const isAct = (v === 'activity' || v === 'studio');
           html += `
@@ -17181,49 +17200,50 @@ END-ISO-10303-21;`;
         }
 
       } else {
-        // --- NAVBAR CLIENT / VISITATORE: HOME + ESPLORA + LE TUE RICHIESTE + STANZA ESCROW ---
+        // --- NAVBAR CLIENT / VISITATORE: HOME + VETRINA 2D + LE TUE RICHIESTE (SOLO CLIENTI) + ESCROW ROOM ---
+        // 1. HOME (Fissa, non traducibile)
         html += `
           <button onclick="navigateTo('client-home')" id="navHomeBtn" class="${isHome ? activeClass : inactiveClass}">
             <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>HOME</span>
+            <span class="notranslate" translate="no">HOME</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('client-home')" class="${isHome ? mActive : mInactive}">
             <i data-lucide="home" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>HOME</span>
+            <span class="notranslate" translate="no">HOME</span>
           </button>
         `;
 
-        // ESPLORA
+        // 2. VETRINA 2D (Sempre presente e visibile per tutti, tradotta)
         const isExp = (v === 'explore' || v === 'esplora');
         html += `
           <button onclick="navigateTo('esplora')" id="navExploreBtn" class="${isExp ? activeClass : inactiveClass}">
             <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
-            <span>ESPLORA</span>
+            <span>${showcaseLabel}</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('esplora')" class="${isExp ? mActive : mInactive}">
             <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
-            <span>ESPLORA</span>
+            <span>${mShowcaseLabel}</span>
           </button>
         `;
 
-        // RICHIESTE & STANZA ESCROW: MOSTRARE ESCLUSIVAMENTE AI CLIENTI AUTENTICATI
+        // 3. RICHIESTE (Tradotte) & ESCROW ROOM (Fissa non traducibile): MOSTRARE AI CLIENTI AUTENTICATI
         const isClientAuth = AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'client';
         if (isClientAuth) {
           const isReq = (v === 'client-request');
           html += `
             <button onclick="navigateTo('client-request')" id="navRequestBtn" class="${isReq ? activeClass : inactiveClass}">
               <i data-lucide="sparkles" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>LE TUE RICHIESTE</span>
+              <span>${requestsLabel}</span>
             </button>
           `;
           mobileHtml += `
             <button onclick="navigateTo('client-request')" class="${isReq ? mActive : mInactive}">
               <i data-lucide="sparkles" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>RICHIESTE</span>
+              <span>${mRequestsLabel}</span>
             </button>
           `;
 
@@ -17232,13 +17252,15 @@ END-ISO-10303-21;`;
           html += `
             <button onclick="navigateTo('order-room')" id="navOrderBtn" class="${isEsc ? activeClass : inactiveClass}" title="Stanza Escrow Stripe">
               <i data-lucide="${isEscrowActive ? 'shield-check' : 'lock'}" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>STANZA ESCROW</span>
+              <span class="notranslate" translate="no">ESCROW ROOM</span>
+              ${isEscrowActive ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
             </button>
           `;
           mobileHtml += `
             <button onclick="navigateTo('order-room')" class="${isEsc ? mActive : mInactive}">
               <i data-lucide="${isEscrowActive ? 'shield-check' : 'lock'}" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>ESCROW</span>
+              <span class="notranslate" translate="no">ESCROW</span>
+              ${isEscrowActive ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
             </button>
           `;
         }
