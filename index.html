@@ -3667,27 +3667,36 @@
           </div>
         </div>
 
-        <!-- SELETTORE BANDIERE A SCORRIMENTO VERTICALE (🇮🇹 / 🇬🇧 / 🇪🇸 - DIFIANCO A FOUNDER) -->
-        <div class="relative group shrink-0" id="verticalFlagContainer">
-          <div id="verticalFlagPill"
-               class="relative box-content h-[32px] w-[44px] sm:w-[50px] rounded-full bg-[#101014] border border-white/20 hover:border-white/50 transition-all shadow-inner overflow-hidden cursor-pointer select-none group-hover:shadow-[0_0_12px_rgba(255,255,255,0.15)]"
-               onclick="cycleLanguageVertical(1)"
-               onwheel="handleFlagVerticalWheel(event)"
-               title="Cambia Lingua / Switch Language / Cambiar Idioma: Clicca o scorri con la rotella (IT / EN / ES)">
-            
-            <!-- Sliding Track: starts at top 0, each item exactly 32px height -->
-            <div id="verticalFlagTrack" class="absolute top-0 left-0 w-full flex flex-col items-center transition-transform duration-300 ease-out will-change-transform" style="transform: translateY(0px);">
-              <!-- 0: IT (🇮🇹) -->
-              <div class="h-[32px] w-full flex items-center justify-center pr-2 shrink-0 transition-opacity duration-200" data-lang="it" title="Italiano">
-                <div class="w-5 h-3.5 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0 pointer-events-none">
+        <!-- SELETTORE LINGUA UFFICIALE (DROPDOWN CON SCELTA ESPLICITA IT / EN / ES) -->
+        <div class="relative shrink-0" id="officialLangContainer">
+          <button type="button" 
+                  id="officialLangBtn"
+                  onclick="toggleOfficialLangMenu(event)"
+                  class="h-[32px] px-2.5 rounded-full bg-[#101014] border border-white/20 hover:border-white/50 text-white flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer select-none"
+                  title="Seleziona Lingua / Select Language / Seleccionar Idioma">
+            <span id="currentLangFlag" class="flex shrink-0">
+              <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0"><div class="w-1/3 h-full bg-[#009246]"></div><div class="w-1/3 h-full bg-[#ffffff]"></div><div class="w-1/3 h-full bg-[#ce2b37]"></div></div>
+            </span>
+            <span id="currentLangName" class="text-xs font-mono font-bold hidden sm:inline">Italiano</span>
+            <span class="text-[8px] text-zinc-400">▼</span>
+          </button>
+
+          <!-- Dropdown Menu aperto sia al click che al tocco (Mobile & Desktop) -->
+          <div id="officialLangDropdown" class="hidden flex-col gap-1 absolute right-0 top-11 p-1.5 rounded-xl bg-[#0E0E14]/98 backdrop-blur-xl border border-white/20 shadow-2xl z-50 min-w-[130px]">
+            <button type="button" onclick="selectAppLanguage('it', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0">
                   <div class="w-1/3 h-full bg-[#009246]"></div>
                   <div class="w-1/3 h-full bg-[#ffffff]"></div>
                   <div class="w-1/3 h-full bg-[#ce2b37]"></div>
                 </div>
+                <span>Italiano</span>
               </div>
-              <!-- 1: EN (🇬🇧) -->
-              <div class="h-[32px] w-full flex items-center justify-center pr-2 shrink-0 transition-opacity duration-200 opacity-30" data-lang="en" title="English">
-                <svg class="w-5 h-3.5 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0 pointer-events-none" viewBox="0 0 60 30">
+              <span id="langCheckIt" class="text-emerald-400 font-bold text-xs">✓</span>
+            </button>
+            <button type="button" onclick="selectAppLanguage('en', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0" viewBox="0 0 60 30">
                   <clipPath id="uk_flag_track"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
                   <clipPath id="uk_diag_track"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
                   <g clip-path="url(#uk_flag_track)">
@@ -3698,58 +3707,22 @@
                     <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
                   </g>
                 </svg>
+                <span>English</span>
               </div>
-              <!-- 2: ES (🇪🇸) -->
-              <div class="h-[32px] w-full flex items-center justify-center pr-2 shrink-0 transition-opacity duration-200 opacity-30" data-lang="es" title="Español">
-                <div class="w-5 h-3.5 rounded-xs overflow-hidden shadow-sm border border-white/30 flex flex-col shrink-0 pointer-events-none">
+              <span id="langCheckEn" class="text-emerald-400 font-bold text-xs hidden">✓</span>
+            </button>
+            <button type="button" onclick="selectAppLanguage('es', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn">
+              <div class="flex items-center gap-2">
+                <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex flex-col shrink-0">
                   <div class="h-1/4 bg-[#c60b1e]"></div>
                   <div class="h-2/4 bg-[#ffc400] flex items-center justify-center">
                     <span class="w-0.5 h-0.5 rounded-full bg-[#c60b1e]/70"></span>
                   </div>
                   <div class="h-1/4 bg-[#c60b1e]"></div>
                 </div>
+                <span>Español</span>
               </div>
-            </div>
-
-            <!-- Mini vertical micro-chevrons indicator on right edge -->
-            <div class="absolute right-1 top-0 bottom-0 flex flex-col justify-center gap-0.5 pointer-events-none opacity-50 group-hover:opacity-100 transition text-[6px] text-zinc-300 select-none">
-              <span class="leading-none">▲</span>
-              <span class="leading-none">▼</span>
-            </div>
-
-          </div>
-
-          <!-- Dropdown flyout on hover for direct single-click selection -->
-          <div id="verticalFlagFlyout" class="hidden group-hover:flex flex-col gap-1 absolute right-0 top-11 p-1.5 rounded-xl bg-[#0E0E14]/95 backdrop-blur-xl border border-white/20 shadow-2xl z-50 modal-spring-enter min-w-[115px]">
-            <button type="button" onclick="setLanguage('it', true)" class="w-full h-8 px-2 rounded-lg flex items-center gap-2 hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn" title="Italiano">
-              <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0">
-                <div class="w-1/3 h-full bg-[#009246]"></div>
-                <div class="w-1/3 h-full bg-[#ffffff]"></div>
-                <div class="w-1/3 h-full bg-[#ce2b37]"></div>
-              </div>
-              <span class="text-xs">Italiano</span>
-            </button>
-            <button type="button" onclick="setLanguage('en', true)" class="w-full h-8 px-2 rounded-lg flex items-center gap-2 hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn" title="English">
-              <svg class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0" viewBox="0 0 60 30">
-                <g clip-path="url(#uk_flag_track)">
-                  <path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
-                  <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
-                  <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk_diag_track)" stroke="#C8102E" stroke-width="4"/>
-                  <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
-                  <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
-                </g>
-              </svg>
-              <span class="text-xs">English</span>
-            </button>
-            <button type="button" onclick="setLanguage('es', true)" class="w-full h-8 px-2 rounded-lg flex items-center gap-2 hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn" title="Español">
-              <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex flex-col shrink-0">
-                <div class="h-1/4 bg-[#c60b1e]"></div>
-                <div class="h-2/4 bg-[#ffc400] flex items-center justify-center">
-                  <span class="w-0.5 h-0.5 rounded-full bg-[#c60b1e]/70"></span>
-                </div>
-                <div class="h-1/4 bg-[#c60b1e]"></div>
-              </div>
-              <span class="text-xs">Español</span>
+              <span id="langCheckEs" class="text-emerald-400 font-bold text-xs hidden">✓</span>
             </button>
           </div>
         </div>
@@ -4248,7 +4221,7 @@
             <div class="flex justify-end pt-3">
               <button type="submit" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg active:scale-95">
                 <i data-lucide="plus" class="w-4 h-4 text-black"></i>
-                <span>Aggiungi al Portfolio & Vetrina</span>
+                <span id="i18n-btnPublishPortfolioText">Aggiungi al Portfolio & Vetrina</span>
               </button>
             </div>
           </form>
@@ -4827,16 +4800,16 @@
                     </div>
                     <div class="min-w-0 space-y-0.5">
                       <div class="text-[10px] sm:text-[11px] font-mono text-white font-bold uppercase tracking-wider flex items-center gap-1.5 truncate">
-                        <span>Cartiglio Commessa #PF-8921</span>
+                        <span id="vStage5CartiglioTitle">Cartiglio Commessa #PF-8921</span>
                         <span class="text-[8px] px-1.5 py-0.2 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">50% Infill</span>
                       </div>
-                      <div class="text-[9px] font-mono text-zinc-400 truncate">
+                      <div class="text-[9px] font-mono text-zinc-400 truncate" id="vStage5Specs">
                         PETG Tecnico • 80×60×25 mm • Tolleranza ±0.05 mm • Accettata
                       </div>
                     </div>
                   </div>
                   <div class="text-right shrink-0">
-                    <span class="text-[8px] font-mono text-zinc-400 uppercase tracking-wider block">Importo Bloccato</span>
+                    <span class="text-[8px] font-mono text-zinc-400 uppercase tracking-wider block" id="vStage5HeldLabel">Importo Bloccato</span>
                     <span class="text-base sm:text-lg font-mono font-black text-emerald-400 tabular-nums">&euro; 48,00</span>
                   </div>
                 </div>
@@ -4845,19 +4818,19 @@
                 <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono text-center">
                   <div class="p-2 rounded-xl bg-[#08080B] border border-emerald-500/30">
                     <span class="text-[8px] text-zinc-500 uppercase block">Step 1</span>
-                    <span class="text-[9px] font-bold text-emerald-400 flex items-center justify-center gap-1 mt-0.5">✓ Stampa OK</span>
+                    <span class="text-[9px] font-bold text-emerald-400 flex items-center justify-center gap-1 mt-0.5" id="vStage5Step1">✓ Stampa OK</span>
                   </div>
                   <div class="p-2 rounded-xl bg-[#08080B] border border-emerald-500/30">
                     <span class="text-[8px] text-zinc-500 uppercase block">Step 2</span>
-                    <span class="text-[9px] font-bold text-emerald-400 flex items-center justify-center gap-1 mt-0.5">✓ 2 Foto Calibro</span>
+                    <span class="text-[9px] font-bold text-emerald-400 flex items-center justify-center gap-1 mt-0.5" id="vStage5Step2">✓ 2 Foto Calibro</span>
                   </div>
                   <div class="p-2 rounded-xl bg-[#08080B] border border-emerald-500/30">
                     <span class="text-[8px] text-zinc-500 uppercase block">Step 3</span>
-                    <span class="text-[9px] font-bold text-emerald-400 flex items-center justify-center gap-1 mt-0.5">✓ 1 Foto Pacco</span>
+                    <span class="text-[9px] font-bold text-emerald-400 flex items-center justify-center gap-1 mt-0.5" id="vStage5Step3">✓ 1 Foto Pacco</span>
                   </div>
                   <div class="p-2 rounded-xl bg-emerald-500/10 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
                     <span class="text-[8px] text-emerald-400 uppercase font-bold block">Step 4: PDF</span>
-                    <span class="text-[9px] font-bold text-white flex items-center justify-center gap-1 mt-0.5">Scarica Etichetta</span>
+                    <span class="text-[9px] font-bold text-white flex items-center justify-center gap-1 mt-0.5" id="vStage5Step4">Scarica Etichetta</span>
                   </div>
                 </div>
 
@@ -4865,15 +4838,15 @@
                 <div class="p-2 rounded-xl bg-[#060608] border border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
                   <div class="flex items-center gap-1.5 text-zinc-300">
                     <i data-lucide="truck" class="w-3 h-3 text-cyan-400 shrink-0"></i>
-                    <span>Etichetta prepagata Packlink PRO PDF: scarico abilitato solo dopo le 3 foto di collaudo</span>
+                    <span id="vStage5Notice">Etichetta prepagata Packlink PRO PDF: scarico abilitato solo dopo le 3 foto di collaudo</span>
                   </div>
-                  <span class="text-emerald-400 font-semibold uppercase text-[8px]">Flusso Guidato</span>
+                  <span class="text-emerald-400 font-semibold uppercase text-[8px]" id="vStage5Flow">Flusso Guidato</span>
                 </div>
               </div>
 
               <!-- Minimal Stage Footer Breadcrumb -->
               <div class="pt-0.5 text-center shrink-0">
-                <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-widest">
+                <span class="text-[9px] font-mono text-zinc-500 uppercase tracking-widest" id="vStage5Foot">
                   La finestra attività rimane aperta solo durante la lavorazione e si chiude alla spedizione
                 </span>
               </div>
@@ -6353,10 +6326,7 @@
           </h3>
           <div class="flex items-center gap-2">
             <span class="text-xs font-mono text-zinc-400" id="broadcastCountBadge">0 Richieste in corso</span>
-            <button type="button" onclick="clearAllBroadcastRequests()" id="btnResetBroadcastRequests" class="px-2.5 py-1 rounded-lg bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-[10px] font-mono transition flex items-center gap-1.5 active:scale-95" title="Azzera tutte le richieste broadcast">
-              <i data-lucide="trash-2" class="w-3 h-3"></i>
-              <span id="i18n-btnResetBroadcast">AZZERA RICHIESTE</span>
-            </button>
+            
           </div>
         </div>
 
@@ -6394,10 +6364,7 @@
             <span class="w-2 h-2 rounded-full bg-zinc-500" id="creatorOpenRequestsDot"></span>
             <span id="creatorOpenRequestsCount">0 Richieste Disponibili</span>
           </span>
-          <button type="button" onclick="clearAllBroadcastRequests()" id="btnResetCreatorRequests" class="px-2.5 py-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs font-mono transition flex items-center gap-1.5 active:scale-95" title="Azzera tutte le richieste dei clienti a 0">
-            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-            <span id="labelResetCreatorRequests">AZZERA RICHIESTE</span>
-          </button>
+          
         </div>
       </div>
 
@@ -6731,6 +6698,29 @@
           </button>
         </div>
       </div>
+      <!-- AVVISO ATTENZIONE CREATOR: SPEDIZIONE RAPIDA (Attivo se il cliente seleziona Urgente 24/48h) -->
+      <div id="cadUrgentCreatorAlert" class="hidden p-3.5 rounded-2xl bg-gradient-to-r from-amber-500/25 via-[#1a140a] to-[#14151B] border-2 border-amber-500/60 shadow-[0_0_25px_rgba(245,158,11,0.25)] flex items-center justify-between gap-3 text-amber-200">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/30 text-amber-300 flex items-center justify-center shrink-0 border border-amber-500/60 shadow-md animate-pulse">
+            <i data-lucide="zap" class="w-5 h-5 text-amber-300"></i>
+          </div>
+          <div class="space-y-0.5 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="font-cyber font-extrabold text-xs sm:text-sm uppercase tracking-wider text-amber-300" id="cadAlertTitleText">⚠️ ATTENZIONE CREATOR: SPEDIZIONE RAPIDA RICHIESTA!</span>
+              <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-400 text-black font-extrabold uppercase" id="cadAlertBadgeText">TEMPO RECORD: 24/48H</span>
+            </div>
+            <p class="text-[11px] text-zinc-300 font-sans leading-relaxed" id="cadAlertDescText">
+              Il cliente ha selezionato l'opzione di <strong>Spedizione Rapida (24-48h)</strong>. Dai priorità massima alla stampa e al collaudo fotografico per garantire la spedizione nei tempi concordati.
+            </p>
+          </div>
+        </div>
+        <div class="shrink-0 hidden md:flex flex-col items-end">
+          <span class="text-[9px] font-mono text-amber-400/80 uppercase font-bold">Priorità Maker</span>
+          <span class="text-xs font-mono font-black text-amber-300 flex items-center gap-1">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400"></i> MASSIMA
+          </span>
+        </div>
+      </div>
 
       <!-- Workstation Grid: Parametri di Stampa (Col 1) vs Collaudo QC & Compenso (Col 2) -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-5 items-start">
@@ -6816,10 +6806,15 @@
                 <span id="cadLockedPostProcess" class="font-bold text-zinc-300 truncate block text-[11px] mt-0.5">Grezzo</span>
               </div>
 
-              <!-- Consegna Richiesta Pulita -->
-              <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col justify-between">
-                <span class="text-[9px] text-zinc-500 uppercase block font-cyber" id="i18n-cadDeadlineLabel">Consegna</span>
-                <span id="cadLockedDeadline" class="font-bold text-cyan-300 truncate block text-[11px] mt-0.5">3-5 gg</span>
+              <!-- Consegna Richiesta Dinamica con Badge e Allerta Urgente -->
+              <div id="cadDeadlineCard" class="p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col justify-between transition-all">
+                <div class="flex items-center justify-between">
+                  <span class="text-[9px] text-zinc-500 uppercase block font-cyber" id="i18n-cadDeadlineLabel">Consegna</span>
+                  <span id="cadDeadlineUrgentBadge" class="hidden text-[8px] font-mono px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-300 border border-amber-500/40 font-bold flex items-center gap-1 animate-pulse">
+                    <i data-lucide="zap" class="w-2.5 h-2.5 text-amber-400"></i> RAPIDA
+                  </span>
+                </div>
+                <div id="cadLockedDeadline" class="font-bold text-cyan-300 truncate block text-[11px] mt-0.5">3-5 gg</div>
               </div>
             </div>
 
@@ -8862,8 +8857,13 @@
         waBtn.href = 'https://api.whatsapp.com/send?text=' + waMsg;
       }
 
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          closeActivityAfterStage4();
+        }
+      };
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.openDeviceSyncModal = openDeviceSyncModal;
 
@@ -8886,10 +8886,10 @@
       const btn = document.getElementById('btnCopySyncLink');
       if (btn) {
         btn.innerHTML = '<i data-lucide="check" class="w-3.5 h-3.5"></i> <span>COPIATO!</span>';
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         setTimeout(() => {
           btn.innerHTML = '<i data-lucide="copy" class="w-3.5 h-3.5"></i> <span>COPIA</span>';
-          if (window.lucide) lucide.createIcons();
+          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         }, 2000);
       }
       showToast('✓ Link rapido copiato negli appunti! Invialo al tuo telefono per sincronizzare l\'account.', 'success');
@@ -8907,7 +8907,7 @@
         el.style.webkitTextSecurity = 'none';
       }
       btn.innerHTML = `<i data-lucide="${isPass ? 'eye' : 'eye-off'}" class="w-4 h-4"></i>`;
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.togglePasswordVisibility = togglePasswordVisibility;
 
@@ -8970,6 +8970,13 @@
         agreements: (rfp && rfp.agreements) || {},
         isAccepted: isAccepted,
         makerName: makerName,
+        clientApprovedQc: extra.clientApprovedQc !== undefined 
+          ? extra.clientApprovedQc 
+          : Boolean(rfp && (rfp.clientApprovedQc === true || (rfp.id && localStorage.getItem('printforge_qc_approved_' + rfp.id) === 'true'))),
+        deadline: extra.deadline !== undefined ? extra.deadline : ((rfp && rfp.deadline) || (typeof document !== 'undefined' && document.getElementById('reqDeadline')?.value) || 'Standard 3-5 giorni'),
+        qcStatus: extra.qcStatus 
+          || (rfp && rfp.qcStatus) 
+          || (rfp && rfp.id && localStorage.getItem('printforge_qc_approved_' + rfp.id) === 'true' ? 'approvato_dal_cliente' : 'in_attesa_collaudo'),
         ...extra
       };
       return JSON.stringify(payload);
@@ -9015,8 +9022,54 @@
           const deletedIds = (typeof getDeletedRequestIds === 'function') ? getDeletedRequestIds() : new Set();
 
           // Escludi i record di profilo di sistema e le richieste cancellate definitivamente
+          // Separa le opere della Vetrina 2D / Portfolio caricate dai Creator dalle richieste broadcast dei Clienti
+          const portfolioDbRows = data.filter(dbR => dbR && (dbR.status === 'PORTFOLIO_WORK' || (dbR.id && String(dbR.id).startsWith('WORK-'))));
+          
+          if (portfolioDbRows.length > 0) {
+            const cloudWorks = portfolioDbRows.map(dbR => {
+              let obj = null;
+              try {
+                if (dbR.notes && (dbR.notes.startsWith('{') || dbR.notes.startsWith('{"'))) {
+                  obj = JSON.parse(dbR.notes);
+                }
+              } catch(e) {}
+              if (!obj) {
+                obj = {
+                  id: dbR.id,
+                  title: (dbR.title || '').replace(/^PORTFOLIO_WORK:\s*/, ''),
+                  description: '',
+                  material: dbR.material || 'PETG Tecnico',
+                  color: dbR.color || 'Nero Cyber',
+                  dimensions: dbR.dimensions || '80 × 60 × 25 mm',
+                  price: dbR.budget || '€ 35,00',
+                  photoUrl: '/images/cube.jpg',
+                  creatorId: dbR.client_email || 'creator',
+                  creatorName: dbR.client_name || 'Maker Certificato',
+                  creatorEmail: dbR.client_email || '',
+                  createdAt: dbR.created_at || new Date().toISOString()
+                };
+              }
+              return obj;
+            });
+
+            const currentWorks = AppState.portfolioWorks || [];
+            const mergedWorks = [...cloudWorks];
+            currentWorks.forEach(cw => {
+              if (cw && cw.id && !mergedWorks.some(mw => mw && mw.id === cw.id)) {
+                mergedWorks.push(cw);
+              }
+            });
+            AppState.portfolioWorks = mergedWorks;
+            try {
+              localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+            } catch(e) {}
+            if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+            if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+          }
+
           const actualRequests = data.filter(dbR => {
             if (!dbR || !dbR.id) return false;
+            if (dbR.status === 'PORTFOLIO_WORK' || String(dbR.id).startsWith('WORK-')) return false;
             const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
             if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE' || fakeIds.includes(dbR.id)) return false;
             if (deletedIds.has(dbR.id)) return false;
@@ -9024,7 +9077,7 @@
             return true;
           });
 
-          console.log(`📦 [Supabase] Caricate ${actualRequests.length} richieste dal Cloud`);
+          console.log(`📦 [Supabase] Caricate ${actualRequests.length} richieste e ${portfolioDbRows.length} opere di vetrina dal Cloud`);
           
           AppState.broadcastRequests = actualRequests.map(dbR => {
             let meta = {};
@@ -9045,9 +9098,15 @@
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
             const parsedAgreements = meta.agreements || { cadVerified: false, toleranceConfirmed: false, qcPhotosAgreed: false, orientationAgreed: false, shippingLocked: false };
             const cleanNotes = meta.userNotes !== undefined ? meta.userNotes : dbR.notes;
+            const orderIdVal = dbR.id;
+            const localQcApproved = localStorage.getItem('printforge_qc_approved_' + orderIdVal) === 'true';
+            const isQcApproved = Boolean(meta.clientApprovedQc === true || meta.qcStatus === 'approvato_dal_cliente' || localQcApproved);
+            const resolvedQcStatus = isQcApproved ? 'approvato_dal_cliente' : (meta.qcStatus || localStorage.getItem('printforge_qc_status_' + orderIdVal) || 'in_attesa_collaudo');
 
             return {
               id: dbR.id,
+              clientApprovedQc: isQcApproved,
+              qcStatus: resolvedQcStatus,
               userId: meta.userId || dbR.user_id || '',
               title: dbR.title,
               clientName: dbR.client_name || 'Cliente Verificato',
@@ -9063,6 +9122,7 @@
               budget: dbR.budget || '€ 0,00',
               notes: cleanNotes,
               rawUserNotes: cleanNotes,
+              deadline: meta.deadline || dbR.deadline || 'Standard 3-5 giorni',
               status: isAcc ? (dbR.status || 'IN LAVORAZIONE (PRESA IN CARICO)') : 'APERTA (IN ATTESA CREATOR)',
               shippingStreet: meta.shippingStreet || '',
               shippingCity: meta.shippingCity || dbR.client_city || 'Milano',
@@ -9141,6 +9201,14 @@
             };
             AppState.activeDealRfpId = activeOrderReq.id;
             AppState.loadedRequestInStudio = activeOrderReq;
+            const startupOrderApproved = Boolean(activeOrderReq.clientApprovedQc === true || activeOrderReq.qcStatus === 'approvato_dal_cliente' || (activeOrderReq.id && localStorage.getItem('printforge_qc_approved_' + activeOrderReq.id) === 'true'));
+            activeOrderReq.clientApprovedQc = startupOrderApproved;
+            if (startupOrderApproved) activeOrderReq.qcStatus = 'approvato_dal_cliente';
+            if (AppState.activeEscrowOrder) {
+              AppState.activeEscrowOrder.clientApprovedQc = startupOrderApproved;
+              if (startupOrderApproved) AppState.activeEscrowOrder.qcStatus = 'approvato_dal_cliente';
+            }
+            AppState.clientApprovedQc = startupOrderApproved;
             AppState.cadQcFiles = (activeOrderReq.qcPhotos && activeOrderReq.qcPhotos.length > 0) ? activeOrderReq.qcPhotos : [];
           } else {
             AppState.activeEscrowOrder = null;
@@ -9510,6 +9578,7 @@
         const payloadNotes = (typeof buildNotesPayload === 'function') 
           ? buildNotesPayload(req, {
               userId: req.userId || (AppState.user && (AppState.user.userId || AppState.user.id)) || '',
+              deadline: req.deadline || (typeof document !== 'undefined' && document.getElementById('reqDeadline')?.value) || 'Standard 3-5 giorni',
               shippingStreet: req.shippingStreet || '',
               shippingCity: req.shippingCity || req.clientCity || '',
               shippingCap: req.shippingCap || '',
@@ -12066,31 +12135,35 @@
           },
           stage5: {
             badge: "FASE 4/5",
-            title: "Custodia Blindata Stripe Escrow",
-            status: "SMART CUSTODY ATTIVA",
-            subhead: "Fondi Protetti in Garanzia Fiduciaria",
-            vaultNotice: "BLINDATO IN STRIPE ESCROW (ID: ESC-8921-X)",
-            timerLabel: "Timer Ispezione Cliente",
-            timerSub: "Dalla ricezione tracciata",
-            notifLabel: "Notifica Maker Email & Portale",
-            notifStatus: "✓ INVIATO"
+            title: "Workstation Attività & Cartiglio Commessa",
+            status: "SOLO CREATOR // STEP 1-4",
+            cartiglioTitle: "Cartiglio Commessa #PF-8921",
+            specs: "PETG Tecnico • 80×60×25 mm • Tolleranza ±0.05 mm • Accettata",
+            heldLabel: "Importo Bloccato",
+            step1: "✓ Stampa OK",
+            step2: "✓ 2 Foto Calibro",
+            step3: "✓ 1 Foto Pacco",
+            step4: "Scarica Etichetta",
+            notice: "Etichetta prepagata Packlink PRO PDF: scarico abilitato solo dopo le 3 foto di collaudo",
+            flow: "Flusso Guidato",
+            foot: "Pagina attività Maker sempre sincronizzata con l'Escrow Room del Cliente."
           },
           stage6: {
             badge: "FASE 5/5",
-            title: "Collaudo Quote con Calibro Digitale",
-            status: "✓ TOLLERANZA RISPETTATA (±0.05 mm)",
-            qcLabel1: "FOTO 1: CALIBRO ESTERNO",
-            qcBadge1: "DELTA +0.02 mm OK",
-            qcSub1: "Quota nominale 85.00mm",
-            qcLabel2: "FOTO 2: FORO CENTRALE",
-            qcBadge2: "DELTA +0.01 mm OK",
-            qcSub2: "Accoppiamento 608RS",
-            qcLabel3: "FOTO 3: FINITURA DENTI",
-            qcVal3: "Planarità 100%",
-            qcBadge3: "ZERO BAVE // RIGIDO",
-            qcSub3: "PETG Tecnico Arancione",
-            payoutTitle: "COLLAUDO APPROVATO DAL CLIENTE // STRIPE ESCROW SVINCOLATO",
-            payoutDesc: "I fondi di €48,00 sono stati trasferiti automaticamente all'IBAN dell'Officina Kowalski tramite Stripe Connect. Ciclo manifatturiero completato!"
+            title: "Collaudo Quote & Svincolo alla Consegna",
+            status: "OPZIONE 2 // SCANSIONE CORRIERE",
+            qcLabel1: "FOTO 1: ESTERNO",
+            qcBadge1: "+0.02 mm OK",
+            qcSub1: "Nominale 80.00mm",
+            qcLabel2: "FOTO 2: FORO M8",
+            qcBadge2: "+0.01 mm OK",
+            qcSub2: "Tolleranza ±0.05mm",
+            qcLabel3: "FOTO 3: PACCO",
+            qcVal3: "Sigillato con Etichetta",
+            qcBadge3: "PRONTO PER RITIRO",
+            qcSub3: "Spedizione Packlink PRO",
+            payoutTitle: "CONSEGNA CERTIFICATA // FONDI SVINCOLATI ALL'OFFICINA",
+            payoutDesc: "Il corriere ha scansionato il pacco consegnato. I fondi di €48,00 sono stati accreditati automaticamente sull'IBAN del Maker. Zero attese!"
           }
         }
       },
@@ -12864,44 +12937,48 @@
           },
           stage4: {
             badge: "STAGE 3/5",
-            title: "1-on-1 Kowalski Hub Negotiation",
+            title: "1-on-1 Deal Maker Kowalski",
             status: "VERIFIED WORKSHOP",
             buyerName: "Matteo (Client)",
-            buyerMsg: '"Hello, confirming the order for the gear at €48. Strict tolerance of ±0.05 mm on the 12mm central bore is mandatory for bearing fit."',
-            makerName: "Kowalski Precision Engineering (Maker)",
-            makerMsg: '"Accepted! Bambu Lab X1-Carbon configured with Engineering PETG and 0.16mm layer height. We will run Mitutoyo digital caliper inspection prior to 48h tracked dispatch."',
+            buyerMsg: '"Hello, I confirm the gear order for €48. It is essential to respect the tight ±0.05 mm tolerance on the 12mm central bore for bearing fit."',
+            makerName: "Kowalski Precision Workshop (Maker)",
+            makerMsg: '"Accepted! Bambu Lab X1-Carbon set for Technical PETG with 0.16mm layers. We will perform digital caliper QC before 48h dispatch."',
             check1: "✓ 1. Watertight STL",
-            check2: "✓ 2. Tolerance ±0.05mm",
+            check2: "✓ 2. ±0.05mm Tolerance",
             check3: "✓ 3. 45° Orientation",
             check4: "✓ 4. 48h Dispatch"
           },
           stage5: {
             badge: "STAGE 4/5",
-            title: "Stripe Escrow Smart Vault Custody",
-            status: "SMART CUSTODY ACTIVE",
-            subhead: "Funds Secured in Escrow Guarantee",
-            vaultNotice: "LOCKED IN STRIPE ESCROW (ID: ESC-8921-X)",
-            timerLabel: "Client Inspection Timer",
-            timerSub: "From tracked delivery",
-            notifLabel: "Maker Email & Portal Notification",
-            notifStatus: "✓ SENT"
+            title: "Maker Activity Workstation & Job Sheet",
+            status: "MAKER ONLY // STEPS 1-4",
+            cartiglioTitle: "Job Order Sheet #PF-8921",
+            specs: "Technical PETG • 80×60×25 mm • Tolerance ±0.05 mm • Accepted",
+            heldLabel: "Funds in Escrow",
+            step1: "✓ Print Complete",
+            step2: "✓ 2 Caliper Photos",
+            step3: "✓ 1 Parcel Photo",
+            step4: "Download Label",
+            notice: "Prepaid Packlink PRO PDF shipping label: unlocked only after 3 QC photos are inspected",
+            flow: "Guided Pipeline",
+            foot: "Maker Activity workstation permanently synced with Client's Escrow Room."
           },
           stage6: {
             badge: "STAGE 5/5",
-            title: "Digital Caliper Dimensional Inspection",
-            status: "✓ TOLERANCE VERIFIED (±0.05 mm)",
-            qcLabel1: "PHOTO 1: OUTER CALIPER",
-            qcBadge1: "DELTA +0.02 mm OK",
-            qcSub1: "Nominal spec 85.00mm",
-            qcLabel2: "PHOTO 2: CENTER BORE",
-            qcBadge2: "DELTA +0.01 mm OK",
-            qcSub2: "608RS bearing fit",
-            qcLabel3: "PHOTO 3: TOOTH SURFACE",
-            qcVal3: "100% Planarity",
-            qcBadge3: "ZERO BURRS // RIGID",
-            qcSub3: "Technical Orange PETG",
-            payoutTitle: "INSPECTION APPROVED BY CLIENT // STRIPE ESCROW RELEASED",
-            payoutDesc: "The €48.00 payout was automatically wired to Kowalski Workshop's IBAN via Stripe Connect. Zero-defect manufacturing cycle complete!"
+            title: "Caliper Inspection & Release on Delivery",
+            status: "OPTION 2 // COURIER SCAN",
+            qcLabel1: "PHOTO 1: OUTER",
+            qcBadge1: "+0.02 mm OK",
+            qcSub1: "Nominal 80.00mm",
+            qcLabel2: "PHOTO 2: M8 BORE",
+            qcBadge2: "+0.01 mm OK",
+            qcSub2: "Tolerance ±0.05mm",
+            qcLabel3: "PHOTO 3: PARCEL",
+            qcVal3: "Sealed with Label",
+            qcBadge3: "READY FOR PICKUP",
+            qcSub3: "Packlink PRO Shipping",
+            payoutTitle: "CERTIFIED DELIVERY // FUNDS RELEASED TO MAKER",
+            payoutDesc: "The courier scanned the delivered parcel. The €48.00 payout was automatically credited to the Maker's IBAN. Zero wait!"
           }
         }
       },
@@ -13668,50 +13745,128 @@
           },
           stage4: {
             badge: "FASE 3/5",
-            title: "Negociación 1-a-1 Taller Kowalski",
+            title: "Trato 1-a-1 Creador Kowalski",
             status: "TALLER ACREDITADO",
             buyerName: "Matteo (Cliente)",
-            buyerMsg: '"Hola, confirmo el pedido del engranaje por 48€. Es imprescindible cumplir la tolerancia estricta de ±0.05 mm en el orificio de 12mm para el rodamiento."',
-            makerName: "Taller Mecánico Kowalski (Maker)",
-            makerMsg: '"¡Aceptado! Máquina Bambu Lab X1-Carbon configurada con PETG Técnico y capa de 0.16mm. Realizaremos verificación con calibre Mitutoyo antes del envío en 48h."',
+            buyerMsg: '"Hola, confirmo el pedido del engranaje por 48€. Es indispensable respetar la tolerancia estricta de ±0.05 mm en el orificio central de 12mm para el rodamiento."',
+            makerName: "Taller Mecánico Kowalski (Creador)",
+            makerMsg: '"¡Aceptado! Máquina Bambu Lab X1-Carbon configurada en PETG Técnico con capa de 0.16mm. Realizaremos el control con calibre digital Mitutoyo antes del envío en 48h."',
             check1: "✓ 1. STL Hermético",
             check2: "✓ 2. Tolerancia ±0.05mm",
             check3: "✓ 3. Orientación 45°",
-            check4: "✓ 4. Envío Urgente 48h"
+            check4: "✓ 4. Envío 48h"
           },
           stage5: {
             badge: "FASE 4/5",
-            title: "Custodia Blindada Stripe Escrow",
-            status: "SMART CUSTODY ACTIVA",
-            subhead: "Fondos Protegidos en Custodia Fiduciaria",
-            vaultNotice: "CUSTODIADO EN STRIPE ESCROW (ID: ESC-8921-X)",
-            timerLabel: "Temporizador de Inspección del Cliente",
-            timerSub: "Desde la recepción con seguimiento",
-            notifLabel: "Notificación Email y Portal al Maker",
-            notifStatus: "✓ ENVIADO"
+            title: "Estación de Actividad del Creador y Ficha de Pedido",
+            status: "SOLO CREADOR // PASOS 1-4",
+            cartiglioTitle: "Ficha de Pedido #PF-8921",
+            specs: "PETG Técnico • 80×60×25 mm • Tolerancia ±0.05 mm • Aceptada",
+            heldLabel: "Fondos en Custodia",
+            step1: "✓ Impresión OK",
+            step2: "✓ 2 Fotos Calibre",
+            step3: "✓ 1 Foto Paquete",
+            step4: "Descargar Etiqueta",
+            notice: "Etiqueta prepagada Packlink PRO PDF: desbloqueada solo tras verificar las 3 fotos de control",
+            flow: "Flujo Guiado",
+            foot: "Estación de actividad del Creador sincronizada en tiempo real con la Escrow Room del Cliente."
           },
           stage6: {
             badge: "FASE 5/5",
-            title: "Control Dimensional con Calibre Digital",
-            status: "✓ TOLERANCIA VERIFICADA (±0.05 mm)",
-            qcLabel1: "FOTO 1: CALIBRE EXTERIOR",
-            qcBadge1: "DELTA +0.02 mm OK",
-            qcSub1: "Cota nominal 85.00mm",
-            qcLabel2: "FOTO 2: ORIFICIO CENTRAL",
-            qcBadge2: "DELTA +0.01 mm OK",
-            qcSub2: "Ajuste rodamiento 608RS",
-            qcLabel3: "FOTO 3: ACABADO DIENTES",
-            qcVal3: "Planaridad 100%",
-            qcBadge3: "SIN REBABAS // RÍGIDO",
-            qcSub3: "PETG Técnico Naranja",
-            payoutTitle: "CONTROL APROBADO POR EL CLIENTE // STRIPE ESCROW LIBERADO",
-            payoutDesc: "Los fondos de 48,00€ se transfirieron automáticamente al IBAN del Taller Kowalski mediante Stripe Connect. ¡Ciclo de fabricación completado!"
+            title: "Control de Medidas y Liberación a la Entrega",
+            status: "OPCIÓN 2 // ESCANEO DEL REPARTIDOR",
+            qcLabel1: "FOTO 1: EXTERIOR",
+            qcBadge1: "+0.02 mm OK",
+            qcSub1: "Nominal 80.00mm",
+            qcLabel2: "FOTO 2: ORIFICIO M8",
+            qcBadge2: "+0.01 mm OK",
+            qcSub2: "Tolerancia ±0.05mm",
+            qcLabel3: "FOTO 3: PAQUETE",
+            qcVal3: "Sellado con Etiqueta",
+            qcBadge3: "LISTO PARA RECOGIDA",
+            qcSub3: "Envío Packlink PRO",
+            payoutTitle: "ENTREGA CERTIFICADA // FONDOS LIBERADOS AL CREADOR",
+            payoutDesc: "El repartidor escaneó el paquete entregado. Los fondos de 48,00€ se acreditaron automáticamente en el IBAN del Creador. ¡Sin esperas!"
           }
         }
       }
     };
 
     const langOrder = ['it', 'en', 'es'];
+
+    
+    function toggleOfficialLangMenu(event) {
+      if (event) {
+        event.stopPropagation();
+      }
+      const dd = document.getElementById('officialLangDropdown');
+      if (dd) {
+        const isHidden = dd.classList.contains('hidden');
+        document.querySelectorAll('#notificationDrawer').forEach(el => el.classList.add('hidden'));
+        if (isHidden) {
+          dd.classList.remove('hidden');
+          dd.classList.add('flex');
+        } else {
+          dd.classList.add('hidden');
+          dd.classList.remove('flex');
+        }
+      }
+    }
+    window.toggleOfficialLangMenu = toggleOfficialLangMenu;
+
+    function selectAppLanguage(lang, event) {
+      if (event) {
+        event.stopPropagation();
+      }
+      const dd = document.getElementById('officialLangDropdown');
+      if (dd) {
+        dd.classList.add('hidden');
+        dd.classList.remove('flex');
+      }
+      setLanguage(lang, true);
+    }
+    window.selectAppLanguage = selectAppLanguage;
+
+    function updateLanguageSelectorUI() {
+      const lang = currentLang || 'it';
+      const flagEl = document.getElementById('currentLangFlag');
+      const nameEl = document.getElementById('currentLangName');
+      const checkIt = document.getElementById('langCheckIt');
+      const checkEn = document.getElementById('langCheckEn');
+      const checkEs = document.getElementById('langCheckEs');
+
+      const flagsHtml = {
+        it: '<div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0"><div class="w-1/3 h-full bg-[#009246]"></div><div class="w-1/3 h-full bg-[#ffffff]"></div><div class="w-1/3 h-full bg-[#ce2b37]"></div></div>',
+        en: '<svg class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0" viewBox="0 0 60 30"><clipPath id="uk_flag_track"><path d="M0,0 v30 h60 v-30 z"/></clipPath><clipPath id="uk_diag_track"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><g clip-path="url(#uk_flag_track)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk_diag_track)" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g></svg>',
+        es: '<div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex flex-col shrink-0"><div class="h-1/4 bg-[#c60b1e]"></div><div class="h-2/4 bg-[#ffc400] flex items-center justify-center"><span class="w-0.5 h-0.5 rounded-full bg-[#c60b1e]/70"></span></div><div class="h-1/4 bg-[#c60b1e]"></div></div>'
+      };
+
+      const names = {
+        it: 'Italiano',
+        en: 'English',
+        es: 'Español'
+      };
+
+      if (flagEl) flagEl.innerHTML = flagsHtml[lang] || flagsHtml.it;
+      if (nameEl) nameEl.innerText = names[lang] || 'Italiano';
+
+      if (checkIt) checkIt.classList.toggle('hidden', lang !== 'it');
+      if (checkEn) checkEn.classList.toggle('hidden', lang !== 'en');
+      if (checkEs) checkEs.classList.toggle('hidden', lang !== 'es');
+    }
+    window.updateLanguageSelectorUI = updateLanguageSelectorUI;
+
+    // Chiudi dropdown al click fuori
+    if (typeof window !== 'undefined') {
+      window.addEventListener('click', (e) => {
+        const container = document.getElementById('officialLangContainer');
+        const dd = document.getElementById('officialLangDropdown');
+        if (dd && container && !container.contains(e.target)) {
+          dd.classList.add('hidden');
+          dd.classList.remove('flex');
+        }
+      });
+    }
 
     function updateVerticalFlagPosition() {
       const track = document.getElementById('verticalFlagTrack');
@@ -13794,6 +13949,7 @@
 
       // Slide vertical flag selector to active language
       updateVerticalFlagPosition();
+      updateLanguageSelectorUI();
 
       // Update segmented tri-language pills if present
       ['it', 'en', 'es'].forEach(l => {
@@ -15136,18 +15292,22 @@ END-ISO-10303-21;`;
         }
       }
 
-      // 6. Stage 5 Elements
+      // 6. Stage 5 Elements (Maker Activity Workstation)
       if (vT.stage5) {
         const s5Map = {
           'vStage5Badge': vT.stage5.badge,
           'vStage5Title': vT.stage5.title,
           'vStage5Status': vT.stage5.status,
-          'vStage5Subhead': vT.stage5.subhead,
-          'vStage5VaultNotice': vT.stage5.vaultNotice,
-          'vStage5TimerLabel': vT.stage5.timerLabel,
-          'vStage5TimerSub': vT.stage5.timerSub,
-          'vStage5NotifLabel': vT.stage5.notifLabel,
-          'vStage5NotifStatus': vT.stage5.notifStatus
+          'vStage5CartiglioTitle': vT.stage5.cartiglioTitle,
+          'vStage5Specs': vT.stage5.specs,
+          'vStage5HeldLabel': vT.stage5.heldLabel,
+          'vStage5Step1': vT.stage5.step1,
+          'vStage5Step2': vT.stage5.step2,
+          'vStage5Step3': vT.stage5.step3,
+          'vStage5Step4': vT.stage5.step4,
+          'vStage5Notice': vT.stage5.notice,
+          'vStage5Flow': vT.stage5.flow,
+          'vStage5Foot': vT.stage5.foot
         };
         for (const [id, val] of Object.entries(s5Map)) {
           const el = document.getElementById(id);
@@ -16312,8 +16472,8 @@ END-ISO-10303-21;`;
       if (typeof updateLiveRequestSummary === 'function') {
         updateLiveRequestSummary();
       }
-      if (window.lucide && typeof lucide.createIcons === 'function') {
-        lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
     window.selectShippingOption = selectShippingOption;
@@ -17076,12 +17236,53 @@ END-ISO-10303-21;`;
         infBar.style.width = `${infNum}%`;
       }
       if (postEl) postEl.innerText = localizeSpec(r.postProcess, 'Raw (Standard support removal)', 'En Bruto (Limpieza de soportes estándar)', 'Grezzo (Rimozione supporti standard)');
-      if (ddlEl) {
-        let dText = r.deadline || '3-5 gg';
-        if (dText.includes('24-48')) dText = '24-48h';
-        else if (dText.includes('3-5')) dText = '3-5 gg';
-        else if (dText.includes('7-10')) dText = '7-10 gg';
-        ddlEl.innerText = dText;
+      // Gestione dinamica Consegna e Allerta Attenzione per Spedizione Rapida (scelta dal cliente)
+      const rawDeadline = r.deadline || rawReq.deadline || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.deadline) || (typeof document !== 'undefined' && document.getElementById('reqDeadline')?.value) || 'Standard 3-5 giorni';
+      const ddlRaw = (rawDeadline || '').toLowerCase();
+      const isUrgent = ddlRaw.includes('24-48') || ddlRaw.includes('urgente') || ddlRaw.includes('flash') || ddlRaw.includes('rapida') || (r.shippingOption && r.shippingOption.toLowerCase().includes('urgente'));
+      const isFlexible = ddlRaw.includes('7-10') || ddlRaw.includes('flessibile') || (r.shippingOption && r.shippingOption.toLowerCase().includes('flessibile'));
+
+      const alertBanner = document.getElementById('cadUrgentCreatorAlert');
+      const urgentBadge = document.getElementById('cadDeadlineUrgentBadge');
+      const deadlineCard = document.getElementById('cadDeadlineCard');
+      const alertTitle = document.getElementById('cadAlertTitleText');
+      const alertBadge = document.getElementById('cadAlertBadgeText');
+      const alertDesc = document.getElementById('cadAlertDescText');
+
+      if (isUrgent) {
+        if (alertBanner) {
+          alertBanner.classList.remove('hidden');
+          if (alertTitle) alertTitle.innerText = isEn ? '⚠️ CREATOR ATTENTION: RUSH SHIPPING REQUESTED!' : isEs ? '⚠️ ATENCIÓN CREADOR: ¡ENVÍO RÁPIDO SOLICITADO!' : '⚠️ ATTENZIONE CREATOR: SPEDIZIONE RAPIDA RICHIESTA!';
+          if (alertBadge) alertBadge.innerText = isEn ? 'PRIORITY: 24/48H' : isEs ? 'PRIORIDAD: 24/48H' : 'TEMPO RECORD: 24/48H';
+          if (alertDesc) alertDesc.innerHTML = isEn 
+            ? 'The client selected <strong>Rush Shipping (24-48h)</strong>. Please give maximum priority to printing and 3-photo QC to meet the agreed dispatch window.'
+            : isEs
+            ? 'El cliente ha seleccionado <strong>Envío Rápido (24-48h)</strong>. Da máxima prioridad a la fabricación y control de 3 fotos para cumplir el plazo acordado.'
+            : "Il cliente ha selezionato l'opzione di <strong>Spedizione Rapida (24-48h)</strong>. Dai priorità massima alla stampa e al collaudo fotografico per garantire la spedizione nei tempi concordati.";
+        }
+        if (urgentBadge) urgentBadge.classList.remove('hidden');
+        if (deadlineCard) {
+          deadlineCard.className = 'p-2.5 rounded-xl bg-amber-500/15 border-2 border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.2)] flex flex-col justify-between transition-all';
+        }
+        if (ddlEl) {
+          ddlEl.className = 'font-bold text-amber-300 truncate block text-[11px] mt-0.5 flex items-center gap-1';
+          ddlEl.innerHTML = `<span class="inline-flex items-center gap-0.5">⚡ 24-48h</span> <span class="text-[9px] text-amber-400 font-normal">(${isEn ? 'Rush' : isEs ? 'Rápido' : 'Rapida'})</span>`;
+        }
+      } else {
+        if (alertBanner) alertBanner.classList.add('hidden');
+        if (urgentBadge) urgentBadge.classList.add('hidden');
+        if (deadlineCard) {
+          deadlineCard.className = 'p-2.5 rounded-xl bg-white/[0.03] border border-white/[0.06] flex flex-col justify-between transition-all';
+        }
+        if (ddlEl) {
+          if (isFlexible) {
+            ddlEl.className = 'font-bold text-emerald-300 truncate block text-[11px] mt-0.5';
+            ddlEl.innerText = isEn ? '7-10 business days (Flexible)' : isEs ? '7-10 días laborables (Flexible)' : '7-10 gg (Flessibile)';
+          } else {
+            ddlEl.className = 'font-bold text-cyan-300 truncate block text-[11px] mt-0.5';
+            ddlEl.innerText = isEn ? '3-5 business days (Standard)' : isEs ? '3-5 días laborables (Standard)' : '3-5 gg (Standard)';
+          }
+        }
       }
 
       // Dimensioni e Volume XYZ (Specifiche Cliente)
@@ -17287,14 +17488,24 @@ END-ISO-10303-21;`;
     function hasAcceptedRequest() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       if (AppState.user.role !== 'creator') return false;
-      if (AppState.user.isAdmin) return true;
+      // Se lo stage 4 è completato e archiviato, non vi sono commesse attive
+      if (AppState.stage4Completed && !AppState.activeEscrowOrder) return false;
+
+      // Se in memoria vi è un ordine attivo non ancora completato/consegnato
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+        return true;
+      }
+      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered) {
+        return true;
+      }
 
       const myMakerName = (AppState.user.name || '').toLowerCase().trim();
       const myMakerEmail = (AppState.user.email || '').toLowerCase().trim();
       const myMakerUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
 
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
-        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
+        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+        if (typeof r.status === 'string' && (r.status.includes('CONSEGNATO') || r.status.includes('SVINCOLATI') || r.status.includes('ARCHIVIATO') || r.status.includes('COMPLETATO'))) return false;
         const isAcc = Boolean(
           r.isAccepted === true ||
           (r.maker && r.maker.trim().length > 0) ||
@@ -17399,6 +17610,18 @@ END-ISO-10303-21;`;
     window.hasActiveEscrowOrder = hasActiveEscrowOrder;
 
     /* 2. Navigation & Role Rendering */
+    
+    function navigateCreatorActiveWork() {
+      const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
+      const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || activeReq?.hasQcPhotos || (activeReq?.qcPhotos && activeReq.qcPhotos.length >= 3);
+      if (hasQc) {
+        navigateTo('order-room');
+      } else {
+        navigateTo('activity');
+      }
+    }
+    window.navigateCreatorActiveWork = navigateCreatorActiveWork;
+
     function updateNavigationTabs() {
       const nav = document.getElementById('mainNavBar');
       const mobileNav = document.getElementById('mobileNavBar');
@@ -17465,39 +17688,65 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // 4. BACHECA RICHIESTE
-        const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected).length;
-        const isReqs = (v === 'creator-requests');
-        html += `
-          <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
-            <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>${creatorRequestsLabel}</span>
-            <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
-          </button>
-        `;
-        mobileHtml += `
-          <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
-            <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>${mRequestsLabel}</span>
-            <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
-          </button>
-        `;
-
-        // 5. ATTIVITÀ (se ha commessa presa in carico)
+        // 4. SCAMBIO TRA "RICHIESTE" E "ATTIVITÀ" (Sia da PC che da Mobile):
+        // Quando il creator accetta una richiesta, la pagina "Richieste" viene scambiata con "Attività".
+        // Una volta completato il 4° passaggio, torna come prima mostrando Progetti, Home e Richieste.
         if (hasAcceptedRequest()) {
+          const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
+          const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
+
           const isAct = (v === 'activity' || v === 'studio');
+          const isEscrow = (v === 'order-room' || v === 'escrow');
+          const actLabel = isEn ? 'ACTIVITY' : isEs ? 'ACTIVIDAD' : 'ATTIVITÀ';
+
+          // Tab 1: ATTIVITÀ (sempre accessibile per il creator per visionare 3D, specifiche e collaudo)
           html += `
             <button onclick="navigateTo('activity')" id="navActivityBtn" class="${isAct ? activeClass : inactiveClass}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>ATTIVITÀ</span>
+              <span>${actLabel}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             </button>
           `;
           mobileHtml += `
             <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>ATTIVITÀ</span>
+              <span>${actLabel}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </button>
+          `;
+
+          // Tab 2: ESCROW ROOM (visibile per il creator una volta collaudate le foto fino al completamento)
+          if (hasQc) {
+            html += `
+              <button onclick="navigateTo('order-room')" id="navEscrowRoomBtn" class="${isEscrow ? activeClass : inactiveClass}">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
+                <span class="notranslate" translate="no">ESCROW ROOM</span>
+                <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
+              </button>
+            `;
+            mobileHtml += `
+              <button onclick="navigateTo('order-room')" class="${isEscrow ? mActive : mInactive}">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
+                <span class="notranslate" translate="no">ESCROW ROOM</span>
+                <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
+              </button>
+            `;
+          }
+        } else {
+          const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed).length;
+          const isReqs = (v === 'creator-requests');
+          html += `
+            <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
+              <span>${creatorRequestsLabel}</span>
+              <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
+            </button>
+          `;
+          mobileHtml += `
+            <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
+              <span>${mRequestsLabel}</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
             </button>
           `;
         }
@@ -17571,7 +17820,7 @@ END-ISO-10303-21;`;
 
       if (nav) nav.innerHTML = html;
       if (mobileNav) mobileNav.innerHTML = mobileHtml;
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     function escapeHtml(str) {
@@ -17942,7 +18191,7 @@ END-ISO-10303-21;`;
             <span class="text-[10px] text-zinc-600 font-mono block" id="i18n-noAlertsSub">${isIt ? '0 notifiche in sospeso' : isEs ? '0 notificaciones pendientes' : '0 pending notifications'}</span>
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
@@ -17990,7 +18239,7 @@ END-ISO-10303-21;`;
         `;
         container.appendChild(item);
       });
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     function addAppNotification(header, body, meta = {}) {
@@ -18712,6 +18961,14 @@ END-ISO-10303-21;`;
       // 1. Mark request as accepted with Lock di Assegnazione
       req.isAccepted = true;
       req.status = 'IN LAVORAZIONE (PRESA IN CARICO)';
+      req.clientApprovedQc = false;
+      req.qcStatus = 'in_attesa_collaudo';
+      req.hasQcPhotos = false;
+      req.qcPhotos = [];
+      AppState.clientApprovedQc = false;
+      AppState.cadQcFiles = [];
+      AppState.stage2Completed = false;
+      AppState.step4Confirmed = false;
       req.acceptedBy = AppState.user.name || (isEn ? 'PrintForge Certified Maker' : 'Maker Certificato PrintForge');
       req.acceptedAt = new Date().toISOString();
       req.maker = req.acceptedBy;
@@ -18750,6 +19007,7 @@ END-ISO-10303-21;`;
       AppState.activeDealRfpId = req.id;
       AppState.activeEscrowOrder = {
         id: req.id,
+        deadline: req.deadline || 'Standard 3-5 giorni',
         title: req.title,
         budget: req.budget,
         itemBudget: req.itemBudget || req.budget,
@@ -18835,7 +19093,7 @@ END-ISO-10303-21;`;
       if (!modal) return;
       modal.classList.remove('hidden');
       renderEmailHistoryList();
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.openEmailHistoryModal = openEmailHistoryModal;
 
@@ -18869,7 +19127,7 @@ END-ISO-10303-21;`;
             <p class="text-[11px] text-zinc-500 font-sans">${isEn ? 'Submit a request as client or accept a job as creator to trigger transactional notifications.' : isEs ? 'Envía una solicitud o acepta un pedido como creador para generar notificaciones transaccionales.' : 'Invia una richiesta come cliente o accetta un ordine come creator per generare le notifiche transazionali.'}</p>
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
@@ -18911,7 +19169,7 @@ END-ISO-10303-21;`;
         `;
       }).join('');
 
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     /* ALGORITMO DI INSTANT QUOTING REATTIVO: ATTIVO SOLO CON MATERIALE E GRANDEZZA SELEZIONATI */
@@ -20238,8 +20496,8 @@ END-ISO-10303-21;`;
         </div>
       `;
       banner.classList.remove('hidden');
-      if (window.lucide && typeof lucide.createIcons === 'function') {
-        lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
     window.renderEscrowResolutionBanner = renderEscrowResolutionBanner;
@@ -20414,8 +20672,8 @@ END-ISO-10303-21;`;
         }
       }
 
-      if (window.lucide && typeof lucide.createIcons === 'function') {
-        lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
     window.syncPipelineUI = syncPipelineUI;
@@ -20493,8 +20751,8 @@ END-ISO-10303-21;`;
         : '✓ Pacco affidato al corriere! Fase 3 completata: spedizione in transito.';
       showToast(toastShip, 'success');
 
-      if (window.lucide && typeof lucide.createIcons === 'function') {
-        lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
 
       // DEMO ONLY: Auto-completamento del 4° passaggio (Consegna & Svincolo fondi) dopo 4.5 secondi
@@ -20614,8 +20872,8 @@ END-ISO-10303-21;`;
         }, 800);
       }
 
-      if (window.lucide && typeof lucide.createIcons === 'function') {
-        lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
     window.scanCourierDelivery = scanCourierDelivery;
@@ -20831,27 +21089,59 @@ END-ISO-10303-21;`;
       container.classList.remove('hidden');
       container.style.display = 'block';
 
-      const isEn = currentLang === 'en';
-      const isEs = currentLang === 'es';
+      // Lingua corrente con fallback sicuro a italiano
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || localStorage.getItem('printforge_lang') || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
       const isCreator = AppState.user && AppState.user.role === 'creator';
 
-      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
-      const hasPhotos = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || activeReq?.hasQcPhotos || activeReq?.clientApprovedQc;
+      // Identifica in modo univoco l'ordine attivo
+      const activeReq = AppState.loadedRequestInStudio 
+        || AppState.activeEscrowOrder 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted && !r.isClosed));
 
-      // Se non ci sono ancora 3 foto caricate
+      // Verifica foto per QUESTO specifico ordine
+      const orderPhotos = (activeReq && activeReq.qcPhotos && activeReq.qcPhotos.length) 
+        ? activeReq.qcPhotos 
+        : (AppState.cadQcFiles || []);
+      const hasPhotos = (orderPhotos.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || activeReq.clientApprovedQc));
+
+      // Se non ci sono ancora 3 foto caricate per questo ordine
       if (!hasPhotos) {
         container.innerHTML = 
           '<div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2 text-zinc-400 text-[10.5px] font-mono">' +
             '<i data-lucide="clock" class="w-4 h-4 text-zinc-500 shrink-0"></i>' +
             '<span>' + (isEn ? 'Waiting for the Maker to complete printing and upload all 3 QC photos...' : isEs ? 'En espera de que el Creador suba las 3 fotos de control...' : 'In attesa che il Maker completi la stampa e carichi le 3 foto di collaudo.') + '</span>' +
           '</div>';
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
-      // VISTA CREATOR: Quando il creator è nell'Escrow Room e ha caricato le foto
+      // STATO SPECIFICO DI QUESTO ORDINE (ISOLAMENTO PER-ORDINE E PERSISTENZA UNIVERSALE!)
+      const orderId = activeReq ? activeReq.id : '';
+      const isLocallyApproved = Boolean(orderId && localStorage.getItem('printforge_qc_approved_' + orderId) === 'true');
+      const isOrderApproved = Boolean(activeReq && (activeReq.clientApprovedQc === true || activeReq.qcStatus === 'approvato_dal_cliente' || isLocallyApproved));
+      const isOrderRevision = Boolean(activeReq && (activeReq.qcStatus === 'revisione_richiesta' || (orderId && localStorage.getItem('printforge_qc_status_' + orderId) === 'revisione_richiesta')) && !isOrderApproved);
+
+      // Mantieni allineati activeReq e AppState
+      if (activeReq) {
+        activeReq.clientApprovedQc = isOrderApproved;
+        if (isOrderApproved) activeReq.qcStatus = 'approvato_dal_cliente';
+      }
+      if (AppState.activeEscrowOrder) {
+        AppState.activeEscrowOrder.clientApprovedQc = isOrderApproved;
+        if (isOrderApproved) AppState.activeEscrowOrder.qcStatus = 'approvato_dal_cliente';
+      }
+
+      // Sincronizza lo stato istantaneo su AppState per il download dell'etichetta
+      AppState.clientApprovedQc = isOrderApproved;
+
+      // =========================================================================
+      // VISTA CREATOR
+      // =========================================================================
       if (isCreator) {
-        if (AppState.clientApprovedQc === true || activeReq?.clientApprovedQc === true) {
+        if (isOrderApproved) {
           container.innerHTML = 
             '<div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-md">' +
               '<div class="flex items-center gap-2">' +
@@ -20871,7 +21161,7 @@ END-ISO-10303-21;`;
                 (isEn ? 'LABEL UNLOCKED' : 'ETICHETTA SBLOCCATA') +
               '</span>' +
             '</div>';
-        } else if (activeReq?.qcStatus === 'revisione_richiesta' || AppState.clientApprovedQc === false) {
+        } else if (isOrderRevision) {
           container.innerHTML = 
             '<div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 space-y-2 shadow-md">' +
               '<div class="flex items-center justify-between">' +
@@ -20895,7 +21185,7 @@ END-ISO-10303-21;`;
               '</div>' +
             '</div>';
         } else {
-          // In attesa di approvazione cliente
+          // Stato Iniziale: In attesa di approvazione cliente per QUESTO ordine (Etichetta Bloccata)
           container.innerHTML = 
             '<div class="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#181510] to-[#121319] border border-amber-500/30 space-y-2 shadow-xl">' +
               '<div class="flex items-center justify-between border-b border-white/[0.08] pb-1.5">' +
@@ -20924,12 +21214,14 @@ END-ISO-10303-21;`;
               '</div>' +
             '</div>';
         }
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
-      // VISTA CLIENTE: I DUE TASTI CONFERMA E RIMANDA
-      if (AppState.clientApprovedQc === true || activeReq?.clientApprovedQc === true) {
+      // =========================================================================
+      // VISTA CLIENTE
+      // =========================================================================
+      if (isOrderApproved) {
         container.innerHTML = 
           '<div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-md">' +
             '<div class="flex items-center gap-2">' +
@@ -20949,7 +21241,7 @@ END-ISO-10303-21;`;
               (isEn ? 'LABEL UNLOCKED' : 'ETICHETTA SBLOCCATA') +
             '</span>' +
           '</div>';
-      } else if (activeReq?.qcStatus === 'revisione_richiesta' || AppState.clientApprovedQc === false) {
+      } else if (isOrderRevision) {
         container.innerHTML = 
           '<div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 space-y-2 shadow-md">' +
             '<div class="flex items-center justify-between">' +
@@ -20976,7 +21268,7 @@ END-ISO-10303-21;`;
             '</div>' +
           '</div>';
       } else {
-        // TASTI CONFERMA E RIMANDA BEN VISIBILI E GRANDI
+        // STATO INIZIALE PER OGNI NUOVO ORDINE: I DUE TASTI CONFERMA E RIMANDA TORNANO DALL'INIZIO!
         container.innerHTML = 
           '<div class="p-3.5 rounded-xl bg-gradient-to-r from-[#14151f] via-[#101118] to-[#14151f] border-2 border-emerald-400/40 space-y-3 shadow-2xl">' +
             '<div class="flex items-center justify-between border-b border-white/[0.08] pb-2">' +
@@ -20996,7 +21288,7 @@ END-ISO-10303-21;`;
                 ? 'Carefully inspect the 3 photos above (print bed, caliper measurement, sealed box). If the manufactured part satisfies you, click <strong>Confirm</strong> to unlock the shipping label for the Maker. If you see any flaw or issue, click <strong>Reject / Revise</strong> to request adjustments.' 
                 : isEs
                 ? 'Revisa con atención las 3 fotos superiores (cama, calibre y paquete sellado). Si la pieza es correcta, haz clic en <strong>Confirmar</strong> para desbloquear la etiqueta de envío. Si hay algún defecto, pulsa <strong>Rechazar</strong>.'
-                : 'Esamina con attenzione le 3 foto sopra (opera su piatto, calibro centesimale e pacco sigillato). Se il pezzo è conforme alle tue aspettative, clicca su <strong>Conferma</strong> per sbloccare l'etichetta di spedizione del Maker. Se riscontri imperfezioni o quote errate, clicca su <strong>Rimanda</strong> per richiedere una correzione.') +
+                : 'Esamina con attenzione le 3 foto sopra (opera su piatto, calibro centesimale e pacco sigillato). Se il pezzo è conforme alle tue aspettative, clicca su <strong>Conferma</strong> per sbloccare l\'etichetta di spedizione del Maker. Se riscontri imperfezioni o quote errate, clicca su <strong>Rimanda</strong> per richiedere una correzione.') +
             '</p>' +
 
             '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">' +
@@ -21012,8 +21304,8 @@ END-ISO-10303-21;`;
           '</div>';
       }
 
-      if (window.lucide && typeof lucide.createIcons === 'function') {
-        lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
     window.renderClientQcDecisionUI = renderClientQcDecisionUI;
@@ -21026,10 +21318,26 @@ END-ISO-10303-21;`;
       AppState.clientApprovedQc = true;
       AppState.stage2Completed = true;
 
-      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      const activeReq = AppState.loadedRequestInStudio 
+        || AppState.activeEscrowOrder 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted && !r.isClosed));
+
       if (activeReq) {
         activeReq.clientApprovedQc = true;
         activeReq.qcStatus = 'approvato_dal_cliente';
+        activeReq.clientApprovedAt = new Date().toISOString();
+
+        // SALVATAGGIO UNIVERSALE E INDELEBILE PER QUESTO SPECIFICO ORDINE
+        try {
+          localStorage.setItem('printforge_qc_approved_' + activeReq.id, 'true');
+          localStorage.setItem('printforge_qc_status_' + activeReq.id, 'approvato_dal_cliente');
+        } catch(e) {}
+
+        if (AppState.activeEscrowOrder) {
+          AppState.activeEscrowOrder.clientApprovedQc = true;
+          AppState.activeEscrowOrder.qcStatus = 'approvato_dal_cliente';
+        }
         try {
           localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         } catch(e) {}
@@ -21077,10 +21385,22 @@ END-ISO-10303-21;`;
       if (!reason) return;
 
       AppState.clientApprovedQc = false;
-      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      const activeReq = AppState.loadedRequestInStudio 
+        || AppState.activeEscrowOrder 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted && !r.isClosed));
+
       if (activeReq) {
         activeReq.clientApprovedQc = false;
         activeReq.qcStatus = 'revisione_richiesta';
+        try {
+          localStorage.removeItem('printforge_qc_approved_' + activeReq.id);
+          localStorage.setItem('printforge_qc_status_' + activeReq.id, 'revisione_richiesta');
+        } catch(e) {}
+        if (AppState.activeEscrowOrder) {
+          AppState.activeEscrowOrder.clientApprovedQc = false;
+          AppState.activeEscrowOrder.qcStatus = 'revisione_richiesta';
+        }
         if (!activeReq.messages) activeReq.messages = [];
         activeReq.messages.push({
           id: 'msg-rev-' + Date.now(),
@@ -21169,8 +21489,8 @@ END-ISO-10303-21;`;
         </div>
       `;
       modal.classList.remove('hidden');
-      if (window.lucide && typeof lucide.createIcons === 'function') {
-        lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
       }
     }
     window.showStage4CompletionModal = showStage4CompletionModal;
@@ -21184,15 +21504,25 @@ END-ISO-10303-21;`;
         activeReq.isCompleted = true;
         activeReq.isClosed = true;
         activeReq.isAccepted = false;
+        activeReq.status = 'COMPLETATO // ARCHIVIATO';
+      }
+
+      if (activeReq && activeReq.id) {
+        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== activeReq.id);
         try {
           localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         } catch(e) {}
+        if (typeof updateRequestInSupabase === 'function') {
+          updateRequestInSupabase(activeReq.id, {
+            status: 'COMPLETATO // FONDI SVINCOLATI',
+            is_delivered: true,
+            is_closed: true,
+            is_accepted: false
+          });
+        }
       }
 
-      AppState.stage4Completed = true;
-      AppState.isDelivered = true;
-
-      // Reset Escrow Room for Creator
+      // Reset totale stato commessa per il Creator
       AppState.activeEscrowOrder = null;
       AppState.loadedRequestInStudio = null;
       AppState.cadQcFiles = [];
@@ -21201,14 +21531,20 @@ END-ISO-10303-21;`;
       AppState.isDelivered = false;
       AppState.stage2Completed = false;
       AppState.stage4Completed = false;
+      AppState.step4Confirmed = false;
 
-      // Update tabs (removes ATTIVITÀ tab) and update Escrow Room
+      // Azzera Escrow Room e aggiorna UI
+      if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+      // Aggiorna navbar: ATTIVITÀ scompare e torna RICHIESTE!
       updateNavigationTabs();
-      updateEscrowRoom();
 
-      // Navigate to creator requests
-      navigateTo('creator-requests');
-      showToast('✓ Attività conclusa e archiviata con successo.', 'success');
+      // Torna alla schermata HOME (mostrando Progetti, Home e Richieste) come se non avesse confermato alcun lavoro
+      navigateTo('client-home');
+
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+      showToast(isEn ? 'Commission completed and archived! Resetting to default view.' : isEs ? '¡Trabajo completado y archivado! Restableciendo vista.' : '✓ 4° Passaggio completato! Commessa archiviata: vista ripristinata su Home e Richieste.', 'success');
     }
     window.closeActivityAfterStage4 = closeActivityAfterStage4;
 
@@ -21470,7 +21806,7 @@ END-ISO-10303-21;`;
         : isEs 
         ? '¡Pago asegurado en Escrow! Listo para impresión y control con calibre.' 
         : 'Pagamento congelato in Escrow! Pronto per stampa e collaudo 3 foto con calibro.');
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.approveEscrowPayment = approveEscrowPayment;
     window.startEscrow72hTimer = startEscrow72hTimer;
@@ -21586,7 +21922,7 @@ END-ISO-10303-21;`;
         step6Desc.innerText = isEn ? 'Upon "Delivered" webhook event' : isEs ? 'Al estado "Entregado"' : 'Allo stato "Consegnato"';
         step6Desc.className = 'text-zinc-500 text-[9px] leading-tight';
       }
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
 
       // 3. Reset 3-Photo Caliper Inspection Section (Quote al Centesimo)
       const qcBadge = document.getElementById('escrowQcBadge');
@@ -21983,7 +22319,7 @@ END-ISO-10303-21;`;
         if (bCr) bCr.className = 'py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 bg-white text-black transition cursor-pointer';
         if (bCli) bCli.className = 'py-2 px-3 rounded-lg font-bold flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white transition cursor-pointer';
       }
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.selectGoogleModalRole = selectGoogleModalRole;
 
@@ -22024,7 +22360,7 @@ END-ISO-10303-21;`;
       const modal = document.getElementById('modalGoogleLogin');
       if (modal) {
         modal.classList.remove('hidden');
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
       }
     }
     window.openGoogleLoginModal = openGoogleLoginModal;
@@ -22196,7 +22532,7 @@ END-ISO-10303-21;`;
         const modal = document.getElementById('roleOnboardingModal');
         if (modal) {
           modal.classList.remove('hidden');
-          if (window.lucide) lucide.createIcons();
+          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         }
       }
     }
@@ -22256,7 +22592,7 @@ END-ISO-10303-21;`;
         const modal = document.getElementById('roleOnboardingModal');
         if (modal) {
           modal.classList.remove('hidden');
-          if (window.lucide) lucide.createIcons();
+          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         }
       }
     }
@@ -22720,19 +23056,14 @@ END-ISO-10303-21;`;
 
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
-    // Se il creator ha concluso il 4° passaggio e naviga altrove, azzera completamente la pagina Escrow Room
+    // Se il creator ha concluso il 4° passaggio e naviga altrove (cliccando da un'altra parte), azzera completamente l'attività e ripristina la navbar
     if (AppState.user && AppState.user.role === 'creator') {
       if (AppState.stage4Completed || AppState.isDelivered) {
         if (viewId !== 'order-room' && viewId !== 'activity' && viewId !== 'studio') {
-          AppState.activeEscrowOrder = null;
-          AppState.loadedRequestInStudio = null;
-          AppState.cadQcFiles = [];
-          AppState.clientApprovedQc = false;
-          AppState.isShipped = false;
-          AppState.isDelivered = false;
-          AppState.stage2Completed = false;
-          AppState.stage4Completed = false;
-          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+          if (typeof closeActivityAfterStage4 === 'function') {
+            closeActivityAfterStage4();
+            return;
+          }
         }
       }
     }
@@ -23100,7 +23431,7 @@ END-ISO-10303-21;`;
         klarnaMini: '3 rate mensili a tasso zero (zero interessi)',
         escrowDisclaimer: 'I fondi restano congelati e protetti fino alla tua approvazione del collaudo a 3 foto con calibro.',
         btnEdit: 'Modifica Specifiche',
-        ctaApple: (tot) => ` Paga ${tot} in Escrow con Apple Pay`,
+        ctaApple: (tot) => `Paga ${tot} in Escrow con Apple Pay`,
         ctaGoogle: (tot) => `GPay | Paga ${tot} in Escrow`,
         ctaKlarna: (tot) => `Klarna | Paga in 3 rate & Trova Maker`,
         ctaCard: (tot) => `🔒 Paga ${tot} in Escrow & Trova Maker`,
@@ -23142,7 +23473,7 @@ END-ISO-10303-21;`;
         klarnaMini: '3 plazos mensuales sin intereses',
         escrowDisclaimer: 'Los fondos quedan retenidos y protegidos hasta tu aprobación del control de 3 fotos con calibre.',
         btnEdit: 'Modificar Especificaciones',
-        ctaApple: (tot) => ` Pagar ${tot} en Escrow con Apple Pay`,
+        ctaApple: (tot) => `Pagar ${tot} en Escrow con Apple Pay`,
         ctaGoogle: (tot) => `GPay | Pagar ${tot} en Escrow`,
         ctaKlarna: (tot) => `Klarna | Pagar en 3 plazos y Buscar Maker`,
         ctaCard: (tot) => `🔒 Pagar ${tot} en Escrow y Buscar Maker`,
@@ -23376,7 +23707,7 @@ END-ISO-10303-21;`;
       const modal = document.getElementById('modalOrderReviewEscrow');
       if (modal) {
         modal.classList.remove('hidden');
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
       }
     }
 
@@ -23438,7 +23769,7 @@ END-ISO-10303-21;`;
       }
 
       ctaBtn.innerHTML = ctaHtml;
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     function confirmEscrowAndDispatch() {
@@ -23486,6 +23817,10 @@ END-ISO-10303-21;`;
 
       const newRequest = {
         id: rfpId,
+        clientApprovedQc: false,
+        qcStatus: 'in_attesa_collaudo',
+        hasQcPhotos: false,
+        qcPhotos: [],
         userId: (AppState.user && (AppState.user.userId || AppState.user.id)) || generateUserIdForAccount(draft.clientEmail, 'client'),
         title: draft.title,
         clientName: AppState.user.name || (isEn ? 'Client' : 'Cliente'),
@@ -23561,6 +23896,10 @@ END-ISO-10303-21;`;
         console.log('🎯 Ordine da vetrina indirizzato a:', window._directAssignedCreator.name);
         window._directAssignedCreator = null;
       }
+      AppState.clientApprovedQc = false;
+      AppState.cadQcFiles = [];
+      AppState.stage2Completed = false;
+      AppState.step4Confirmed = false;
       AppState.broadcastRequests.unshift(newRequest);
       try {
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
@@ -24058,7 +24397,7 @@ END-ISO-10303-21;`;
       const drop = document.getElementById('makerDropdown_' + safeId);
       if (drop) {
         drop.classList.toggle('hidden');
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
       }
     }
     window.toggleMakerDropdown = toggleMakerDropdown;
@@ -24132,7 +24471,7 @@ END-ISO-10303-21;`;
             </div>
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
@@ -24237,7 +24576,7 @@ END-ISO-10303-21;`;
           ${cardsHtml}
         </div>
       `;
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     /* 6. Creator Requests Feed & Approve directly to CAD Studio */
@@ -24398,7 +24737,7 @@ END-ISO-10303-21;`;
             </div>
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
@@ -24469,7 +24808,7 @@ END-ISO-10303-21;`;
       }).join('');
 
       container.innerHTML = activeJobBannerHtml + cardsHtml;
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
 
     function openDealChat(rfpId) {
@@ -24855,7 +25194,7 @@ function renderDealChat(rfpId) {
           nameEl.innerText = currentPendingDealPhoto.name;
           sizeEl.innerText = `${sizeStr} • ${currentLang === 'it' ? 'Foto pronta per l\'invio' : 'Photo ready to send'}`;
           tray.classList.remove('hidden');
-          if (window.lucide) lucide.createIcons();
+          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         }
 
         const chatInput = document.getElementById('dealChatInput');
@@ -28387,7 +28726,7 @@ function renderDealChat(rfpId) {
             <p id="exploreEmptySubtitle" class="text-xs font-mono text-zinc-400">${(i18n[currentLang] || i18n.it).emptyWorksSubtitle}</p>
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
@@ -28438,7 +28777,7 @@ function renderDealChat(rfpId) {
         `;
       }).join('');
 
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.renderExploreShowcase = renderExploreShowcase;
 
@@ -28464,7 +28803,7 @@ function renderDealChat(rfpId) {
             <p class="text-[11px] text-zinc-500 font-sans">Compila il modulo sopra per pubblicare il tuo primo componente.</p>
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
@@ -28488,7 +28827,7 @@ function renderDealChat(rfpId) {
         `;
       }).join('');
 
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.renderCreatorPortfolioView = renderCreatorPortfolioView;
 
@@ -28508,7 +28847,7 @@ function renderDealChat(rfpId) {
       if (catBadge) catBadge.innerText = work.material || 'SCHEDA TECNICA';
 
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.openItemDetailModal = openItemDetailModal;
 
@@ -28519,34 +28858,81 @@ function renderDealChat(rfpId) {
     window.closeItemDetailModal = closeItemDetailModal;
 
     function orderFromShowcase(workId) {
-      const work = (AppState.portfolioWorks || []).find(w => w.id === workId);
+      const work = (AppState.portfolioWorks || []).find(w => w && w.id === workId);
       if (!work) return;
 
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+
+      // 1. Memorizza il creator di questa opera per l'assegnazione diretta
       window._directAssignedCreator = {
-        id: work.creatorId,
-        name: work.creatorName,
-        email: work.creatorEmail
+        id: work.creatorId || '',
+        name: work.creatorName || (isEn ? 'Certified Maker' : 'Maker Certificato'),
+        email: work.creatorEmail || ''
       };
 
+      // 2. Pre-popola anche i campi del form nel CAD Studio e form richiesta
       const reqTitle = document.getElementById('reqTitle');
       if (reqTitle) reqTitle.value = work.title;
 
       const reqMat = document.getElementById('reqMaterial');
       if (reqMat) reqMat.value = work.material;
 
-      const reqBudget = document.getElementById('reqBudget');
-      if (reqBudget) {
-        const num = work.price.replace(/[^0-9,.]/g, '').replace(',', '.');
-        reqBudget.value = parseFloat(num) || 35;
+      const reqCol = document.getElementById('reqColor');
+      if (reqCol) reqCol.value = work.color;
+
+      const reqDims = document.getElementById('reqDimensions');
+      if (reqDims) reqDims.value = work.dimensions;
+
+      // 3. Calcola il prezzo
+      let numPrice = 35.00;
+      if (work.price) {
+        const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
+        const parsed = parseFloat(rawNum);
+        if (!isNaN(parsed) && parsed > 0) numPrice = parsed;
+      }
+      const budgetStr = '€ ' + numPrice.toFixed(2).replace('.', ',');
+      const escrowTotalStr = budgetStr;
+
+      // 4. Costruisci il draft d'ordine completo esattamente identico alla procedura del sito
+      const orderDraft = {
+        title: work.title,
+        shippingStreet: '',
+        shippingCity: 'Milano',
+        shippingCap: '20121',
+        shippingProv: 'MI',
+        shippingFull: 'Milano (MI)',
+        usage: 'Parte Meccanica Funzionale',
+        material: work.material || 'PETG Tecnico',
+        color: work.color || 'Nero Cyber',
+        colorHexVal: '#18181b',
+        dimensionsStr: work.dimensions || '80 × 60 × 25 mm',
+        tolerance: 'Alta Precisione ±0.05 mm',
+        infill: '50% Meccanico Standard',
+        postProcess: 'Grezzo (Supporti rimossi)',
+        quantity: '1 pezzo',
+        budgetNum: numPrice,
+        budgetStr: budgetStr,
+        shippingNum: 0,
+        escrowTotalStr: escrowTotalStr,
+        deadline: 'Standard 3-5 giorni',
+        notes: 'Ordine diretto da Vetrina 2D per opera "' + work.title + '". Maker assegnato: ' + work.creatorName + '.',
+        customFileName: (work.title.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'opera') + '.stl',
+        aiImage: work.photoUrl || '/images/cube.jpg',
+        presetKind: 'custom',
+        clientEmail: (AppState.user && AppState.user.email) || 'cliente@printforge.dev'
+      };
+
+      AppState.pendingOrderDraft = orderDraft;
+
+      // 5. Avvia la medesima procedura del sito aprendo il Modal di Riepilogo e Deposito Escrow
+      if (typeof openOrderReviewModal === 'function') {
+        openOrderReviewModal(orderDraft);
+      } else {
+        navigateTo('client-request');
       }
 
-      navigateTo('client-request');
-      showToast('Specifiche di "' + work.title + '" pre-compilate per ordine diretto a ' + work.creatorName, 'info');
-
-      setTimeout(() => {
-        const formEl = document.getElementById('reqTitle');
-        if (formEl) formEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      }, 200);
+      showToast((isEn ? 'Direct order started for "' : isEs ? 'Pedido directo iniciado para "' : 'Ordine diretto avviato per "') + work.title + '" (' + work.creatorName + ')', 'info');
     }
     window.orderFromShowcase = orderFromShowcase;
 
@@ -28557,7 +28943,7 @@ function renderDealChat(rfpId) {
       const menu = document.getElementById('maker-menu-' + safeId);
       if (menu) {
         menu.classList.toggle('hidden');
-        if (window.lucide) lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
       }
     }
     window.toggleMakerDropdown = toggleMakerDropdown;
@@ -28614,7 +29000,7 @@ function renderDealChat(rfpId) {
       setReviewRating('comms', 5);
       setReviewRating('speed', 5);
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.openLeaveReviewModal = openLeaveReviewModal;
 
@@ -28714,7 +29100,7 @@ function renderDealChat(rfpId) {
       }
 
       modal.classList.remove('hidden');
-      if (window.lucide) lucide.createIcons();
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.openCreatorReviewsModal = openCreatorReviewsModal;
 
