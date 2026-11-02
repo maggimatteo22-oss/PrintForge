@@ -9106,14 +9106,21 @@
               return obj;
             });
 
-            const currentWorks = AppState.portfolioWorks || [];
-            const mergedWorks = [...cloudWorks];
-            currentWorks.forEach(cw => {
-              if (cw && cw.id && !mergedWorks.some(mw => mw && mw.id === cw.id)) {
-                mergedWorks.push(cw);
-              }
-            });
-            AppState.portfolioWorks = mergedWorks;
+            // Azzeramento opere in vetrina: se l'utente richiede azzeramento, mantieni pulito
+            const isPurgedShowcase = (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_showcase_purged') === 'true');
+            if (isPurgedShowcase) {
+              AppState.portfolioWorks = [];
+              try { localStorage.setItem('printforge_portfolio_works', '[]'); } catch(e) {}
+            } else {
+              const currentWorks = AppState.portfolioWorks || [];
+              const mergedWorks = [...cloudWorks];
+              currentWorks.forEach(cw => {
+                if (cw && cw.id && !mergedWorks.some(mw => mw && mw.id === cw.id)) {
+                  mergedWorks.push(cw);
+                }
+              });
+              AppState.portfolioWorks = mergedWorks;
+            }
             try {
               localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
             } catch(e) {}
@@ -9162,7 +9169,6 @@
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
             const parsedAgreements = meta.agreements || { cadVerified: false, toleranceConfirmed: false, qcPhotosAgreed: false, orientationAgreed: false, shippingLocked: false };
             const cleanNotes = meta.userNotes !== undefined ? meta.userNotes : dbR.notes;
-            const orderIdVal = dbR.id;
             const localQcApproved = localStorage.getItem('printforge_qc_approved_' + orderIdVal) === 'true';
             const isQcApproved = Boolean(meta.clientApprovedQc === true || meta.qcStatus === 'approvato_dal_cliente' || localQcApproved);
             const resolvedQcStatus = isQcApproved ? 'approvato_dal_cliente' : (meta.qcStatus || localStorage.getItem('printforge_qc_status_' + orderIdVal) || 'in_attesa_collaudo');
@@ -24320,6 +24326,10 @@ END-ISO-10303-21;`;
             ? `Solicitud ${rfpId} publicada con fondos en Escrow (${currentSelectedPaymentMethod.toUpperCase()}).`
             : `Richiesta ${rfpId} pubblicata con fondi in Escrow Stripe (${currentSelectedPaymentMethod.toUpperCase()}).`);
 
+      const isDirectShowcase = Boolean(window._directAssignedCreator && window._currentShowcaseWorkOrder);
+      const directWork = window._currentShowcaseWorkOrder;
+      const directCreator = window._directAssignedCreator;
+
       const newRequest = {
         id: rfpId,
         clientApprovedQc: false,
@@ -24358,17 +24368,20 @@ END-ISO-10303-21;`;
         deadline: draft.deadline,
         notes: draft.notes,
         fileName: draft.customFileName,
-        aiImage: draft.aiImage,
+        aiImage: isDirectShowcase ? (directWork.photoUrl || draft.aiImage) : draft.aiImage,
+        workPhotoUrl: isDirectShowcase ? directWork.photoUrl : null,
         timestamp: timeNow,
-        status: statusOpen,
-        isAccepted: false,
-        creatorAssigned: '',
-        maker: '',
-        maker_name: '',
-        acceptedBy: '',
-        assigned_creator_id: '',
-        makerUserId: '',
-        makerEmail: '',
+        status: isDirectShowcase ? 'IN LAVORAZIONE (PRESA IN CARICO)' : statusOpen,
+        isAccepted: isDirectShowcase,
+        creatorAssigned: isDirectShowcase ? directCreator.name : '',
+        maker: isDirectShowcase ? directCreator.name : '',
+        maker_name: isDirectShowcase ? directCreator.name : '',
+        acceptedBy: isDirectShowcase ? directCreator.name : '',
+        assigned_creator_id: isDirectShowcase ? directCreator.id : '',
+        makerUserId: isDirectShowcase ? directCreator.id : '',
+        makerEmail: isDirectShowcase ? directCreator.email : '',
+        targetCreatorId: isDirectShowcase ? directCreator.id : null,
+        targetCreatorName: isDirectShowcase ? directCreator.name : null,
         agreements: {
           cadVerified: true,
           toleranceConfirmed: false,
@@ -25206,7 +25219,43 @@ END-ISO-10303-21;`;
       }
 
       let activeJobBannerHtml = '';
-      // La commessa presa in carico non viene mostrata qui: viene gestita interamente nella sezione dedicata "ATTIVITÀ"
+      if (activeCreatorJob) {
+        const photoSrc = activeCreatorJob.workPhotoUrl || activeCreatorJob.aiImage || '/images/cube.jpg';
+        activeJobBannerHtml = `
+          <div class="col-span-full p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#12131F] to-[#0B0C10] border border-emerald-500/40 shadow-xl space-y-3 mb-4">
+            <div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
+              <div class="flex items-center gap-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span class="text-xs font-mono font-bold text-emerald-400 uppercase">COMMESSA PRESA IN CARICO // #${escapeHtml(activeCreatorJob.id)}</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">IN LAVORAZIONE</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <img src="${photoSrc}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-white/15 shadow-md shrink-0 mx-auto sm:mx-0" alt="Foto Opera Vetrina" />
+              <div class="min-w-0 flex-1 space-y-1 text-center sm:text-left">
+                <h4 class="font-cyber font-bold text-white text-sm sm:text-base truncate">${escapeHtml(activeCreatorJob.title)}</h4>
+                <p class="text-xs font-mono text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(activeCreatorJob.clientName || 'Cliente')}</strong></p>
+                <div class="flex flex-wrap items-center justify-center sm:justify-start gap-1.5 sm:gap-2 text-[10.5px] font-mono text-zinc-400 pt-1">
+                  <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.material || 'PETG')}</span>
+                  <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.color || 'Nero')}</span>
+                  <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.quantity || '1 pezzo')}</span>
+                  <span class="text-emerald-400 font-bold">${escapeHtml(activeCreatorJob.budget || '€ 35,00')}</span>
+                </div>
+              </div>
+              <div class="flex sm:flex-col items-center justify-center gap-2 pt-2 sm:pt-0 sm:border-l sm:border-white/10 sm:pl-4 shrink-0">
+                <button type="button" onclick="openDealChat('${escapeHtml(activeCreatorJob.id)}')" class="btn-kowalski-secondary w-full px-3 py-1.5 rounded-xl text-xs font-mono flex items-center justify-center gap-1.5">
+                  <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
+                  <span>Chat 1-1</span>
+                </button>
+                <button type="button" onclick="navigateTo('activity')" class="btn-kowalski-primary w-full px-3.5 py-2 rounded-xl text-xs font-cyber font-bold flex items-center justify-center gap-1.5 shadow-md">
+                  <i data-lucide="cpu" class="w-3.5 h-3.5 text-black"></i>
+                  <span>ATTIVITÀ & COLLAUDO</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
 
       if (visibleRequests.length === 0) {
         const emptyHead = isEn 
@@ -29078,9 +29127,9 @@ function renderDealChat(rfpId) {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          const fakeWorkIds = ['WORK-101', 'WORK-102', 'WORK-103'];
-          AppState.portfolioWorks = parsed.filter(w => w && w.id && !fakeWorkIds.includes(w.id) && !w.id.startsWith('WORK-10'));
-          localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+          // Azzeramento totale opere in vetrina su richiesta esplicita
+          AppState.portfolioWorks = [];
+          localStorage.setItem('printforge_portfolio_works', '[]');
         }
       }
     } catch(e) {}
@@ -29439,31 +29488,63 @@ function renderDealChat(rfpId) {
       navigateTo('client-request');
 
       setTimeout(() => {
-        // Popola e blocca il titolo
+        // 1. Popola e blocca il Titolo
         const reqTitle = document.getElementById('reqTitle');
         if (reqTitle) {
           reqTitle.value = work.title || 'Opera da Vetrina';
           reqTitle.readOnly = true;
-          reqTitle.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.02]');
+          reqTitle.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
         }
 
-        // Popola e blocca Materiale
+        // 2. Popola e blocca Destinazione d'Uso
+        const reqUsage = document.getElementById('reqUsage');
+        if (reqUsage) {
+          reqUsage.value = work.usage || 'Parte Meccanica Funzionale';
+          reqUsage.disabled = true;
+          reqUsage.style.pointerEvents = 'none';
+          reqUsage.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
+        }
+
+        // 3. Popola e blocca Materiale
         const reqMat = document.getElementById('reqMaterial');
         if (reqMat) {
           reqMat.value = work.material || 'PETG Tecnico';
           reqMat.disabled = true;
-          reqMat.classList.add('opacity-80', 'cursor-not-allowed');
+          reqMat.style.pointerEvents = 'none';
+          reqMat.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
         }
 
-        // Popola e blocca Colore
+        // 4. Popola e blocca Colore
         const reqCol = document.getElementById('reqColor');
         if (reqCol) {
           reqCol.value = work.color || 'Nero Cyber';
           reqCol.disabled = true;
-          reqCol.classList.add('opacity-80', 'cursor-not-allowed');
         }
+        document.querySelectorAll('.color-chip-btn, [onclick*="selectColorChip"], [onclick*="selectColorHex"]').forEach(b => {
+          b.style.pointerEvents = 'none';
+          b.classList.add('opacity-50', 'cursor-not-allowed');
+        });
 
-        // Popola e blocca Prezzo
+        // 5. Popola e blocca Pezzi / Quantità (1 pezzo bloccato)
+        const reqQty = document.getElementById('reqQuantity');
+        if (reqQty) {
+          reqQty.value = work.quantity || '1 pezzo (Prototipo)';
+          reqQty.disabled = true;
+        }
+        const customQtyInput = document.getElementById('reqCustomQtyInput');
+        if (customQtyInput) {
+          customQtyInput.value = '1';
+          customQtyInput.readOnly = true;
+          customQtyInput.disabled = true;
+          customQtyInput.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
+        }
+        document.querySelectorAll('[onclick*="adjustCustomQuantity"]').forEach(b => {
+          b.style.pointerEvents = 'none';
+          b.disabled = true;
+          b.classList.add('opacity-30', 'cursor-not-allowed');
+        });
+
+        // 6. Popola e blocca Prezzo
         const reqBudget = document.getElementById('reqBudget');
         if (reqBudget) {
           let numPrice = 35.00;
@@ -29477,33 +29558,58 @@ function renderDealChat(rfpId) {
           reqBudget.classList.add('opacity-80', 'cursor-not-allowed');
         }
 
-        // Blocca campi tecnici rimanenti
-        ['dimX', 'dimY', 'dimZ', 'reqDimensions', 'reqTolerance', 'reqInfill', 'reqPostProcess', 'reqUsage'].forEach(id => {
+        // 7. Blocca campi tecnici dimensionali e tolleranza
+        ['dimX', 'dimY', 'dimZ', 'reqDimensions', 'reqTolerance', 'reqInfill', 'reqPostProcess'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             el.disabled = true;
             el.readOnly = true;
+            el.style.pointerEvents = 'none';
             el.classList.add('opacity-80', 'cursor-not-allowed');
           }
         });
 
-        // Pulsante di invio ordine diretto al creator
-        const btnSubmit = document.getElementById('btnBroadcastSubmit');
-        if (btnSubmit) {
+        // 8. Tasto finale bianco: "CONTATTA IL MAKER"
+        const submitBtnSpan = document.getElementById('i18n-btnSubmitRfp');
+        const submitBtn = document.getElementById('btnSubmitRfpForm');
+        if (submitBtnSpan) {
           const isEn = currentLang === 'en';
           const isEs = currentLang === 'es';
-          const sendTxt = isEn 
-            ? `SEND ORDER TO CREATOR (${work.creatorName || 'Maker'})` 
-            : isEs 
-            ? `ENVIAR PEDIDO AL CREADOR (${work.creatorName || 'Creador'})` 
-            : `INVIA ORDINE AL CREATOR (${work.creatorName || 'Maker'})`;
-          btnSubmit.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i><span>${sendTxt}</span>`;
-          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+          submitBtnSpan.innerText = isEn ? 'CONTATTA IL MAKER' : isEs ? 'CONTACTAR AL MAKER' : 'CONTATTA IL MAKER';
+        }
+        if (submitBtn) {
+          submitBtn.className = "w-full sm:w-auto btn-kowalski-primary px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-xl font-cyber font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition cursor-pointer";
+        }
+
+        // 9. Banner informativo di blocco in cima al form
+        const formContainer = document.getElementById('view-client-request');
+        if (formContainer) {
+          let banner = document.getElementById('directShowcaseLockBanner');
+          if (!banner) {
+            banner = document.createElement('div');
+            banner.id = 'directShowcaseLockBanner';
+            formContainer.insertBefore(banner, formContainer.firstChild);
+          }
+          banner.className = 'p-3.5 sm:p-4 rounded-2xl bg-[#10121A] border border-emerald-500/40 flex items-center gap-3 shadow-xl mb-4 transition-all';
+          banner.innerHTML = `
+            <img src="${work.photoUrl || '/images/cube.jpg'}" class="w-14 h-14 rounded-xl object-cover border border-white/10 shrink-0 shadow-md" alt="Foto Opera Vetrina" />
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[9px] font-bold">ORDINE DIRETTO VETRINA</span>
+                <span class="text-xs font-mono text-zinc-300">Maker: <strong class="text-white">${escapeHtml(work.creatorName || 'Maker Certificato')}</strong></span>
+              </div>
+              <h4 class="text-xs sm:text-sm font-bold text-white truncate mt-0.5">${escapeHtml(work.title)}</h4>
+              <p class="text-[10px] sm:text-[10.5px] text-zinc-400 font-mono">
+                🔒 Specifiche bloccate dal Creator: <strong class="text-zinc-200">${escapeHtml(work.material || 'PETG')}</strong> • <strong class="text-zinc-200">${escapeHtml(work.color || 'Nero')}</strong> • <strong class="text-zinc-200">1 pz</strong> • <strong class="text-zinc-200">${escapeHtml(work.usage || 'Parte Meccanica')}</strong>
+              </p>
+            </div>
+          `;
         }
 
         if (typeof calculateVolumetricShipping === 'function') calculateVolumetricShipping();
         if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
-      }, 80);
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+      }, 100);
     }
     window.prepareShowcaseOrderInRequestPage = prepareShowcaseOrderInRequestPage;
 
@@ -29980,9 +30086,9 @@ function renderDealChat(rfpId) {
         if (storedWorks) {
           const pWorks = JSON.parse(storedWorks);
           if (Array.isArray(pWorks)) {
-            const fakeWorkIds = ['WORK-101', 'WORK-102', 'WORK-103'];
-            AppState.portfolioWorks = pWorks.filter(w => w && w.id && !fakeWorkIds.includes(w.id) && !w.id.startsWith('WORK-10'));
-            localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+            // Azzeramento totale opere in vetrina su richiesta esplicita
+          AppState.portfolioWorks = [];
+          localStorage.setItem('printforge_portfolio_works', '[]');
           }
         }
       } catch(e) {}
