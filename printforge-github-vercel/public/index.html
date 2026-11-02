@@ -7789,6 +7789,61 @@
   <!-- ========================================================================= -->
   <!-- MODALE SUCCESSO RFP BROADCAST (YC / G-STACK CONVERSION ACCELERATOR)        -->
   <!-- ========================================================================= -->
+  
+  <!-- MODALE REVISIONE COLLAUDO CLIENTE (INTERATTIVO CON QUICK CHIPS) -->
+  <div id="modalQcRevisionReason" class="fixed inset-0 z-50 bg-[#08090D]/90 backdrop-blur-md hidden items-center justify-center p-4">
+    <div class="w-full max-w-md bg-[#0F1017] border-2 border-amber-500/50 rounded-2xl p-5 sm:p-6 space-y-4 modal-spring-enter shadow-2xl text-white">
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center shrink-0">
+            <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400"></i>
+          </div>
+          <div>
+            <h3 class="font-cyber font-bold text-sm text-white uppercase tracking-wider">Richiedi Revisione Collaudo</h3>
+            <span class="text-[10px] font-mono text-amber-400/90 block">Il Maker riceverà la tua notifica istantaneamente</span>
+          </div>
+        </div>
+        <button type="button" onclick="closeQcRevisionModal()" class="w-7 h-7 rounded-lg bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+      </div>
+
+      <p class="text-xs text-zinc-300 font-sans leading-relaxed">
+        Seleziona un motivo rapido o specifica i dettagli per consentire al Maker di correggere il pezzo o riallineare le foto:
+      </p>
+
+      <!-- Quick Chips -->
+      <div class="flex flex-wrap gap-1.5">
+        <button type="button" onclick="setQcRevisionChip('Foto sfocata o quota calibro non leggibile')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/40 text-[11px] font-mono text-zinc-300 hover:text-amber-200 transition">
+          📸 Foto sfocata / quota
+        </button>
+        <button type="button" onclick="setQcRevisionChip('Quota o tolleranza dimensionale da correggere')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/40 text-[11px] font-mono text-zinc-300 hover:text-amber-200 transition">
+          📏 Tolleranza calibro
+        </button>
+        <button type="button" onclick="setQcRevisionChip('Residui di supporto o finitura superficiale da perfezionare')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/40 text-[11px] font-mono text-zinc-300 hover:text-amber-200 transition">
+          🧹 Finitura / supporti
+        </button>
+        <button type="button" onclick="setQcRevisionChip('Pacco o etichetta di spedizione da verificare')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-amber-500/20 border border-white/10 hover:border-amber-400/40 text-[11px] font-mono text-zinc-300 hover:text-amber-200 transition">
+          📦 Imballo / etichetta
+        </button>
+      </div>
+
+      <div>
+        <textarea id="qcRevisionReasonInput" rows="3" class="w-full bg-[#141620] border border-white/20 rounded-xl p-3 text-xs font-mono text-white placeholder-zinc-500 focus:border-amber-400 outline-none resize-none" placeholder="Descrivi le correzioni richieste per il Maker..."></textarea>
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2 border-t border-white/10">
+        <button type="button" onclick="closeQcRevisionModal()" class="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-300 font-mono text-xs transition">
+          Annulla
+        </button>
+        <button type="button" onclick="submitQcRevisionModal()" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer">
+          <span>Invia Revisione al Maker</span>
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+
   <div id="modalRfpSuccess" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
     <div class="w-full max-w-lg cyber-card p-6 space-y-4 modal-spring-enter border border-white/20 shadow-2xl bg-[#090A0D]">
       
@@ -20884,6 +20939,129 @@ END-ISO-10303-21;`;
         /* ========================================================================= */
     /* NOTIFICA EMAIL TRANSAZIONALE AL CREATOR PER DECISIONE CLIENTE SUL COLLAUDO*/
     /* ========================================================================= */
+    
+    /* ========================================================================= */
+    /* FEEDBACK AUDIO & PARTICELLE DI REAZIONE GRAFICA COLLAUDO QC               */
+    /* ========================================================================= */
+    function playAudioFeedback(type = 'success') {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        if (type === 'success') {
+          // Accordo di successo ascendente: Do -> Mi -> Sol (523 -> 659 -> 783 Hz)
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(523.25, now);
+          osc.frequency.exponentialRampToValueAtTime(659.25, now + 0.08);
+          osc.frequency.exponentialRampToValueAtTime(783.99, now + 0.16);
+          gain.gain.setValueAtTime(0.2, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.45);
+          osc.start(now);
+          osc.stop(now + 0.45);
+        } else {
+          // Tono di avviso per revisione
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(440, now);
+          osc.frequency.exponentialRampToValueAtTime(349.23, now + 0.12);
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+          osc.start(now);
+          osc.stop(now + 0.35);
+        }
+      } catch(e) {}
+    }
+    window.playAudioFeedback = playAudioFeedback;
+
+    function triggerQcParticleBurst(buttonEl) {
+      if (!buttonEl || typeof document === 'undefined') return;
+      const rect = buttonEl.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      const container = document.createElement('div');
+      container.style.position = 'fixed';
+      container.style.left = '0';
+      container.style.top = '0';
+      container.style.width = '100vw';
+      container.style.height = '100vh';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '99999';
+      document.body.appendChild(container);
+
+      const colors = ['#10B981', '#34D399', '#059669', '#38BDF8', '#F59E0B', '#FFFFFF'];
+      for (let i = 0; i < 28; i++) {
+        const p = document.createElement('div');
+        const size = Math.floor(Math.random() * 8 + 5);
+        p.style.position = 'absolute';
+        p.style.width = size + 'px';
+        p.style.height = size + 'px';
+        p.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+        p.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        p.style.left = centerX + 'px';
+        p.style.top = centerY + 'px';
+        p.style.boxShadow = '0 0 10px ' + p.style.backgroundColor;
+        container.appendChild(p);
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = Math.random() * 140 + 40;
+        const destX = centerX + Math.cos(angle) * distance;
+        const destY = centerY + Math.sin(angle) * distance;
+
+        p.animate([
+          { transform: 'translate(0, 0) scale(1)', opacity: 1 },
+          { transform: `translate(${destX - centerX}px, ${destY - centerY}px) scale(0)`, opacity: 0 }
+        ], {
+          duration: Math.random() * 500 + 400,
+          easing: 'cubic-bezier(0, .9, .57, 1)',
+          fill: 'forwards'
+        });
+      }
+
+      setTimeout(() => {
+        container.remove();
+      }, 1000);
+    }
+    window.triggerQcParticleBurst = triggerQcParticleBurst;
+
+    function openQcRevisionModal() {
+      const modal = document.getElementById('modalQcRevisionReason');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        const input = document.getElementById('qcRevisionReasonInput');
+        if (input) {
+          input.value = '';
+          setTimeout(() => input.focus(), 80);
+        }
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+      }
+    }
+    window.openQcRevisionModal = openQcRevisionModal;
+
+    function closeQcRevisionModal() {
+      const modal = document.getElementById('modalQcRevisionReason');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+    window.closeQcRevisionModal = closeQcRevisionModal;
+
+    function setQcRevisionChip(text) {
+      const input = document.getElementById('qcRevisionReasonInput');
+      if (input) {
+        input.value = text;
+        input.focus();
+      }
+    }
+    window.setQcRevisionChip = setQcRevisionChip;
+
     function sendQcDecisionEmailToCreator(order, decision, reason) {
       if (!reason) reason = '';
       if (!order) order = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted)) || {};
@@ -21314,7 +21492,22 @@ END-ISO-10303-21;`;
     function clientConfirmQcPhotos() {
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
-      
+
+      // 1. REAZIONE GRAFICA IMMEDIATA SUL PULSANTE AL CLICK
+      const btnConfirm = document.getElementById('btnClientConfirmQc');
+      if (btnConfirm) {
+        btnConfirm.disabled = true;
+        btnConfirm.innerHTML = '<div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div><span>' + (isEn ? 'CONFIRMING...' : isEs ? 'CONFIRMANDO...' : 'CONFERMA IN CORSO...') + '</span>';
+        btnConfirm.classList.add('opacity-90', 'scale-[0.98]', 'ring-4', 'ring-emerald-400/50');
+      }
+
+      // 2. FEEDBACK AUDIO & PARTICELLE DI SUCCESSO
+      playAudioFeedback('success');
+      if (btnConfirm && typeof triggerQcParticleBurst === 'function') {
+        triggerQcParticleBurst(btnConfirm);
+      }
+
+      // 3. AGGIORNAMENTO STATO IN MEMORIA E PERSISTENZA PER-ORDINE
       AppState.clientApprovedQc = true;
       AppState.stage2Completed = true;
 
@@ -21328,7 +21521,7 @@ END-ISO-10303-21;`;
         activeReq.qcStatus = 'approvato_dal_cliente';
         activeReq.clientApprovedAt = new Date().toISOString();
 
-        // SALVATAGGIO UNIVERSALE E INDELEBILE PER QUESTO SPECIFICO ORDINE
+        // SALVATAGGIO INDELEBILE PER-ORDINE
         try {
           localStorage.setItem('printforge_qc_approved_' + activeReq.id, 'true');
           localStorage.setItem('printforge_qc_status_' + activeReq.id, 'approvato_dal_cliente');
@@ -21355,34 +21548,51 @@ END-ISO-10303-21;`;
         });
 
         // Invia notifica email al creator
-        if (typeof sendQcDecisionEmailToCreator === 'function') sendQcDecisionEmailToCreator(activeReq, 'approved');
+        if (typeof sendQcDecisionEmailToCreator === 'function') {
+          sendQcDecisionEmailToCreator(activeReq, 'approved');
+        }
       }
 
-      updateEscrowRoom();
-      applyRoleGatingForLabelDownload();
-      syncPipelineUI();
+      // 4. TRASFORMAZIONE VISIVA IMMEDIATA DEL CONTENITORE
+      setTimeout(() => {
+        renderClientQcDecisionUI();
+        updateEscrowRoom();
+        applyRoleGatingForLabelDownload();
+        syncPipelineUI();
 
-      const msg = isEn
-        ? '✓ QC photos confirmed! Courier shipping label unlocked for the Maker.'
-        : isEs
-        ? '✓ ¡Fotos de control confirmadas! Etiqueta de envío desbloqueada para el Creador.'
-        : '✓ Collaudo fotografico confermato! Etichetta di spedizione sbloccata per il Maker.';
-      showToast(msg, 'success');
+        const container = document.getElementById('escrowClientQcDecisionActions');
+        if (container) {
+          container.classList.add('ring-4', 'ring-emerald-400/40', 'transition-all', 'duration-500');
+          setTimeout(() => {
+            container.classList.remove('ring-4', 'ring-emerald-400/40');
+          }, 1200);
+        }
+
+        const msg = isEn
+          ? '✓ QC photos confirmed! Courier shipping label unlocked for the Maker.'
+          : isEs
+          ? '✓ ¡Fotos de control confirmadas! Etiqueta de envío desbloqueada para el Creador.'
+          : '✓ Collaudo fotografico confermato! Etichetta di spedizione sbloccata per il Maker.';
+        showToast(msg, 'success');
+      }, 220);
     }
     window.clientConfirmQcPhotos = clientConfirmQcPhotos;
 
     function clientRejectQcPhotos() {
+      openQcRevisionModal();
+    }
+    window.clientRejectQcPhotos = clientRejectQcPhotos;
+
+    function submitQcRevisionModal() {
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
-      
-      const promptMsg = isEn
-        ? 'Specify the modifications or revisions required for the Maker:'
-        : isEs
-        ? 'Indica qué modificaciones o revisiones solicitas al Creador:'
-        : 'Indica cosa desideri far modificare o perfezionare al Maker:';
-        
-      const reason = prompt(promptMsg, isEn ? 'Finishing or dimensions need adjustment' : 'Dettagli di finitura o tolleranza da rivedere');
-      if (!reason) return;
+
+      const input = document.getElementById('qcRevisionReasonInput');
+      const reason = (input?.value || '').trim() || (isEn ? 'Finishing or dimensions need adjustment' : 'Dettagli di finitura o tolleranza da rivedere');
+
+      // Feedback sonoro
+      playAudioFeedback('warning');
+      closeQcRevisionModal();
 
       AppState.clientApprovedQc = false;
       const activeReq = AppState.loadedRequestInStudio 
@@ -21407,7 +21617,7 @@ END-ISO-10303-21;`;
           senderRole: 'client',
           senderName: AppState.user?.name || 'Cliente',
           time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          text: `⚠️ Richiesta revisione collaudo: ${reason}`
+          text: '⚠️ Richiesta revisione collaudo: ' + reason
         });
         
         try {
@@ -21426,21 +21636,33 @@ END-ISO-10303-21;`;
         });
 
         // Invia notifica email al creator
-        if (typeof sendQcDecisionEmailToCreator === 'function') sendQcDecisionEmailToCreator(activeReq, 'rejected', reason);
+        if (typeof sendQcDecisionEmailToCreator === 'function') {
+          sendQcDecisionEmailToCreator(activeReq, 'rejected', reason);
+        }
       }
 
+      // TRASFORMAZIONE VISIVA IMMEDIATA
+      renderClientQcDecisionUI();
       updateEscrowRoom();
       applyRoleGatingForLabelDownload();
       syncPipelineUI();
 
+      const container = document.getElementById('escrowClientQcDecisionActions');
+      if (container) {
+        container.classList.add('ring-4', 'ring-amber-400/40', 'transition-all', 'duration-500');
+        setTimeout(() => {
+          container.classList.remove('ring-4', 'ring-amber-400/40');
+        }, 1200);
+      }
+
       const msg = isEn
-        ? 'Revision request sent to the Maker in Deal Chat.'
+        ? '⚠️ Revision request sent to the Maker in Deal Chat.'
         : isEs
-        ? 'Solicitud de revisión enviada al Creador en el chat.'
-        : 'Richiesta di revisione inviata al Maker nella Deal Chat.';
+        ? '⚠️ Solicitud de revisión enviada al Creador en el chat.'
+        : '⚠️ Richiesta di revisione inviata al Maker nella Deal Chat.';
       showToast(msg, 'warning');
     }
-    window.clientRejectQcPhotos = clientRejectQcPhotos;
+    window.submitQcRevisionModal = submitQcRevisionModal;
 
     function showStage4CompletionModal(data) {
       let modal = document.getElementById('stage4CompletionModal');
@@ -25680,6 +25902,7 @@ function renderDealChat(rfpId) {
 
         applyRoleGatingForLabelDownload();
         if (typeof syncPipelineUI === 'function') syncPipelineUI();
+        if (typeof renderClientQcDecisionUI === 'function') renderClientQcDecisionUI();
         lucide.createIcons();
       }
     }
