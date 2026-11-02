@@ -20184,7 +20184,11 @@ END-ISO-10303-21;`;
         return;
       }
 
-      if (!AppState.cadQcFiles || AppState.cadQcFiles.length < 3) {
+      const activeOrd = AppState.activeEscrowOrder || AppState.loadedRequestInStudio;
+      const isShowcaseOrder = Boolean(activeOrd && activeOrd.isShowcaseOrder);
+
+      // Per gli ordini standard non da vetrina, richiedi le 3 foto del calibro
+      if (!isShowcaseOrder && (!AppState.cadQcFiles || AppState.cadQcFiles.length < 3)) {
         const isEn = currentLang === 'en';
         const isEs = currentLang === 'es';
         const msg = isEn 
@@ -20196,7 +20200,8 @@ END-ISO-10303-21;`;
         return;
       }
 
-      if (!AppState.clientApprovedQc) {
+      // Per gli ordini standard non da vetrina, attendi collaudo cliente
+      if (!isShowcaseOrder && !AppState.clientApprovedQc) {
         const isEn = currentLang === 'en';
         const isEs = currentLang === 'es';
         const msg = isEn 
@@ -21296,6 +21301,34 @@ END-ISO-10303-21;`;
         return;
       }
 
+      // Se ordine da vetrina: conformità fotografica già certificata all'origine
+      if (activeReq && activeReq.isShowcaseOrder) {
+        container.innerHTML = 
+          '<div class="p-3.5 rounded-xl bg-gradient-to-r from-emerald-500/15 via-[#0e1613] to-[#0A0D10] border border-emerald-500/40 shadow-lg space-y-1.5">' +
+            '<div class="flex items-center justify-between">' +
+              '<div class="flex items-center gap-2">' +
+                '<div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">' +
+                  '<i data-lucide="check-check" class="w-4 h-4"></i>' +
+                '</div>' +
+                '<div>' +
+                  '<span class="text-xs font-mono font-bold text-emerald-300 block leading-tight">' +
+                    (isEn ? '✓ SHOWCASE ORDER: TECH SPECS & QC PRE-VERIFIED' : isEs ? '✓ PEDIDO DE ESCAPARATE: FOTOS YA CERTIFICADAS' : '✓ ORDINE DA VETRINA: FOTO E SPECIFICHE PRE-CONVALIDATE') +
+                  '</span>' +
+                  '<span class="text-[10px] text-zinc-400 block font-sans">' +
+                    (isEn ? 'Workpiece certified in showcase and chat. Shipping label unlocked directly for fulfillment.' : isEs ? 'Pieza certificada en escaparate. Etiqueta desbloqueada.' : 'Pezzo certificato in vetrina e chat. Etichetta corriere sbloccata direttamente per la spedizione.') +
+                  '</span>' +
+                '</div>' +
+              '</div>' +
+              '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30 font-bold shrink-0">' +
+                (isEn ? 'LABEL UNLOCKED' : 'ETICHETTA SBLOCCATA') +
+              '</span>' +
+            '</div>' +
+          '</div>';
+        AppState.clientApprovedQc = true;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
       // STATO SPECIFICO DI QUESTO ORDINE (ISOLAMENTO PER-ORDINE E PERSISTENZA UNIVERSALE!)
       const orderId = activeReq ? activeReq.id : '';
       const isLocallyApproved = Boolean(orderId && localStorage.getItem('printforge_qc_approved_' + orderId) === 'true');
@@ -21408,15 +21441,15 @@ END-ISO-10303-21;`;
               '</div>' +
               '<div>' +
                 '<span class="text-xs font-mono font-bold text-emerald-300 block leading-tight">' +
-                  (isEn ? '✓ QC PHOTOS CONFIRMED BY YOU' : isEs ? '✓ FOTOS CONFIRMADAS POR TI' : '✓ COLLAUDO CONFERMATO DA TE') +
+                  (isEn ? '✓ QC PHOTOS CONFIRMED BY YOU' : isEs ? '✓ FOTOS CONFIRMADAS POR TI' : '✓ COLLAUDO FOTOGRAFICO CONFERMATO DA TE') +
                 '</span>' +
                 '<span class="text-[10px] text-zinc-400 block font-sans">' +
-                  (isEn ? 'Shipping label unlocked. Maker notified to hand parcel to courier.' : isEs ? 'Etiqueta desbloqueada. Creador notificado para entregar paquete.' : 'Etichetta corriere sbloccata per il Maker. In attesa di spedizione.') +
+                  (isEn ? 'Shipping label unlocked. Maker notified to hand parcel to courier.' : isEs ? 'Etiqueta de envío desbloqueada. Creador notificado para entregar paquete.' : 'Etichetta di spedizione sbloccata. Maker autorizzato ad affidare il collo al corriere.') +
                 '</span>' +
               '</div>' +
             '</div>' +
             '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30 font-bold self-start sm:self-auto shrink-0">' +
-              (isEn ? 'LABEL UNLOCKED' : 'ETICHETTA SBLOCCATA') +
+              (isEn ? 'LABEL UNLOCKED' : isEs ? 'ETIQUETA DESBLOQUEADA' : 'ETICHETTA SBLOCCATA') +
             '</span>' +
           '</div>';
       } else if (isOrderRevision) {
@@ -22615,18 +22648,27 @@ END-ISO-10303-21;`;
 
       let finalRole = (cloudProfile && cloudProfile.role) || pendingRole || 'client';
 
+      // Dai sempre priorità assoluta al Nome Reale verificato di Google OAuth
+      const realUserName = (meta.full_name || meta.name || '').trim() || name;
       AppState.user = {
         userId: userId,
         id: userId,
         isLoggedIn: true,
         role: finalRole,
         isAdmin: Boolean(cloudProfile && cloudProfile.isAdmin),
-        name: (cloudProfile && cloudProfile.name) || name,
+        name: realUserName,
         email: email,
         avatar: avatar,
         stripeConnected: true,
         creatorData: (cloudProfile && cloudProfile.creatorData) || null
       };
+      // Pulisci eventuali nomi demo o corrotti salvati localmente
+      try {
+        localStorage.removeItem('printforge_demo_name');
+        localStorage.removeItem('printforge_creator_lab');
+      } catch(e) {}
+      // Invia email di benvenuto e conferma al vero indirizzo Gmail collegato
+      sendRegistrationWelcomeEmail(AppState.user);
 
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
@@ -23725,23 +23767,16 @@ END-ISO-10303-21;`;
         return;
       }
 
-      // 2. Frictionless conversion: se l'utente non ha ancora effettuato il login, creiamo automaticamente una sessione cliente verificata con Stripe Escrow attivo
-      if (!AppState.user.isLoggedIn) {
-        AppState.user = {
-          isLoggedIn: true,
-          role: 'client',
-          isAdmin: false,
-          name: 'Matteo Client (Verificato)',
-          email: 'matteo.client@printforge.dev',
-          avatar: 'M',
-          stripeConnected: true,
-          creatorData: null
-        };
-        try {
-          localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-        } catch (e) {}
-        renderNavUserArea();
-        updateLaptopBarButtons();
+      // 2. Autenticazione reale obbligatoria: nessun account demo o fake
+      if (!AppState.user || !AppState.user.isLoggedIn) {
+        const loginReqMsg = isEn 
+          ? 'Please sign in with Google or your credentials to submit your order.' 
+          : isEs 
+          ? 'Por favor, inicia sesión con Google o tus credenciales para enviar tu pedido.' 
+          : 'Effettua l\'accesso con Google o con le tue credenziali per trasmettere il tuo ordine in custodia Escrow.';
+        showToast(loginReqMsg, 'warning');
+        navigateTo('login-gate');
+        return;
       }
 
       let title = document.getElementById('reqTitle')?.value?.trim();
@@ -24103,19 +24138,36 @@ END-ISO-10303-21;`;
         ]
       };
 
-      // MODULO 4: Se ordine diretto da vetrina, assegna direttamente senza broadcast globale
-      // MODULO 4: Se ordine da vetrina ("Ordina adesso"), memorizza targetCreator ma NON accettare automaticamente!
-      if (window._directAssignedCreator) {
-        newRequest.targetCreatorId = window._directAssignedCreator.id || '';
-        newRequest.targetCreatorName = window._directAssignedCreator.name || '';
-        newRequest.targetCreatorEmail = window._directAssignedCreator.email || '';
-        newRequest.isAccepted = false;
-        newRequest.status = statusOpen;
-        newRequest.maker = '';
-        newRequest.maker_name = '';
-        newRequest.acceptedBy = '';
-        newRequest.assigned_creator_id = '';
-        console.log('🎯 Ordine da vetrina indirizzato a:', window._directAssignedCreator.name);
+      // ORDINE DA VETRINA: Assegnazione diretta al Creator, Stanza Escrow immediata & Esenzione 3 Foto QC
+      if (window._currentShowcaseWorkOrder || window._directAssignedCreator) {
+        const cWork = window._currentShowcaseWorkOrder;
+        const targetCr = window._directAssignedCreator || {
+          id: (cWork && cWork.creatorId) || '',
+          name: (cWork && cWork.creatorName) || 'Creator',
+          email: (cWork && cWork.creatorEmail) || ''
+        };
+        newRequest.isShowcaseOrder = true;
+        newRequest.showcaseWorkId = (cWork && cWork.id) || '';
+        newRequest.targetCreatorId = targetCr.id || '';
+        newRequest.targetCreatorName = targetCr.name || '';
+        newRequest.targetCreatorEmail = targetCr.email || '';
+        newRequest.maker = targetCr.name || '';
+        newRequest.maker_name = targetCr.name || '';
+        newRequest.acceptedBy = targetCr.name || '';
+        newRequest.makerEmail = targetCr.email || '';
+        newRequest.makerUserId = targetCr.id || '';
+        newRequest.assigned_creator_id = targetCr.id || '';
+        newRequest.isAccepted = true;
+        newRequest.status = isEn ? 'IN PRODUCTION (SHOWCASE VERIFIED)' : isEs ? 'EN PRODUCCIÓN (VERIFICADO EN ESCAPARATE)' : 'IN LAVORAZIONE (COLLAUDO VETRINA CONVALIDATO)';
+        
+        // Esenzione dal collaudo a 3 foto calibro: foto già presenti in vetrina/chat
+        newRequest.clientApprovedQc = true;
+        newRequest.qcStatus = 'approvato_dal_cliente';
+        newRequest.hasQcPhotos = true;
+        newRequest.qcPhotos = (cWork && cWork.photoUrl) ? [cWork.photoUrl] : [];
+
+        console.log('🎯 Ordine diretto da vetrina assegnato con successo a:', targetCr.name);
+        window._currentShowcaseWorkOrder = null;
         window._directAssignedCreator = null;
       }
       AppState.clientApprovedQc = false;
@@ -29036,16 +29088,59 @@ function renderDealChat(rfpId) {
         const safePrice = escapeHtml(w.price || '€ 35,00');
         const photo = w.photoUrl || '/images/cube.jpg';
 
+        // Cerca se esiste un ordine attivo piazzato da un cliente per questa specifica opera
+        const activeOrder = (AppState.broadcastRequests || []).find(r => {
+          if (!r || !r.id || r.isDeleted || r.isRejected) return false;
+          return r.showcaseWorkId === w.id || (r.title && w.title && r.title.toLowerCase() === w.title.toLowerCase());
+        });
+
         return `
-          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 p-3 space-y-2">
-            <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden">
-              <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
+          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 p-3.5 space-y-2.5 shadow-lg flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
+                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
+                ${activeOrder ? `
+                  <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9px] uppercase tracking-wider shadow-lg flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span>
+                    ORDINE ATTIVO
+                  </span>
+                ` : `
+                  <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-500/30 font-mono text-[9px]">
+                    IN VETRINA
+                  </span>
+                `}
+              </div>
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="font-bold text-white truncate max-w-[140px]">${safeTitle}</span>
+                <span class="text-emerald-400 font-bold">${safePrice}</span>
+              </div>
+              <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(w.material)} // ${escapeHtml(w.dimensions)}</span>
             </div>
-            <div class="flex items-center justify-between text-xs font-mono">
-              <span class="font-bold text-white truncate max-w-[150px]">${safeTitle}</span>
-              <span class="text-emerald-400 font-bold">${safePrice}</span>
-            </div>
-            <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(w.material)} // ${escapeHtml(w.dimensions)}</span>
+
+            <!-- Sezione Azioni Dinamiche per il Creator: Chat 1-1 & Stanza Escrow -->
+            ${activeOrder ? `
+              <div class="pt-2 border-t border-emerald-500/20 bg-emerald-500/[0.04] p-2 rounded-xl space-y-1.5">
+                <div class="flex items-center justify-between text-[10px] font-mono">
+                  <span class="text-zinc-400">Cliente: <strong class="text-white">${escapeHtml(activeOrder.clientName || 'Cliente')}</strong></span>
+                  <span class="text-emerald-400 font-bold">#${escapeHtml(activeOrder.id)}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-1.5 pt-0.5">
+                  <button type="button" onclick="openDealChat('${activeOrder.id}')" class="py-1.5 px-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition shadow active:scale-95 cursor-pointer">
+                    <i data-lucide="message-square" class="w-3 h-3"></i>
+                    <span>CHAT</span>
+                  </button>
+                  <button type="button" onclick="openEscrowRoomForOrder('${activeOrder.id}')" class="py-1.5 px-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer">
+                    <i data-lucide="shield-check" class="w-3 h-3 text-cyan-400"></i>
+                    <span>ESCROW</span>
+                  </button>
+                </div>
+              </div>
+            ` : `
+              <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+                <span>In attesa di ordini clienti</span>
+                <span class="text-emerald-500">Disponibile</span>
+              </div>
+            `}
           </div>
         `;
       }).join('');
@@ -29053,6 +29148,21 @@ function renderDealChat(rfpId) {
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.renderCreatorPortfolioView = renderCreatorPortfolioView;
+
+    function openEscrowRoomForOrder(orderId) {
+      const order = (AppState.broadcastRequests || []).find(r => r && r.id === orderId);
+      if (order) {
+        AppState.activeEscrowOrder = order;
+        AppState.loadedRequestInStudio = order;
+        if (order.clientApprovedQc) {
+          AppState.clientApprovedQc = true;
+          AppState.stage2Completed = true;
+        }
+      }
+      navigateTo('order-room');
+      updateEscrowRoom();
+    }
+    window.openEscrowRoomForOrder = openEscrowRoomForOrder;
 
     function openItemDetailModal(workId) {
       const work = (AppState.portfolioWorks || []).find(w => w.id === workId);
@@ -29148,14 +29258,12 @@ function renderDealChat(rfpId) {
 
       AppState.pendingOrderDraft = orderDraft;
 
-      // 5. Avvia la medesima procedura del sito aprendo il Modal di Riepilogo e Deposito Escrow
-      if (typeof openOrderReviewModal === 'function') {
-        openOrderReviewModal(orderDraft);
+      // 5. Mostra la pagina richieste con tutte le componenti tecniche bloccate tranne opzioni spedizione e indirizzo
+      if (typeof prepareShowcaseOrderInRequestPage === 'function') {
+        prepareShowcaseOrderInRequestPage(work, orderDraft);
       } else {
         navigateTo('client-request');
       }
-
-      showToast((isEn ? 'Direct order started for "' : isEs ? 'Pedido directo iniciado para "' : 'Ordine diretto avviato per "') + work.title + '" (' + work.creatorName + ')', 'info');
     }
     window.orderFromShowcase = orderFromShowcase;
 
