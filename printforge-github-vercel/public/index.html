@@ -8890,6 +8890,11 @@
         waBtn.href = 'https://api.whatsapp.com/send?text=' + waMsg;
       }
 
+      modal.onclick = (e) => {
+        if (e.target === modal) {
+          closeActivityAfterStage4();
+        }
+      };
       modal.classList.remove('hidden');
       if (window.lucide) lucide.createIcons();
     }
@@ -17371,14 +17376,24 @@ END-ISO-10303-21;`;
     function hasAcceptedRequest() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       if (AppState.user.role !== 'creator') return false;
-      if (AppState.user.isAdmin) return true;
+      // Se lo stage 4 è completato e archiviato, non vi sono commesse attive
+      if (AppState.stage4Completed && !AppState.activeEscrowOrder) return false;
+
+      // Se in memoria vi è un ordine attivo non ancora completato/consegnato
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+        return true;
+      }
+      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered) {
+        return true;
+      }
 
       const myMakerName = (AppState.user.name || '').toLowerCase().trim();
       const myMakerEmail = (AppState.user.email || '').toLowerCase().trim();
       const myMakerUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
 
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
-        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
+        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+        if (typeof r.status === 'string' && (r.status.includes('CONSEGNATO') || r.status.includes('SVINCOLATI') || r.status.includes('ARCHIVIATO') || r.status.includes('COMPLETATO'))) return false;
         const isAcc = Boolean(
           r.isAccepted === true ||
           (r.maker && r.maker.trim().length > 0) ||
@@ -17483,6 +17498,18 @@ END-ISO-10303-21;`;
     window.hasActiveEscrowOrder = hasActiveEscrowOrder;
 
     /* 2. Navigation & Role Rendering */
+    
+    function navigateCreatorActiveWork() {
+      const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
+      const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || activeReq?.hasQcPhotos || (activeReq?.qcPhotos && activeReq.qcPhotos.length >= 3);
+      if (hasQc) {
+        navigateTo('order-room');
+      } else {
+        navigateTo('activity');
+      }
+    }
+    window.navigateCreatorActiveWork = navigateCreatorActiveWork;
+
     function updateNavigationTabs() {
       const nav = document.getElementById('mainNavBar');
       const mobileNav = document.getElementById('mobileNavBar');
@@ -17549,39 +17576,41 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // 4. BACHECA RICHIESTE
-        const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected).length;
-        const isReqs = (v === 'creator-requests');
-        html += `
-          <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
-            <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>${creatorRequestsLabel}</span>
-            <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
-          </button>
-        `;
-        mobileHtml += `
-          <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
-            <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-            <span>${mRequestsLabel}</span>
-            <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
-          </button>
-        `;
-
-        // 5. ATTIVITÀ (se ha commessa presa in carico)
+        // 4. SCAMBIO TRA "RICHIESTE" E "ATTIVITÀ" (Sia da PC che da Mobile):
+        // Quando il creator accetta una richiesta, la pagina "Richieste" viene scambiata con "Attività".
+        // Una volta completato il 4° passaggio, torna come prima mostrando Progetti, Home e Richieste.
         if (hasAcceptedRequest()) {
-          const isAct = (v === 'activity' || v === 'studio');
+          const isAct = (v === 'activity' || v === 'studio' || v === 'order-room' || v === 'escrow');
+          const actLabel = isEn ? 'ACTIVITY' : isEs ? 'ACTIVIDAD' : 'ATTIVITÀ';
           html += `
-            <button onclick="navigateTo('activity')" id="navActivityBtn" class="${isAct ? activeClass : inactiveClass}">
+            <button onclick="navigateCreatorActiveWork()" id="navActivityBtn" class="${isAct ? activeClass : inactiveClass}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>ATTIVITÀ</span>
+              <span>${actLabel}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             </button>
           `;
           mobileHtml += `
-            <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
+            <button onclick="navigateCreatorActiveWork()" class="${isAct ? mActive : mInactive}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>ATTIVITÀ</span>
+              <span>${actLabel}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </button>
+          `;
+        } else {
+          const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed).length;
+          const isReqs = (v === 'creator-requests');
+          html += `
+            <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
+              <span>${creatorRequestsLabel}</span>
+              <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
+            </button>
+          `;
+          mobileHtml += `
+            <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
+              <span>${mRequestsLabel}</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
             </button>
           `;
         }
@@ -21268,15 +21297,25 @@ END-ISO-10303-21;`;
         activeReq.isCompleted = true;
         activeReq.isClosed = true;
         activeReq.isAccepted = false;
+        activeReq.status = 'COMPLETATO // ARCHIVIATO';
+      }
+
+      if (activeReq && activeReq.id) {
+        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== activeReq.id);
         try {
           localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         } catch(e) {}
+        if (typeof updateRequestInSupabase === 'function') {
+          updateRequestInSupabase(activeReq.id, {
+            status: 'COMPLETATO // FONDI SVINCOLATI',
+            is_delivered: true,
+            is_closed: true,
+            is_accepted: false
+          });
+        }
       }
 
-      AppState.stage4Completed = true;
-      AppState.isDelivered = true;
-
-      // Reset Escrow Room for Creator
+      // Reset totale stato commessa per il Creator
       AppState.activeEscrowOrder = null;
       AppState.loadedRequestInStudio = null;
       AppState.cadQcFiles = [];
@@ -21285,14 +21324,20 @@ END-ISO-10303-21;`;
       AppState.isDelivered = false;
       AppState.stage2Completed = false;
       AppState.stage4Completed = false;
+      AppState.step4Confirmed = false;
 
-      // Update tabs (removes ATTIVITÀ tab) and update Escrow Room
+      // Azzera Escrow Room e aggiorna UI
+      if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+      // Aggiorna navbar: ATTIVITÀ scompare e torna RICHIESTE!
       updateNavigationTabs();
-      updateEscrowRoom();
 
-      // Navigate to creator requests
-      navigateTo('creator-requests');
-      showToast('✓ Attività conclusa e archiviata con successo.', 'success');
+      // Torna alla schermata HOME (mostrando Progetti, Home e Richieste) come se non avesse confermato alcun lavoro
+      navigateTo('client-home');
+
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+      showToast(isEn ? 'Commission completed and archived! Resetting to default view.' : isEs ? '¡Trabajo completado y archivado! Restableciendo vista.' : '✓ 4° Passaggio completato! Commessa archiviata: vista ripristinata su Home e Richieste.', 'success');
     }
     window.closeActivityAfterStage4 = closeActivityAfterStage4;
 
@@ -22804,19 +22849,14 @@ END-ISO-10303-21;`;
 
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
-    // Se il creator ha concluso il 4° passaggio e naviga altrove, azzera completamente la pagina Escrow Room
+    // Se il creator ha concluso il 4° passaggio e naviga altrove (cliccando da un'altra parte), azzera completamente l'attività e ripristina la navbar
     if (AppState.user && AppState.user.role === 'creator') {
       if (AppState.stage4Completed || AppState.isDelivered) {
         if (viewId !== 'order-room' && viewId !== 'activity' && viewId !== 'studio') {
-          AppState.activeEscrowOrder = null;
-          AppState.loadedRequestInStudio = null;
-          AppState.cadQcFiles = [];
-          AppState.clientApprovedQc = false;
-          AppState.isShipped = false;
-          AppState.isDelivered = false;
-          AppState.stage2Completed = false;
-          AppState.stage4Completed = false;
-          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+          if (typeof closeActivityAfterStage4 === 'function') {
+            closeActivityAfterStage4();
+            return;
+          }
         }
       }
     }
