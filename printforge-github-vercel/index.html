@@ -7113,6 +7113,9 @@
                   <span class="text-[7.5px] sm:text-[8.5px] font-mono text-zinc-400 block truncate text-center" id="escrowPhoto3Foot">Pacco Sigillato</span>
                 </div>
               </div>
+
+              <!-- Decisione Cliente Collaudo (Conferma o Rimanda) -->
+              <div id="escrowClientQcDecisionActions" class="pt-2.5 border-t border-white/10 space-y-2"></div>
             </div>
 
             <!-- Compatibility Container per Decisione Cliente -->
@@ -20187,6 +20190,22 @@ END-ISO-10303-21;`;
       }
 
       // Sincronizzazione Bottoni Azione Venditore (sellerShippingActionCard)
+      // Sincronizzazione Tasto Etichetta PDF per il Creator (Bloccato finché il cliente non conferma)
+      const btnLabel = document.getElementById('btnDownloadPacklinkPdf');
+      if (btnLabel) {
+        if (!AppState.clientApprovedQc) {
+          btnLabel.className = 'w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-zinc-400 font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer hover:border-amber-400/40 transition';
+          btnLabel.innerHTML = '<i data-lucide="lock" class="w-4 h-4 text-amber-400"></i> <span id="labelDownloadPacklinkPdf">' + (isEn ? 'LABEL LOCKED (AWAITING CLIENT CONFIRMATION)' : '🔒 ETICHETTA BLOCCATA (IN ATTESA CONFERMA CLIENTE)') + '</span>';
+        } else {
+          btnLabel.className = 'btn-kowalski-primary w-full py-3 px-4 rounded-xl font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl active:scale-95 transition cursor-pointer';
+          btnLabel.innerHTML = '<i data-lucide="file-text" class="w-4 h-4"></i> <span id="labelDownloadPacklinkPdf">' + (isEn ? 'DOWNLOAD SHIPPING LABEL (PDF)' : isEs ? 'DESCARGAR ETIQUETA DE ENVÍO (PDF)' : 'SCARICA ETICHETTA DI SPEDIZIONE (PDF)') + '</span>';
+        }
+      }
+
+      if (typeof renderClientQcDecisionUI === 'function') {
+        renderClientQcDecisionUI();
+      }
+
       const btnShip = document.getElementById('btnEscrowShipParcel');
 
       if (btnShip) {
@@ -20417,6 +20436,331 @@ END-ISO-10303-21;`;
     /* ========================================================================= */
     /* GESTIONE APPROVAZIONE/RIMANDO COLLAUDO CLIENTE & CHIUSURA FASE 4          */
     /* ========================================================================= */
+        /* ========================================================================= */
+    /* NOTIFICA EMAIL TRANSAZIONALE AL CREATOR PER DECISIONE CLIENTE SUL COLLAUDO*/
+    /* ========================================================================= */
+    function sendQcDecisionEmailToCreator(order, decision, reason) {
+      if (!reason) reason = '';
+      if (!order) order = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted)) || {};
+      const lang = currentLang || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      const orderId = order.id || 'RFP-3891';
+      const partTitle = order.title || (isEn ? 'Custom Component' : isEs ? 'Pieza Personalizada' : 'Componente Personalizzato');
+      const clientName = order.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
+      const makerName = order.maker || (isEn ? 'Certified Maker' : isEs ? 'Creador Certificado' : 'Maker Certificato');
+      const makerEmail = order.makerEmail || (AppState.user?.role === 'creator' ? AppState.user.email : null) || 'maker@printforge.dev';
+
+      let subject = '';
+      let body = '';
+      let summary = '';
+
+      if (decision === 'approved') {
+        if (isEn) {
+          subject = '🎉 QC Photos Approved by Client! Shipping Label Unlocked #' + orderId;
+          summary = 'Client "' + clientName + '" inspected and approved all 3 QC photos for "' + partTitle + '". Your PDF shipping label is now unlocked.';
+          body = [
+            'Dear ' + makerName + ',',
+            '',
+            'Great news! Client "' + clientName + '" has thoroughly inspected and APPROVED all 3 verification photos for job "' + partTitle + '" (#' + orderId + ').',
+            '',
+            '✓ QC INSPECTION RESULT: APPROVED',
+            '• Visual geometry & print bed: APPROVED',
+            '• Caliper measurements & tolerances: APPROVED',
+            '• Protective packaging: APPROVED',
+            '',
+            '📦 SHIPPING ACTION REQUIRED:',
+            '1. Your prepaid Packlink PRO courier shipping label (PDF) is now UNLOCKED in your workstation.',
+            '2. Download and print the label, then affix it securely to the sealed parcel.',
+            '3. Hand the parcel over to the courier / pickup drop-off point.',
+            '4. Click "Ship Parcel // Hand Over to Courier" to update tracking and notify the client.',
+            '',
+            '🛡️ STRIPE ESCROW RELEASE:',
+            '• Escrow funds will automatically be released directly to your account upon the courier delivery scan!',
+            '',
+            'Manage your job in the PrintForge Workstation:',
+            'https://print-forge-seven.vercel.app/#activity',
+            '',
+            'Best regards,',
+            'The PrintForge Verification Protocol',
+            'dispatch@printforge.dev'
+          ].join('\n');
+        } else if (isEs) {
+          subject = '🎉 ¡Control de Fotos Aprobado por el Cliente! Etiqueta Desbloqueada #' + orderId;
+          summary = 'El cliente "' + clientName + '" ha revisado y aprobado las 3 fotos para "' + partTitle + '". Descarga la etiqueta PDF y entrega el paquete.';
+          body = [
+            'Estimado/a ' + makerName + ',',
+            '',
+            '¡Buenas noticias! El cliente "' + clientName + '" ha revisado y APROBADO las 3 fotos de control para "' + partTitle + '" (#' + orderId + ').',
+            '',
+            '✓ RESULTADO DEL CONTROL: APROBADO',
+            '• Tu etiqueta de envío prepagada Packlink PRO (PDF) ya está DESBLOQUEADA.',
+            '• Descárgala, imprímela y colócala en el paquete precintado.',
+            '• Entrega el paquete al transportista.',
+            '',
+            'Atentamente,',
+            'PrintForge Verification Protocol',
+            'dispatch@printforge.dev'
+          ].join('\n');
+        } else {
+          subject = '🎉 Collaudo Confermato dal Cliente! Etichetta Spedizione Sbloccata #' + orderId;
+          summary = 'Il cliente "' + clientName + '" ha visionato e APPROVATO le 3 foto di collaudo per "' + partTitle + '". L\'etichetta PDF di spedizione è ora sbloccata nel tuo pannello.';
+          body = [
+            'Gentile ' + makerName + ',',
+            '',
+            'Ottime notizie! Il cliente "' + clientName + '" ha visionato ed esaminato con successo le 3 foto di collaudo per la commessa "' + partTitle + '" (#' + orderId + ') e ha CONFERMATO la piena conformità del pezzo!',
+            '',
+            '📸 PROTOCOLLO COLLAUDO FOTOGRAFICO: APPROVATO AL 100%',
+            '• Foto 1 (Componente sul piatto di stampa): CONFORME',
+            '• Foto 2 (Misurazione calibro centesimale): CONFORME',
+            '• Foto 3 (Pacco sigillato pronto per il ritiro): CONFORME',
+            '',
+            '📦 PROSSIMI PASSI PER LA SPEDIZIONE:',
+            '1. L\'etichetta di spedizione corriere (PDF Packlink PRO) è ora UFFICIALMENTE SBLOCCATA nel tuo pannello operativo.',
+            '2. Clicca su "SCARICA ETICHETTA DI SPEDIZIONE (PDF)" per scaricarla e stamparla.',
+            '3. Applica l\'etichetta sulla scatola sigillata e affidala al corriere espresso.',
+            '4. Clicca su "SPEDISCI PACCO // AFFIDA AL CORRIERE" per notificare il tracciamento al cliente.',
+            '',
+            '🛡️ GARANZIA DI PAGAMENTO ESCROW:',
+            '• Il 100% dei fondi rimane custodito in garanzia fiduciaria Stripe e verrà svincolato automaticamente sul tuo conto non appena il corriere scansionerà la consegna a destinazione.',
+            '',
+            'Accedi alla tua area operativa PrintForge:',
+            'https://print-forge-seven.vercel.app/#activity',
+            '',
+            'Cordiali saluti,',
+            'Il Team PrintForge Quality & Dispatch',
+            'dispatch@printforge.dev'
+          ].join('\n');
+        }
+      } else {
+        // rejected / revision requested
+        if (isEn) {
+          subject = '⚠️ Revision Requested by Client #' + orderId + ' — ' + partTitle;
+          summary = 'Client "' + clientName + '" requested adjustments on the QC photos: "' + reason + '". Please inspect details in Deal Chat.';
+          body = [
+            'Dear ' + makerName + ',',
+            '',
+            'Client "' + clientName + '" has inspected the verification photos for "' + partTitle + '" (#' + orderId + ') and requested a REVISION before shipping:',
+            '',
+            'REVISION DETAILS FROM CLIENT:',
+            '"' + reason + '"',
+            '',
+            'REQUIRED ACTIONS:',
+            '1. Open the 1-1 Deal Chat with the client to align on the needed adjustments.',
+            '2. Refine the component or take clearer QC photos.',
+            '3. Once updated, upload the revised photos for the client\'s confirmation to unlock the shipping label.',
+            '',
+            'Open Deal Chat: https://print-forge-seven.vercel.app/#chat',
+            '',
+            'Best regards,',
+            'PrintForge Quality Team',
+            'dispatch@printforge.dev'
+          ].join('\n');
+        } else if (isEs) {
+          subject = '⚠️ Revisión Solicitada por el Cliente #' + orderId + ' — ' + partTitle;
+          summary = 'El cliente "' + clientName + '" ha solicitado una revisión: "' + reason + '". Consulta el chat.';
+          body = [
+            'Estimado/a ' + makerName + ',',
+            '',
+            'El cliente "' + clientName + '" ha solicitado una revisión para "' + partTitle + '" (#' + orderId + '):',
+            '"' + reason + '"',
+            '',
+            'Abre el chat 1-1 con el cliente para coordinar las correcciones.',
+            'https://print-forge-seven.vercel.app/#chat',
+            '',
+            'PrintForge Quality Team'
+          ].join('\n');
+        } else {
+          subject = '⚠️ Richiesta Revisione Collaudo #' + orderId + ' — ' + partTitle;
+          summary = 'Il cliente "' + clientName + '" ha esaminato le foto di collaudo per "' + partTitle + '" e richiede una revisione prima della spedizione. Note: "' + reason + '".';
+          body = [
+            'Gentile ' + makerName + ',',
+            '',
+            'Il cliente "' + clientName + '" ha esaminato le 3 foto di collaudo per il componente "' + partTitle + '" (#' + orderId + ') e ha richiesto un PERFEZIONAMENTO / REVISIONE prima dell\'autorizzazione alla spedizione.',
+            '',
+            '📝 NOTE DEL CLIENTE SULLA REVISIONE:',
+            '"' + reason + '"',
+            '',
+            '🛠️ AZIONI CONSIGLIATE:',
+            '1. Apri la Deal Chat 1-1 per comunicare direttamente con il cliente e chiarire ogni dettaglio.',
+            '2. Esegui la correzione richiesta (es. rimozione supporti, rifinitura o nuova inquadratura quota critica).',
+            '3. Carica nuovamente le foto nel banco di lavoro: il cliente potrà confermarle immediatamente e sbloccare l\'etichetta PDF.',
+            '',
+            'Apri subito la Deal Chat con il cliente:',
+            'https://print-forge-seven.vercel.app/#chat',
+            '',
+            'Cordiali saluti,',
+            'Il Team PrintForge Quality & Mediation',
+            'dispatch@printforge.dev'
+          ].join('\n');
+        }
+      }
+
+      recordSentEmail({
+        to: makerEmail,
+        from: 'dispatch@printforge.dev',
+        senderName: 'PrintForge Quality Dispatch',
+        subject: subject,
+        summary: summary,
+        body: body,
+        type: decision === 'approved' ? 'qc_decision_approved' : 'qc_decision_rejected',
+        requestId: orderId,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      const notifHeader = decision === 'approved'
+        ? (isEn ? '🎉 CLIENT APPROVED QC PHOTOS' : isEs ? '🎉 FOTOS DE CONTROL APROBADAS' : '🎉 COLLAUDO FOTO APPROVATO DAL CLIENTE')
+        : (isEn ? '⚠️ QC REVISION REQUESTED BY CLIENT' : isEs ? '⚠️ REVISIÓN SOLICITADA POR EL CLIENTE' : '⚠️ RICHIESTA REVISIONE DAL CLIENTE');
+      const notifBody = decision === 'approved'
+        ? (isEn ? 'Client confirmed photos for #' + orderId + '. Shipping label unlocked!' : 'Il cliente ha confermato le foto per #' + orderId + '. Etichetta PDF sbloccata!')
+        : (isEn ? 'Client requested revision for #' + orderId + ': "' + reason + '". Check Deal Chat.' : 'Il cliente ha richiesto modifiche per #' + orderId + ': "' + reason + '". Controlla la chat.');
+
+      addAppNotification(notifHeader, notifBody, {
+        type: decision === 'approved' ? 'qc_approved' : 'qc_rejected',
+        requestId: orderId,
+        targetPage: 'studio'
+      });
+
+      dispatchEmailWebhook('qc_client_decision', {
+        decision: decision,
+        reason: reason,
+        requestId: orderId,
+        makerEmail: makerEmail,
+        makerName: makerName,
+        clientName: clientName,
+        title: partTitle
+      });
+    }
+    window.sendQcDecisionEmailToCreator = sendQcDecisionEmailToCreator;
+
+    /* ========================================================================= */
+    /* RENDERING DINAMICO AZIONI CLIENTE (CONFERMA O RIMANDA SOTTO ALLE 3 FOTO)  */
+    /* ========================================================================= */
+    function renderClientQcDecisionUI() {
+      const container = document.getElementById('escrowClientQcDecisionActions');
+      if (!container) return;
+
+      const isCreator = AppState.user && AppState.user.role === 'creator';
+      if (isCreator) {
+        container.classList.add('hidden');
+        container.style.display = 'none';
+        return;
+      }
+
+
+      if (!AppState.clientApprovedQc) {
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+        const msg = isEn 
+          ? "Waiting for client approval! The client must inspect and confirm the 3 QC photos in the Escrow Room to unlock the shipping label." 
+          : isEs
+          ? "¡En espera de la aprobación del cliente! El cliente debe revisar y confirmar las 3 fotos para desbloquear la etiqueta PDF."
+          : "In attesa di approvazione del cliente! Il cliente deve visionare e confermare le 3 foto di collaudo nell'Escrow Room per sbloccare l'etichetta PDF.";
+        showToast(msg, 'warning');
+        return;
+      }      container.classList.remove('hidden');
+      container.style.display = 'block';
+
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+
+      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      const hasPhotos = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || activeReq?.hasQcPhotos || activeReq?.clientApprovedQc;
+
+      if (!hasPhotos) {
+        container.innerHTML = 
+          '<div class="p-2 sm:p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2 text-zinc-400 text-[10.5px] font-mono">' +
+            '<i data-lucide="clock" class="w-4 h-4 text-zinc-500 shrink-0"></i>' +
+            '<span>' + (isEn ? 'Waiting for the Maker to complete printing and upload the 3 QC photos...' : isEs ? 'En espera de que el Creador suba las 3 fotos de control...' : 'In attesa che il Maker completi la stampa e carichi le 3 foto di collaudo.') + '</span>' +
+          '</div>';
+      } else if (AppState.clientApprovedQc === true || activeReq?.clientApprovedQc === true) {
+        container.innerHTML = 
+          '<div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-md">' +
+            '<div class="flex items-center gap-2">' +
+              '<div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">' +
+                '<i data-lucide="check-check" class="w-4 h-4"></i>' +
+              '</div>' +
+              '<div>' +
+                '<span class="text-xs font-mono font-bold text-emerald-300 block leading-tight">' +
+                  (isEn ? '✓ QC PHOTOS CONFIRMED BY CLIENT' : isEs ? '✓ FOTOS DE CONTROL CONFIRMADAS' : '✓ COLLAUDO CONFERMATO DAL CLIENTE') +
+                '</span>' +
+                '<span class="text-[10px] text-zinc-400 block font-sans">' +
+                  (isEn ? 'Shipping label unlocked. Maker notified to hand parcel to courier.' : isEs ? 'Etiqueta de envío desbloqueada. El creador ha sido notificado.' : 'Etichetta corriere sbloccata. Maker notificato via email per la spedizione.') +
+                '</span>' +
+              '</div>' +
+            '</div>' +
+            '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30 font-bold self-start sm:self-auto shrink-0">' +
+              (isEn ? 'LABEL UNLOCKED' : 'ETICHETTA SBLOCCATA') +
+            '</span>' +
+          '</div>';
+      } else if (activeReq?.qcStatus === 'revisione_richiesta' || AppState.clientApprovedQc === false) {
+        container.innerHTML = 
+          '<div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 space-y-2 shadow-md">' +
+            '<div class="flex items-center justify-between">' +
+              '<div class="flex items-center gap-2">' +
+                '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0"></i>' +
+                '<span class="text-xs font-mono font-bold text-amber-300">' +
+                  (isEn ? '⚠️ REVISION REQUESTED TO MAKER' : isEs ? '⚠️ REVISIÓN SOLICITADA AL CREADOR' : '⚠️ REVISIONE RICHIESTA AL MAKER') +
+                '</span>' +
+              '</div>' +
+              '<span class="text-[9px] font-mono text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 font-bold">' +
+                (isEn ? 'IN REVISION' : 'IN REVISIONE') +
+              '</span>' +
+            '</div>' +
+            '<p class="text-[10.5px] text-zinc-300 font-sans leading-relaxed">' +
+              (isEn ? 'You requested modifications. The Maker received an email notification and can read your notes in Deal Chat.' : isEs ? 'Has solicitado modificaciones. El creador ha sido notificado por correo.' : 'Hai richiesto delle modifiche. Il Maker ha ricevuto una notifica via email ed è in attesa di definire i dettagli nella Deal Chat.') +
+            '</p>' +
+            '<div class="flex items-center gap-2 pt-1">' +
+              '<button type="button" onclick="clientConfirmQcPhotos()" class="btn-kowalski-primary py-1.5 px-3 rounded-lg text-xs font-bold font-mono">' +
+                (isEn ? 'CONFIRM ANYWAY' : 'CONFERMA COMUNQUE') +
+              '</button>' +
+              '<button type="button" onclick="openDealChatFromEscrow()" class="btn-kowalski-secondary py-1.5 px-3 rounded-lg text-xs font-bold font-mono">' +
+                (isEn ? 'OPEN DEAL CHAT' : 'APRI DEAL CHAT') +
+              '</button>' +
+            '</div>' +
+          '</div>';
+      } else {
+        container.innerHTML = 
+          '<div class="p-3 rounded-xl bg-gradient-to-r from-[#14151f] to-[#101118] border border-white/20 space-y-2.5 shadow-xl">' +
+            '<div class="flex items-center justify-between border-b border-white/[0.08] pb-1.5">' +
+              '<div class="flex items-center gap-1.5">' +
+                '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>' +
+                '<span class="text-[10.5px] font-mono font-bold text-white uppercase tracking-wider">' +
+                  (isEn ? 'CLIENT QC INSPECTION & DECISION' : isEs ? 'INSPECCIÓN Y DECISIÓN DEL CLIENTE' : 'VERIFICA FOTOGRAFICA & APPROVAZIONE CLIENTE') +
+                '</span>' +
+              '</div>' +
+              '<span class="text-[8.5px] font-mono text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase">' +
+                (isEn ? 'ACTION REQUIRED' : isEs ? 'ACCIÓN REQUERIDA' : 'AZIONE RICHIESTA') +
+              '</span>' +
+            '</div>' +
+            '<p class="text-[11px] text-zinc-300 font-sans leading-tight">' +
+              (isEn 
+                ? 'Inspect the 3 photos uploaded by the Maker above (print bed, caliper measurement, sealed box). If satisfactory, click <strong>Confirm</strong> to unlock the shipping label. Otherwise, click <strong>Reject / Revise</strong>.' 
+                : isEs
+                ? 'Revisa las 3 fotos subidas por el Creador (cama, calibre y paquete precintado). Haz clic en <strong>Confirmar</strong> para desbloquear la etiqueta de envío, o en <strong>Rechazar</strong> para solicitar cambios.'
+                : 'Visiona le 3 foto di collaudo caricate dal Maker (opera su piatto, calibro centesimale e pacco sigillato). Se il lavoro è conforme clicca su <strong>Conferma</strong> per sbloccare l\'etichetta di spedizione del Maker. Se desideri correzioni clicca su <strong>Rimanda</strong>.') +
+            '</p>' +
+            '<div class="grid grid-cols-2 gap-2 pt-1">' +
+              '<button type="button" onclick="clientConfirmQcPhotos()" id="btnClientConfirmQc" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer border border-emerald-400/40">' +
+                '<i data-lucide="check" class="w-4 h-4"></i>' +
+                '<span>' + (isEn ? 'CONFIRM' : isEs ? 'CONFIRMAR' : 'CONFERMA') + '</span>' +
+              '</button>' +
+              '<button type="button" onclick="clientRejectQcPhotos()" id="btnClientRejectQc" class="w-full py-2.5 px-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 hover:text-white font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 border border-white/20 active:scale-95 transition cursor-pointer hover:border-amber-400/50">' +
+                '<i data-lucide="rotate-ccw" class="w-4 h-4 text-amber-400"></i>' +
+                '<span>' + (isEn ? 'REJECT // REVISE' : isEs ? 'RECHAZAR' : 'RIMANDA') + '</span>' +
+              '</button>' +
+            '</div>' +
+          '</div>';
+      }
+
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+    window.renderClientQcDecisionUI = renderClientQcDecisionUI;
+
+
     function clientConfirmQcPhotos() {
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
@@ -20443,6 +20787,9 @@ END-ISO-10303-21;`;
           clientName: AppState.user?.name || 'Cliente',
           approvedAt: new Date().toISOString()
         });
+
+        // Invia notifica email al creator
+        if (typeof sendQcDecisionEmailToCreator === 'function') sendQcDecisionEmailToCreator(activeReq, 'approved');
       }
 
       updateEscrowRoom();
@@ -20499,6 +20846,9 @@ END-ISO-10303-21;`;
           rfpId: activeReq.id,
           reason: reason
         });
+
+        // Invia notifica email al creator
+        if (typeof sendQcDecisionEmailToCreator === 'function') sendQcDecisionEmailToCreator(activeReq, 'rejected', reason);
       }
 
       updateEscrowRoom();
@@ -20715,6 +21065,7 @@ END-ISO-10303-21;`;
         if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
         if (typeof applyRoleGatingForLabelDownload === 'function') applyRoleGatingForLabelDownload();
         if (typeof syncPipelineUI === 'function') syncPipelineUI();
+        if (typeof renderClientQcDecisionUI === 'function') renderClientQcDecisionUI();
         if (typeof renderStudioSpecs === 'function') renderStudioSpecs();
         if (typeof renderCreatorProjectsFeed === 'function') renderCreatorProjectsFeed();
         if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
