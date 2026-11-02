@@ -17473,8 +17473,11 @@ END-ISO-10303-21;`;
     function hasAcceptedRequest() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       if (AppState.user.role !== 'creator') return false;
-      // Se lo stage 4 è completato e archiviato, non vi sono commesse attive
-      if (AppState.stage4Completed && !AppState.activeEscrowOrder) return false;
+
+      // DOPO IL 4° PASSAGGIO: al creator NON mostrare mai più la pagina attività né escrow room
+      if (AppState.stage4Completed === true || AppState.isDelivered === true) return false;
+      if (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)) return false;
+      if (AppState.loadedRequestInStudio && (AppState.loadedRequestInStudio.isDelivered || AppState.loadedRequestInStudio.isCompleted)) return false;
 
       // Se in memoria vi è un ordine attivo non ancora completato/consegnato
       if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
@@ -17619,7 +17622,15 @@ END-ISO-10303-21;`;
     /* 2. Navigation & Role Rendering */
     
     function navigateCreatorActiveWork() {
-      const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
+      if (AppState.stage4Completed || AppState.isDelivered || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted))) {
+        navigateTo('creator-portfolio');
+        return;
+      }
+      const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted && !r.isDelivered));
+      if (!activeReq) {
+        navigateTo('creator-portfolio');
+        return;
+      }
       const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || activeReq?.hasQcPhotos || (activeReq?.qcPhotos && activeReq.qcPhotos.length >= 3);
       if (hasQc) {
         navigateTo('order-room');
@@ -17697,8 +17708,9 @@ END-ISO-10303-21;`;
 
         // 4. SCAMBIO TRA "RICHIESTE" E "ATTIVITÀ" (Sia da PC che da Mobile):
         // Quando il creator accetta una richiesta, la pagina "Richieste" viene scambiata con "Attività".
-        // Una volta completato il 4° passaggio, torna come prima mostrando Progetti, Home e Richieste.
-        if (hasAcceptedRequest()) {
+        // DOPO IL 4° PASSAGGIO: mai più mostrare Attività né Escrow Room al creator! Torna con Home, Progetti e Richieste.
+        const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
+        if (!isPostStage4 && hasAcceptedRequest()) {
           const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
           const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
 
@@ -20959,14 +20971,22 @@ END-ISO-10303-21;`;
         navLiveReq.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted).length;
       }
 
+      AppState.stage4Completed = true;
+      AppState.isDelivered = true;
+      updateNavigationTabs();
+
+      if (AppState.user && AppState.user.role === 'creator') {
+        setTimeout(() => {
+          navigateTo('creator-portfolio');
+        }, 3500);
+      }
+
       const toastDelivery = isEn 
         ? '✓ Courier scan verified! Stage 4 complete: parcel delivered and Escrow funds released (€ 0,00)!' 
         : isEs 
         ? '✓ ¡Escáner verificado! Fase 4 completada: fondos liberados (€ 0,00).' 
         : '✓ Scansione corriere verificata! Fase 4 completata: pacco consegnato e fondi Escrow svincolati (€ 0,00)!';
       showToast(toastDelivery, 'success');
-      AppState.stage4Completed = true;
-      AppState.isDelivered = true;
 
       // DOPO IL QUARTO PASSAGGIO: reset totale sia per creator che per cliente!
       // Nessuno vede più la pagina Escrow Room né la pagina Attività.
@@ -22524,6 +22544,14 @@ END-ISO-10303-21;`;
         if (typeof renderCreatorRequestsFeed === 'function') renderCreatorRequestsFeed();
 
         renderEscrowResolutionBanner();
+        updateNavigationTabs();
+
+        // Se il creator ha completato la consegna, rimuovi le schede e reindirizza a I Miei Progetti
+        if (AppState.user && AppState.user.role === 'creator') {
+          setTimeout(() => {
+            navigateTo('creator-portfolio');
+          }, 3500);
+        }
 
         showToast(isEn ? 'Package delivered! Escrow funds automatically released to Creator (Option 2).' : isEs ? '¡Paquete entregado! Fondos liberados automáticamente al Creador.' : 'Pacco consegnato! Fondi svincolati automaticamente al Creator (Opzione 2).', 'success');
         lucide.createIcons();
@@ -23403,14 +23431,13 @@ END-ISO-10303-21;`;
 
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
-    // Se il creator ha concluso il 4° passaggio e naviga altrove (cliccando da un'altra parte), azzera completamente l'attività e ripristina la navbar
+    // DOPO IL 4° PASSAGGIO: al creator NON mostrare mai più la pagina attività né escrow room
     if (AppState.user && AppState.user.role === 'creator') {
-      if (AppState.stage4Completed || AppState.isDelivered) {
-        if (viewId !== 'order-room' && viewId !== 'activity' && viewId !== 'studio') {
-          if (typeof closeActivityAfterStage4 === 'function') {
-            closeActivityAfterStage4();
-            return;
-          }
+      const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
+      if (isPostStage4) {
+        if (viewId === 'activity' || viewId === 'studio' || viewId === 'order-room') {
+          navigateTo('creator-portfolio');
+          return;
         }
       }
     }
