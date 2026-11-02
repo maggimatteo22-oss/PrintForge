@@ -29521,9 +29521,16 @@ function renderDealChat(rfpId) {
         email: work.creatorEmail || ''
       };
 
+      try {
+        sessionStorage.setItem('printforge_showcase_order_draft', JSON.stringify({
+          work: work,
+          creator: window._directAssignedCreator
+        }));
+      } catch(e) {}
+
       navigateTo('client-request');
 
-      setTimeout(() => {
+      const applyShowcaseLock = () => {
         // 1. Popola e blocca il Titolo
         const reqTitle = document.getElementById('reqTitle');
         if (reqTitle) {
@@ -29535,37 +29542,118 @@ function renderDealChat(rfpId) {
         // 2. Popola e blocca Destinazione d'Uso
         const reqUsage = document.getElementById('reqUsage');
         if (reqUsage) {
-          reqUsage.value = work.usage || 'Parte Meccanica Funzionale';
+          const targetUsage = (work.usage || 'Design Estetico & Artistico').trim();
+          let usageMatched = false;
+          for (let i = 0; i < reqUsage.options.length; i++) {
+            const opt = reqUsage.options[i];
+            if (opt.value.toLowerCase() === targetUsage.toLowerCase() || 
+                opt.text.toLowerCase().includes(targetUsage.toLowerCase()) || 
+                targetUsage.toLowerCase().includes(opt.value.toLowerCase())) {
+              reqUsage.selectedIndex = i;
+              usageMatched = true;
+              break;
+            }
+          }
+          if (!usageMatched) {
+            const newOpt = new Option(targetUsage, targetUsage, true, true);
+            reqUsage.add(newOpt);
+            reqUsage.value = targetUsage;
+          }
           reqUsage.disabled = true;
           reqUsage.style.pointerEvents = 'none';
           reqUsage.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
         }
 
-        // 3. Popola e blocca Materiale
+        // 3. Popola e blocca Materiale Tecnico (Seleziona quello del Maker e non modificabile)
         const reqMat = document.getElementById('reqMaterial');
         if (reqMat) {
-          reqMat.value = work.material || 'PETG Tecnico';
+          const targetMat = (work.material || 'PETG Tecnico').trim();
+          let matMatched = false;
+          for (let i = 0; i < reqMat.options.length; i++) {
+            const opt = reqMat.options[i];
+            const optVal = opt.value.toLowerCase().trim();
+            const optTxt = opt.text.toLowerCase().trim();
+            const targetLower = targetMat.toLowerCase();
+            if (optVal === targetLower || optTxt.includes(targetLower) || targetLower.includes(optVal) || 
+                (targetLower.startsWith('petg') && optVal.startsWith('petg')) || 
+                (targetLower.startsWith('pla') && optVal.startsWith('pla')) || 
+                (targetLower.startsWith('abs') && optVal.startsWith('abs')) || 
+                (targetLower.startsWith('resina') && optVal.startsWith('resina'))) {
+              reqMat.selectedIndex = i;
+              matMatched = true;
+              break;
+            }
+          }
+          if (!matMatched) {
+            const newOpt = new Option(targetMat + ' (Specifiche Maker)', targetMat, true, true);
+            reqMat.add(newOpt);
+            reqMat.value = targetMat;
+          }
           reqMat.disabled = true;
           reqMat.style.pointerEvents = 'none';
-          reqMat.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
+          reqMat.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]', 'border-emerald-500/40');
         }
 
-        // 4. Popola e blocca Colore
-        const reqCol = document.getElementById('reqColor');
-        if (reqCol) {
-          reqCol.value = work.color || 'Nero Cyber';
-          reqCol.disabled = true;
+        // 4. Popola e blocca Opzione Infill / Riempimento (Seleziona quello del Maker e non modificabile)
+        const targetInfill = (work.infill || '50% Meccanico Strutturale').trim();
+        if (typeof selectQuickInfill === 'function') {
+          selectQuickInfill(targetInfill);
+        } else {
+          const infillEl = document.getElementById('reqInfill');
+          if (infillEl) infillEl.value = targetInfill;
+          const disp = document.getElementById('infillSelectedNameDisplay');
+          if (disp) disp.innerText = targetInfill;
         }
-        document.querySelectorAll('.color-chip-btn, [onclick*="selectColorChip"], [onclick*="selectColorHex"]').forEach(b => {
+        document.querySelectorAll('.infill-pill, #infillPillsContainer button').forEach(b => {
+          b.disabled = true;
           b.style.pointerEvents = 'none';
-          b.classList.add('opacity-50', 'cursor-not-allowed');
+          b.classList.add('cursor-not-allowed', 'opacity-70');
+        });
+        const reqInfillSelect = document.getElementById('reqInfill');
+        if (reqInfillSelect) {
+          reqInfillSelect.disabled = true;
+          reqInfillSelect.style.pointerEvents = 'none';
+        }
+
+        // 5. Popola e blocca Colore / Finitura Cromatica (Ruota, Finitura e Preset bloccati sulle selezioni del Maker)
+        const makerColor = work.color || 'Arancione Meccanico';
+        const makerColorHex = work.colorHex || (makerColor.toLowerCase().includes('aranc') ? '#F97316' : makerColor.toLowerCase().includes('bianco') ? '#F8FAFC' : makerColor.toLowerCase().includes('titan') ? '#64748B' : makerColor.toLowerCase().includes('blu') ? '#2563EB' : makerColor.toLowerCase().includes('rosso') ? '#DC2626' : makerColor.toLowerCase().includes('giallo') ? '#EAB308' : makerColor.toLowerCase().includes('verde') ? '#10B981' : '#18181B');
+        
+        if (typeof applyPresetColor === 'function') {
+          applyPresetColor(makerColorHex, makerColor);
+        }
+        const reqColorHidden = document.getElementById('reqColor');
+        if (reqColorHidden) reqColorHidden.value = makerColor;
+        
+        const customColorTextInput = document.getElementById('customColorTextInput');
+        if (customColorTextInput) {
+          customColorTextInput.value = makerColor + ' (Specifiche Maker)';
+          customColorTextInput.disabled = true;
+          customColorTextInput.readOnly = true;
+          customColorTextInput.style.pointerEvents = 'none';
+          customColorTextInput.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
+        }
+
+        // Blocca apertura Ruota Colori
+        document.querySelectorAll('button[onclick*="openStylishColorWheelModal"]').forEach(b => {
+          b.disabled = true;
+          b.style.pointerEvents = 'none';
+          b.classList.add('opacity-70', 'cursor-not-allowed');
         });
 
-        // 5. Popola e blocca Pezzi / Quantità (1 pezzo bloccato)
+        // Blocca tutti i bottoni chip / preset colore rapido
+        document.querySelectorAll('button[onclick*="applyPresetColor"], .color-chip-btn, [onclick*="selectColorChip"], [onclick*="selectColorHex"]').forEach(b => {
+          b.disabled = true;
+          b.style.pointerEvents = 'none';
+          b.classList.add('opacity-40', 'cursor-not-allowed');
+        });
+
+        // 6. Popola e blocca Pezzi / Quantità (1 pezzo bloccato)
         const reqQty = document.getElementById('reqQuantity');
         if (reqQty) {
           reqQty.value = work.quantity || '1 pezzo (Prototipo)';
           reqQty.disabled = true;
+          reqQty.style.pointerEvents = 'none';
         }
         const customQtyInput = document.getElementById('reqCustomQtyInput');
         if (customQtyInput) {
@@ -29580,7 +29668,7 @@ function renderDealChat(rfpId) {
           b.classList.add('opacity-30', 'cursor-not-allowed');
         });
 
-        // 6. Popola e blocca Prezzo
+        // 7. Popola e blocca Prezzo
         const reqBudget = document.getElementById('reqBudget');
         if (reqBudget) {
           let numPrice = 35.00;
@@ -29594,18 +29682,31 @@ function renderDealChat(rfpId) {
           reqBudget.classList.add('opacity-80', 'cursor-not-allowed');
         }
 
-        // 7. Blocca campi tecnici dimensionali e tolleranza
-        ['dimX', 'dimY', 'dimZ', 'reqDimensions', 'reqTolerance', 'reqInfill', 'reqPostProcess'].forEach(id => {
+        // 8. Popola e blocca Dimensioni (XYZ) e Scala
+        if (work.dimensions) {
+          const parts = work.dimensions.split(/[x×\-]/i).map(s => parseFloat(s.replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
+          if (parts.length >= 3) {
+            const dx = document.getElementById('dimX'); if (dx) dx.value = parts[0];
+            const dy = document.getElementById('dimY'); if (dy) dy.value = parts[1];
+            const dz = document.getElementById('dimZ'); if (dz) dz.value = parts[2];
+          }
+        }
+        ['dimX', 'dimY', 'dimZ', 'reqDimensions', 'reqTolerance', 'reqPostProcess'].forEach(id => {
           const el = document.getElementById(id);
           if (el) {
             el.disabled = true;
             el.readOnly = true;
             el.style.pointerEvents = 'none';
-            el.classList.add('opacity-80', 'cursor-not-allowed');
+            el.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
           }
         });
+        document.querySelectorAll('.scale-pill, [onclick*="setScaleRatio"]').forEach(b => {
+          b.style.pointerEvents = 'none';
+          b.disabled = true;
+          b.classList.add('opacity-40', 'cursor-not-allowed');
+        });
 
-        // 8. Tasto finale bianco: "CONTATTA IL MAKER"
+        // 9. Tasto finale bianco: "CONTATTA IL MAKER"
         const submitBtnSpan = document.getElementById('i18n-btnSubmitRfp');
         const submitBtn = document.getElementById('btnSubmitRfpForm');
         if (submitBtnSpan) {
@@ -29617,7 +29718,7 @@ function renderDealChat(rfpId) {
           submitBtn.className = "w-full sm:w-auto btn-kowalski-primary px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-xl font-cyber font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition cursor-pointer";
         }
 
-        // 9. Banner informativo di blocco in cima al form
+        // 10. Banner informativo di blocco specifiche in cima al form
         const formContainer = document.getElementById('view-client-request');
         if (formContainer) {
           let banner = document.getElementById('directShowcaseLockBanner');
@@ -29636,7 +29737,7 @@ function renderDealChat(rfpId) {
               </div>
               <h4 class="text-xs sm:text-sm font-bold text-white truncate mt-0.5">${escapeHtml(work.title)}</h4>
               <p class="text-[10px] sm:text-[10.5px] text-zinc-400 font-mono">
-                🔒 Specifiche bloccate dal Creator: <strong class="text-zinc-200">${escapeHtml(work.material || 'PETG')}</strong> • <strong class="text-zinc-200">${escapeHtml(work.color || 'Nero')}</strong> • <strong class="text-zinc-200">1 pz</strong> • <strong class="text-zinc-200">${escapeHtml(work.usage || 'Parte Meccanica')}</strong>
+                🔒 Specifiche tecniche bloccate dal Maker: <strong class="text-emerald-300">${escapeHtml(work.material || 'PETG')}</strong> • <strong class="text-emerald-300">${escapeHtml(makerColor)}</strong> • <strong class="text-emerald-300">1 pz</strong> • <strong class="text-emerald-300">${escapeHtml(work.usage || 'Design Estetico')}</strong> • <strong class="text-emerald-300">${escapeHtml(targetInfill)}</strong>
               </p>
             </div>
           `;
@@ -29645,7 +29746,10 @@ function renderDealChat(rfpId) {
         if (typeof calculateVolumetricShipping === 'function') calculateVolumetricShipping();
         if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
         if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-      }, 100);
+      };
+
+      setTimeout(applyShowcaseLock, 100);
+      setTimeout(applyShowcaseLock, 400);
     }
     window.prepareShowcaseOrderInRequestPage = prepareShowcaseOrderInRequestPage;
 
