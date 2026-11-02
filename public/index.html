@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="it" class="dark">
 <head>
   <meta name="google" content="notranslate" />
@@ -578,6 +578,20 @@
       background: #ffffff !important;
       color: #111111 !important;
       border: 1px solid rgba(0, 0, 0, 0.15) !important;
+    }
+
+    /* FOOTER E BANNER COOKIE TOTALMENTE NASCOSTI: NON DEVONO MAI SOPRAFFARE LO SCHERMO */
+    footer, #mainAppFooter, #cookieConsentBanner {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      max-height: 0 !important;
+      overflow: hidden !important;
+      pointer-events: none !important;
+    }
+    #modalCreatorReviews, #modalLeaveReview, #modalOrderReviewEscrow {
+      z-index: 999999 !important;
+      isolation: isolate !important;
     }
 
     html.light #mobileNavBar {
@@ -4275,7 +4289,7 @@
     <!-- ===================================================================== -->
     <!-- MODULO 5: MODALE LASCIA RECENSIONE CERTIFICATA                         -->
     <!-- ===================================================================== -->
-    <div id="modalLeaveReview" class="fixed inset-0 z-[9999] bg-[#070709]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+    <div id="modalLeaveReview" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;">
       <div class="w-full max-w-lg bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
         <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
           <div class="flex items-center gap-2">
@@ -4365,7 +4379,7 @@
     <!-- ===================================================================== -->
     <!-- MODULO 5: MODALE RECENSIONI PUBBLICHE CREATOR                          -->
     <!-- ===================================================================== -->
-    <div id="modalCreatorReviews" class="fixed inset-0 z-[9999] bg-[#070709]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+    <div id="modalCreatorReviews" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;">
       <div class="w-full max-w-xl bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
           <div class="flex items-center gap-2">
@@ -7299,7 +7313,7 @@
     </div>
   </div>
 
-  <footer class="mt-20 border-t border-white/[0.08] bg-[#060608]/90 backdrop-blur-xl relative z-10 text-xs font-sans">
+  <footer id="mainAppFooter" class="hidden" style="display: none !important;">
     
     <!-- Top Trust & Security Badges Bar -->
     <div class="border-b border-white/[0.06] py-5 px-4 sm:px-6 lg:px-8">
@@ -8065,7 +8079,7 @@
   <!-- ========================================================================= -->
   <!-- COOKIE CONSENT BANNER (GDPR & ePRIVACY COMPLIANT)                         -->
   <!-- ========================================================================= -->
-  <div id="cookieConsentBanner" class="fixed bottom-4 left-4 right-4 sm:left-auto sm:right-6 sm:max-w-lg z-50 bg-[#0A0A0E]/95 backdrop-blur-xl border border-white/20 rounded-2xl p-5 shadow-2xl transition-all duration-300 transform translate-y-0 text-xs font-sans">
+  <div id="cookieConsentBanner" class="hidden" style="display: none !important;">
     <div class="flex items-start gap-3">
       <div class="cookie-icon-box w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
         <i data-lucide="cookie" class="w-5 h-5"></i>
@@ -8591,8 +8605,9 @@
       cadQcFiles: [],
       // Stato Pipeline Ordine & Custodia Fiduciaria
       stage2Completed: false,
+      stage4Completed: (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true'),
       isShipped: false,
-      isDelivered: false
+      isDelivered: (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')
     };
     window.AppState = AppState;
 
@@ -25021,10 +25036,11 @@ END-ISO-10303-21;`;
 
       const cardsHtml = visibleRequests.map((r, idx) => {
         const isAcc = Boolean(r.isAccepted === true && (r.maker || r.acceptedBy || r.assigned_creator_id));
+        const isStage4Done = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true'));
         const isCompleted = Boolean(
           r.isCompleted === true ||
           r.isDelivered === true ||
-          AppState.stage4Completed === true ||
+          isStage4Done ||
           (typeof r.status === 'string' && (
             r.status.toUpperCase().includes('COMPLETAT') ||
             r.status.toUpperCase().includes('CONSEGNAT') ||
