@@ -5209,12 +5209,12 @@
 
           <span class="w-[1px] h-3.5 bg-white/20 inline-block"></span>
 
-          <div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition" onclick="navigateTo('creator-hub')" title="Creator e Stampatori Online">
+          <div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition" onclick="navigateTo('creator-hub')" title="Creator e Stampatori Attivi">
             <span class="relative flex h-2 w-2 shrink-0">
               <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
               <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
             </span>
-            <span class="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider whitespace-nowrap nav-live-creators-label text-zinc-400" id="i18n-navLiveCreatorsLabel">CREATOR LIVE:</span>
+            <span class="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider whitespace-nowrap nav-live-creators-label text-zinc-400" id="i18n-navLiveCreatorsLabel">CREATOR ATTIVI:</span>
             <span class="text-xs sm:text-sm font-display font-black text-cyan-400 nav-live-creators-count" id="navLiveCreatorsCount">0</span>
           </div>
         </div>
@@ -9091,6 +9091,27 @@
             }
           }
 
+          // Raccogli i profili creator registrati su Supabase Cloud che hanno effettuato l'accesso
+          const creatorProfiles = data.filter(r => r && (String(r.id || '').startsWith('USER-PROFILE-') && r.notes && r.notes.includes('"role":"creator"')));
+          if (creatorProfiles.length > 0) {
+            const cloudCreators = [];
+            creatorProfiles.forEach(p => {
+              try {
+                const parsed = JSON.parse(p.notes);
+                const k = (parsed.email || parsed.userId || parsed.id || parsed.name || '').toLowerCase().trim();
+                if (k && !cloudCreators.includes(k)) cloudCreators.push(k);
+              } catch(e) {}
+            });
+            if (cloudCreators.length > 0) {
+              try {
+                localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(cloudCreators));
+              } catch(e) {}
+            }
+          }
+          if (typeof updateLiveCreatorsCountDisplay === 'function') {
+            updateLiveCreatorsCountDisplay();
+          }
+
           // Separa le opere della Vetrina 2D / Portfolio caricate dai Creator dalle richieste broadcast dei Clienti
           const portfolioDbRows = data.filter(dbR => dbR && (dbR.status === 'PORTFOLIO_WORK' || (dbR.id && String(dbR.id).startsWith('WORK-'))));
           
@@ -9536,49 +9557,81 @@
     }
 
     // =========================================================================
-    // REALTIME CREATOR PRESENCE SYSTEM (Sincronizzazione Creator Live in Rete)
+    // REGISTRO CREATOR ATTIVI (Utenti che hanno effettuato l'accesso come Creator)
     // =========================================================================
     const CREATOR_PRESENCE_CHANNEL = 'printforge_creators_presence';
     const CREATOR_STORAGE_KEY = 'printforge_active_creators_map';
-    let pfCreatorPresenceChannel = null;
-    try {
-      if (typeof window.BroadcastChannel !== 'undefined') {
-        pfCreatorPresenceChannel = new BroadcastChannel(CREATOR_PRESENCE_CHANNEL);
-        pfCreatorPresenceChannel.onmessage = function(e) {
-          if (e && e.data) {
-            updateLiveCreatorsCountDisplay();
-          }
-        };
-      }
-    } catch(e) {}
+    const CREATOR_REGISTRY_KEY = 'printforge_accessed_creators_registry';
 
-    window.pf_creator_session_id = window.pf_creator_session_id || ('hub_' + Math.random().toString(36).substring(2, 9));
+    function recordCreatorAccess(user) {
+      if (!user) return;
+      const key = (user.email || user.userId || user.id || user.name || '').toLowerCase().trim();
+      if (!key) return;
+      try {
+        let set = JSON.parse(localStorage.getItem(CREATOR_REGISTRY_KEY) || '[]');
+        if (!Array.isArray(set)) set = [];
+        if (!set.includes(key)) {
+          set.push(key);
+          localStorage.setItem(CREATOR_REGISTRY_KEY, JSON.stringify(set));
+        }
+      } catch(e) {}
+    }
+    window.recordCreatorAccess = recordCreatorAccess;
 
     function getActiveCreatorsCount() {
-      let activeSessions = 0;
-      const now = Date.now();
+      const creatorKeys = new Set();
+
+      // 1. Creatori registrati nel registro locale di accessi
       try {
-        const raw = localStorage.getItem(CREATOR_STORAGE_KEY);
-        const map = raw ? JSON.parse(raw) : {};
-        let modified = false;
-        Object.keys(map).forEach(id => {
-          if (now - map[id].lastSeen < 35000) {
-            activeSessions++;
-          } else {
-            delete map[id];
-            modified = true;
-          }
-        });
-        if (modified) {
-          localStorage.setItem(CREATOR_STORAGE_KEY, JSON.stringify(map));
+        const raw = localStorage.getItem(CREATOR_REGISTRY_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(list)) {
+          list.forEach(k => { if (k && String(k).trim()) creatorKeys.add(String(k).trim().toLowerCase()); });
         }
       } catch (e) {}
 
+      // 2. Creatori presenti nel cloud Supabase che hanno effettuato l'accesso
+      try {
+        const rawCloud = localStorage.getItem('printforge_cloud_creators_registry');
+        const cloudList = rawCloud ? JSON.parse(rawCloud) : [];
+        if (Array.isArray(cloudList)) {
+          cloudList.forEach(k => { if (k && String(k).trim()) creatorKeys.add(String(k).trim().toLowerCase()); });
+        }
+      } catch (e) {}
+
+      // 3. Creatori che hanno pubblicato opere nel portfolio / vetrina
+      (AppState.portfolioWorks || []).forEach(w => {
+        if (!w) return;
+        const cKey = (w.creatorEmail || w.creatorId || w.creatorName || '').toLowerCase().trim();
+        if (cKey && cKey !== 'null' && cKey !== 'undefined') creatorKeys.add(cKey);
+      });
+
+      // 4. Utente corrente se loggato con ruolo creator
       if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
-        activeSessions = Math.max(1, activeSessions);
+        const currentKey = (AppState.user.email || AppState.user.userId || AppState.user.id || AppState.user.name || '').toLowerCase().trim();
+        if (currentKey) {
+          creatorKeys.add(currentKey);
+          recordCreatorAccess(AppState.user);
+        }
       }
-      return activeSessions;
+
+      // 5. Maker che hanno preso in carico o gestito commesse
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (!r) return;
+        const mKey = (r.makerEmail || r.makerUserId || r.targetCreatorEmail || r.targetCreatorId || r.maker || '').toLowerCase().trim();
+        if (mKey && mKey !== 'maker' && mKey !== 'null' && mKey !== 'undefined' && mKey !== 'maker certificato printforge') {
+          creatorKeys.add(mKey);
+        }
+      });
+
+      // Assicura che se l'utente è attualmente un creator, il conteggio sia almeno 1
+      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
+        return Math.max(1, creatorKeys.size);
+      }
+
+      return creatorKeys.size;
     }
+    window.getActiveCreatorsCount = getActiveCreatorsCount;
 
     function updateLiveCreatorsCountDisplay() {
       const count = getActiveCreatorsCount();
@@ -9595,64 +9648,24 @@
         }
       });
     }
+    window.updateLiveCreatorsCountDisplay = updateLiveCreatorsCountDisplay;
 
     function registerCreatorPresence() {
-      if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') return;
-      const now = Date.now();
-      try {
-        const raw = localStorage.getItem(CREATOR_STORAGE_KEY);
-        const map = raw ? JSON.parse(raw) : {};
-        map[window.pf_creator_session_id] = {
-          name: AppState.user.name || 'Maker Hub',
-          email: AppState.user.email || 'creator@printforge.it',
-          lastSeen: now
-        };
-        localStorage.setItem(CREATOR_STORAGE_KEY, JSON.stringify(map));
-      } catch (e) {}
-
-      try {
-        if (pfCreatorPresenceChannel) {
-          pfCreatorPresenceChannel.postMessage({ type: 'CREATOR_ONLINE', id: window.pf_creator_session_id, time: now });
-        }
-      } catch (e) {}
-
+      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
+        recordCreatorAccess(AppState.user);
+      }
       updateLiveCreatorsCountDisplay();
     }
+    window.registerCreatorPresence = registerCreatorPresence;
 
     function unregisterCreatorPresence() {
-      try {
-        const raw = localStorage.getItem(CREATOR_STORAGE_KEY);
-        if (raw) {
-          const map = JSON.parse(raw);
-          delete map[window.pf_creator_session_id];
-          localStorage.setItem(CREATOR_STORAGE_KEY, JSON.stringify(map));
-        }
-      } catch (e) {}
-
-      try {
-        if (pfCreatorPresenceChannel) {
-          pfCreatorPresenceChannel.postMessage({ type: 'CREATOR_OFFLINE', id: window.pf_creator_session_id, time: Date.now() });
-        }
-      } catch (e) {}
-
       updateLiveCreatorsCountDisplay();
     }
+    window.unregisterCreatorPresence = unregisterCreatorPresence;
 
-    setInterval(() => {
-      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
-        registerCreatorPresence();
-      } else {
-        updateLiveCreatorsCountDisplay();
-      }
-    }, 12000);
+    setInterval(updateLiveCreatorsCountDisplay, 10000);
 
-    window.addEventListener('beforeunload', () => {
-      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
-        unregisterCreatorPresence();
-      }
-    });
-
-    // Sincronizzazione Cross-Window & Multi-Tab IRL in tempo reale per Creator e Clienti
+        // Sincronizzazione Cross-Window & Multi-Tab IRL in tempo reale per Creator e Clienti
     window.addEventListener('storage', (e) => {
       if (e.key === CREATOR_STORAGE_KEY) { updateLiveCreatorsCountDisplay(); }
       if (e.key === 'printforge_broadcast_requests' && e.newValue) {
@@ -11517,7 +11530,7 @@
         faqA6: "Clicca su \"Accedi\" e seleziona \"Creator / Hub\". Dopo aver inserito la tua strumentazione tecnica e collegato il conto Stripe Connect per i pagamenti diretti su IBAN, avrai accesso immediato alla bacheca delle richieste aperte nella tua zona e potrai iniziare a produrre componenti con compenso sicuro garantito.",
         flag: '\u{1F1EE}\u{1F1F9}',
         navLiveReqLabel: 'RICHIESTE LIVE:',
-        navLiveCreatorsLabel: 'CREATOR LIVE:',
+        navLiveCreatorsLabel: 'CREATOR ATTIVI:',
         heroBrandRoleIndicator: 'RETE DI MANIFATTURA ADDITIVA DECENTRALIZZATA',
         drawerTitle: 'NOTIFICHE & ALERT EMAIL PORTALE',
         drawerWebhooks: 'DISPATCH EMAIL & WEB // ATTIVO',
@@ -12332,7 +12345,7 @@
         faqA6: "Click \"Sign In\" and choose \"Creator / Hub\". After entering your equipment and connecting your Stripe Connect account for direct IBAN payouts, you will get instant access to open manufacturing requests in your area with guaranteed payments.",
         flag: '\u{1F1EC}\u{1F1E7}',
         navLiveReqLabel: 'LIVE REQUESTS:',
-        navLiveCreatorsLabel: 'LIVE CREATORS:',
+        navLiveCreatorsLabel: 'ACTIVE CREATORS:',
         heroBrandRoleIndicator: 'DECENTRALIZED ADDITIVE MANUFACTURING NETWORK',
         drawerTitle: 'TRANSACTION & PORTAL ALERTS',
         drawerWebhooks: 'EMAIL & WEB DISPATCH // ACTIVE',
@@ -13147,7 +13160,7 @@
         faqA6: "Haz clic en \"Acceder\" y selecciona \"Creator / Hub\". Tras indicar tu maquinaria y vincular tu cuenta de Stripe Connect para cobros directos en IBAN, accederás al panel de pedidos abiertos en tu zona con pago garantizado.",
         flag: '\u{1F1EA}\u{1F1F8}',
         navLiveReqLabel: 'SOLICITUDES EN VIVO:',
-        navLiveCreatorsLabel: 'CREADORES EN VIVO:',
+        navLiveCreatorsLabel: 'CREADORES ACTIVOS:',
         heroBrandRoleIndicator: 'RED DE FABRICACIÓN ADITIVA DESCENTRALIZADA',
         drawerTitle: 'ALERTAS TRANSACCIONALES & PORTAL',
         drawerWebhooks: 'DISPATCH EMAIL & WEB // ACTIVO',
