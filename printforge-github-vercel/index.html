@@ -9003,6 +9003,12 @@
         agreements: (rfp && rfp.agreements) || {},
         isAccepted: isAccepted,
         makerName: makerName,
+        clientApprovedQc: extra.clientApprovedQc !== undefined 
+          ? extra.clientApprovedQc 
+          : Boolean(rfp && (rfp.clientApprovedQc === true || (rfp.id && localStorage.getItem('printforge_qc_approved_' + rfp.id) === 'true'))),
+        qcStatus: extra.qcStatus 
+          || (rfp && rfp.qcStatus) 
+          || (rfp && rfp.id && localStorage.getItem('printforge_qc_approved_' + rfp.id) === 'true' ? 'approvato_dal_cliente' : 'in_attesa_collaudo'),
         ...extra
       };
       return JSON.stringify(payload);
@@ -9078,9 +9084,15 @@
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
             const parsedAgreements = meta.agreements || { cadVerified: false, toleranceConfirmed: false, qcPhotosAgreed: false, orientationAgreed: false, shippingLocked: false };
             const cleanNotes = meta.userNotes !== undefined ? meta.userNotes : dbR.notes;
+            const orderIdVal = dbR.id;
+            const localQcApproved = localStorage.getItem('printforge_qc_approved_' + orderIdVal) === 'true';
+            const isQcApproved = Boolean(meta.clientApprovedQc === true || meta.qcStatus === 'approvato_dal_cliente' || localQcApproved);
+            const resolvedQcStatus = isQcApproved ? 'approvato_dal_cliente' : (meta.qcStatus || localStorage.getItem('printforge_qc_status_' + orderIdVal) || 'in_attesa_collaudo');
 
             return {
               id: dbR.id,
+              clientApprovedQc: isQcApproved,
+              qcStatus: resolvedQcStatus,
               userId: meta.userId || dbR.user_id || '',
               title: dbR.title,
               clientName: dbR.client_name || 'Cliente Verificato',
@@ -9174,6 +9186,14 @@
             };
             AppState.activeDealRfpId = activeOrderReq.id;
             AppState.loadedRequestInStudio = activeOrderReq;
+            const startupOrderApproved = Boolean(activeOrderReq.clientApprovedQc === true || activeOrderReq.qcStatus === 'approvato_dal_cliente' || (activeOrderReq.id && localStorage.getItem('printforge_qc_approved_' + activeOrderReq.id) === 'true'));
+            activeOrderReq.clientApprovedQc = startupOrderApproved;
+            if (startupOrderApproved) activeOrderReq.qcStatus = 'approvato_dal_cliente';
+            if (AppState.activeEscrowOrder) {
+              AppState.activeEscrowOrder.clientApprovedQc = startupOrderApproved;
+              if (startupOrderApproved) AppState.activeEscrowOrder.qcStatus = 'approvato_dal_cliente';
+            }
+            AppState.clientApprovedQc = startupOrderApproved;
             AppState.cadQcFiles = (activeOrderReq.qcPhotos && activeOrderReq.qcPhotos.length > 0) ? activeOrderReq.qcPhotos : [];
           } else {
             AppState.activeEscrowOrder = null;
@@ -20981,10 +21001,21 @@ END-ISO-10303-21;`;
         return;
       }
 
-      // STATO SPECIFICO DI QUESTO ORDINE (ISOLAMENTO PER-ORDINE: NON GLOBALE!)
-      // Un ordine è approvato SOLO se per questo specifico ordine il cliente ha confermato!
-      const isOrderApproved = Boolean(activeReq && (activeReq.clientApprovedQc === true || activeReq.qcStatus === 'approvato_dal_cliente'));
-      const isOrderRevision = Boolean(activeReq && activeReq.qcStatus === 'revisione_richiesta' && !isOrderApproved);
+      // STATO SPECIFICO DI QUESTO ORDINE (ISOLAMENTO PER-ORDINE E PERSISTENZA UNIVERSALE!)
+      const orderId = activeReq ? activeReq.id : '';
+      const isLocallyApproved = Boolean(orderId && localStorage.getItem('printforge_qc_approved_' + orderId) === 'true');
+      const isOrderApproved = Boolean(activeReq && (activeReq.clientApprovedQc === true || activeReq.qcStatus === 'approvato_dal_cliente' || isLocallyApproved));
+      const isOrderRevision = Boolean(activeReq && (activeReq.qcStatus === 'revisione_richiesta' || (orderId && localStorage.getItem('printforge_qc_status_' + orderId) === 'revisione_richiesta')) && !isOrderApproved);
+
+      // Mantieni allineati activeReq e AppState
+      if (activeReq) {
+        activeReq.clientApprovedQc = isOrderApproved;
+        if (isOrderApproved) activeReq.qcStatus = 'approvato_dal_cliente';
+      }
+      if (AppState.activeEscrowOrder) {
+        AppState.activeEscrowOrder.clientApprovedQc = isOrderApproved;
+        if (isOrderApproved) AppState.activeEscrowOrder.qcStatus = 'approvato_dal_cliente';
+      }
 
       // Sincronizza lo stato istantaneo su AppState per il download dell'etichetta
       AppState.clientApprovedQc = isOrderApproved;
@@ -21170,10 +21201,26 @@ END-ISO-10303-21;`;
       AppState.clientApprovedQc = true;
       AppState.stage2Completed = true;
 
-      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      const activeReq = AppState.loadedRequestInStudio 
+        || AppState.activeEscrowOrder 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted && !r.isClosed));
+
       if (activeReq) {
         activeReq.clientApprovedQc = true;
         activeReq.qcStatus = 'approvato_dal_cliente';
+        activeReq.clientApprovedAt = new Date().toISOString();
+
+        // SALVATAGGIO UNIVERSALE E INDELEBILE PER QUESTO SPECIFICO ORDINE
+        try {
+          localStorage.setItem('printforge_qc_approved_' + activeReq.id, 'true');
+          localStorage.setItem('printforge_qc_status_' + activeReq.id, 'approvato_dal_cliente');
+        } catch(e) {}
+
+        if (AppState.activeEscrowOrder) {
+          AppState.activeEscrowOrder.clientApprovedQc = true;
+          AppState.activeEscrowOrder.qcStatus = 'approvato_dal_cliente';
+        }
         try {
           localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         } catch(e) {}
@@ -21221,10 +21268,22 @@ END-ISO-10303-21;`;
       if (!reason) return;
 
       AppState.clientApprovedQc = false;
-      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      const activeReq = AppState.loadedRequestInStudio 
+        || AppState.activeEscrowOrder 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted && !r.isClosed));
+
       if (activeReq) {
         activeReq.clientApprovedQc = false;
         activeReq.qcStatus = 'revisione_richiesta';
+        try {
+          localStorage.removeItem('printforge_qc_approved_' + activeReq.id);
+          localStorage.setItem('printforge_qc_status_' + activeReq.id, 'revisione_richiesta');
+        } catch(e) {}
+        if (AppState.activeEscrowOrder) {
+          AppState.activeEscrowOrder.clientApprovedQc = false;
+          AppState.activeEscrowOrder.qcStatus = 'revisione_richiesta';
+        }
         if (!activeReq.messages) activeReq.messages = [];
         activeReq.messages.push({
           id: 'msg-rev-' + Date.now(),
