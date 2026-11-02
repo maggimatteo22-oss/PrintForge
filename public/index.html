@@ -9147,7 +9147,16 @@
             const makerFromDb = (dbR.maker_name || '').trim();
             const hasRealMaker = Boolean((makerFromMeta && makerFromMeta.toLowerCase() !== clientNameVal) || (makerFromDb && makerFromDb.toLowerCase() !== clientNameVal) || meta.makerUserId || meta.assigned_creator_id || dbR.assigned_creator_id);
 
-            const isAcc = Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("LAVORAZION") || dbR.status.includes("PRESA IN CARICO"))));
+            const orderIdVal = dbR.id;
+            const isCompletedReq = Boolean(
+              dbR.status === 'COMPLETATO' ||
+              (typeof dbR.status === 'string' && (dbR.status.toUpperCase().includes('COMPLETAT') || dbR.status.toUpperCase().includes('CONSEGNAT') || dbR.status.toUpperCase().includes('SVINCOLAT'))) ||
+              meta.isCompleted === true ||
+              meta.isDelivered === true ||
+              meta.isClosed === true ||
+              (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + orderIdVal) === 'true')
+            );
+            const isAcc = isCompletedReq ? false : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("LAVORAZION") || dbR.status.includes("PRESA IN CARICO"))));
 
             const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
@@ -9174,23 +9183,26 @@
               infill: dbR.infill || '50%',
               quantity: dbR.quantity || '1 pezzo',
               dimensions: dbR.dimensions || '80 × 60 × 25 mm',
-              budget: dbR.budget || '€ 0,00',
+              budget: isCompletedReq ? '€ 0,00' : (dbR.budget || '€ 0,00'),
               notes: cleanNotes,
               rawUserNotes: cleanNotes,
               deadline: meta.deadline || dbR.deadline || 'Standard 3-5 giorni',
-              status: isAcc ? (dbR.status || 'IN LAVORAZIONE (PRESA IN CARICO)') : 'APERTA (IN ATTESA CREATOR)',
+              status: isCompletedReq ? 'COMPLETATO' : (isAcc ? (dbR.status || 'IN LAVORAZIONE (PRESA IN CARICO)') : 'APERTA (IN ATTESA CREATOR)'),
               shippingStreet: meta.shippingStreet || '',
               shippingCity: meta.shippingCity || dbR.client_city || 'Milano',
               shippingCap: meta.shippingCap || '20121',
               shippingProv: meta.shippingProv || 'MI',
               shippingFull: meta.shippingFull || (meta.shippingStreet ? `${meta.shippingStreet}, ${meta.shippingCap || '20121'} ${meta.shippingCity || dbR.client_city || 'Milano'} (${meta.shippingProv || 'MI'})` : (dbR.client_city ? `${dbR.client_city}` : 'Via Dante 18, 20121 Milano (MI)')),
               fileName: dbR.file_name || 'modello.stl',
-              maker: isAcc ? (dbR.maker_name || meta.makerName || 'Maker Certificato') : null,
-              makerEmail: isAcc ? (meta.makerEmail || '') : '',
-              makerUserId: isAcc ? (meta.makerUserId || '') : '',
+              maker: (isAcc || isCompletedReq) ? (dbR.maker_name || meta.makerName || 'Maker Certificato') : null,
+              makerEmail: (isAcc || isCompletedReq) ? (meta.makerEmail || '') : '',
+              makerUserId: (isAcc || isCompletedReq) ? (meta.makerUserId || '') : '',
               targetCreatorId: meta.targetCreatorId || null,
               targetCreatorName: meta.targetCreatorName || null,
               isAccepted: isAcc,
+              isCompleted: isCompletedReq,
+              isDelivered: isCompletedReq,
+              isClosed: isCompletedReq,
               isRejected: Boolean(dbR.status && dbR.status.includes('RIFIUTATA')),
               messages: parsedMessages,
               agreements: parsedAgreements,
@@ -9215,6 +9227,9 @@
 
           const activeOrderReq = AppState.broadcastRequests.find(r => {
             if (!r || !r.isAccepted) return false;
+            if (r.isCompleted || r.isDelivered || r.isClosed) return false;
+            if (typeof r.status === 'string' && (r.status.toUpperCase().includes('COMPLETAT') || r.status.toUpperCase().includes('CONSEGNAT') || r.status.toUpperCase().includes('SVINCOLAT'))) return false;
+            if (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true') return false;
             if (isAdmin) return true;
             if (isClient) {
               const reqEmail = (r.clientEmail || '').toLowerCase().trim();
@@ -17475,7 +17490,7 @@ END-ISO-10303-21;`;
       if (AppState.user.role !== 'creator') return false;
 
       // DOPO IL 4° PASSAGGIO: al creator NON mostrare mai più la pagina attività né escrow room
-      if (AppState.stage4Completed === true || AppState.isDelivered === true) return false;
+      if (AppState.stage4Completed === true || AppState.isDelivered === true || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')) return false;
       if (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)) return false;
       if (AppState.loadedRequestInStudio && (AppState.loadedRequestInStudio.isDelivered || AppState.loadedRequestInStudio.isCompleted)) return false;
 
@@ -17528,7 +17543,7 @@ END-ISO-10303-21;`;
     function hasActiveEscrowOrder() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       // Se lo stage 4 è completato o l'ordine è consegnato/svincolato, NESSUNO vede più la Escrow Room
-      if (AppState.stage4Completed || AppState.isDelivered) return false;
+      if (AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')) return false;
 
       const isCreator = AppState.user.role === 'creator';
       const myEmail = (AppState.user.email || '').toLowerCase().trim();
@@ -17709,7 +17724,7 @@ END-ISO-10303-21;`;
         // 4. SCAMBIO TRA "RICHIESTE" E "ATTIVITÀ" (Sia da PC che da Mobile):
         // Quando il creator accetta una richiesta, la pagina "Richieste" viene scambiata con "Attività".
         // DOPO IL 4° PASSAGGIO: mai più mostrare Attività né Escrow Room al creator! Torna con Home, Progetti e Richieste.
-        const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
+        const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
         if (!isPostStage4 && hasAcceptedRequest()) {
           const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
           const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
@@ -20446,99 +20461,163 @@ END-ISO-10303-21;`;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
+      const orderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id) || 'RFP-2121';
+      const req = (AppState.broadcastRequests || []).find(r => r && r.id === orderId) || AppState.activeEscrowOrder || {};
+      const makerName = req.maker || req.acceptedBy || req.maker_name || (AppState.user && AppState.user.role === 'creator' ? AppState.user.name : 'Maker Certificato');
+      const makerUid = req.makerUserId || req.assigned_creator_id || (AppState.user && AppState.user.role === 'creator' ? (AppState.user.userId || AppState.user.id) : 'maker_milano_hub');
+      const isClient = AppState.user && AppState.user.role === 'client';
+
       const titleText = isEn 
-        ? 'COURIER SCAN CONFIRMED // ESCROW FUNDS RELEASED' 
+        ? 'DEAL COMPLETED // STRIPE ESCROW FUNDS RELEASED' 
         : isEs 
-        ? 'ESCANEO DE MENSAJERÍA CONFIRMADO // FONDOS ESCROW LIBERADOS' 
-        : 'SCANSIONE CORRIERE CONFERMATA // FONDI ESCROW SVINCOLATI';
+        ? 'ACUERDO COMPLETADO // FONDOS ESCROW LIBERADOS' 
+        : 'AFFARE CONCLUSO // FONDI ESCROW STRIPE SVINCOLATI';
 
       const badgeText = isEn 
         ? 'STAGE 4 COMPLETE ✓' 
         : isEs 
-        ? 'FASE 4 COMPLETADA ✓' 
+        ? 'FASE 4 COMPLETATA ✓' 
         : 'FASE 4 COMPLETATA ✓';
 
-      const subText = isEn
-        ? 'STRIPE CONNECT INSTANT PAYOUT DISPATCHED'
-        : isEs
-        ? 'TRANSFERENCIA INSTANTÁNEA STRIPE CONNECT ENVIADA'
-        : 'BONIFICO ISTANTANEO STRIPE CONNECT INVIATO';
-
       const bodyHtml = isEn 
-        ? 'The courier recorded delivery to recipient with barcode scan. Escrow fiduciary funds were automatically released to Maker\'s account via instant Stripe Connect transfer. Locked funds: <strong class="text-white font-mono font-bold">€ 0,00</strong>. All 4 pipeline stages were completed successfully!' 
+        ? 'The courier certified delivery with barcode scan. Escrow fiduciary funds were automatically released to Maker\'s account via instant Stripe Connect transfer. Locked funds: <strong class="text-white font-mono font-bold">€ 0,00</strong>. All 4 pipeline stages were completed successfully!' 
         : isEs 
-        ? 'El transportista registró la entrega al destinatario con escaneo de código de barras. Los fondos en custodia fiduciaria Escrow fueron liberados automáticamente a la cuenta del Maker mediante transferencia instantánea de Stripe Connect. Fondos retenidos: <strong class="text-white font-mono font-bold">€ 0,00</strong>. ¡Las 4 fases del proceso se completaron con éxito!' 
+        ? 'El transportista certificó la entrega con escaneo de código de barras. Los fondos en custodia fiduciaria Escrow fueron liberados automáticamente al Maker vía Stripe Connect. Fondos retenidos: <strong class="text-white font-mono font-bold">€ 0,00</strong>. ¡Las 4 fases del proceso se completaron con éxito!' 
         : 'Il corriere ha registrato la consegna al destinatario con scansione barcode. I fondi in custodia fiduciaria Escrow sono stati svincolati automaticamente sul conto del Maker tramite bonifico istantaneo Stripe Connect. Fondi bloccati: <strong class="text-white font-mono font-bold">€ 0,00</strong>. Tutte le 4 fasi della pipeline sono state completate con successo!';
 
-      const protoText = isEn
-        ? 'STRIPE ESCROW FIDUCIARY PROTOCOL // 100% COMPLETED'
-        : isEs
-        ? 'PROTOCOLO FIDUCIARIO ESCROW STRIPE // 100% COMPLETADO'
-        : 'PROTOCOLLO STRIPE CONNECT ESCROW // 100% CONCLUSO';
-
-      const guarText = isEn
-        ? 'LOCKED FUNDS: € 0,00 (FULL RELEASE)'
-        : isEs
-        ? 'FONDOS RETENIDOS: € 0,00 (LIBERACIÓN TOTAL)'
-        : 'FONDI BLOCCATI: € 0,00 (SVINCOLO TOTALE)';
-
-      banner.className = 'p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#12131C] via-[#0E0F16] to-[#08090C] border border-white/20 shadow-[0_0_25px_rgba(255,255,255,0.06)] space-y-2 sm:space-y-2.5 relative overflow-hidden backdrop-blur-md text-left transition-all';
+      banner.classList.remove('hidden');
+      banner.className = 'w-full max-w-xl mx-auto p-5 sm:p-7 rounded-3xl bg-[#0E0E12] border border-white/15 shadow-2xl space-y-4 text-left relative overflow-hidden backdrop-blur-md transition-all my-4';
       banner.innerHTML = `
-        <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-white/5 blur-2xl pointer-events-none"></div>
+        <div class="absolute -right-8 -top-8 w-28 h-28 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none"></div>
 
-        <div class="flex items-center justify-between gap-2 relative z-10 border-b border-white/10 pb-2">
-          <div class="flex items-center gap-2 sm:gap-2.5 min-w-0">
-            <div class="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-white text-black flex items-center justify-center font-bold shadow-[0_0_12px_rgba(255,255,255,0.25)] shrink-0">
-              <i data-lucide="check-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black"></i>
-            </div>
-            <div class="min-w-0">
-              <h4 id="escrowResolutionTitle" class="font-cyber font-bold text-[10.5px] sm:text-xs uppercase text-white tracking-wider truncate">
-                ${titleText}
-              </h4>
-              <span class="text-[8px] sm:text-[9px] font-mono text-zinc-400 font-semibold tracking-tight block truncate">${subText}</span>
-            </div>
+        <div class="flex items-center justify-between border-b border-white/[0.08] pb-3 relative z-10">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <h3 class="font-cyber font-bold text-xs sm:text-sm text-white uppercase tracking-wider">
+              ${titleText}
+            </h3>
           </div>
-          <span id="escrowResolutionBadge" class="shrink-0 text-[8.5px] sm:text-[9.5px] font-mono px-2 py-0.5 sm:px-2.5 sm:py-0.5 rounded-full bg-white/10 border border-white/25 text-white font-bold flex items-center gap-1.5 shadow-sm">
-            <span class="w-1.5 h-1.5 rounded-full bg-white animate-ping"></span>
-            <span>${badgeText}</span>
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-mono text-[10px] font-bold shrink-0">
+            ${badgeText}
           </span>
         </div>
 
-        <p id="escrowResolutionBody" class="text-[10px] sm:text-[11.5px] text-zinc-300 font-sans leading-snug sm:leading-relaxed relative z-10">
+        <!-- Riquadro Stile Recensioni con Valutazione & Svincolo Fondi -->
+        <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between relative z-10">
+          <div class="flex items-center gap-3">
+            <div class="text-2xl sm:text-3xl font-bold font-mono text-emerald-400">€ 0,00</div>
+            <div>
+              <div class="text-base sm:text-lg flex items-center gap-0.5 text-amber-400 font-bold">
+                <span>★</span><span>★</span><span>★</span><span>★</span><span>★</span>
+              </div>
+              <span class="text-[9.5px] font-mono text-zinc-400 block">${isEn ? 'QC 3/3 Photos & Tracked Delivery 100% Certified' : isEs ? 'Control 3/3 Fotos & Entrega 100% Certificada' : 'Collaudo 3/3 Foto & Consegna 100% Verificata'}</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <span class="text-xs font-mono font-bold text-white block">${isEn ? 'Funds Released' : isEs ? 'Fondos Liberados' : 'Fondi Svincolati'}</span>
+            <span class="text-[10px] font-mono text-emerald-400 font-semibold">${isEn ? 'Stripe Transfer Sent ✓' : isEs ? 'Transferencia Stripe Enviada ✓' : 'Bonifico Stripe Eseguito ✓'}</span>
+          </div>
+        </div>
+
+        <p class="text-xs sm:text-sm text-zinc-300 font-sans leading-relaxed relative z-10">
           ${bodyHtml}
         </p>
 
-        <div class="pt-1.5 border-t border-white/10 flex flex-wrap items-center justify-between gap-1.5 text-[8.5px] sm:text-[9.5px] font-mono text-zinc-400 relative z-10">
-          <span class="text-zinc-300 flex items-center gap-1.5 font-bold" id="escrowResolutionProtocol">
-            <i data-lucide="shield-check" class="w-3 h-3 text-white"></i>
-            ${protoText}
-          </span>
-          <span class="px-2 py-0.5 rounded bg-white/10 text-white font-bold border border-white/20" id="escrowResolutionGuarantee">
-            ${guarText}
-          </span>
-        </div>
-
-        <!-- AZIONE RISOLUZIONE: CHIUSURA COMMESSA & RESET STANZA -->
-        <div class="pt-2 border-t border-white/10 flex items-center justify-end relative z-10">
-          ${(AppState.user && AppState.user.role === 'creator') ? `
-            <button type="button" onclick="concludeAndResetAfterDelivery()" class="btn-kowalski-primary py-2 px-3.5 rounded-xl text-xs font-cyber font-bold tracking-wider flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition">
-              <i data-lucide="check-circle" class="w-4 h-4 text-black"></i>
-              <span>${isEn ? 'CLOSE WORKSHOP & ARCHIVE JOB' : isEs ? 'CERRAR ACTIVIDAD Y ARCHIVAR' : 'ARCHIVIA COMMESSA & CHIUDI ATTIVITÀ'}</span>
+        <!-- Azioni: Recensioni e Chiusura Escrow Room -->
+        <div class="pt-2 border-t border-white/[0.08] flex flex-wrap items-center justify-between gap-2.5 relative z-10">
+          <div class="flex items-center gap-2">
+            <button type="button" onclick="openCreatorReviewsModal('${escapeHtml(makerUid)}', '${escapeHtml(makerName)}')" class="btn-kowalski-primary px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-2 shadow-md">
+              <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400 fill-amber-400"></i>
+              <span>${isEn ? 'Creator Reviews' : isEs ? 'Reseñas del Creador' : 'Recensioni del Creator'}</span>
             </button>
-          ` : `
-            <button type="button" onclick="concludeAndResetAfterDelivery()" class="btn-kowalski-primary py-2 px-3.5 rounded-xl text-xs font-cyber font-bold tracking-wider flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition">
-              <i data-lucide="home" class="w-4 h-4 text-black"></i>
-              <span>${isEn ? 'CLOSE ORDER & RETURN HOME' : isEs ? 'CERRAR PEDIDO Y VOLVER' : 'CHIUDI ORDINE & TORNA ALLA HOME'}</span>
-            </button>
-          `}
+            ${isClient ? `
+              <button type="button" onclick="openLeaveReviewModal('${escapeHtml(orderId)}', '${escapeHtml(makerUid)}', '${escapeHtml(makerName)}')" class="px-3.5 py-2 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold flex items-center gap-1.5 transition">
+                <span>★ ${isEn ? 'Leave Review' : isEs ? 'Dejar Reseña' : 'Lascia Recensione'}</span>
+              </button>
+            ` : ''}
+          </div>
+          <button type="button" onclick="closeEscrowAfterCompletion()" class="btn-kowalski-secondary px-4 py-2 rounded-xl text-xs font-bold text-zinc-300 hover:text-white flex items-center gap-1.5 transition ml-auto">
+            <i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>${isEn ? 'Close Escrow Room' : isEs ? 'Cerrar Escrow Room' : 'Chiudi Escrow Room'}</span>
+          </button>
         </div>
       `;
-      banner.classList.remove('hidden');
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
     }
     window.renderEscrowResolutionBanner = renderEscrowResolutionBanner;
+
+    function closeEscrowAfterCompletion() {
+      const activeOrderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
+      
+      AppState.stage4Completed = true;
+      AppState.isDelivered = true;
+      AppState.activeEscrowOrder = null;
+      AppState.loadedRequestInStudio = null;
+      AppState.cadQcFiles = [];
+      AppState.clientApprovedQc = false;
+      AppState.isShipped = false;
+      AppState.stage2Completed = false;
+
+      try {
+        localStorage.setItem('printforge_stage4_completed', 'true');
+        if (activeOrderId) {
+          localStorage.setItem('printforge_completed_' + activeOrderId, 'true');
+        }
+        localStorage.removeItem('printforge_active_escrow_order');
+        localStorage.removeItem('printforge_cad_qc_files');
+      } catch(e) {}
+
+      if (activeOrderId) {
+        (AppState.broadcastRequests || []).forEach(r => {
+          if (r && (r.id === activeOrderId || r.isAccepted || (typeof r.status === 'string' && r.status.includes('LAVORAZION')))) {
+            r.status = 'COMPLETATO';
+            r.isCompleted = true;
+            r.isDelivered = true;
+            r.isClosed = true;
+            r.isAccepted = false;
+            r.budget = '€ 0,00';
+          }
+        });
+        try {
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } catch(e) {}
+
+        if (typeof updateRequestInSupabase === 'function') {
+          updateRequestInSupabase(activeOrderId, {
+            status: 'COMPLETATO',
+            is_completed: true,
+            is_delivered: true,
+            is_closed: true,
+            is_accepted: false,
+            budget: '€ 0,00'
+          });
+        }
+        if (typeof broadcastRealtimeEvent === 'function') {
+          broadcastRealtimeEvent('request_status_change', {
+            requestId: activeOrderId,
+            status: 'COMPLETATO',
+            isCompleted: true,
+            isDelivered: true,
+            isAccepted: false
+          });
+        }
+      }
+
+      if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+      if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
+      if (typeof renderBroadcastTable === 'function') renderBroadcastTable();
+      if (typeof renderCreatorRequestsFeed === 'function') renderCreatorRequestsFeed();
+
+      if (AppState.user && AppState.user.role === 'creator') {
+        navigateTo('creator-portfolio');
+      } else {
+        navigateTo('client-request');
+      }
+    }
+    window.closeEscrowAfterCompletion = closeEscrowAfterCompletion;
+    window.concludeAndResetAfterDelivery = closeEscrowAfterCompletion;
 
     /* ========================================================================= */
     /* PIPELINE STATO ORDINE & CUSTODIA FIDUCIARIA (4 FASI REATTIVE)             */
@@ -20988,6 +21067,15 @@ END-ISO-10303-21;`;
         : '✓ Scansione corriere verificata! Fase 4 completata: pacco consegnato e fondi Escrow svincolati (€ 0,00)!';
       showToast(toastDelivery, 'success');
 
+      try {
+        localStorage.setItem('printforge_stage4_completed', 'true');
+        if (completedReqId) {
+          localStorage.setItem('printforge_completed_' + completedReqId, 'true');
+        }
+        localStorage.removeItem('printforge_active_escrow_order');
+        localStorage.removeItem('printforge_cad_qc_files');
+      } catch(e) {}
+
       // DOPO IL QUARTO PASSAGGIO: reset totale sia per creator che per cliente!
       // Nessuno vede più la pagina Escrow Room né la pagina Attività.
       setTimeout(() => {
@@ -20995,10 +21083,6 @@ END-ISO-10303-21;`;
         AppState.loadedRequestInStudio = null;
         AppState.cadQcFiles = [];
         AppState.clientApprovedQc = false;
-        try {
-          localStorage.removeItem('printforge_active_escrow_order');
-          localStorage.removeItem('printforge_cad_qc_files');
-        } catch(e) {}
 
         if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
         if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
@@ -21861,10 +21945,16 @@ END-ISO-10303-21;`;
       AppState.cadQcFiles = [];
       AppState.clientApprovedQc = false;
       AppState.isShipped = false;
-      AppState.isDelivered = false;
+      AppState.isDelivered = true;
       AppState.stage2Completed = false;
-      AppState.stage4Completed = false;
-      AppState.step4Confirmed = false;
+      AppState.stage4Completed = true;
+      AppState.step4Confirmed = true;
+      try {
+        localStorage.setItem('printforge_stage4_completed', 'true');
+        if (activeReq && activeReq.id) {
+          localStorage.setItem('printforge_completed_' + activeReq.id, 'true');
+        }
+      } catch(e) {}
 
       // Azzera Escrow Room e aggiorna UI
       if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
@@ -21920,11 +22010,11 @@ END-ISO-10303-21;`;
 
       // Se non trovata per match stretto (es. utente che testa cambiando ruolo sulla stessa macchina), usa la più recente accettata
       if (!activeReq) {
-        activeReq = AppState.broadcastRequests.find(r => r && r.isAccepted && !r.isCompleted && !r.isClosed && !r.isDelivered && !(typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT'))));
+        activeReq = AppState.broadcastRequests.find(r => r && r.isAccepted && !r.isCompleted && !r.isClosed && !r.isDelivered && !(typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) && !(typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true'));
       }
 
       // Se non vi sono commesse attive o se lo stage 4 è terminato, non caricare alcun ordine in escrow
-      if (!activeReq || AppState.stage4Completed) {
+      if (!activeReq || AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')) {
         AppState.activeEscrowOrder = null;
         AppState.loadedRequestInStudio = null;
         AppState.cadQcFiles = [];
@@ -21962,9 +22052,13 @@ END-ISO-10303-21;`;
         if (activeReq.isShipped || (activeReq.status && activeReq.status.includes('SPEDIT'))) {
           AppState.isShipped = true;
         }
-        if (activeReq.isDelivered || (activeReq.status && activeReq.status.includes('CONSEGNAT'))) {
+        if (activeReq.isDelivered || activeReq.isCompleted || (activeReq.status && (activeReq.status.includes('CONSEGNAT') || activeReq.status.includes('COMPLETAT'))) || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + activeReq.id) === 'true')) {
           AppState.isDelivered = true;
           AppState.stage4Completed = true;
+          AppState.activeEscrowOrder = null;
+          AppState.loadedRequestInStudio = null;
+          AppState.cadQcFiles = [];
+          return;
         }
 
         const isEn = currentLang === 'en';
@@ -22529,17 +22623,51 @@ END-ISO-10303-21;`;
 
         // 2. Imposta la commessa attiva come COMPLETATO
         const completedReqId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
+        AppState.stage4Completed = true;
+        AppState.isDelivered = true;
+        try {
+          localStorage.setItem('printforge_stage4_completed', 'true');
+          if (completedReqId) {
+            localStorage.setItem('printforge_completed_' + completedReqId, 'true');
+          }
+          localStorage.removeItem('printforge_active_escrow_order');
+          localStorage.removeItem('printforge_cad_qc_files');
+        } catch(e) {}
+
         AppState.broadcastRequests.forEach(r => {
           if (r && (r.id === completedReqId || r.isAccepted || (typeof r.status === 'string' && r.status.includes('LAVORAZION')))) {
             r.status = 'COMPLETATO';
             r.isCompleted = true;
             r.isDelivered = true;
+            r.isClosed = true;
+            r.isAccepted = false;
             r.budget = '€ 0,00';
           }
         });
         try {
           localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         } catch(e) {}
+
+        if (completedReqId && typeof updateRequestInSupabase === 'function') {
+          updateRequestInSupabase(completedReqId, {
+            status: 'COMPLETATO',
+            is_delivered: true,
+            is_completed: true,
+            is_closed: true,
+            is_accepted: false,
+            budget: '€ 0,00'
+          });
+        }
+        if (completedReqId && typeof broadcastRealtimeEvent === 'function') {
+          broadcastRealtimeEvent('request_status_change', {
+            requestId: completedReqId,
+            status: 'COMPLETATO',
+            isCompleted: true,
+            isDelivered: true,
+            isAccepted: false
+          });
+        }
+
         if (typeof renderBroadcastTable === 'function') renderBroadcastTable();
         if (typeof renderCreatorRequestsFeed === 'function') renderCreatorRequestsFeed();
 
@@ -23433,7 +23561,7 @@ END-ISO-10303-21;`;
     function navigateTo(viewId) {
     // DOPO IL 4° PASSAGGIO: al creator NON mostrare mai più la pagina attività né escrow room
     if (AppState.user && AppState.user.role === 'creator') {
-      const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
+      const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
       if (isPostStage4) {
         if (viewId === 'activity' || viewId === 'studio' || viewId === 'order-room') {
           navigateTo('creator-portfolio');
@@ -24939,7 +25067,7 @@ END-ISO-10303-21;`;
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
               <div class="text-[10px] font-mono text-zinc-400 flex items-center gap-1.5">
                 <span>Maker Assegnato:</span>
-                ${isAcc ? `
+                ${(isAcc || isCompleted) ? `
                   <div class="relative inline-block text-left" id="dropdown-wrapper-${safeId}">
                     <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="font-bold text-white hover:text-emerald-400 underline decoration-dotted flex items-center gap-1.5 cursor-pointer" title="Visualizza Recensioni Certificate">
                       <span>${realMakerName}</span>
@@ -24973,7 +25101,15 @@ END-ISO-10303-21;`;
               </div>
 
               <div class="flex items-center gap-2">
-                ${isAcc ? `
+                ${isCompleted ? `
+                  <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="px-3.5 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
+                    <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400 fill-amber-400"></i>
+                    <span>Recensioni Creator</span>
+                  </button>
+                  <button type="button" onclick="openLeaveReviewModal('${safeId}', '${realMakerUid}', '${realMakerName}')" class="px-3 py-1.5 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition active:scale-95 shadow-sm">
+                    <span>★ Lascia Recensione</span>
+                  </button>
+                ` : isAcc ? `
                   <button type="button" onclick="openDealChat('${safeId}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 transition active:scale-95">
                     <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
                     <span>Chat 1-1 & Foto</span>
@@ -25039,6 +25175,9 @@ END-ISO-10303-21;`;
 
       const activeCreatorJob = (AppState.broadcastRequests || []).find(r => {
         if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isRejected || r.isDeleted) return false;
+        if (AppState.stage4Completed || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')) return false;
+        if (r.isCompleted || r.isDelivered || r.isClosed || (typeof r.status === 'string' && r.status.toUpperCase().includes('COMPLETAT'))) return false;
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true') return false;
         const isAcc = r.isAccepted === true || (typeof r.status === 'string' && (r.status.toUpperCase().includes('ACCETTAT') || r.status.toUpperCase().includes('LAVORAZION')));
         if (!isAcc) return false;
         const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
