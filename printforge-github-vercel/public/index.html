@@ -11229,8 +11229,8 @@
 
     let scene, camera, renderer, controls, meshGroup, plateMat;
     let currentLang = (new URLSearchParams(window.location.search).get('lang')) || 
-                      (window.location.hash.includes('es') ? 'es' : (window.location.hash.includes('en') ? 'en' : (window.location.hash.includes('it') ? 'it' : ''))) || 
-                      localStorage.getItem('printforge_lang') || 'it';
+                      localStorage.getItem('printforge_lang') || 
+                      'it';
     if (!['it', 'en', 'es'].includes(currentLang)) currentLang = 'it';
 
     const i18n = {
@@ -12367,10 +12367,10 @@
         cadLockedColLabel: 'Color',
         cadLockedInfLabel: 'Infill',
         cadLockedTolLabel: 'Tolerance',
-        cadLockedQcTitle: '3-PHOTO VERIFICATION FOR ESCROW RELEASE',
-        cadQcPhoto1: '1. Finished Print Bed Photo',
+        cadLockedQcTitle: 'COLLAUDO FOTOGRAFICO (3 FOTO)',
+        cadQcPhoto1: '1. Foto Generale Opera (Panoramica)',
         cadQcStatus1: '✓ READY',
-        cadQcPhoto2: '2. Part Detail & Angle Photo',
+        cadQcPhoto2: '2. Foto Generale Opera (Dettaglio / Angolo)',
         cadQcStatus2: '✓ READY',
         cadQcPhoto3: '3. Protective Shipping Box Photo',
         cadQcStatus3: '✓ SEALED',
@@ -12386,8 +12386,8 @@
         cadOpenChatBtn: 'OPEN 1-ON-1 DEAL CHAT WITH CLIENT',
         cadBackToFeed: 'Back to Client Requests Feed',
         navRolePublic: 'PUBLIC PORTAL',
-        navRoleCreator: 'VERIFIED CREATOR',
-        navRoleClient: 'VERIFIED CLIENT',
+        navRoleCreator: 'CREATOR VERIFICATO',
+        navRoleClient: 'CLIENTE VERIFICATO',
         rfpSuccessTitle: 'BROADCAST RFP DISPATCHED SUCCESSFULLY',
         rfpSuccessIdLabel: 'Unique Job Code:',
         rfpSuccessEscrowLabel: 'Stripe Escrow Deposit:',
@@ -20605,6 +20605,124 @@ END-ISO-10303-21;`;
     window.closeActivityAfterStage4 = closeActivityAfterStage4;
 
     /* ========================================================================= */
+    /* PERSISTENZA CLOUD & CROSS-SESSION DEGLI STEP COLLAUDO (CLIENT & CREATOR) */
+    /* ========================================================================= */
+    function hydrateActiveEscrowWorkflow() {
+      if (!AppState.broadcastRequests || AppState.broadcastRequests.length === 0) return;
+
+      const isCreator = AppState.user && AppState.user.role === 'creator';
+      const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const myName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
+      const myUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+
+      // Trova la richiesta accettata / in corso
+      let activeReq = AppState.broadcastRequests.find(r => {
+        if (!r || !r.id || r.isDeleted || r.isRejected) return false;
+        if (!r.isAccepted) return false;
+
+        if (isCreator) {
+          const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
+          const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
+          const assignedUid = (r.makerUserId || '').toLowerCase().trim();
+          if ((assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
+              (assignedEmail && assignedEmail === myEmail) ||
+              (assignedUid && assignedUid === myUid)) {
+            return true;
+          }
+        } else {
+          const reqEmail = (r.clientEmail || '').toLowerCase().trim();
+          const reqUid = (r.userId || '').toLowerCase().trim();
+          const reqName = (r.clientName || '').toLowerCase().trim();
+          if ((myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid) || (myName && reqName === myName)) {
+            return true;
+          }
+        }
+        return false;
+      });
+
+      // Se non trovata per match stretto (es. utente che testa cambiando ruolo sulla stessa macchina), usa la più recente accettata
+      if (!activeReq) {
+        activeReq = AppState.broadcastRequests.find(r => r && r.isAccepted && !r.isCompleted && !r.isClosed);
+      }
+
+      if (activeReq) {
+        // Recupera foto di collaudo: prima dalla richiesta, poi dal localStorage persistente
+        let photos = (activeReq.qcPhotos && Array.isArray(activeReq.qcPhotos) && activeReq.qcPhotos.length > 0) ? activeReq.qcPhotos : null;
+        if (!photos) {
+          try {
+            const storedQc = localStorage.getItem('printforge_qc_photos_' + activeReq.id);
+            if (storedQc) {
+              const parsed = JSON.parse(storedQc);
+              if (Array.isArray(parsed) && parsed.length > 0) photos = parsed;
+            }
+          } catch(e) {}
+        }
+
+        if (photos && photos.length > 0) {
+          activeReq.qcPhotos = photos;
+          AppState.cadQcFiles = photos;
+          if (photos.length >= 3) {
+            AppState.stage2Completed = true;
+          }
+        }
+
+        AppState.loadedRequestInStudio = activeReq;
+        AppState.activeDealRfpId = activeReq.id;
+
+        if (activeReq.clientApprovedQc || activeReq.qcStatus === 'approvato_dal_cliente') {
+          AppState.clientApprovedQc = true;
+          AppState.stage2Completed = true;
+        }
+        if (activeReq.isShipped || (activeReq.status && activeReq.status.includes('SPEDIT'))) {
+          AppState.isShipped = true;
+        }
+        if (activeReq.isDelivered || (activeReq.status && activeReq.status.includes('CONSEGNAT'))) {
+          AppState.isDelivered = true;
+          AppState.stage4Completed = true;
+        }
+
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+
+        AppState.activeEscrowOrder = {
+          id: activeReq.id,
+          title: activeReq.title,
+          budget: activeReq.budget,
+          itemBudget: activeReq.itemBudget || activeReq.budget,
+          shippingCost: isEn ? 'Included (UPS / Poste)' : isEs ? 'Incluido (UPS / Correos)' : 'Inclusa (UPS / Poste)',
+          maker: activeReq.maker || activeReq.acceptedBy || 'Maker Certificato PrintForge',
+          makerEmail: activeReq.makerEmail || '',
+          makerUserId: activeReq.makerUserId || '',
+          clientName: activeReq.clientName || 'Cliente',
+          clientEmail: activeReq.clientEmail || '',
+          userId: activeReq.userId || '',
+          trackingNumber: activeReq.trackingNumber || 'PF-UPS-892104',
+          carrier: activeReq.shippingCarrier || 'UPS Standard',
+          timestamp: isEn ? 'In Production' : isEs ? 'En Producción' : 'In Lavorazione',
+          shippingStreet: activeReq.shippingStreet || '',
+          shippingCity: activeReq.shippingCity || 'Milano',
+          shippingCap: activeReq.shippingCap || '20121',
+          shippingProv: activeReq.shippingProv || 'MI',
+          shippingFull: activeReq.shippingFull || 'Via Dante 18, 20121 Milano (MI)',
+          isAccepted: true,
+          isShipped: AppState.isShipped,
+          isDelivered: AppState.isDelivered,
+          clientApprovedQc: AppState.clientApprovedQc,
+          qcPhotos: photos || []
+        };
+
+        if (typeof updateCadQcStatusUI === 'function') updateCadQcStatusUI();
+        if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+        if (typeof applyRoleGatingForLabelDownload === 'function') applyRoleGatingForLabelDownload();
+        if (typeof syncPipelineUI === 'function') syncPipelineUI();
+        if (typeof renderStudioSpecs === 'function') renderStudioSpecs();
+        if (typeof renderCreatorProjectsFeed === 'function') renderCreatorProjectsFeed();
+        if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
+      }
+    }
+    window.hydrateActiveEscrowWorkflow = hydrateActiveEscrowWorkflow;
+
+    /* ========================================================================= */
     /* ESCROW PICKUP-RELEASE PROTOCOL                                             */
     /* ========================================================================= */
     let escrowTimerInterval = null;
@@ -24812,6 +24930,9 @@ function renderDealChat(rfpId) {
         const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
         if (activeReq) {
           activeReq.qcPhotos = AppState.cadQcFiles;
+        try {
+          localStorage.setItem('printforge_qc_photos_' + activeReq.id, JSON.stringify(AppState.cadQcFiles));
+        } catch(e) {}
           updateRequestInSupabase(activeReq.id, {
             notes: buildNotesPayload(activeReq, { qcPhotos: AppState.cadQcFiles })
           });
@@ -28148,6 +28269,7 @@ function renderDealChat(rfpId) {
       try { renderBroadcastTable(); } catch (e) { console.warn('Broadcast table:', e); }
       try { renderCreatorRequestsFeed(); } catch (e) { console.warn('Requests feed:', e); }
       try { updateEscrowRoom(); } catch (e) { console.warn('Escrow room:', e); }
+      try { hydrateActiveEscrowWorkflow(); } catch (e) { console.warn('Hydrate workflow:', e); }
       try { recalculateInstantQuote(); } catch (e) { console.warn('Quote:', e); }
       try { calculateVolumetricShipping(); } catch (e) { console.warn('Shipping:', e); }
       try { autoSelectIdealPackaging(80, 60, 25); } catch (e) { console.warn('AutoBox:', e); }
