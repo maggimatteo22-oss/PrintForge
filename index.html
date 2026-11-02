@@ -3674,7 +3674,7 @@
                   onclick="toggleOfficialLangMenu(event)"
                   class="h-8 px-2 sm:px-2.5 rounded-full bg-[#101014] border border-white/20 hover:border-white/50 text-white flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer select-none"
                   title="Seleziona Lingua / Select Language / Seleccionar Idioma">
-            <span id="currentLangFlag" class="flex items-center shrink-0 text-sm">🇮🇹</span>
+            <span id="currentLangFlag" class="flex items-center shrink-0"><div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0"><div class="w-1/3 h-full bg-[#009246]"></div><div class="w-1/3 h-full bg-[#ffffff]"></div><div class="w-1/3 h-full bg-[#ce2b37]"></div></div></span>
             <span id="currentLangName" class="text-xs font-mono font-bold hidden sm:inline">Italiano</span>
             <span class="text-[9px] text-zinc-400 shrink-0">▼</span>
           </button>
@@ -13889,10 +13889,10 @@
       const checkEs = document.getElementById('langCheckEs');
 
       const flagsHtml = {
-        it: '<span class="text-sm shrink-0">🇮🇹</span>',
-        en: '<span class="text-sm shrink-0">🇬🇧</span>',
-        es: '<span class="text-sm shrink-0">🇪🇸</span>'
-      };
+          it: '<div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0"><div class="w-1/3 h-full bg-[#009246]"></div><div class="w-1/3 h-full bg-[#ffffff]"></div><div class="w-1/3 h-full bg-[#ce2b37]"></div></div>',
+          en: '<svg class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0" viewBox="0 0 60 30"><clipPath id="uk_flg_sel"><path d="M0,0 v30 h60 v-30 z"/></clipPath><clipPath id="uk_dg_sel"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><g clip-path="url(#uk_flg_sel)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk_dg_sel)" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g></svg>',
+          es: '<div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex flex-col shrink-0"><div class="h-1/4 bg-[#c60b1e]"></div><div class="h-2/4 bg-[#ffc400] flex items-center justify-center"><span class="w-0.5 h-0.5 rounded-full bg-[#c60b1e]/70"></span></div><div class="h-1/4 bg-[#c60b1e]"></div></div>'
+        };
 
       const names = {
         it: 'Italiano',
@@ -16500,6 +16500,15 @@ END-ISO-10303-21;`;
         dSel.value = option;
         dSel.dispatchEvent(new Event('change'));
       }
+      if (AppState.pendingOrderDraft) {
+        AppState.pendingOrderDraft.deadline = option;
+      }
+      if (AppState.activeEscrowOrder) {
+        AppState.activeEscrowOrder.deadline = option;
+      }
+      if (AppState.loadedRequestInStudio) {
+        AppState.loadedRequestInStudio.deadline = option;
+      }
 
       const cardFlex = document.getElementById('shippingCardFlexible');
       const cardStd = document.getElementById('shippingCardStandard');
@@ -17592,29 +17601,47 @@ END-ISO-10303-21;`;
 
     function hasActiveEscrowOrder() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
-      if (AppState.user.isAdmin) return true; // Founder / Admin bypass
+      // Se lo stage 4 è completato o l'ordine è consegnato/svincolato, NESSUNO vede più la Escrow Room
+      if (AppState.stage4Completed || AppState.isDelivered) return false;
 
       const isCreator = AppState.user.role === 'creator';
       const myEmail = (AppState.user.email || '').toLowerCase().trim();
       const myName = (AppState.user.name || '').toLowerCase().trim();
       const myUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
 
-      // Se activeEscrowOrder è già presente e appartiene a questo account, è sempre valido!
+      // Controllo activeEscrowOrder in memoria (deve essere NON consegnato e NON completato)
       if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) {
+        const ord = AppState.activeEscrowOrder;
+        if (ord.isDelivered || ord.isCompleted || ord.isClosed) return false;
+        if (typeof ord.status === 'string' && (ord.status.includes('CONSEGNAT') || ord.status.includes('SVINCOLAT') || ord.status.includes('ARCHIVIAT') || ord.status.includes('COMPLETAT'))) {
+          return false;
+        }
         if (isCreator) {
-          const assigned = (AppState.activeEscrowOrder.maker || '').toLowerCase().trim();
-          if (assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) return true;
+          const assigned = (ord.maker || ord.maker_name || ord.acceptedBy || '').toLowerCase().trim();
+          const assignedEmail = (ord.makerEmail || '').toLowerCase().trim();
+          const assignedUid = (ord.makerUserId || '').toLowerCase().trim();
+          if ((assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
+              (assignedEmail && assignedEmail === myEmail) ||
+              (assignedUid && assignedUid === myUid)) {
+            return true;
+          }
         } else {
-          const ordEmail = (AppState.activeEscrowOrder.clientEmail || '').toLowerCase().trim();
-          const ordUid = (AppState.activeEscrowOrder.userId || '').toLowerCase().trim();
-          if ((myEmail && ordEmail === myEmail) || (myUid && ordUid === myUid)) return true;
+          const ordEmail = (ord.clientEmail || '').toLowerCase().trim();
+          const ordUid = (ord.userId || '').toLowerCase().trim();
+          const ordClient = (ord.clientName || '').toLowerCase().trim();
+          if ((myEmail && ordEmail === myEmail) || (myUid && ordUid === myUid) || (myName && ordClient === myName)) {
+            return true;
+          }
         }
       }
 
       if (isCreator) {
-        // Per il Creator: ha accesso solo se la commessa è stata assegnata a LUI
+        // Per il Creator: ha accesso se ha una commessa presa in carico non ancora conclusa
         return (AppState.broadcastRequests || []).some(r => {
-          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
+          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+          if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) {
+            return false;
+          }
           const isAcc = Boolean(
             r.isAccepted === true ||
             (r.maker && r.maker.trim().length > 0) ||
@@ -17637,9 +17664,12 @@ END-ISO-10303-21;`;
                  (assignedUid && assignedUid === myUid);
         });
       } else {
-        // Per il Cliente: ha accesso se un Creator ha preso in carico una commessa di QUESTO cliente
+        // Per il Cliente: ha accesso ESCLUSIVAMENTE se ha una commessa attiva NON ancora completata
         return (AppState.broadcastRequests || []).some(r => {
-          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted) return false;
+          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+          if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) {
+            return false;
+          }
           const isAcc = Boolean(
             r.isAccepted === true ||
             (r.maker && r.maker.trim().length > 0) ||
@@ -17656,7 +17686,8 @@ END-ISO-10303-21;`;
           if (!isAcc) return false;
           const reqEmail = (r.clientEmail || r.client_email || '').toLowerCase().trim();
           const reqUid = (r.userId || '').toLowerCase().trim();
-          return (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid);
+          const reqName = (r.clientName || '').toLowerCase().trim();
+          return (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid) || (myName && reqName === myName);
         });
       }
     }
@@ -17853,21 +17884,24 @@ END-ISO-10303-21;`;
           `;
 
           const isEscrowActive = hasActiveEscrowOrder();
-          const isEsc = (v === 'order-room');
-          html += `
-            <button onclick="navigateTo('order-room')" id="navOrderBtn" class="${isEsc ? activeClass : inactiveClass}" title="Stanza Escrow Stripe">
-              <i data-lucide="${isEscrowActive ? 'shield-check' : 'lock'}" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span class="notranslate" translate="no">ESCROW ROOM</span>
-              ${isEscrowActive ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-            </button>
-          `;
-          mobileHtml += `
-            <button onclick="navigateTo('order-room')" class="${isEsc ? mActive : mInactive}">
-              <i data-lucide="${isEscrowActive ? 'shield-check' : 'lock'}" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span class="notranslate" translate="no">ESCROW</span>
-              ${isEscrowActive ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-            </button>
-          `;
+          // La Escrow Room appare per il Cliente SOLO se vi è un ordine attivo in corso; dopo la Fase 4 o in assenza di ordini è TOTALMENTE NASCOSTA
+          if (isEscrowActive) {
+            const isEsc = (v === 'order-room');
+            html += `
+              <button onclick="navigateTo('order-room')" id="navOrderBtn" class="${isEsc ? activeClass : inactiveClass}" title="Stanza Escrow Stripe">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span class="notranslate" translate="no">ESCROW ROOM</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              </button>
+            `;
+            mobileHtml += `
+              <button onclick="navigateTo('order-room')" class="${isEsc ? mActive : mInactive}" title="Stanza Escrow Stripe">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span class="notranslate" translate="no">ESCROW ROOM</span>
+                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              </button>
+            `;
+          }
         }
       }
 
@@ -20915,15 +20949,29 @@ END-ISO-10303-21;`;
         : '✓ Scansione corriere verificata! Fase 4 completata: pacco consegnato e fondi Escrow svincolati (€ 0,00)!';
       showToast(toastDelivery, 'success');
       AppState.stage4Completed = true;
-      if (AppState.user && AppState.user.role === 'creator') {
-        setTimeout(() => {
-          showStage4CompletionModal({
-            rfpId: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || 'RFP-3891',
-            amount: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.budget) || '€ 48,00',
-            clientName: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.clientName) || 'Cliente'
-          });
-        }, 800);
-      }
+      AppState.isDelivered = true;
+
+      // DOPO IL QUARTO PASSAGGIO: reset totale sia per creator che per cliente!
+      // Nessuno vede più la pagina Escrow Room né la pagina Attività.
+      setTimeout(() => {
+        AppState.activeEscrowOrder = null;
+        AppState.loadedRequestInStudio = null;
+        AppState.cadQcFiles = [];
+        AppState.clientApprovedQc = false;
+        try {
+          localStorage.removeItem('printforge_active_escrow_order');
+          localStorage.removeItem('printforge_cad_qc_files');
+        } catch(e) {}
+
+        if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+        if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
+
+        if (AppState.user && AppState.user.role === 'creator') {
+          navigateTo('creator-portfolio');
+        } else {
+          navigateTo('client-home');
+        }
+      }, 1500);
 
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
@@ -21809,7 +21857,8 @@ END-ISO-10303-21;`;
 
       // Trova la richiesta accettata / in corso
       let activeReq = AppState.broadcastRequests.find(r => {
-        if (!r || !r.id || r.isDeleted || r.isRejected) return false;
+        if (!r || !r.id || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+        if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) return false;
         if (!r.isAccepted) return false;
 
         if (isCreator) {
@@ -21834,7 +21883,15 @@ END-ISO-10303-21;`;
 
       // Se non trovata per match stretto (es. utente che testa cambiando ruolo sulla stessa macchina), usa la più recente accettata
       if (!activeReq) {
-        activeReq = AppState.broadcastRequests.find(r => r && r.isAccepted && !r.isCompleted && !r.isClosed);
+        activeReq = AppState.broadcastRequests.find(r => r && r.isAccepted && !r.isCompleted && !r.isClosed && !r.isDelivered && !(typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT'))));
+      }
+
+      // Se non vi sono commesse attive o se lo stage 4 è terminato, non caricare alcun ordine in escrow
+      if (!activeReq || AppState.stage4Completed) {
+        AppState.activeEscrowOrder = null;
+        AppState.loadedRequestInStudio = null;
+        AppState.cadQcFiles = [];
+        return;
       }
 
       if (activeReq) {
@@ -29137,6 +29194,87 @@ function renderDealChat(rfpId) {
       if (modal) modal.classList.add('hidden');
     }
     window.closeItemDetailModal = closeItemDetailModal;
+
+    
+    /* PREPARA L'ORDINE DA VETRINA NELLA PAGINA RICHIESTE: BLOCCO SPECIFICHE TECNICHE, SOLO SPEDIZIONE EDITABILE */
+    function prepareShowcaseOrderInRequestPage(work, orderDraft) {
+      window._currentShowcaseWorkOrder = work;
+      window._directAssignedCreator = {
+        id: work.creatorId || '',
+        name: work.creatorName || 'Maker Certificato',
+        email: work.creatorEmail || ''
+      };
+
+      navigateTo('client-request');
+
+      setTimeout(() => {
+        // Popola e blocca il titolo
+        const reqTitle = document.getElementById('reqTitle');
+        if (reqTitle) {
+          reqTitle.value = work.title || 'Opera da Vetrina';
+          reqTitle.readOnly = true;
+          reqTitle.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.02]');
+        }
+
+        // Popola e blocca Materiale
+        const reqMat = document.getElementById('reqMaterial');
+        if (reqMat) {
+          reqMat.value = work.material || 'PETG Tecnico';
+          reqMat.disabled = true;
+          reqMat.classList.add('opacity-80', 'cursor-not-allowed');
+        }
+
+        // Popola e blocca Colore
+        const reqCol = document.getElementById('reqColor');
+        if (reqCol) {
+          reqCol.value = work.color || 'Nero Cyber';
+          reqCol.disabled = true;
+          reqCol.classList.add('opacity-80', 'cursor-not-allowed');
+        }
+
+        // Popola e blocca Prezzo
+        const reqBudget = document.getElementById('reqBudget');
+        if (reqBudget) {
+          let numPrice = 35.00;
+          if (work.price) {
+            const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
+            const parsed = parseFloat(rawNum);
+            if (!isNaN(parsed) && parsed > 0) numPrice = parsed;
+          }
+          reqBudget.value = numPrice.toFixed(2);
+          reqBudget.readOnly = true;
+          reqBudget.classList.add('opacity-80', 'cursor-not-allowed');
+        }
+
+        // Blocca campi tecnici rimanenti
+        ['dimX', 'dimY', 'dimZ', 'reqDimensions', 'reqTolerance', 'reqInfill', 'reqPostProcess', 'reqUsage'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.disabled = true;
+            el.readOnly = true;
+            el.classList.add('opacity-80', 'cursor-not-allowed');
+          }
+        });
+
+        // Pulsante di invio ordine diretto al creator
+        const btnSubmit = document.getElementById('btnBroadcastSubmit');
+        if (btnSubmit) {
+          const isEn = currentLang === 'en';
+          const isEs = currentLang === 'es';
+          const sendTxt = isEn 
+            ? `SEND ORDER TO CREATOR (${work.creatorName || 'Maker'})` 
+            : isEs 
+            ? `ENVIAR PEDIDO AL CREADOR (${work.creatorName || 'Creador'})` 
+            : `INVIA ORDINE AL CREATOR (${work.creatorName || 'Maker'})`;
+          btnSubmit.innerHTML = `<i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i><span>${sendTxt}</span>`;
+          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        }
+
+        if (typeof calculateVolumetricShipping === 'function') calculateVolumetricShipping();
+        if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
+      }, 80);
+    }
+    window.prepareShowcaseOrderInRequestPage = prepareShowcaseOrderInRequestPage;
 
     function orderFromShowcase(workId) {
       const work = (AppState.portfolioWorks || []).find(w => w && w.id === workId);
