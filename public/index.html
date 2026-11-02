@@ -19883,6 +19883,18 @@ END-ISO-10303-21;`;
         return;
       }
 
+      if (!AppState.clientApprovedQc) {
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+        const msg = isEn 
+          ? "The client has not confirmed the QC photos yet! The shipping label PDF will not be shown or downloaded until client confirmation." 
+          : isEs
+          ? "¡El cliente aún no ha confirmado las fotos de control! La etiqueta PDF no se mostrará hasta la confirmación del cliente."
+          : "Il cliente non ha ancora collaudato e confermato le 3 foto! L'etichetta PDF non è disponibile fino alla conferma del cliente.";
+        showToast(msg, 'warning');
+        return;
+      }
+
       const order = AppState.activeEscrowOrder || AppState.loadedRequestInStudio || {};
       const orderId = order.id || 'RFP-6829';
       const trackingNumber = order.trackingNumber || 'PF-UPS-892104';
@@ -20816,40 +20828,108 @@ END-ISO-10303-21;`;
       const container = document.getElementById('escrowClientQcDecisionActions');
       if (!container) return;
 
-      const isCreator = AppState.user && AppState.user.role === 'creator';
-      if (isCreator) {
-        container.classList.add('hidden');
-        container.style.display = 'none';
-        return;
-      }
-
-
-      if (!AppState.clientApprovedQc) {
-        const isEn = currentLang === 'en';
-        const isEs = currentLang === 'es';
-        const msg = isEn 
-          ? "Waiting for client approval! The client must inspect and confirm the 3 QC photos in the Escrow Room to unlock the shipping label." 
-          : isEs
-          ? "¡En espera de la aprobación del cliente! El cliente debe revisar y confirmar las 3 fotos para desbloquear la etiqueta PDF."
-          : "In attesa di approvazione del cliente! Il cliente deve visionare e confermare le 3 foto di collaudo nell'Escrow Room per sbloccare l'etichetta PDF.";
-        showToast(msg, 'warning');
-        return;
-      }      container.classList.remove('hidden');
+      container.classList.remove('hidden');
       container.style.display = 'block';
 
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
+      const isCreator = AppState.user && AppState.user.role === 'creator';
 
       const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
       const hasPhotos = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || activeReq?.hasQcPhotos || activeReq?.clientApprovedQc;
 
+      // Se non ci sono ancora 3 foto caricate
       if (!hasPhotos) {
         container.innerHTML = 
-          '<div class="p-2 sm:p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2 text-zinc-400 text-[10.5px] font-mono">' +
+          '<div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2 text-zinc-400 text-[10.5px] font-mono">' +
             '<i data-lucide="clock" class="w-4 h-4 text-zinc-500 shrink-0"></i>' +
-            '<span>' + (isEn ? 'Waiting for the Maker to complete printing and upload the 3 QC photos...' : isEs ? 'En espera de que el Creador suba las 3 fotos de control...' : 'In attesa che il Maker completi la stampa e carichi le 3 foto di collaudo.') + '</span>' +
+            '<span>' + (isEn ? 'Waiting for the Maker to complete printing and upload all 3 QC photos...' : isEs ? 'En espera de que el Creador suba las 3 fotos de control...' : 'In attesa che il Maker completi la stampa e carichi le 3 foto di collaudo.') + '</span>' +
           '</div>';
-      } else if (AppState.clientApprovedQc === true || activeReq?.clientApprovedQc === true) {
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      // VISTA CREATOR: Quando il creator è nell'Escrow Room e ha caricato le foto
+      if (isCreator) {
+        if (AppState.clientApprovedQc === true || activeReq?.clientApprovedQc === true) {
+          container.innerHTML = 
+            '<div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-md">' +
+              '<div class="flex items-center gap-2">' +
+                '<div class="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">' +
+                  '<i data-lucide="check-check" class="w-4 h-4"></i>' +
+                '</div>' +
+                '<div>' +
+                  '<span class="text-xs font-mono font-bold text-emerald-300 block leading-tight">' +
+                    (isEn ? '✓ QC PHOTOS APPROVED BY CLIENT' : isEs ? '✓ FOTOS APROBADAS POR EL CLIENTE' : '✓ COLLAUDO APPROVATO DAL CLIENTE') +
+                  '</span>' +
+                  '<span class="text-[10px] text-zinc-400 block font-sans">' +
+                    (isEn ? 'Shipping label is unlocked. Download PDF and hand parcel to courier.' : isEs ? 'Etiqueta de envío desbloqueada. Descarga el PDF y entrega el paquete.' : 'Etichetta PDF di spedizione sbloccata. Procedi con il download e affida il pacco.') +
+                  '</span>' +
+                '</div>' +
+              '</div>' +
+              '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded border border-emerald-500/30 font-bold self-start sm:self-auto shrink-0">' +
+                (isEn ? 'LABEL UNLOCKED' : 'ETICHETTA SBLOCCATA') +
+              '</span>' +
+            '</div>';
+        } else if (activeReq?.qcStatus === 'revisione_richiesta' || AppState.clientApprovedQc === false) {
+          container.innerHTML = 
+            '<div class="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30 space-y-2 shadow-md">' +
+              '<div class="flex items-center justify-between">' +
+                '<div class="flex items-center gap-2">' +
+                  '<i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0"></i>' +
+                  '<span class="text-xs font-mono font-bold text-amber-300">' +
+                    (isEn ? '⚠️ CLIENT REQUESTED REVISION' : isEs ? '⚠️ EL CLIENTE SOLICITÓ REVISIÓN' : '⚠️ IL CLIENTE HA RICHIESTO UNA REVISIONE') +
+                  '</span>' +
+                '</div>' +
+                '<span class="text-[9px] font-mono text-amber-400 bg-amber-500/20 px-2 py-0.5 rounded border border-amber-500/30 font-bold">' +
+                  (isEn ? 'REVISION NEEDED' : 'REVISIONE NECESSARIA') +
+                '</span>' +
+              '</div>' +
+              '<p class="text-[10.5px] text-zinc-300 font-sans leading-relaxed">' +
+                (isEn ? 'The client requested adjustments on the QC photos. Check Deal Chat to see notes.' : isEs ? 'El cliente solicitó ajustes. Revisa el chat para ver las notas.' : 'Il cliente ha esaminato le foto e ha richiesto modifiche. Apri la Deal Chat per comunicare.') +
+              '</p>' +
+              '<div class="flex items-center gap-2 pt-1">' +
+                '<button type="button" onclick="openDealChatFromEscrow()" class="btn-kowalski-secondary py-1.5 px-3 rounded-lg text-xs font-bold font-mono">' +
+                  (isEn ? 'OPEN DEAL CHAT' : 'APRI DEAL CHAT') +
+                '</button>' +
+              '</div>' +
+            '</div>';
+        } else {
+          // In attesa di approvazione cliente
+          container.innerHTML = 
+            '<div class="p-3.5 rounded-xl bg-gradient-to-r from-amber-500/10 via-[#181510] to-[#121319] border border-amber-500/30 space-y-2 shadow-xl">' +
+              '<div class="flex items-center justify-between border-b border-white/[0.08] pb-1.5">' +
+                '<div class="flex items-center gap-1.5">' +
+                  '<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>' +
+                  '<span class="text-[10.5px] font-mono font-bold text-amber-300 uppercase tracking-wider">' +
+                    (isEn ? 'AWAITING CLIENT INSPECTION & CONFIRMATION' : isEs ? 'EN ESPERA DE CONFIRMACIÓN DEL CLIENTE' : 'IN ATTESA DI CONFERMA COLLAUDO CLIENTE') +
+                  '</span>' +
+                '</div>' +
+                '<span class="text-[8.5px] font-mono text-amber-400 bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 rounded font-bold uppercase">' +
+                  (isEn ? 'LABEL LOCKED' : isEs ? 'ETIQUETA BLOQUEADA' : '🔒 ETICHETTA BLOCCATA') +
+                '</span>' +
+              '</div>' +
+              '<p class="text-[11px] text-zinc-300 font-sans leading-tight">' +
+                (isEn 
+                  ? 'The 3 QC photos are ready. The client must inspect them and click <strong>Confirm</strong> in their Escrow Room to unlock your shipping label PDF.' 
+                  : isEs
+                  ? 'Las 3 fotos están listas. El cliente debe revisarlas y pulsar <strong>Confirmar</strong> para desbloquear la etiqueta de envío PDF.'
+                  : 'Le 3 foto di collaudo sono state caricate. Il cliente deve visionarle e cliccare su <strong>"Conferma"</strong> nella sua Escrow Room per sbloccare la tua etichetta di spedizione PDF.') +
+              '</p>' +
+              '<div class="pt-1 flex items-center justify-between">' +
+                '<span class="text-[9.5px] font-mono text-zinc-400">Modalità Test / Anteprima:</span>' +
+                '<button type="button" onclick="clientConfirmQcPhotos()" class="px-2.5 py-1 rounded-lg bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-mono text-[10px] font-bold transition flex items-center gap-1 cursor-pointer">' +
+                  '<i data-lucide="check" class="w-3 h-3"></i> <span>' + (isEn ? 'Simulate Client Confirmation (Test)' : 'Simula Conferma Cliente (Test)') + '</span>' +
+                '</button>' +
+              '</div>' +
+            '</div>';
+        }
+        if (window.lucide) lucide.createIcons();
+        return;
+      }
+
+      // VISTA CLIENTE: I DUE TASTI CONFERMA E RIMANDA
+      if (AppState.clientApprovedQc === true || activeReq?.clientApprovedQc === true) {
         container.innerHTML = 
           '<div class="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-2 shadow-md">' +
             '<div class="flex items-center gap-2">' +
@@ -20858,10 +20938,10 @@ END-ISO-10303-21;`;
               '</div>' +
               '<div>' +
                 '<span class="text-xs font-mono font-bold text-emerald-300 block leading-tight">' +
-                  (isEn ? '✓ QC PHOTOS CONFIRMED BY CLIENT' : isEs ? '✓ FOTOS DE CONTROL CONFIRMADAS' : '✓ COLLAUDO CONFERMATO DAL CLIENTE') +
+                  (isEn ? '✓ QC PHOTOS CONFIRMED BY YOU' : isEs ? '✓ FOTOS CONFIRMADAS POR TI' : '✓ COLLAUDO CONFERMATO DA TE') +
                 '</span>' +
                 '<span class="text-[10px] text-zinc-400 block font-sans">' +
-                  (isEn ? 'Shipping label unlocked. Maker notified to hand parcel to courier.' : isEs ? 'Etiqueta de envío desbloqueada. El creador ha sido notificado.' : 'Etichetta corriere sbloccata. Maker notificato via email per la spedizione.') +
+                  (isEn ? 'Shipping label unlocked. Maker notified to hand parcel to courier.' : isEs ? 'Etiqueta desbloqueada. Creador notificado para entregar paquete.' : 'Etichetta corriere sbloccata per il Maker. In attesa di spedizione.') +
                 '</span>' +
               '</div>' +
             '</div>' +
@@ -20896,34 +20976,37 @@ END-ISO-10303-21;`;
             '</div>' +
           '</div>';
       } else {
+        // TASTI CONFERMA E RIMANDA BEN VISIBILI E GRANDI
         container.innerHTML = 
-          '<div class="p-3 rounded-xl bg-gradient-to-r from-[#14151f] to-[#101118] border border-white/20 space-y-2.5 shadow-xl">' +
-            '<div class="flex items-center justify-between border-b border-white/[0.08] pb-1.5">' +
-              '<div class="flex items-center gap-1.5">' +
-                '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>' +
-                '<span class="text-[10.5px] font-mono font-bold text-white uppercase tracking-wider">' +
-                  (isEn ? 'CLIENT QC INSPECTION & DECISION' : isEs ? 'INSPECCIÓN Y DECISIÓN DEL CLIENTE' : 'VERIFICA FOTOGRAFICA & APPROVAZIONE CLIENTE') +
+          '<div class="p-3.5 rounded-xl bg-gradient-to-r from-[#14151f] via-[#101118] to-[#14151f] border-2 border-emerald-400/40 space-y-3 shadow-2xl">' +
+            '<div class="flex items-center justify-between border-b border-white/[0.08] pb-2">' +
+              '<div class="flex items-center gap-2">' +
+                '<span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>' +
+                '<span class="text-xs font-mono font-bold text-white uppercase tracking-wider">' +
+                  (isEn ? 'CLIENT QC VERIFICATION & APPROVAL' : isEs ? 'VERIFICACIÓN Y APROBACIÓN DEL CLIENTE' : 'VERIFICA FOTOGRAFICA & APPROVAZIONE CLIENTE') +
                 '</span>' +
               '</div>' +
-              '<span class="text-[8.5px] font-mono text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase">' +
+              '<span class="text-[9px] font-mono text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2 py-0.5 rounded font-bold uppercase">' +
                 (isEn ? 'ACTION REQUIRED' : isEs ? 'ACCIÓN REQUERIDA' : 'AZIONE RICHIESTA') +
               '</span>' +
             '</div>' +
-            '<p class="text-[11px] text-zinc-300 font-sans leading-tight">' +
+
+            '<p class="text-[11.5px] text-zinc-200 font-sans leading-relaxed">' +
               (isEn 
-                ? 'Inspect the 3 photos uploaded by the Maker above (print bed, caliper measurement, sealed box). If satisfactory, click <strong>Confirm</strong> to unlock the shipping label. Otherwise, click <strong>Reject / Revise</strong>.' 
+                ? 'Carefully inspect the 3 photos above (print bed, caliper measurement, sealed box). If the manufactured part satisfies you, click <strong>Confirm</strong> to unlock the shipping label for the Maker. If you see any flaw or issue, click <strong>Reject / Revise</strong> to request adjustments.' 
                 : isEs
-                ? 'Revisa las 3 fotos subidas por el Creador (cama, calibre y paquete precintado). Haz clic en <strong>Confirmar</strong> para desbloquear la etiqueta de envío, o en <strong>Rechazar</strong> para solicitar cambios.'
-                : 'Visiona le 3 foto di collaudo caricate dal Maker (opera su piatto, calibro centesimale e pacco sigillato). Se il lavoro è conforme clicca su <strong>Conferma</strong> per sbloccare l\'etichetta di spedizione del Maker. Se desideri correzioni clicca su <strong>Rimanda</strong>.') +
+                ? 'Revisa con atención las 3 fotos superiores (cama, calibre y paquete sellado). Si la pieza es correcta, haz clic en <strong>Confirmar</strong> para desbloquear la etiqueta de envío. Si hay algún defecto, pulsa <strong>Rechazar</strong>.'
+                : 'Esamina con attenzione le 3 foto sopra (opera su piatto, calibro centesimale e pacco sigillato). Se il pezzo è conforme alle tue aspettative, clicca su <strong>Conferma</strong> per sbloccare l'etichetta di spedizione del Maker. Se riscontri imperfezioni o quote errate, clicca su <strong>Rimanda</strong> per richiedere una correzione.') +
             '</p>' +
-            '<div class="grid grid-cols-2 gap-2 pt-1">' +
-              '<button type="button" onclick="clientConfirmQcPhotos()" id="btnClientConfirmQc" class="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer border border-emerald-400/40">' +
-                '<i data-lucide="check" class="w-4 h-4"></i>' +
-                '<span>' + (isEn ? 'CONFIRM' : isEs ? 'CONFIRMAR' : 'CONFERMA') + '</span>' +
+
+            '<div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">' +
+              '<button type="button" onclick="clientConfirmQcPhotos()" id="btnClientConfirmQc" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl active:scale-95 transition cursor-pointer border border-emerald-400/50">' +
+                '<i data-lucide="check-circle" class="w-4 h-4 text-white"></i>' +
+                '<span>' + (isEn ? '✓ CONFIRM QC PHOTOS' : isEs ? '✓ CONFIRMAR FOTOS' : '✓ CONFERMA COLLAUDO') + '</span>' +
               '</button>' +
-              '<button type="button" onclick="clientRejectQcPhotos()" id="btnClientRejectQc" class="w-full py-2.5 px-3 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 hover:text-white font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-1.5 border border-white/20 active:scale-95 transition cursor-pointer hover:border-amber-400/50">' +
+              '<button type="button" onclick="clientRejectQcPhotos()" id="btnClientRejectQc" class="w-full py-3 px-4 rounded-xl bg-white/[0.06] hover:bg-white/[0.12] text-zinc-300 hover:text-white font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 border border-white/20 active:scale-95 transition cursor-pointer hover:border-amber-400/60 shadow-md">' +
                 '<i data-lucide="rotate-ccw" class="w-4 h-4 text-amber-400"></i>' +
-                '<span>' + (isEn ? 'REJECT // REVISE' : isEs ? 'RECHAZAR' : 'RIMANDA') + '</span>' +
+                '<span>' + (isEn ? '⚠️ REJECT // REVISE' : isEs ? '⚠️ RECHAZAR // REVISIÓN' : '⚠️ RIMANDA (REVISIONE)') + '</span>' +
               '</button>' +
             '</div>' +
           '</div>';
@@ -25695,6 +25778,8 @@ function renderDealChat(rfpId) {
         lucide.createIcons();
       }
     }
+    
+      if (typeof renderClientQcDecisionUI === "function") renderClientQcDecisionUI();
     window.updateCadQcStatusUI = updateCadQcStatusUI;
 
     function completeJobAndUploadProof() {
