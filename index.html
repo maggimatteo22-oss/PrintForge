@@ -4323,6 +4323,7 @@
         <form onsubmit="handleReviewSubmit(event)" class="space-y-4 text-xs font-sans">
           <input type="hidden" id="reviewOrderId" value="" />
           <input type="hidden" id="reviewMakerId" value="" />
+          <input type="hidden" id="reviewMakerName" value="" />
 
           <!-- Voto Generale (1-5 Stelle) -->
           <div class="space-y-1.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center">
@@ -4406,9 +4407,11 @@
         </div>
 
         <div id="creatorReviewsStatsBanner" class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 flex items-center justify-between">
-          <div>
-            <span class="text-2xl font-bold font-mono text-white" id="creatorReviewsAverageScore">5.0</span>
-            <span class="text-amber-400 text-lg ml-1">★ ★ ★ ★ ★</span>
+          <div class="flex items-center gap-3">
+            <span class="text-3xl font-bold font-mono text-white" id="creatorReviewsAverageScore">0.0</span>
+            <div class="text-lg flex items-center gap-0.5" id="creatorReviewsModalStars">
+              <span class="text-zinc-600">★</span><span class="text-zinc-600">★</span><span class="text-zinc-600">★</span><span class="text-zinc-600">★</span><span class="text-zinc-600">★</span>
+            </div>
           </div>
           <span class="text-xs font-mono text-zinc-400" id="creatorReviewsCount">0 recensioni verificate</span>
         </div>
@@ -9075,6 +9078,33 @@
           const deletedIds = (typeof getDeletedRequestIds === 'function') ? getDeletedRequestIds() : new Set();
 
           // Escludi i record di profilo di sistema e le richieste cancellate definitivamente
+          // 0. Carica le Recensioni Certificate dei Clienti per i Creator dal Cloud Supabase
+          const reviewDbRows = data.filter(dbR => dbR && (dbR.status === 'CERTIFIED_REVIEW' || (dbR.id && String(dbR.id).startsWith('REV-')) || (dbR.title && String(dbR.title).startsWith('CREATOR_REVIEW:'))));
+          if (reviewDbRows.length > 0) {
+            const cloudReviews = [];
+            reviewDbRows.forEach(dbR => {
+              try {
+                if (dbR.notes && (dbR.notes.startsWith('{') || dbR.notes.startsWith('{"'))) {
+                  const parsed = JSON.parse(dbR.notes);
+                  if (parsed && parsed.id) cloudReviews.push(parsed);
+                }
+              } catch(e) {}
+            });
+            if (cloudReviews.length > 0) {
+              const localReviews = AppState.certifiedReviews || [];
+              const mergedReviews = [...cloudReviews];
+              localReviews.forEach(lr => {
+                if (lr && lr.id && !mergedReviews.some(mr => mr && mr.id === lr.id)) {
+                  mergedReviews.push(lr);
+                }
+              });
+              AppState.certifiedReviews = mergedReviews;
+              try {
+                localStorage.setItem('printforge_certified_reviews', JSON.stringify(AppState.certifiedReviews));
+              } catch(e) {}
+            }
+          }
+
           // Separa le opere della Vetrina 2D / Portfolio caricate dai Creator dalle richieste broadcast dei Clienti
           const portfolioDbRows = data.filter(dbR => dbR && (dbR.status === 'PORTFOLIO_WORK' || (dbR.id && String(dbR.id).startsWith('WORK-'))));
           
@@ -24860,24 +24890,31 @@ END-ISO-10303-21;`;
                 <span>Maker Assegnato:</span>
                 ${isAcc ? `
                   <div class="relative inline-block text-left" id="dropdown-wrapper-${safeId}">
-                    <button type="button" onclick="toggleMakerDropdown('${safeId}')" class="font-bold text-white hover:text-emerald-400 underline decoration-dotted flex items-center gap-1 cursor-pointer">
+                    <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="font-bold text-white hover:text-emerald-400 underline decoration-dotted flex items-center gap-1.5 cursor-pointer" title="Visualizza Recensioni Certificate">
                       <span>${realMakerName}</span>
-                      <i data-lucide="chevron-down" class="w-3 h-3 text-zinc-400"></i>
+                      <span class="text-[10px] font-mono text-amber-400 flex items-center gap-0.5">
+                        <i data-lucide="star" class="w-3 h-3 text-amber-400 fill-amber-400"></i>
+                        <span>${(function(){ const s = (typeof getCreatorReviewStats === 'function') ? getCreatorReviewStats(realMakerUid, realMakerName) : { average: '0.0' }; return s.average; })()}</span>
+                      </span>
+                      <i data-lucide="chevron-down" class="w-3 h-3 text-zinc-400" onclick="event.stopPropagation(); toggleMakerDropdown('${safeId}');"></i>
                     </button>
-                    <div id="maker-menu-${safeId}" class="hidden absolute left-0 bottom-full mb-1.5 w-44 rounded-xl bg-[#121218] border border-white/15 shadow-2xl py-1.5 z-50 text-xs font-sans">
-                      <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="w-full text-left px-3 py-1.5 hover:bg-white/10 text-zinc-200 flex items-center gap-2">
-                        <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400"></i>
-                        <span>Recensioni</span>
-                      </button>
-                      <button type="button" onclick="showCompletedJobsToast('${realMakerName}')" class="w-full text-left px-3 py-1.5 hover:bg-white/10 text-zinc-200 flex items-center gap-2">
-                        <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400"></i>
-                        <span>Lavori completati</span>
-                      </button>
-                      <button type="button" onclick="openCreatorPortfolioReadOnly('${realMakerUid}', '${realMakerName}')" class="w-full text-left px-3 py-1.5 hover:bg-white/10 text-zinc-200 flex items-center gap-2">
-                        <i data-lucide="external-link" class="w-3.5 h-3.5 text-blue-400"></i>
-                        <span>I miei lavori</span>
-                      </button>
-                    </div>
+                    ${(function() {
+                      const stats = (typeof getCreatorReviewStats === 'function') ? getCreatorReviewStats(realMakerUid, realMakerName) : { average: '0.0', yellowStars: 0, count: 0 };
+                      const starBadge = stats.count > 0 
+                        ? `<span class="text-amber-400 font-bold">${stats.average} ★</span>`
+                        : `<span class="text-zinc-500 font-normal">0.0 (0 recensioni)</span>`;
+                      return `
+                        <div id="maker-menu-${safeId}" class="hidden absolute left-0 bottom-full mb-1.5 w-48 rounded-xl bg-[#121218] border border-white/15 shadow-2xl py-1.5 z-50 text-xs font-sans">
+                          <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="w-full text-left px-3 py-2 hover:bg-white/10 text-zinc-200 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                              <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400"></i>
+                              <span class="font-bold">Recensioni</span>
+                            </div>
+                            <span class="font-mono text-[11px]">${starBadge}</span>
+                          </button>
+                        </div>
+                      `;
+                    })()}
                   </div>
                 ` : `
                   <span class="text-zinc-500 font-mono italic">In attesa di presa in carico da un Maker</span>
@@ -29373,15 +29410,56 @@ function renderDealChat(rfpId) {
       });
     });
 
+    /* ========================================================================= */
+    /* MOTORE RECENSIONI CERTIFICATE CREATOR (MEDIA TRASPARENTE & STORICO REALE) */
+    /* ========================================================================= */
+    function getCreatorReviewStats(makerId, makerName) {
+      const normId = (makerId || '').toLowerCase().trim();
+      const normName = (makerName || '').toLowerCase().trim();
+      const allReviews = AppState.certifiedReviews || [];
+
+      // Filtra le recensioni appartenenti specificamente a questo creator
+      const reviews = allReviews.filter(r => {
+        if (!r) return false;
+        const rId = (r.makerId || '').toLowerCase().trim();
+        const rName = (r.makerName || '').toLowerCase().trim();
+        if (normId && (rId === normId || rName === normId || normId.includes(rName) || rName.includes(normId))) return true;
+        if (normName && (rName === normName || rId === normName || normName.includes(rName) || rName.includes(normName))) return true;
+        return false;
+      });
+
+      // Se non vi è ancora alcuna recensione, mostra 0.0 con 0 stelle gialle (come richiesto dall'utente)
+      if (reviews.length === 0) {
+        return {
+          average: "0.0",
+          averageNum: 0,
+          count: 0,
+          yellowStars: 0,
+          reviews: []
+        };
+      }
+
+      // Media esatta tra tutte le recensioni rilasciate dai clienti
+      const sum = reviews.reduce((acc, r) => acc + (parseFloat(r.general) || 5), 0);
+      const avg = (sum / reviews.length).toFixed(1);
+      return {
+        average: avg,
+        averageNum: parseFloat(avg),
+        count: reviews.length,
+        yellowStars: Math.round(parseFloat(avg)),
+        reviews: reviews
+      };
+    }
+    window.getCreatorReviewStats = getCreatorReviewStats;
+
     function showCompletedJobsToast(makerName) {
-      const count = Math.floor(18 + Math.random() * 24);
-      showToast('✓ ' + (makerName || 'Creator') + ' ha completato con successo ' + count + ' commesse con collaudo calibro.', 'info');
+      const stats = getCreatorReviewStats('', makerName);
+      showToast('⭐ ' + (makerName || 'Creator') + ' - Media: ' + stats.average + ' ★ (' + stats.count + ' recensioni verificate)', 'info');
     }
     window.showCompletedJobsToast = showCompletedJobsToast;
 
     function openCreatorPortfolioReadOnly(makerUid, makerName) {
-      navigateTo('explore');
-      showToast('Visualizzazione vetrina lavori certificati di ' + (makerName || 'Creator') + ' (Sola Lettura)', 'info');
+      openCreatorReviewsModal(makerUid, makerName);
     }
     window.openCreatorPortfolioReadOnly = openCreatorPortfolioReadOnly;
 
@@ -29412,6 +29490,8 @@ function renderDealChat(rfpId) {
       if (oIdEl) oIdEl.value = orderId || '';
       const mIdEl = document.getElementById('reviewMakerId');
       if (mIdEl) mIdEl.value = makerId || '';
+      const mNameEl = document.getElementById('reviewMakerName');
+      if (mNameEl) mNameEl.value = makerName || '';
       setReviewRating('general', 5);
       setReviewRating('quality', 5);
       setReviewRating('comms', 5);
@@ -29430,7 +29510,8 @@ function renderDealChat(rfpId) {
     function handleReviewSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
       const orderId = document.getElementById('reviewOrderId')?.value || '';
-      const makerId = document.getElementById('reviewMakerId')?.value || 'maker_milano_hub';
+      const makerId = document.getElementById('reviewMakerId')?.value || '';
+      const makerName = document.getElementById('reviewMakerName')?.value || '';
       const general = parseInt(document.getElementById('ratingValGeneral')?.value || '5', 10);
       const quality = parseInt(document.getElementById('ratingValQuality')?.value || '5', 10);
       const comms = parseInt(document.getElementById('ratingValComms')?.value || '5', 10);
@@ -29451,6 +29532,7 @@ function renderDealChat(rfpId) {
         id: 'REV-' + Date.now(),
         orderId: orderId,
         makerId: makerId,
+        makerName: makerName,
         clientName: AppState.user?.name || 'Cliente Verificato',
         clientEmail: AppState.user?.email || '',
         general: general,
@@ -29470,8 +29552,25 @@ function renderDealChat(rfpId) {
         localStorage.setItem('printforge_certified_reviews', JSON.stringify(AppState.certifiedReviews));
       } catch(e) {}
 
+      // Sincronizzazione Cloud su Supabase per persistenza universale tra tutti i dispositivi
+      if (supabaseClient) {
+        try {
+          supabaseClient.from('broadcast_requests').insert([{
+            id: reviewObj.id,
+            title: 'CREATOR_REVIEW:' + (reviewObj.makerName || reviewObj.makerId || 'maker'),
+            client_name: reviewObj.clientName,
+            client_email: reviewObj.clientEmail,
+            status: 'CERTIFIED_REVIEW',
+            notes: JSON.stringify(reviewObj)
+          }]).then(() => {
+            console.log('✓ Recensione salvata nel cloud Supabase:', reviewObj.id);
+          });
+        } catch(e) {}
+      }
+
       closeLeaveReviewModal();
-      showToast('✓ Recensione certificata pubblicata con successo!', 'success');
+      showToast(`✓ Recensione pubblicata con successo! Valutazione: ${general} ★`, 'success');
+      if (typeof renderBroadcastTable === 'function') renderBroadcastTable();
       if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
     }
     window.handleReviewSubmit = handleReviewSubmit;
@@ -29481,38 +29580,96 @@ function renderDealChat(rfpId) {
       if (!modal) return;
 
       const titleEl = document.getElementById('creatorReviewsModalTitle');
-      if (titleEl) titleEl.innerText = 'RECENSIONI CERTIFICATE // ' + (makerName || 'CREATOR');
+      if (titleEl) {
+        titleEl.innerText = 'RECENSIONI CERTIFICATE // ' + (makerName ? makerName.toUpperCase() : 'CREATOR');
+      }
 
-      const reviews = (AppState.certifiedReviews || []).filter(r => !makerId || r.makerId === makerId || r.makerId === 'maker_milano_hub');
+      const stats = getCreatorReviewStats(makerId, makerName);
       const scoreEl = document.getElementById('creatorReviewsAverageScore');
       const countEl = document.getElementById('creatorReviewsCount');
       const listEl = document.getElementById('creatorReviewsListContainer');
 
-      const avg = reviews.length > 0 
-        ? (reviews.reduce((acc, r) => acc + (r.general || 5), 0) / reviews.length).toFixed(1) 
-        : '5.0';
+      // Se non ci sono recensioni per questo creator: mostra rigorosamente 0.0
+      if (scoreEl) scoreEl.innerText = stats.average;
 
-      if (scoreEl) scoreEl.innerText = avg;
-      if (countEl) countEl.innerText = reviews.length + ' recensioni verificate su acquisto escrow';
+      // Se non ci sono recensioni: mostra 0 stelle gialle (tutte e 5 grigie/spente)
+      const starsContainer = document.getElementById('creatorReviewsModalStars');
+      if (starsContainer) {
+        let starsHtml = '';
+        for (let i = 1; i <= 5; i++) {
+          if (i <= stats.yellowStars) {
+            starsHtml += '<span class="text-amber-400 font-bold">★</span>';
+          } else {
+            starsHtml += '<span class="text-zinc-600">★</span>';
+          }
+        }
+        starsContainer.innerHTML = starsHtml;
+      }
 
+      if (countEl) {
+        countEl.innerText = stats.count === 0 
+          ? '0 recensioni verificate' 
+          : `${stats.count} recension${stats.count === 1 ? 'e verificata' : 'i verificate'} su custodia Escrow`;
+      }
+
+      // Storico completo di tutte le recensioni rilasciate da chi per questo creator
       if (listEl) {
-        if (reviews.length === 0) {
-          listEl.innerHTML = '<p class="text-xs font-mono text-zinc-400 p-4 text-center">Nessuna recensione ancora registrata per questo Maker.</p>';
-        } else {
-          listEl.innerHTML = reviews.map(r => `
-            <div class="p-3.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-2 text-xs font-sans">
-              <div class="flex items-center justify-between">
-                <span class="font-bold text-white">${escapeHtml(r.clientName)}</span>
-                <span class="text-amber-400 font-mono">${'★'.repeat(r.general || 5)} (${r.general || 5}/5)</span>
+        if (stats.count === 0) {
+          listEl.innerHTML = `
+            <div class="p-8 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+              <div class="w-10 h-10 rounded-xl bg-white/[0.04] text-zinc-500 flex items-center justify-center mx-auto">
+                <i data-lucide="star" class="w-5 h-5 text-zinc-500"></i>
               </div>
-              <p class="text-zinc-300">${escapeHtml(r.comment)}</p>
-              <div class="flex items-center gap-3 text-[10px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
-                <span>Qualità: ${r.quality || 5}/5</span>
-                <span>Comunicazione: ${r.comms || 5}/5</span>
-                <span>Velocità: ${r.speed || 5}/5</span>
-              </div>
+              <span class="text-xs font-mono font-bold text-zinc-400 block">Nessuna recensione ancora registrata</span>
+              <p class="text-[11px] text-zinc-500 font-sans max-w-sm mx-auto">
+                Le valutazioni con le stelle e i commenti verificati vengono rilasciati automaticamente dai clienti al termine della consegna e dello svincolo fondi Escrow.
+              </p>
             </div>
-          `).join('');
+          `;
+        } else {
+          listEl.innerHTML = stats.reviews.map(r => {
+            const rating = parseInt(r.general || 5, 10);
+            let starStr = '';
+            for (let i = 1; i <= 5; i++) {
+              if (i <= rating) {
+                starStr += '<span class="text-amber-400">★</span>';
+              } else {
+                starStr += '<span class="text-zinc-600">★</span>';
+              }
+            }
+            const clientInitial = (r.clientName ? r.clientName.charAt(0) : 'C').toUpperCase();
+            const dateStr = r.createdAt ? new Date(r.createdAt).toLocaleDateString([], { day: 'numeric', month: 'short', year: 'numeric' }) : 'Recente';
+
+            return `
+              <div class="p-4 rounded-2xl bg-white/[0.02] border border-white/5 space-y-2 text-xs font-sans hover:border-white/10 transition">
+                <div class="flex items-center justify-between border-b border-white/[0.04] pb-2">
+                  <div class="flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-full bg-white/10 text-white font-bold font-mono text-[10px] flex items-center justify-center border border-white/15">
+                      ${clientInitial}
+                    </div>
+                    <div>
+                      <span class="font-bold text-white block">${escapeHtml(r.clientName || 'Cliente Verificato')}</span>
+                      <span class="text-[9px] font-mono text-emerald-400/80">Acquisto Escrow Verificato ✓</span>
+                    </div>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-sm font-mono tracking-tight">${starStr} <span class="text-zinc-400 text-[10px] font-bold">(${rating}/5)</span></div>
+                    <span class="text-[9px] font-mono text-zinc-500">${dateStr}</span>
+                  </div>
+                </div>
+                <p class="text-zinc-300 font-sans italic leading-relaxed pt-1">
+                  "${escapeHtml(r.comment || 'Componente stampato con accuratezza dimensionale e finiture eccellenti.')}"
+                </p>
+                <div class="flex items-center gap-3 text-[10px] font-mono text-zinc-400 pt-1">
+                  <span>Qualità: <strong class="text-white">${r.quality || rating}/5</strong></span>
+                  <span>•</span>
+                  <span>Comunicazione: <strong class="text-white">${r.comms || rating}/5</strong></span>
+                  <span>•</span>
+                  <span>Velocità: <strong class="text-white">${r.speed || rating}/5</strong></span>
+                </div>
+              </div>
+            `;
+          }).join('');
         }
       }
 
