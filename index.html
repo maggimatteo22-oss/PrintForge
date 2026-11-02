@@ -3682,7 +3682,7 @@
           <button type="button" 
                   id="officialLangBtn"
                   onclick="cycleAppLanguage(event)"
-                  class="h-8 px-2 sm:px-2.5 rounded-full bg-[#101014] border border-white/20 hover:border-white/50 text-white flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer select-none group"
+                  class="h-8 px-2.5 sm:px-3 rounded-full bg-[#101014] border border-white/20 hover:border-white/50 text-white flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer select-none group"
                   title="Clicca per cambiare lingua / Click to switch language / Haz clic para cambiar de idioma">
             <span id="currentLangFlag" class="flex items-center shrink-0">
               <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0">
@@ -3691,58 +3691,9 @@
                 <div class="w-1/3 h-full bg-[#ce2b37]"></div>
               </div>
             </span>
-            <span id="currentLangName" class="text-xs font-mono font-bold hidden sm:inline">Italiano</span>
-            <span class="text-[9px] text-zinc-400 group-hover:text-emerald-400 transition-colors">⇄</span>
+            <span id="currentLangName" class="text-xs font-mono font-bold">Italiano</span>
+            <span class="text-[10px] text-zinc-400 group-hover:text-emerald-400 transition-colors ml-0.5">⇄</span>
           </button>
-        </div></span>
-            <span id="currentLangName" class="text-xs font-mono font-bold hidden sm:inline">Italiano</span>
-            <span class="text-[9px] text-zinc-400 shrink-0">▼</span>
-          </button>
-
-          <!-- Dropdown Menu aperto sia al click che al tocco (Mobile & Desktop) posizionato in modo sicuro sotto al pulsante -->
-          <div id="officialLangDropdown" class="hidden flex-col gap-1 absolute right-0 top-full mt-2 p-1.5 rounded-xl bg-black border border-white/20 shadow-2xl z-[999999] min-w-[145px]" style="background-color: #000000 !important; opacity: 1 !important; z-index: 999999 !important; isolation: isolate !important;">
-            <button type="button" onclick="selectAppLanguage('it', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn" style="background-color: #000000 !important; opacity: 1 !important;">
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0">
-                  <div class="w-1/3 h-full bg-[#009246]"></div>
-                  <div class="w-1/3 h-full bg-[#ffffff]"></div>
-                  <div class="w-1/3 h-full bg-[#ce2b37]"></div>
-                </div>
-                <span>Italiano</span>
-              </div>
-              <span id="langCheckIt" class="text-emerald-400 font-bold text-xs">✓</span>
-            </button>
-            <button type="button" onclick="selectAppLanguage('en', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn" style="background-color: #000000 !important; opacity: 1 !important;">
-              <div class="flex items-center gap-2">
-                <svg class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0" viewBox="0 0 60 30">
-                  <clipPath id="uk_flag_track"><path d="M0,0 v30 h60 v-30 z"/></clipPath>
-                  <clipPath id="uk_diag_track"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath>
-                  <g clip-path="url(#uk_flag_track)">
-                    <path d="M0,0 v30 h60 v-30 z" fill="#012169"/>
-                    <path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/>
-                    <path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk_diag_track)" stroke="#C8102E" stroke-width="4"/>
-                    <path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/>
-                    <path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/>
-                  </g>
-                </svg>
-                <span>English</span>
-              </div>
-              <span id="langCheckEn" class="text-emerald-400 font-bold text-xs hidden">✓</span>
-            </button>
-            <button type="button" onclick="selectAppLanguage('es', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn" style="background-color: #000000 !important; opacity: 1 !important;">
-              <div class="flex items-center gap-2">
-                <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex flex-col shrink-0">
-                  <div class="h-1/4 bg-[#c60b1e]"></div>
-                  <div class="h-2/4 bg-[#ffc400] flex items-center justify-center">
-                    <span class="w-0.5 h-0.5 rounded-full bg-[#c60b1e]/70"></span>
-                  </div>
-                  <div class="h-1/4 bg-[#c60b1e]"></div>
-                </div>
-                <span>Español</span>
-              </div>
-              <span id="langCheckEs" class="text-emerald-400 font-bold text-xs hidden">✓</span>
-            </button>
-          </div>
         </div>
 
         <!-- SELETTORE TEMA BIANCO / NERO (MINIMAL STYLIZED SUN / BLACK MOON ICON) -->
