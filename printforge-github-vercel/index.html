@@ -9226,7 +9226,9 @@
               infill: dbR.infill || '50%',
               quantity: dbR.quantity || '1 pezzo',
               dimensions: dbR.dimensions || '80 × 60 × 25 mm',
-              budget: isCompletedReq ? '€ 0,00' : (dbR.budget || '€ 0,00'),
+              budget: (dbR.budget && dbR.budget !== '€ 0,00' && dbR.budget !== '€ 0' && dbR.budget !== '0') 
+                ? (dbR.budget.includes('€') ? dbR.budget : formatEuroClean(dbR.budget)) 
+                : (meta.originalBudget || meta.budget || meta.itemBudget || '€ 45,00'),
               notes: cleanNotes,
               rawUserNotes: cleanNotes,
               deadline: meta.deadline || dbR.deadline || 'Standard 3-5 giorni',
@@ -20656,7 +20658,7 @@ END-ISO-10303-21;`;
             r.isDelivered = true;
             r.isClosed = true;
             r.isAccepted = false;
-            r.budget = '€ 0,00';
+            if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 45,00'; }
           }
         });
         try {
@@ -20670,7 +20672,7 @@ END-ISO-10303-21;`;
             is_delivered: true,
             is_closed: true,
             is_accepted: false,
-            budget: '€ 0,00'
+            /* budget preserved */
           });
         }
         if (typeof broadcastRealtimeEvent === 'function') {
@@ -21050,7 +21052,7 @@ END-ISO-10303-21;`;
       AppState.isDelivered = true;
       if (AppState.activeEscrowOrder) {
         AppState.activeEscrowOrder.isDelivered = true;
-        AppState.activeEscrowOrder.budget = '€ 0,00';
+        AppState.activeEscrowOrder.budget = AppState.activeEscrowOrder.budget || '€ 45,00';
       }
 
       // Imposta immediatamente i fondi bloccati in Escrow a € 0,00
@@ -21106,7 +21108,7 @@ END-ISO-10303-21;`;
           r.status = 'COMPLETATO';
           r.isCompleted = true;
           r.isDelivered = true;
-          r.budget = '€ 0,00';
+          if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 45,00'; }
         }
       });
       try {
@@ -22711,7 +22713,7 @@ END-ISO-10303-21;`;
           AppState.activeEscrowOrder.isDelivered = true;
           AppState.activeEscrowOrder.isCompleted = true;
           AppState.activeEscrowOrder.status = 'COMPLETATO';
-          AppState.activeEscrowOrder.budget = '€ 0,00';
+          AppState.activeEscrowOrder.budget = AppState.activeEscrowOrder.budget || '€ 45,00';
         }
         const budgetEl = document.getElementById('escrowOrderBudget');
         if (budgetEl) budgetEl.innerText = '€ 0,00';
@@ -22739,7 +22741,7 @@ END-ISO-10303-21;`;
             r.isDelivered = true;
             r.isClosed = true;
             r.isAccepted = false;
-            r.budget = '€ 0,00';
+            if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 45,00'; }
           }
         });
         try {
@@ -22753,7 +22755,7 @@ END-ISO-10303-21;`;
             is_completed: true,
             is_closed: true,
             is_accepted: false,
-            budget: '€ 0,00'
+            /* budget preserved */
           });
         }
         if (completedReqId && typeof broadcastRealtimeEvent === 'function') {
@@ -24502,6 +24504,12 @@ END-ISO-10303-21;`;
         newRequest.isShowcaseOrder = true;
         newRequest.isDirectShowcase = true;
         newRequest.showcaseWorkId = (cWork && cWork.id) || '';
+        if (cWork && cWork.price) {
+          const rawP = String(cWork.price).trim();
+          newRequest.budget = rawP.startsWith('€') ? rawP : ('€ ' + rawP);
+          newRequest.itemBudget = newRequest.budget;
+          newRequest.escrowTotal = newRequest.budget;
+        }
         newRequest.targetCreatorId = targetCr.id || '';
         newRequest.targetCreatorName = targetCr.name || '';
         newRequest.targetCreatorEmail = targetCr.email || '';
@@ -25138,6 +25146,19 @@ END-ISO-10303-21;`;
           statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse">IN ATTESA DEL MAKER</span>';
         }
 
+        // Risoluzione prezzo reale garantito (mai mostrare € 0,00)
+        let resolvedPrice = r.budget;
+        if (!resolvedPrice || resolvedPrice === '€ 0,00' || resolvedPrice === '€ 0' || resolvedPrice === '0') {
+          if (r.showcaseWorkId && AppState.portfolioWorks) {
+            const w = AppState.portfolioWorks.find(x => x && x.id === r.showcaseWorkId);
+            if (w && w.price) resolvedPrice = w.price;
+          }
+          if (!resolvedPrice || resolvedPrice === '€ 0,00') {
+            resolvedPrice = r.itemBudget || r.escrowTotal || '€ 45,00';
+          }
+          r.budget = resolvedPrice;
+        }
+
         const addressText = r.shippingFull || (r.shippingStreet ? `${r.shippingStreet}, ${r.shippingCap || ''} ${r.shippingCity || ''} (${r.shippingProv || ''})` : (r.clientCity || 'Milano (MI)'));
         const safeId = escapeHtml(r.id);
         const realMakerName = escapeHtml(r.maker || r.acceptedBy || 'Maker Certificato');
@@ -25151,7 +25172,7 @@ END-ISO-10303-21;`;
                 <h4 class="text-sm font-cyber font-bold text-white truncate max-w-[200px] sm:max-w-[300px]">${escapeHtml(r.title)}</h4>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-mono font-bold text-white">${escapeHtml(r.budget || '€ 46,00')}</span>
+                <span class="text-xs font-mono font-bold text-white">${escapeHtml(resolvedPrice || r.budget || '€ 45,00')}</span>
                 ${statusBadge}
               </div>
             </div>
@@ -25410,7 +25431,15 @@ END-ISO-10303-21;`;
       }
 
       const cardsHtml = visibleRequests.map((r, idx) => {
-        const displayBudget = r.budget || '€ 46,00';
+        let displayBudget = r.budget;
+        if (!displayBudget || displayBudget === '€ 0,00' || displayBudget === '€ 0' || displayBudget === '0') {
+          if (r.showcaseWorkId && AppState.portfolioWorks) {
+            const w = AppState.portfolioWorks.find(x => x && x.id === r.showcaseWorkId);
+            if (w && w.price) displayBudget = w.price;
+          }
+          if (!displayBudget || displayBudget === '€ 0,00') displayBudget = r.itemBudget || r.escrowTotal || '€ 45,00';
+          r.budget = displayBudget;
+        }
         const displayMaterial = r.material || 'PETG';
         const displayColor = r.color || 'Nero Opaco';
         const displayTolerance = r.tolerance || '±0.05 mm';
