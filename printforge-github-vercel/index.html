@@ -9178,7 +9178,8 @@
               meta.isClosed === true ||
               (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + orderIdVal) === 'true')
             );
-            const isAcc = isCompletedReq ? false : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("LAVORAZION") || dbR.status.includes("PRESA IN CARICO"))));
+            const isDirectOrder = Boolean(meta.isDirectShowcase || meta.isShowcaseOrder || meta.targetCreatorId || meta.targetCreatorName);
+            const isAcc = isCompletedReq ? false : (isDirectOrder ? Boolean(meta.isAccepted === true) : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("PRESA IN CARICO")))));
 
             const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
@@ -9220,6 +9221,12 @@
               makerUserId: (isAcc || isCompletedReq) ? (meta.makerUserId || '') : '',
               targetCreatorId: meta.targetCreatorId || null,
               targetCreatorName: meta.targetCreatorName || null,
+              targetCreatorEmail: meta.targetCreatorEmail || null,
+              isDirectShowcase: Boolean(meta.isDirectShowcase || meta.isShowcaseOrder),
+              isShowcaseOrder: Boolean(meta.isShowcaseOrder || meta.isDirectShowcase),
+              workPhotoUrl: meta.workPhotoUrl || null,
+              aiImage: meta.aiImage || null,
+              showcaseWorkId: meta.showcaseWorkId || null,
               isAccepted: isAcc,
               isCompleted: isCompletedReq,
               isDelivered: isCompletedReq,
@@ -9674,7 +9681,15 @@
               shippingCity: req.shippingCity || req.clientCity || '',
               shippingCap: req.shippingCap || '',
               shippingProv: req.shippingProv || '',
-              shippingFull: req.shippingFull || ''
+              shippingFull: req.shippingFull || '',
+              isDirectShowcase: Boolean(req.isDirectShowcase || req.isShowcaseOrder),
+              isShowcaseOrder: Boolean(req.isShowcaseOrder || req.isDirectShowcase),
+              targetCreatorId: req.targetCreatorId || null,
+              targetCreatorName: req.targetCreatorName || null,
+              targetCreatorEmail: req.targetCreatorEmail || null,
+              workPhotoUrl: req.workPhotoUrl || null,
+              aiImage: req.aiImage || null,
+              showcaseWorkId: req.showcaseWorkId || null
             })
           : (req.notes || '');
 
@@ -17571,10 +17586,11 @@ END-ISO-10303-21;`;
       const myName = (AppState.user.name || '').toLowerCase().trim();
       const myUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
 
-      // Controllo activeEscrowOrder in memoria (deve essere NON consegnato e NON completato)
+      // Controllo activeEscrowOrder in memoria (deve essere ACCETTATO, NON consegnato e NON completato)
       if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) {
         const ord = AppState.activeEscrowOrder;
         if (ord.isDelivered || ord.isCompleted || ord.isClosed) return false;
+        if (ord.isAccepted !== true) return false;
         if (typeof ord.status === 'string' && (ord.status.includes('CONSEGNAT') || ord.status.includes('SVINCOLAT') || ord.status.includes('ARCHIVIAT') || ord.status.includes('COMPLETAT'))) {
           return false;
         }
@@ -17604,20 +17620,8 @@ END-ISO-10303-21;`;
           if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) {
             return false;
           }
-          const isAcc = Boolean(
-            r.isAccepted === true ||
-            (r.maker && r.maker.trim().length > 0) ||
-            (r.maker_name && r.maker_name.trim().length > 0) ||
-            (r.acceptedBy && r.acceptedBy.trim().length > 0) ||
-            (typeof r.status === 'string' && (
-              r.status.toUpperCase().includes('ACCETTAT') ||
-              r.status.toUpperCase().includes('LAVORAZION') ||
-              r.status.toUpperCase().includes('PRODUCTION') ||
-              r.status.toUpperCase().includes('PRODUZION') ||
-              r.status.toUpperCase().includes('SPEDIT')
-            ))
-          );
-          if (!isAcc) return false;
+          // La Escrow Room appare per il Cliente SOLO dopo che il Maker ha accettato la richiesta
+          if (r.isAccepted !== true) return false;
           const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
           const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
           const assignedUid = (r.makerUserId || '').toLowerCase().trim();
@@ -17626,26 +17630,14 @@ END-ISO-10303-21;`;
                  (assignedUid && assignedUid === myUid);
         });
       } else {
-        // Per il Cliente: ha accesso ESCLUSIVAMENTE se ha una commessa attiva NON ancora completata
+        // Per il Cliente: ha accesso ESCLUSIVAMENTE se ha una commessa attiva ACCETTATA dal Maker e NON ancora completata
         return (AppState.broadcastRequests || []).some(r => {
           if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
           if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) {
             return false;
           }
-          const isAcc = Boolean(
-            r.isAccepted === true ||
-            (r.maker && r.maker.trim().length > 0) ||
-            (r.maker_name && r.maker_name.trim().length > 0) ||
-            (r.acceptedBy && r.acceptedBy.trim().length > 0) ||
-            (typeof r.status === 'string' && (
-              r.status.toUpperCase().includes('ACCETTAT') ||
-              r.status.toUpperCase().includes('LAVORAZION') ||
-              r.status.toUpperCase().includes('PRODUCTION') ||
-              r.status.toUpperCase().includes('PRODUZION') ||
-              r.status.toUpperCase().includes('SPEDIT')
-            ))
-          );
-          if (!isAcc) return false;
+          // La Escrow Room appare SOLO dopo che il Maker ha accettato la richiesta
+          if (r.isAccepted !== true) return false;
           const reqEmail = (r.clientEmail || r.client_email || '').toLowerCase().trim();
           const reqUid = (r.userId || '').toLowerCase().trim();
           const reqName = (r.clientName || '').toLowerCase().trim();
@@ -19043,6 +19035,16 @@ END-ISO-10303-21;`;
       AppState.cadQcFiles = [];
       AppState.stage2Completed = false;
       AppState.step4Confirmed = false;
+      AppState.stage4Completed = false;
+      AppState.isDelivered = false;
+      AppState.isShipped = false;
+      AppState.activeEscrowOrder = null;
+      try {
+        localStorage.removeItem('printforge_stage4_completed');
+        localStorage.removeItem('printforge_active_escrow_order');
+        localStorage.removeItem('printforge_cad_qc_files');
+        localStorage.removeItem('printforge_completed_' + rfpId);
+      } catch(e) {}
       req.acceptedBy = AppState.user.name || (isEn ? 'PrintForge Certified Maker' : 'Maker Certificato PrintForge');
       req.acceptedAt = new Date().toISOString();
       req.maker = req.acceptedBy;
@@ -24434,7 +24436,7 @@ END-ISO-10303-21;`;
         ]
       };
 
-      // ORDINE DA VETRINA: Assegnazione diretta al Creator, Stanza Escrow immediata & Esenzione 3 Foto QC
+      // ORDINE DA VETRINA: Assegnazione diretta al Creator specifico (invisibile ai creator comuni)
       if (window._currentShowcaseWorkOrder || window._directAssignedCreator) {
         const cWork = window._currentShowcaseWorkOrder;
         const targetCr = window._directAssignedCreator || {
@@ -24443,26 +24445,29 @@ END-ISO-10303-21;`;
           email: (cWork && cWork.creatorEmail) || ''
         };
         newRequest.isShowcaseOrder = true;
+        newRequest.isDirectShowcase = true;
         newRequest.showcaseWorkId = (cWork && cWork.id) || '';
         newRequest.targetCreatorId = targetCr.id || '';
         newRequest.targetCreatorName = targetCr.name || '';
         newRequest.targetCreatorEmail = targetCr.email || '';
         newRequest.maker = targetCr.name || '';
         newRequest.maker_name = targetCr.name || '';
-        newRequest.acceptedBy = targetCr.name || '';
+        newRequest.acceptedBy = ''; // In attesa di accettazione esplicita nella pagina richieste
         newRequest.makerEmail = targetCr.email || '';
         newRequest.makerUserId = targetCr.id || '';
         newRequest.assigned_creator_id = targetCr.id || '';
-        newRequest.isAccepted = true;
-        newRequest.status = isEn ? 'IN PRODUCTION (SHOWCASE VERIFIED)' : isEs ? 'EN PRODUCCIÓN (VERIFICADO EN ESCAPARATE)' : 'IN LAVORAZIONE (COLLAUDO VETRINA CONVALIDATO)';
-        
-        // Esenzione dal collaudo a 3 foto calibro: foto già presenti in vetrina/chat
-        newRequest.clientApprovedQc = true;
-        newRequest.qcStatus = 'approvato_dal_cliente';
-        newRequest.hasQcPhotos = true;
-        newRequest.qcPhotos = (cWork && cWork.photoUrl) ? [cWork.photoUrl] : [];
+        newRequest.isAccepted = false; // Deve essere accettata dal creator nella bacheca richieste
+        newRequest.status = 'IN LAVORAZIONE';
+        newRequest.isCompleted = false;
+        newRequest.isDelivered = false;
+        newRequest.clientApprovedQc = false;
+        newRequest.qcStatus = 'in_attesa_collaudo';
+        newRequest.hasQcPhotos = false;
+        newRequest.qcPhotos = [];
+        newRequest.workPhotoUrl = (cWork && cWork.photoUrl) || null;
+        newRequest.aiImage = (cWork && cWork.photoUrl) || draft.aiImage;
 
-        console.log('🎯 Ordine diretto da vetrina assegnato con successo a:', targetCr.name);
+        console.log('🎯 Ordine diretto da vetrina assegnato al Creator:', targetCr.name, 'in attesa di presa in carico');
         window._currentShowcaseWorkOrder = null;
         window._directAssignedCreator = null;
       }
@@ -25055,22 +25060,23 @@ END-ISO-10303-21;`;
       }
 
       const cardsHtml = visibleRequests.map((r, idx) => {
-        const isAcc = Boolean(r.isAccepted === true && (r.maker || r.acceptedBy || r.assigned_creator_id));
-        const isStage4Done = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true'));
+        const isAcc = Boolean(r.isAccepted === true);
         const isCompleted = Boolean(
           r.isCompleted === true ||
           r.isDelivered === true ||
-          isStage4Done ||
           (typeof r.status === 'string' && (
             r.status.toUpperCase().includes('COMPLETAT') ||
             r.status.toUpperCase().includes('CONSEGNAT') ||
             r.status.toUpperCase().includes('SVINCOLAT')
-          ))
+          )) ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
         );
 
         let statusBadge = '';
         if (isCompleted) {
           statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> COMPLETATO</span>';
+        } else if (r.isDirectShowcase || r.isShowcaseOrder || (typeof r.status === 'string' && r.status.toUpperCase().includes('LAVORAZION'))) {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> IN LAVORAZIONE</span>';
         } else if (isAcc) {
           statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> IN LAVORAZIONE (PRESA IN CARICO)</span>';
         } else {
@@ -25199,28 +25205,44 @@ END-ISO-10303-21;`;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
-      // 1. Filtro rigoroso: mostra solo le richieste NON ancora accettate e NON rifiutate e NON cancellate
+      // 1. Filtro rigoroso con privacy multi-tenant per richieste da vetrina
+      const myMakerName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
+      const myMakerEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const myMakerUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+
       const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
         if (!r || !r.id) return false;
         if (r.id.startsWith('USER-PROFILE-')) return false;
-        if (r.isRejected || r.isDeleted) return false;
-        if (r.isAccepted === true) return false;
-        if (r.maker && typeof r.maker === 'string' && r.maker.trim() !== '') return false;
-        if (r.maker_name && typeof r.maker_name === 'string' && r.maker_name.trim() !== '') return false;
-        if (r.acceptedBy && typeof r.acceptedBy === 'string' && r.acceptedBy.trim() !== '') return false;
-        if (typeof r.status === 'string') {
-          const s = r.status.toUpperCase();
-          if (s.includes('ACCETTAT') || s.includes('LAVORAZION') || s.includes('PRODUCTION') || s.includes('PRODUZION') || s.includes('SPEDIT') || s.includes('APPROVAT') || s.includes('COMPLETAT') || s.includes('CANCELLAT')) {
-            return false;
+        if (r.isRejected || r.isDeleted || r.isCompleted || r.isClosed || r.isDelivered) return false;
+        if (r.isAccepted === true) return false; // Se già accettata, non compare nella bacheca
+        if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('COMPLETAT'))) return false;
+
+        const isDirect = Boolean(r.isDirectShowcase || r.isShowcaseOrder || r.targetCreatorId || r.targetCreatorName);
+        if (isDirect) {
+          // RICHIESTA DIRETTA DA VETRINA: TOTALMENTE INVISIBILE AI CREATOR COMUNI!
+          // Visibile ESCLUSIVAMENTE al creator destinatario dell'opera
+          const targetId = (r.targetCreatorId || r.assigned_creator_id || r.makerUserId || '').toLowerCase().trim();
+          const targetName = (r.targetCreatorName || r.maker_name || r.maker || '').toLowerCase().trim();
+          const targetEmail = (r.targetCreatorEmail || r.makerEmail || '').toLowerCase().trim();
+
+          const isForMe = Boolean(
+            (myMakerUid && targetId && (targetId === myMakerUid || myMakerUid === targetId)) ||
+            (myMakerName && targetName && (targetName === myMakerName || targetName.includes(myMakerName) || myMakerName.includes(targetName))) ||
+            (myMakerEmail && targetEmail && targetEmail === myMakerEmail)
+          );
+
+          if (!isForMe) {
+            return false; // Nascosta per tutti gli altri creator!
           }
+          return true;
         }
+
+        // Richieste broadcast normali (non da vetrina): non devono essere già prese in carico
+        if (r.acceptedBy && typeof r.acceptedBy === 'string' && r.acceptedBy.trim() !== '') return false;
         return true;
       });
 
       // 2. Controlla se il Maker loggato ha una commessa presa in carico (ISOLAMENTO CREATOR)
-      const myMakerName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
-      const myMakerEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
-      const myMakerUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
 
       const activeCreatorJob = (AppState.broadcastRequests || []).find(r => {
         if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isRejected || r.isDeleted) return false;
@@ -25361,6 +25383,12 @@ END-ISO-10303-21;`;
                 <span class="text-[10px] font-mono text-zinc-400">${escapeHtml(r.clientCity || 'Milano')}</span>
               </div>
 
+              ${(r.workPhotoUrl || r.aiImage) ? `
+                <div class="h-28 rounded-xl overflow-hidden border border-white/10 relative bg-[#12131A] mb-2 shadow-inner">
+                  <img src="${r.workPhotoUrl || r.aiImage}" class="w-full h-full object-cover" alt="Foto Opera Vetrina" />
+                  <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500/90 text-black font-mono text-[9px] font-black shadow">ORDINE DIRETTO VETRINA</span>
+                </div>
+              ` : ''}
               <h4 class="text-sm font-cyber font-bold text-white line-clamp-1">${escapeHtml(r.title)}</h4>
 
               <div class="grid grid-cols-2 gap-2 text-xs font-mono">
