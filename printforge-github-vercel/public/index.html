@@ -1155,6 +1155,27 @@
       background-size: 1.1em;
     }
 
+    /* Complete OS select shielding & unstyled popover elimination */
+    select#reqMaterial,
+    select#reqUsage,
+    select#portfolioMaterial,
+    select#disputeReason,
+    select.custom-select-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+      opacity: 0 !important;
+      pointer-events: none !important;
+      display: block !important;
+      z-index: -9999 !important;
+    }
+
     /* Custom Cybernetic Glassmorphic Select Component */
     .custom-select-wrapper {
       position: relative;
@@ -1162,7 +1183,7 @@
     }
     .custom-select-trigger {
       width: 100%;
-      background: #141418;
+      background: #111218;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 0.75rem;
       padding: 0.625rem 0.875rem;
@@ -1176,62 +1197,35 @@
       cursor: pointer;
       user-select: none;
       transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
     }
     .custom-select-trigger:hover {
-      background: #1A1A22;
+      background: #171822;
       border-color: rgba(255, 255, 255, 0.28);
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.16);
     }
     .custom-select-trigger.active {
-      border-color: rgba(255, 255, 255, 0.6);
-      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25), 0 8px 24px rgba(0, 0, 0, 0.8);
+      border-color: rgba(16, 185, 129, 0.6);
+      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25), 0 8px 24px rgba(0, 0, 0, 0.8);
+      background: #151620;
+    }
+    .custom-select-badge {
+      width: 1.75rem;
+      height: 1.75rem;
+      border-radius: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
     @media (max-width: 767px) {
       .custom-select-trigger {
         padding: 0.75rem 0.95rem;
         font-size: 0.875rem;
-        min-height: 44px;
+        min-height: 48px;
         border-radius: 0.75rem;
       }
-    }
-    @media (orientation: landscape) and (max-height: 520px) {
-      #cookieConsentBanner {
-        max-width: 24rem !important;
-        padding: 0.75rem 1rem !important;
-        bottom: 0.5rem !important;
-        right: 0.5rem !important;
-        max-height: 85vh !important;
-        overflow-y: auto !important;
-      }
-      #cookieConsentBanner p {
-        font-size: 10px !important;
-        line-height: 1.3 !important;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-      }
-      #cookieConsentBanner .cookie-icon-box {
-        display: none !important;
-      }
-      #cookieConsentBanner button {
-        padding: 0.25rem 0.6rem !important;
-        font-size: 10px !important;
-      }
-    }
-    #mobileOptionPickerModal {
-      overscroll-behavior: contain;
-      -webkit-overflow-scrolling: touch;
-    }
-    .mobile-picker-option {
-      transition: all 150ms cubic-bezier(0.16, 1, 0.3, 1);
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .mobile-picker-option:active {
-      transform: scale(0.985);
-      background: rgba(255, 255, 255, 0.16) !important;
     }
     .custom-select-dropdown {
       position: absolute;
@@ -1239,17 +1233,17 @@
       left: 0;
       min-width: 100%;
       width: max-content;
-      max-width: min(94vw, 420px);
-      z-index: 100;
-      background: rgba(12, 12, 16, 0.98);
+      max-width: min(94vw, 440px);
+      z-index: 99999;
+      background: rgba(12, 13, 20, 0.98);
       backdrop-filter: blur(28px);
       -webkit-backdrop-filter: blur(28px);
-      border: 1px solid rgba(255, 255, 255, 0.20);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       border-radius: 1rem;
-      box-shadow: 0 24px 65px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.10);
-      max-height: 20rem;
+      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08);
+      max-height: 22rem;
       overflow-y: auto;
-      padding: 0.45rem;
+      padding: 0.5rem;
       display: none;
       transform-origin: top left;
       animation: selectDropdownEnter 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -1257,55 +1251,79 @@
     .custom-select-dropdown.open {
       display: block;
     }
-    @keyframes selectDropdownEnter {
-      from {
-        opacity: 0;
-        transform: translateY(-6px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-      }
+    .custom-options-scrollable {
+      max-height: 18rem;
+      overflow-y: auto;
+      padding-right: 2px;
     }
     .custom-select-optgroup {
       font-size: 0.65rem;
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Space Grotesk', sans-serif;
       font-weight: 700;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: #9CA3AF;
-      background: rgba(255, 255, 255, 0.05);
+      color: #34D399;
+      background: rgba(16, 185, 129, 0.08);
       padding: 0.4rem 0.75rem;
       border-radius: 0.5rem;
-      margin: 0.35rem 0 0.25rem 0;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      margin: 0.45rem 0 0.25rem 0;
+      border-left: 3px solid #10B981;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
     }
     .custom-select-option {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 0.75rem;
-      padding: 0.6rem 0.85rem;
+      padding: 0.55rem 0.75rem;
       border-radius: 0.625rem;
       font-size: 0.75rem;
       font-family: 'JetBrains Mono', monospace;
-      color: #D1D5DB;
+      color: #E4E4E7;
       cursor: pointer;
       transition: all 140ms ease;
       margin-bottom: 2px;
       line-height: 1.35;
       white-space: normal;
       text-align: left;
+      border: 1px solid transparent;
     }
     .custom-select-option:hover {
-      background: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.14);
       color: #FFFFFF;
-      transform: translateX(3px);
+      transform: translateX(2px);
     }
     .custom-select-option.selected {
-      background: rgba(255, 255, 255, 0.18);
-      color: #FFFFFF;
+      background: rgba(16, 185, 129, 0.15) !important;
+      border-color: rgba(16, 185, 129, 0.45) !important;
+      color: #FFFFFF !important;
       font-weight: 700;
+    }
+    .option-bullet {
+      width: 6px;
+      height: 6px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.25);
+      flex-shrink: 0;
+      transition: all 150ms ease;
+    }
+    .option-bullet.bullet-active {
+      background: #10B981;
+      box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+    }
+    .selected-check-pill {
+      width: 1.25rem;
+      height: 1.25rem;
+      border-radius: 9999px;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
     }
 
     /* Packaging Presets Cards & Micro-interactions */
@@ -15388,38 +15406,56 @@ END-ISO-10303-21;`;
       }
     }
 
-    /* CUSTOM CYBERNETIC SELECT ENGINE (REPLACES OS BLUE WIN32 DROPDOWNS) */
+    /* ========================================================================= */
+    /* BESPOKE CYBERNETIC SELECT ENGINE (REPLACES OS WIN32 SELECT MENUS)          */
+    /* ========================================================================= */
     const CustomSelectEngine = {
-      selectIds: ['reqUsage', 'reqMaterial', 'reqTolerance', 'reqPostProcess', 'disputeReason'],
+      selectIds: ['reqMaterial', 'reqUsage', 'portfolioMaterial', 'disputeReason'],
       activeMobileSelectId: null,
+      _listenersAttached: false,
 
       init() {
-        this.selectIds.forEach(id => this.attach(id));
-        document.addEventListener('click', (e) => {
-          if (!e.target.closest('.custom-select-wrapper') && !e.target.closest('#mobileOptionPickerModal')) {
-            this.closeAll();
+        this.selectIds.forEach(id => {
+          try {
+            this.attach(id);
+          } catch(e) {
+            console.warn('CustomSelectEngine attach error for ' + id + ':', e);
           }
         });
-        document.addEventListener('keydown', (e) => {
-          if (e.key === 'Escape') {
-            this.closeAll();
-            this.closeMobileModal();
-          }
-        });
+
+        if (!this._listenersAttached) {
+          document.addEventListener('click', (e) => {
+            if (!e.target.closest('.custom-select-wrapper') && !e.target.closest('#mobileOptionPickerModal')) {
+              this.closeAll();
+            }
+          });
+          document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+              this.closeAll();
+              this.closeMobileModal();
+            }
+          });
+          this._listenersAttached = true;
+        }
       },
 
       attach(id) {
         const sel = document.getElementById(id);
-        if (!sel) return;
+        if (!sel || sel.tagName.toLowerCase() !== 'select') return;
 
-        // Hide native select visually while keeping it functional in form DOM
+        // Force native select to be visually hidden & non-interactable
+        sel.classList.add('custom-select-hidden');
         sel.style.position = 'absolute';
+        sel.style.width = '1px';
+        sel.style.height = '1px';
+        sel.style.padding = '0';
+        sel.style.margin = '-1px';
+        sel.style.overflow = 'hidden';
+        sel.style.clip = 'rect(0, 0, 0, 0)';
+        sel.style.whiteSpace = 'nowrap';
+        sel.style.border = '0';
         sel.style.opacity = '0';
         sel.style.pointerEvents = 'none';
-        sel.style.height = '0';
-        sel.style.width = '0';
-        sel.style.margin = '0';
-        sel.style.padding = '0';
         sel.tabIndex = -1;
 
         let wrapper = document.getElementById(`customWrapper_${id}`);
@@ -15432,13 +15468,41 @@ END-ISO-10303-21;`;
 
         this.renderWrapper(id);
 
-        sel.addEventListener('change', () => {
-          this.syncTrigger(id);
-          this.highlightSelectedOption(id);
-          if (typeof updateLiveRequestSummary === 'function') {
-            updateLiveRequestSummary();
-          }
-        });
+        if (!sel._hasCustomChangeListener) {
+          sel.addEventListener('change', () => {
+            this.syncTrigger(id);
+            this.highlightSelectedOption(id);
+            if (typeof updateLiveRequestSummary === 'function') {
+              updateLiveRequestSummary();
+            }
+          });
+          sel._hasCustomChangeListener = true;
+        }
+      },
+
+      getSelectIcon(id) {
+        if (id === 'reqMaterial' || id === 'portfolioMaterial') {
+          return '<i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>';
+        }
+        if (id === 'reqUsage') {
+          return '<i data-lucide="compass" class="w-4 h-4 text-cyan-400"></i>';
+        }
+        if (id === 'disputeReason') {
+          return '<i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>';
+        }
+        return '<i data-lucide="sliders" class="w-4 h-4 text-zinc-400"></i>';
+      },
+
+      parseOptionText(rawText) {
+        if (!rawText) return { title: '', desc: '' };
+        const m = rawText.match(/^([^(]+)(?:\((.*)\))?$/);
+        if (m) {
+          return {
+            title: m[1].trim(),
+            desc: (m[2] || '').trim()
+          };
+        }
+        return { title: rawText.trim(), desc: '' };
       },
 
       renderWrapper(id) {
@@ -15449,46 +15513,117 @@ END-ISO-10303-21;`;
         const currentVal = sel.value;
         const selectedOpt = sel.options[sel.selectedIndex] || sel.options[0];
         const selectedText = selectedOpt ? selectedOpt.textContent : '';
+        const parsedSelected = this.parseOptionText(selectedText);
+        const iconHtml = this.getSelectIcon(id);
 
         let optionsHtml = '';
         const optgroups = sel.getElementsByTagName('optgroup');
+        let totalOptionCount = 0;
 
         if (optgroups.length > 0) {
           Array.from(optgroups).forEach(grp => {
-            optionsHtml += `<div class="custom-select-optgroup">${escapeHtml(grp.label)}</div>`;
+            let grpLabel = grp.label || '';
+            let grpTag = '';
+            if (grpLabel.toLowerCase().includes('fdm')) grpTag = 'FILAMENTO';
+            else if (grpLabel.toLowerCase().includes('sla') || grpLabel.toLowerCase().includes('resina')) grpTag = 'RESINA';
+            else if (grpLabel.toLowerCase().includes('sls') || grpLabel.toLowerCase().includes('polvere')) grpTag = 'POLVERE';
+            else if (grpLabel.toLowerCase().includes('metallo') || grpLabel.toLowerCase().includes('dmls')) grpTag = 'METALLO';
+
+            optionsHtml += `
+              <div class="custom-select-optgroup" data-group-header="true">
+                <span class="font-cyber font-bold tracking-wider">${escapeHtml(grpLabel)}</span>
+                ${grpTag ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">${grpTag}</span>` : ''}
+              </div>
+            `;
             Array.from(grp.children).forEach(opt => {
+              if (opt.disabled && !opt.value) return;
+              totalOptionCount++;
               const isSel = opt.value === currentVal;
+              const parsed = this.parseOptionText(opt.textContent);
               optionsHtml += `
-                <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                  <span class="leading-snug select-text flex-1 break-words">${escapeHtml(opt.textContent)}</span>
-                  ${isSel ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>' : ''}
+                <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
+                  <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                    <div class="option-bullet ${isSel ? 'bullet-active' : ''}"></div>
+                    <div class="min-w-0 flex-1">
+                      <div class="text-xs font-mono font-medium text-white truncate leading-snug">${escapeHtml(parsed.title)}</div>
+                      ${parsed.desc ? `<div class="text-[10px] font-sans text-zinc-400 truncate leading-tight">${escapeHtml(parsed.desc)}</div>` : ''}
+                    </div>
+                  </div>
+                  ${isSel ? '<span class="selected-check-pill"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i></span>' : ''}
                 </div>
               `;
             });
           });
         } else {
           Array.from(sel.options).forEach(opt => {
+            if (opt.disabled && !opt.value) return;
+            totalOptionCount++;
             const isSel = opt.value === currentVal;
+            const parsed = this.parseOptionText(opt.textContent);
             optionsHtml += `
-              <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                <span class="leading-snug select-text flex-1 break-words">${escapeHtml(opt.textContent)}</span>
-                ${isSel ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>' : ''}
+              <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
+                <div class="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div class="option-bullet ${isSel ? 'bullet-active' : ''}"></div>
+                  <div class="min-w-0 flex-1">
+                    <div class="text-xs font-mono font-medium text-white truncate leading-snug">${escapeHtml(parsed.title)}</div>
+                    ${parsed.desc ? `<div class="text-[10px] font-sans text-zinc-400 truncate leading-tight">${escapeHtml(parsed.desc)}</div>` : ''}
+                  </div>
+                </div>
+                ${isSel ? '<span class="selected-check-pill"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i></span>' : ''}
               </div>
             `;
           });
         }
 
+        const showSearch = totalOptionCount > 5;
+        const searchHtml = showSearch ? `
+          <div class="custom-select-search-wrap mb-2 px-1" onclick="event.stopPropagation()">
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
+              <input type="text" placeholder="Filtra opzioni..." class="w-full bg-[#161722] border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" oninput="CustomSelectEngine.filterDropdownOptions('${id}', this.value)" />
+            </div>
+          </div>
+        ` : '';
+
         wrapper.innerHTML = `
-          <button type="button" class="custom-select-trigger" id="customTrigger_${id}" onclick="CustomSelectEngine.toggle('${id}', event)">
-            <span class="truncate font-medium text-left flex-1" id="customTriggerText_${id}">${escapeHtml(selectedText)}</span>
-            <i data-lucide="chevron-down" id="customChevron_${id}" class="w-4 h-4 text-zinc-400 transition-transform duration-200 shrink-0"></i>
+          <button type="button" class="custom-select-trigger group" id="customTrigger_${id}" onclick="CustomSelectEngine.toggle('${id}', event)">
+            <div class="flex items-center gap-2.5 min-w-0 flex-1">
+              <span class="custom-select-badge shrink-0">${iconHtml}</span>
+              <div class="min-w-0 flex-1 text-left">
+                <span class="truncate font-mono text-xs font-semibold text-white block" id="customTriggerText_${id}">
+                  ${escapeHtml(parsedSelected.title || selectedText || 'Seleziona opzione...')}
+                </span>
+                ${parsedSelected.desc ? `<span class="truncate text-[10px] font-sans text-zinc-400 block" id="customTriggerSub_${id}">${escapeHtml(parsedSelected.desc)}</span>` : ''}
+              </div>
+            </div>
+            <i data-lucide="chevron-down" id="customChevron_${id}" class="w-4 h-4 text-zinc-400 group-hover:text-white transition-transform duration-200 shrink-0"></i>
           </button>
           <div class="custom-select-dropdown custom-scrollbar" id="customDropdown_${id}">
-            ${optionsHtml}
+            ${searchHtml}
+            <div class="custom-options-scrollable">
+              ${optionsHtml}
+            </div>
           </div>
         `;
 
-        lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
+      },
+
+      filterDropdownOptions(id, query) {
+        const dropdown = document.getElementById(`customDropdown_${id}`);
+        if (!dropdown) return;
+        const q = (query || '').toLowerCase().trim();
+        const options = dropdown.querySelectorAll('.custom-select-option');
+        options.forEach(opt => {
+          const text = opt.getAttribute('data-text') || '';
+          if (!q || text.includes(q)) {
+            opt.style.display = 'flex';
+          } else {
+            opt.style.display = 'none';
+          }
+        });
       },
 
       toggle(id, event) {
@@ -15527,6 +15662,14 @@ END-ISO-10303-21;`;
             dropdown.style.left = '0';
             dropdown.style.right = 'auto';
           }
+
+          // Focus search input if available
+          const searchInp = dropdown.querySelector('input[type="text"]');
+          if (searchInp) {
+            searchInp.value = '';
+            this.filterDropdownOptions(id, '');
+            setTimeout(() => searchInp.focus(), 50);
+          }
         }
       },
 
@@ -15544,9 +15687,7 @@ END-ISO-10303-21;`;
         // Determine title
         let title = 'SELEZIONA OPZIONE';
         if (id === 'reqUsage') title = 'DESTINAZIONE D\'USO';
-        else if (id === 'reqMaterial') title = 'MATERIALE DI STAMPA';
-        else if (id === 'reqTolerance') title = 'TOLLERANZA DIMENSIONALE';
-        else if (id === 'reqPostProcess') title = 'POST-PROCESSING & FINITURA';
+        else if (id === 'reqMaterial' || id === 'portfolioMaterial') title = 'MATERIALE DI STAMPA';
         else if (id === 'disputeReason') title = 'MOTIVO CONTROVERSIA';
         else {
           const lbl = sel.closest('.space-y-1')?.querySelector('label');
@@ -15561,18 +15702,21 @@ END-ISO-10303-21;`;
         if (optgroups.length > 0) {
           Array.from(optgroups).forEach(grp => {
             optionsHtml += `
-              <div class="mobile-optgroup-header text-[10px] font-cyber font-bold text-zinc-400 uppercase tracking-wider pt-3 pb-1.5 border-b border-white/[0.08] mb-1">
-                ${escapeHtml(grp.label)}
+              <div class="mobile-optgroup-header text-[10px] font-cyber font-bold text-emerald-400 uppercase tracking-wider pt-3 pb-1.5 border-b border-emerald-500/20 mb-1 flex items-center justify-between">
+                <span>${escapeHtml(grp.label)}</span>
               </div>
             `;
             Array.from(grp.children).forEach(opt => {
+              if (opt.disabled && !opt.value) return;
               const isSel = opt.value === currentVal;
+              const parsed = this.parseOptionText(opt.textContent);
               optionsHtml += `
-                <div class="mobile-picker-option p-3.5 rounded-xl border ${isSel ? 'border-white/40 bg-white/10' : 'border-white/[0.08] bg-[#12131A]'} active:bg-white/20 flex items-center justify-between gap-3 transition cursor-pointer" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
+                <div class="mobile-picker-option p-3 rounded-xl border ${isSel ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/[0.08] bg-[#12131A]'} active:bg-white/20 flex items-center justify-between gap-3 transition cursor-pointer" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
                   <div class="min-w-0 flex-1">
                     <span class="text-xs sm:text-sm font-mono ${isSel ? 'text-white font-bold' : 'text-zinc-200'} leading-snug break-words block">
-                      ${escapeHtml(opt.textContent)}
+                      ${escapeHtml(parsed.title)}
                     </span>
+                    ${parsed.desc ? `<span class="text-[10px] font-sans text-zinc-400 block">${escapeHtml(parsed.desc)}</span>` : ''}
                   </div>
                   ${isSel ? '<div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i></div>' : '<div class="w-5 h-5 rounded-full border border-white/20 shrink-0"></div>'}
                 </div>
@@ -15581,13 +15725,16 @@ END-ISO-10303-21;`;
           });
         } else {
           Array.from(sel.options).forEach(opt => {
+            if (opt.disabled && !opt.value) return;
             const isSel = opt.value === currentVal;
+            const parsed = this.parseOptionText(opt.textContent);
             optionsHtml += `
-              <div class="mobile-picker-option p-3.5 rounded-xl border ${isSel ? 'border-white/40 bg-white/10' : 'border-white/[0.08] bg-[#12131A]'} active:bg-white/20 flex items-center justify-between gap-3 transition cursor-pointer" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
+              <div class="mobile-picker-option p-3 rounded-xl border ${isSel ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/[0.08] bg-[#12131A]'} active:bg-white/20 flex items-center justify-between gap-3 transition cursor-pointer" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
                 <div class="min-w-0 flex-1">
                   <span class="text-xs sm:text-sm font-mono ${isSel ? 'text-white font-bold' : 'text-zinc-200'} leading-snug break-words block">
-                    ${escapeHtml(opt.textContent)}
+                    ${escapeHtml(parsed.title)}
                   </span>
+                  ${parsed.desc ? `<span class="text-[10px] font-sans text-zinc-400 block">${escapeHtml(parsed.desc)}</span>` : ''}
                 </div>
                 ${isSel ? '<div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i></div>' : '<div class="w-5 h-5 rounded-full border border-white/20 shrink-0"></div>'}
               </div>
@@ -15597,9 +15744,8 @@ END-ISO-10303-21;`;
 
         list.innerHTML = optionsHtml;
 
-        // Show search input if more than 6 options (e.g. materials)
         if (searchBox) {
-          if (sel.options.length > 6) {
+          if (sel.options.length > 5) {
             searchBox.style.display = 'block';
             if (searchInput) searchInput.value = '';
           } else {
@@ -15610,7 +15756,9 @@ END-ISO-10303-21;`;
         modal.style.display = 'flex';
         modal.classList.remove('hidden');
         document.body.style.overflow = 'hidden';
-        lucide.createIcons();
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
       },
 
       closeMobileModal() {
@@ -15641,6 +15789,8 @@ END-ISO-10303-21;`;
         if (!sel) return;
         sel.value = value;
         sel.dispatchEvent(new Event('change', { bubbles: true }));
+        this.syncTrigger(id);
+        this.highlightSelectedOption(id);
         this.closeAll();
         this.closeMobileModal();
       },
@@ -15658,10 +15808,16 @@ END-ISO-10303-21;`;
       syncTrigger(id) {
         const sel = document.getElementById(id);
         const triggerText = document.getElementById(`customTriggerText_${id}`);
+        const triggerSub = document.getElementById(`customTriggerSub_${id}`);
         if (!sel || !triggerText) return;
         const selectedOpt = sel.options[sel.selectedIndex] || sel.options[0];
         if (selectedOpt) {
-          triggerText.textContent = selectedOpt.textContent;
+          const parsed = this.parseOptionText(selectedOpt.textContent);
+          triggerText.textContent = parsed.title || selectedOpt.textContent;
+          if (triggerSub) {
+            triggerSub.textContent = parsed.desc || '';
+            triggerSub.style.display = parsed.desc ? 'block' : 'none';
+          }
         }
       },
 
@@ -15674,15 +15830,20 @@ END-ISO-10303-21;`;
         const options = dropdown.querySelectorAll('.custom-select-option');
         options.forEach(opt => {
           const val = opt.getAttribute('data-value');
+          const bullet = opt.querySelector('.option-bullet');
           if (val === currentVal) {
             opt.classList.add('selected');
-            if (!opt.querySelector('[data-lucide="check"]')) {
-              opt.insertAdjacentHTML('beforeend', '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>');
-              lucide.createIcons();
+            if (bullet) bullet.classList.add('bullet-active');
+            if (!opt.querySelector('.selected-check-pill')) {
+              opt.insertAdjacentHTML('beforeend', '<span class="selected-check-pill"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i></span>');
+              if (window.lucide && typeof window.lucide.createIcons === 'function') {
+                window.lucide.createIcons();
+              }
             }
           } else {
             opt.classList.remove('selected');
-            const chk = opt.querySelector('[data-lucide="check"]');
+            if (bullet) bullet.classList.remove('bullet-active');
+            const chk = opt.querySelector('.selected-check-pill');
             if (chk) chk.remove();
           }
         });
@@ -15692,11 +15853,16 @@ END-ISO-10303-21;`;
         this.selectIds.forEach(id => {
           const sel = document.getElementById(id);
           if (sel) {
-            this.renderWrapper(id);
+            try {
+              this.renderWrapper(id);
+            } catch(e) {
+              console.warn('renderWrapper error for ' + id + ':', e);
+            }
           }
         });
       }
     };
+    window.CustomSelectEngine = CustomSelectEngine;
 
     /* TABELLA DI RIEPILOGO SPECIFICHE IN TEMPO REALE */
     function updateLiveRequestSummary() {
@@ -23712,6 +23878,9 @@ END-ISO-10303-21;`;
         setTimeout(() => { if (typeof renderExploreShowcase === 'function') renderExploreShowcase(); }, 20);
       }
       if (viewId === 'creator-portfolio') {
+        if (typeof CustomSelectEngine !== 'undefined') {
+          setTimeout(() => { CustomSelectEngine.init(); CustomSelectEngine.refreshAll(); }, 30);
+        }
         setTimeout(() => { if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView(); }, 20);
       }
 
@@ -23834,6 +24003,9 @@ END-ISO-10303-21;`;
       } else if (viewId === 'order-room') {
         updateEscrowRoom();
       } else if (viewId === 'client-request') {
+        if (typeof CustomSelectEngine !== 'undefined') {
+          setTimeout(() => { CustomSelectEngine.init(); CustomSelectEngine.refreshAll(); }, 30);
+        }
         renderBroadcastTable();
       } else if (viewId === 'deal-chat') {
         const targetRfpId = AppState.activeDealRfpId || (AppState.broadcastRequests[0] && AppState.broadcastRequests[0].id);
@@ -29855,6 +30027,23 @@ function renderDealChat(rfpId) {
           reqMat.disabled = true;
           reqMat.style.pointerEvents = 'none';
           reqMat.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]', 'border-emerald-500/40');
+          if (typeof CustomSelectEngine !== 'undefined' && CustomSelectEngine.syncTrigger) {
+            CustomSelectEngine.syncTrigger('reqMaterial');
+          }
+          const triggerMat = document.getElementById('customTrigger_reqMaterial');
+          if (triggerMat) {
+            triggerMat.style.pointerEvents = 'none';
+            triggerMat.classList.add('opacity-75', 'cursor-not-allowed', 'border-emerald-500/50');
+            const txt = document.getElementById('customTriggerText_reqMaterial');
+            if (txt) {
+              txt.innerHTML = `${escapeHtml(targetMat)} <span class="ml-2 px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-cyber font-bold text-[9px] tracking-wider">🔒 SPECIFICHE MAKER</span>`;
+            }
+          }
+          const triggerUsage = document.getElementById('customTrigger_reqUsage');
+          if (triggerUsage) {
+            triggerUsage.style.pointerEvents = 'none';
+            triggerUsage.classList.add('opacity-75', 'cursor-not-allowed', 'border-emerald-500/50');
+          }
         }
 
         // 4. Popola e blocca Opzione Infill / Riempimento (Seleziona quello del Maker e non modificabile)
