@@ -18943,6 +18943,48 @@ END-ISO-10303-21;`;
     
     function sendRegistrationWelcomeEmail(user) {
       if (!user || !user.email) return;
+
+      const userEmailKey = String(user.email).toLowerCase().trim();
+
+      // REGOLA ASSOLUTA: La mail di accesso/benvenuto va inviata SOLAMENTE quando una persona accede per la primissima volta e basta.
+      // 1. Controllo flag permanente in localStorage
+      try {
+        if (localStorage.getItem('printforge_welcome_sent_' + userEmailKey) === 'true') {
+          return;
+        }
+      } catch (e) {}
+
+      // 2. Controllo registro permanente utenti
+      try {
+        const registeredList = JSON.parse(localStorage.getItem('printforge_registered_users') || '[]');
+        if (Array.isArray(registeredList) && registeredList.includes(userEmailKey)) {
+          localStorage.setItem('printforge_welcome_sent_' + userEmailKey, 'true');
+          return;
+        }
+      } catch (e) {}
+
+      // 3. Controllo storico email inviate
+      if (Array.isArray(AppState.sentEmails)) {
+        const alreadySent = AppState.sentEmails.some(e => 
+          e && e.to && String(e.to).toLowerCase().trim() === userEmailKey && e.type === 'user_registration'
+        );
+        if (alreadySent) {
+          try { localStorage.setItem('printforge_welcome_sent_' + userEmailKey, 'true'); } catch (e) {}
+          return;
+        }
+      }
+
+      // 4. Salva subito il flag prima di inviare: mai più inviata ai successivi accessi
+      try {
+        localStorage.setItem('printforge_welcome_sent_' + userEmailKey, 'true');
+        const regList = JSON.parse(localStorage.getItem('printforge_registered_users') || '[]');
+        if (Array.isArray(regList) && !regList.includes(userEmailKey)) {
+          regList.push(userEmailKey);
+          localStorage.setItem('printforge_registered_users', JSON.stringify(regList));
+        }
+        if (user) user.welcomeSent = true;
+      } catch (e) {}
+
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
       const isCreator = user.role === 'creator';
