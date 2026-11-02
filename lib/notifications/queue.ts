@@ -41,7 +41,7 @@ export async function sendTransactionalEmail(payload: EmailPayload): Promise<{ s
   try {
     const resend = new Resend(resendApiKey);
     const { data, error } = await resend.emails.send({
-      from: process.env.EMAIL_FROM || 'PrintForge <ordini@printforge.it>',
+      from: process.env.EMAIL_FROM || 'PrintForge <onboarding@resend.dev>',
       to: payload.to,
       subject: payload.subject,
       html: payload.html,
