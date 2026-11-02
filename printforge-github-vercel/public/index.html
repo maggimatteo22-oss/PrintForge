@@ -7262,7 +7262,7 @@
           <input type="text" id="googleModalName" placeholder="Es. Mario Rossi / Design Studio" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
         </div>
 
-        <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+        <button type="button" onclick="loginWithGoogleOAuth(currentGoogleModalRole)" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95">
           <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -7616,7 +7616,7 @@
       <!-- TAB 1: CLIENTE (Univoco - Rapido con Connessione Stripe) -->
       <div id="tabContentClient" class="space-y-4">
         <div class="space-y-2">
-          <button onclick="openGoogleLoginModal()" class="btn-kowalski-primary w-full py-3 px-4 rounded-xl font-cyber font-bold text-xs flex items-center justify-center gap-3 shadow-md">
+          <button onclick="loginWithGoogleOAuth('client')" class="btn-kowalski-primary w-full py-3 px-4 rounded-xl font-cyber font-bold text-xs flex items-center justify-center gap-3 shadow-md">
             <svg class="w-4 h-4" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
               <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -8661,6 +8661,26 @@
       updateCloudSyncStatusBadge(true);
       setupSupabaseRealtime();
       loadRequestsFromSupabase();
+
+      // Ascolto e gestione automatica sessione OAuth Google ufficiale
+      if (remoteActive && supabaseClient && supabaseClient.auth) {
+        try {
+          supabaseClient.auth.onAuthStateChange(async (event, session) => {
+            console.log('⚡ [Supabase Auth Event]:', event, session?.user?.email);
+            if (session && session.user && session.user.email) {
+              await handleSupabaseAuthUser(session.user);
+            }
+          });
+
+          supabaseClient.auth.getSession().then(async ({ data, error }) => {
+            if (!error && data && data.session && data.session.user && data.session.user.email) {
+              await handleSupabaseAuthUser(data.session.user);
+            }
+          }).catch(e => console.warn('getSession error:', e));
+        } catch (e) {
+          console.warn('Errore setup auth listener:', e);
+        }
+      }
 
       // Polling di sincronizzazione universale continuo ogni 3.5 secondi (Garantisce sync anche su mobile o se i websocket sono instabili)
       if (!window.__printforge_global_poll_started) {
@@ -20936,8 +20956,101 @@ END-ISO-10303-21;`;
     }
     window.closeGoogleLoginModal = closeGoogleLoginModal;
 
-    function loginWithGoogleOAuth() {
-      openGoogleLoginModal();
+    async function handleSupabaseAuthUser(authUser) {
+      if (!authUser || !authUser.email) return;
+      const email = authUser.email.toLowerCase().trim();
+      const meta = authUser.user_metadata || {};
+      const name = meta.full_name || meta.name || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const avatar = meta.avatar_url || name.charAt(0).toUpperCase();
+      const userId = 'goog_' + email.replace(/[^a-z0-9]/g, '_');
+
+      console.log('🔐 [Google OAuth Sync] Autenticato utente:', email, name);
+
+      // Recupera il profilo cloud salvato per questa email su Supabase
+      const cloudProfile = await fetchUserProfileFromCloud(email);
+
+      // Ruolo desiderato: priorità al profilo cloud già esistente, altrimenti ruolo salvato prima del redirect, altrimenti 'client'
+      let pendingRole = null;
+      try {
+        pendingRole = localStorage.getItem('printforge_pending_auth_role');
+        localStorage.removeItem('printforge_pending_auth_role');
+      } catch(e) {}
+
+      let finalRole = (cloudProfile && cloudProfile.role) || pendingRole || 'client';
+
+      AppState.user = {
+        userId: userId,
+        id: userId,
+        isLoggedIn: true,
+        role: finalRole,
+        isAdmin: Boolean(cloudProfile && cloudProfile.isAdmin),
+        name: (cloudProfile && cloudProfile.name) || name,
+        email: email,
+        avatar: avatar,
+        stripeConnected: true,
+        creatorData: (cloudProfile && cloudProfile.creatorData) || null
+      };
+
+      try {
+        localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+      } catch(e) {}
+
+      // Sincronizza profilo cloud su Supabase se non esiste ancora
+      if (!cloudProfile) {
+        syncUserProfileToCloud(AppState.user);
+      }
+
+      renderNavUserArea();
+      updateNavigationTabs();
+      loadRequestsFromSupabase();
+
+      if (AppState.user.role === 'creator') {
+        registerCreatorPresence();
+      } else {
+        unregisterCreatorPresence();
+      }
+
+      // Pulisci l'hash o i parametri di callback di Supabase dall'URL senza ricaricare la pagina
+      if (window.location.hash && (window.location.hash.includes('access_token') || window.location.hash.includes('refresh_token'))) {
+        window.history.replaceState({}, document.title, window.location.pathname + window.location.search);
+      }
+
+      const welcomeMsg = currentLang === 'en'
+        ? `✓ Google Sign In successful! Welcome, ${name}`
+        : currentLang === 'es'
+        ? `✓ ¡Acceso con Google exitoso! Bienvenido, ${name}`
+        : `✓ Accesso con Google eseguito! Benvenuto, ${name}`;
+      showToast(welcomeMsg, 'success');
+    }
+    window.handleSupabaseAuthUser = handleSupabaseAuthUser;
+
+    async function loginWithGoogleOAuth(preferredRole) {
+      const roleToUse = preferredRole || currentGoogleModalRole || 'client';
+      try {
+        localStorage.setItem('printforge_pending_auth_role', roleToUse);
+      } catch(e) {}
+
+      if (supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signInWithOAuth === 'function') {
+        showToast(currentLang === 'en' ? 'Redirecting to Google Sign In...' : currentLang === 'es' ? 'Redirigiendo a Google...' : 'Reindirizzamento all\'accesso Google...', 'info');
+        try {
+          const redirectUrl = window.location.origin + window.location.pathname;
+          const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: redirectUrl
+            }
+          });
+          if (error) {
+            console.warn('OAuth signInWithOAuth returned error, opening fallback modal:', error);
+            openGoogleLoginModal();
+          }
+        } catch(err) {
+          console.warn('OAuth exception, opening fallback modal:', err);
+          openGoogleLoginModal();
+        }
+      } else {
+        openGoogleLoginModal();
+      }
     }
     window.loginWithGoogleOAuth = loginWithGoogleOAuth;
     window.simulateGoogleLogin = openGoogleLoginModal;
