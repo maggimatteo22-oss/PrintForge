@@ -23371,9 +23371,13 @@ END-ISO-10303-21;`;
         : `Admin Switch: ora stai navigando come ${newRole.toUpperCase()}!`;
       showToast(switchMsg);
       if (newRole === 'creator') {
-        navigateTo('creator-requests');
+        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
+          navigateTo('activity');
+        } else {
+          navigateTo('creator-portfolio');
+        }
       } else {
-        navigateTo('esplora');
+        navigateTo('client-home');
       }
     }
 
@@ -23439,9 +23443,6 @@ END-ISO-10303-21;`;
       if (viewId === 'creator-requests') {
         if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
           navigateTo('activity');
-          return;
-        } else {
-          navigateTo('creator-portfolio');
           return;
         }
       }
@@ -27470,7 +27471,11 @@ function renderDealChat(rfpId) {
       setUserRole(targetRole);
 
       if (targetRole === 'creator') {
-        navigateTo('creator-requests');
+        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
+          navigateTo('activity');
+        } else {
+          navigateTo('creator-portfolio');
+        }
         showToast(currentLang === 'it' 
           ? 'Portatile Founder: Ruolo impostato su CREATOR. Accesso a Bacheca e Studio CAD sbloccato.' 
           : 'Founder Laptop: Role set to CREATOR. Access to Requests Board and CAD Studio unlocked.');
@@ -29933,6 +29938,9 @@ function renderDealChat(rfpId) {
           }
           if (targetView === 'order-room' && !hasActiveEscrowOrder()) {
             targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'client-home';
+          }
+          if (targetView === 'creator-requests' && AppState.user && AppState.user.role === 'creator') {
+            targetView = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio';
           }
           navigateTo(targetView);
         } else {
