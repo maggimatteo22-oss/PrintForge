@@ -226,6 +226,15 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    /* Prevent any horizontal scrolling on all viewports */
+    html, body {
+      max-width: 100vw;
+      overflow-x: hidden !important;
+    }
+    #mainAppHeader {
+      max-width: 100vw;
+      overflow-x: hidden;
+    }
     /* Masking anonimo password con puntini discreti */
     input[type="password"],
     .password-masked {
@@ -17465,35 +17474,40 @@ END-ISO-10303-21;`;
         const stripeLabel = AppState.user.stripeConnected ? '✓ Stripe' : '! Stripe KYC';
         const logoutTitle = currentLang === 'it' ? 'Disconnetti' : currentLang === 'es' ? 'Cerrar Sesión' : 'Sign Out';
 
+        const roleSwitchTitle = isCreator
+          ? (currentLang === "en" ? "Switch to Client Mode" : currentLang === "es" ? "Cambiar a Modo Cliente" : "Passa a Modalità Cliente")
+          : (currentLang === "en" ? "Switch to Creator Mode" : currentLang === "es" ? "Cambiar a Modo Creador" : "Passa a Modalità Creator");
+        const phoneSyncTitle = currentLang === "en" ? "Connect Smartphone / Mobile Sync" : currentLang === "es" ? "Conectar Teléfono" : "Collega Telefono / Sincronizzazione Smartphone";
+
         container.innerHTML = `
-          <div class="flex items-center gap-1.5 sm:gap-2">
-            <div class="flex items-center gap-1.5 sm:gap-2 px-2.5 py-1 bg-[#121214] border border-white/10 rounded-full text-xs font-mono max-w-[130px] sm:max-w-[160px] md:max-w-[190px] xl:max-w-none">
+          <div class="flex items-center gap-1 sm:gap-1.5">
+            <!-- Profilo Utente Minimal Single-Line Pill (Senza testi superflui per evitare overflow) -->
+            <div class="h-8 flex items-center gap-1.5 px-2 bg-[#101014] border border-white/20 rounded-full text-xs font-mono shrink-0 select-none shadow-inner" title="${escapeHtml(AppState.user.name)} (${roleLabel} • ${stripeLabel})">
               <div class="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-bold text-[10px] shrink-0">
                 ${AppState.user.name.charAt(0).toUpperCase()}
               </div>
-              <div class="hidden sm:block text-left truncate">
-                <span class="text-white font-semibold block leading-none text-[11px] truncate max-w-[90px] md:max-w-[130px] xl:max-w-[180px]">${escapeHtml(AppState.user.name)}</span>
-                <span class="text-[9px] text-zinc-400 font-bold hidden xl:inline-block">${roleLabel} • <span class="${AppState.user.stripeConnected ? 'text-zinc-200' : 'text-zinc-500'}">${stripeLabel}</span></span>
-              </div>
+              <span class="text-white font-medium text-[11px] truncate max-w-[70px] sm:max-w-[90px] md:max-w-[110px]">${escapeHtml(AppState.user.name)}</span>
+              <span class="w-1.5 h-1.5 rounded-full ${AppState.user.stripeConnected ? 'bg-emerald-400' : 'bg-zinc-500'} shrink-0" title="${stripeLabel}"></span>
             </div>
             
+            <!-- Switch Ruolo Icon Pill Compatta (32x32) -->
             ${isCreator ? `
-              <button type="button" onclick="switchUserRole('client')" class="px-2.5 py-1 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/30 text-cyan-300 font-mono text-[11px] flex items-center gap-1 transition active:scale-95 shrink-0 cursor-pointer" title="Passa alla modalità Cliente per inviare commesse">
-                <i data-lucide="user" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">${currentLang === "en" ? "Switch to Client" : currentLang === "es" ? "Cambiar a Cliente" : "Passa a Cliente"}</span>
+              <button type="button" onclick="switchUserRole('client')" class="w-8 h-8 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer shadow-inner" title="${roleSwitchTitle}">
+                <i data-lucide="user" class="w-3.5 h-3.5 text-cyan-300"></i>
               </button>
             ` : `
-              <button type="button" onclick="switchUserRole('creator')" class="px-2.5 py-1 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] flex items-center gap-1 transition active:scale-95 shrink-0 cursor-pointer" title="Passa alla modalità Creator per prendere in carico ordini">
-                <i data-lucide="printer" class="w-3.5 h-3.5"></i>
-                <span class="hidden sm:inline">${currentLang === "en" ? "Switch to Creator" : currentLang === "es" ? "Cambiar a Creador" : "Passa a Creator"}</span>
+              <button type="button" onclick="switchUserRole('creator')" class="w-8 h-8 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer shadow-inner" title="${roleSwitchTitle}">
+                <i data-lucide="printer" class="w-3.5 h-3.5 text-emerald-400"></i>
               </button>
             `}
 
-            <button type="button" onclick="openDeviceSyncModal()" class="px-2.5 py-1 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono text-[11px] flex items-center gap-1.5 transition active:scale-95 shrink-0" title="Collega questo account al tuo smartphone per vedere tutto in tempo reale">
-              <i data-lucide="smartphone" class="w-3.5 h-3.5"></i>
-              <span class="hidden md:inline">Collega Telefono</span>
+            <!-- Collega Telefono Icon Pill Compatta (32x32) -->
+            <button type="button" onclick="openDeviceSyncModal()" class="w-8 h-8 rounded-full bg-[#101014] hover:bg-white/10 border border-white/20 text-emerald-400 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer shadow-inner" title="${phoneSyncTitle}">
+              <i data-lucide="smartphone" class="w-3.5 h-3.5 text-emerald-400"></i>
             </button>
-            <button onclick="logoutUser()" class="btn-kowalski-secondary p-1.5 rounded-full text-zinc-400 hover:text-white shrink-0" title="${logoutTitle}">
+
+            <!-- Logout Icon Pill Compatta (32x32) -->
+            <button type="button" onclick="logoutUser()" class="w-8 h-8 rounded-full bg-[#101014] hover:bg-red-500/20 border border-white/20 hover:border-red-500/30 text-zinc-400 hover:text-red-300 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer shadow-inner" title="${logoutTitle}">
               <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
             </button>
           </div>
