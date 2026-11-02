@@ -9133,50 +9133,47 @@
           // Separa le opere della Vetrina 2D / Portfolio caricate dai Creator dalle richieste broadcast dei Clienti
           const portfolioDbRows = data.filter(dbR => dbR && (dbR.status === 'PORTFOLIO_WORK' || (dbR.id && String(dbR.id).startsWith('WORK-'))));
           
+          const deletedWorkIds = ['WORK-6188', 'WORK-4777', 'WORK-3949', 'WORK-101', 'WORK-102', 'WORK-103'];
           if (portfolioDbRows.length > 0) {
-            const cloudWorks = portfolioDbRows.map(dbR => {
-              let obj = null;
-              try {
-                if (dbR.notes && (dbR.notes.startsWith('{') || dbR.notes.startsWith('{"'))) {
-                  obj = JSON.parse(dbR.notes);
+            const cloudWorks = portfolioDbRows
+              .filter(dbR => dbR && !deletedWorkIds.includes(dbR.id))
+              .map(dbR => {
+                let obj = null;
+                try {
+                  if (dbR.notes && (dbR.notes.startsWith('{') || dbR.notes.startsWith('{"'))) {
+                    obj = JSON.parse(dbR.notes);
+                  }
+                } catch(e) {}
+                if (!obj) {
+                  obj = {
+                    id: dbR.id,
+                    title: (dbR.title || '').replace(/^PORTFOLIO_WORK:\s*/, ''),
+                    description: '',
+                    material: dbR.material || 'PETG Tecnico',
+                    color: dbR.color || 'Nero Cyber',
+                    dimensions: dbR.dimensions || '80 × 60 × 25 mm',
+                    price: dbR.budget || '€ 35,00',
+                    photoUrl: '/images/cube.jpg',
+                    creatorId: dbR.client_email || 'creator',
+                    creatorName: dbR.client_name || 'Maker Certificato',
+                    creatorEmail: dbR.client_email || '',
+                    createdAt: dbR.created_at || new Date().toISOString()
+                  };
                 }
-              } catch(e) {}
-              if (!obj) {
-                obj = {
-                  id: dbR.id,
-                  title: (dbR.title || '').replace(/^PORTFOLIO_WORK:\s*/, ''),
-                  description: '',
-                  material: dbR.material || 'PETG Tecnico',
-                  color: dbR.color || 'Nero Cyber',
-                  dimensions: dbR.dimensions || '80 × 60 × 25 mm',
-                  price: dbR.budget || '€ 35,00',
-                  photoUrl: '/images/cube.jpg',
-                  creatorId: dbR.client_email || 'creator',
-                  creatorName: dbR.client_name || 'Maker Certificato',
-                  creatorEmail: dbR.client_email || '',
-                  createdAt: dbR.created_at || new Date().toISOString()
-                };
-              }
-              return obj;
-            });
+                return obj;
+              })
+              .filter(cw => cw && !deletedWorkIds.includes(cw.id) && !['nhvygu', 'raingr', 'diuf'].includes((cw.title || '').trim().toLowerCase()));
 
-            // Azzeramento opere in vetrina: se l'utente richiede azzeramento, mantieni pulito
-            const isPurgedShowcase = (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_showcase_purged') === 'true');
-            if (isPurgedShowcase) {
-              AppState.portfolioWorks = [];
-              try { localStorage.setItem('printforge_portfolio_works', '[]'); } catch(e) {}
-            } else {
-              const currentWorks = AppState.portfolioWorks || [];
-              const mergedWorks = [...cloudWorks];
-              currentWorks.forEach(cw => {
-                if (cw && cw.id && !mergedWorks.some(mw => mw && mw.id === cw.id)) {
-                  mergedWorks.push(cw);
-                }
-              });
-              AppState.portfolioWorks = mergedWorks;
-            }
+            AppState.portfolioWorks = cloudWorks;
             try {
               localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+            } catch(e) {}
+            if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+            if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+          } else {
+            AppState.portfolioWorks = [];
+            try {
+              localStorage.setItem('printforge_portfolio_works', '[]');
             } catch(e) {}
             if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
             if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
@@ -9432,6 +9429,15 @@
 
         // 2b. Ascolto creazione nuova richiesta da client in tempo reale (Modulo 2)
         // 2c. Ascolto pubblicazione nuovo lavoro in vetrina in tempo reale (Modulo 4)
+        supabaseRealtimeChannel.on('broadcast', { event: 'portfolio_work_deleted' }, ({ payload }) => {
+          if (payload && payload.id) {
+            AppState.portfolioWorks = (AppState.portfolioWorks || []).filter(w => w && w.id !== payload.id);
+            try { localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks)); } catch(e) {}
+            if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+            if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+          }
+        });
+
         supabaseRealtimeChannel.on('broadcast', { event: 'portfolio_work_created' }, ({ payload }) => {
           console.log('🎨 [Realtime Portfolio Work Created]:', payload);
           if (payload && payload.id) {
@@ -29399,19 +29405,13 @@ function renderDealChat(rfpId) {
 
     const INITIAL_PORTFOLIO_WORKS = [];
 
-    // PURGE DEFINITIVO WORK DEMO E COMMESSE DEMO
-    (function purgeInitialMocks() {
+    // PURGE DEFINITIVO DI TUTTE LE OPERE DEI CREATOR PER TUTTI E PER SEMPRE
+    (function purgeAllCreatorWorksForever() {
       try {
-        const fakeWorkIds = ['WORK-101', 'WORK-102', 'WORK-103'];
-        const storedWorks = localStorage.getItem('printforge_portfolio_works');
-        if (storedWorks) {
-          const parsed = JSON.parse(storedWorks);
-          if (Array.isArray(parsed)) {
-            const cleaned = parsed.filter(w => w && w.id && !fakeWorkIds.includes(w.id) && !w.id.startsWith('WORK-10') && !w.title.includes('Ingranaggio Meccanico') && !w.title.includes('Boccola Autolubrificante') && !w.title.includes('Scocca Elettronica'));
-            localStorage.setItem('printforge_portfolio_works', JSON.stringify(cleaned));
-            if (window.AppState) window.AppState.portfolioWorks = cleaned;
-          }
-        }
+        AppState.portfolioWorks = [];
+        localStorage.setItem('printforge_portfolio_works', '[]');
+        localStorage.setItem('printforge_showcase_purged', 'true');
+        if (window.AppState) window.AppState.portfolioWorks = [];
       } catch(e) {}
 
       try {
@@ -29440,19 +29440,6 @@ function renderDealChat(rfpId) {
       } catch(e) {}
     })();
 
-
-    // Epurazione totale e definitiva di tutti i mock demo (WORK-101, WORK-102, WORK-103)
-    try {
-      const stored = localStorage.getItem('printforge_portfolio_works');
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed)) {
-          // Azzeramento totale opere in vetrina su richiesta esplicita
-          AppState.portfolioWorks = [];
-          localStorage.setItem('printforge_portfolio_works', '[]');
-        }
-      }
-    } catch(e) {}
     if (!AppState.portfolioWorks) {
       AppState.portfolioWorks = [];
     }
@@ -29580,6 +29567,37 @@ function renderDealChat(rfpId) {
       showToast('✓ Lavoro pubblicato in Vetrina in tempo reale per tutti i clienti!', 'success');
     }
     window.handleCreatorWorkUpload = handleCreatorWorkUpload;
+
+    async function deletePortfolioWork(workId) {
+      if (!workId) return;
+      if (!confirm('Sei sicuro di voler eliminare questa opera per tutti e per sempre?')) return;
+      AppState.portfolioWorks = (AppState.portfolioWorks || []).filter(w => w && w.id !== workId);
+      try {
+        localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+      } catch(e) {}
+      
+      // Delete from Supabase
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        try {
+          await supabaseClient.from('broadcast_requests').delete().eq('id', workId);
+        } catch(e) {
+          console.warn('Supabase delete error:', e);
+        }
+      }
+      if (typeof supabaseRealtimeChannel !== 'undefined' && supabaseRealtimeChannel) {
+        try {
+          supabaseRealtimeChannel.send({
+            type: 'broadcast',
+            event: 'portfolio_work_deleted',
+            payload: { id: workId }
+          });
+        } catch(e) {}
+      }
+      showToast('✓ Opera eliminata definitivamente per sempre!', 'success');
+      if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+      if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+    }
+    window.deletePortfolioWork = deletePortfolioWork;
 
     function renderExploreShowcase() {
       const container = document.getElementById('exploreCardsContainer');
