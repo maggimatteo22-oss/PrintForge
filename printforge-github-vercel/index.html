@@ -19043,8 +19043,31 @@ END-ISO-10303-21;`;
         localStorage.removeItem('printforge_stage4_completed');
         localStorage.removeItem('printforge_active_escrow_order');
         localStorage.removeItem('printforge_cad_qc_files');
-        localStorage.removeItem('printforge_completed_' + rfpId);
+        localStorage.removeItem('printforge_completed_' + req.id);
       } catch(e) {}
+
+      // Se l'ordine proviene da un'opera in vetrina, contrassegnala come accettata/commissionata e nascondila per sempre ai clienti
+      const linkedWorkId = req.showcaseWorkId;
+      const targetWork = (AppState.portfolioWorks || []).find(w => w && (w.id === linkedWorkId || (w.title && req.title && w.title.trim().toLowerCase() === req.title.trim().toLowerCase())));
+      const idToHide = linkedWorkId || (targetWork && targetWork.id);
+      if (targetWork) {
+        targetWork.isAccepted = true;
+        targetWork.isCommissioned = true;
+        targetWork.isTaken = true;
+        targetWork.commissionedBy = req.clientName || 'Cliente';
+        targetWork.commissionedOrderId = req.id;
+      }
+      if (idToHide) {
+        try {
+          let hiddenWorks = JSON.parse(localStorage.getItem('printforge_hidden_showcase_works') || '[]');
+          if (!hiddenWorks.includes(idToHide)) {
+            hiddenWorks.push(idToHide);
+            localStorage.setItem('printforge_hidden_showcase_works', JSON.stringify(hiddenWorks));
+          }
+          localStorage.setItem('printforge_work_accepted_' + idToHide, 'true');
+          localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+        } catch(e) {}
+      }
       req.acceptedBy = AppState.user.name || (isEn ? 'PrintForge Certified Maker' : 'Maker Certificato PrintForge');
       req.acceptedAt = new Date().toISOString();
       req.maker = req.acceptedBy;
@@ -21968,14 +21991,33 @@ END-ISO-10303-21;`;
       }
 
       if (activeReq && activeReq.id) {
-        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== activeReq.id);
+        activeReq.isCompleted = true;
+        activeReq.isDelivered = true;
+        activeReq.isClosed = true;
+        activeReq.isAccepted = false;
+        activeReq.status = 'COMPLETATO';
         try {
+          localStorage.setItem('printforge_completed_' + activeReq.id, 'true');
           localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         } catch(e) {}
+
+        // Aggiorna anche l'opera correlata nel portfolio come completata
+        const linkedWork = (AppState.portfolioWorks || []).find(w => w && (w.id === activeReq.showcaseWorkId || (w.title && activeReq.title && w.title.trim().toLowerCase() === activeReq.title.trim().toLowerCase())));
+        if (linkedWork) {
+          linkedWork.isCompleted = true;
+          linkedWork.isDelivered = true;
+          linkedWork.status = 'COMPLETATO';
+          try {
+            localStorage.setItem('printforge_completed_work_' + linkedWork.id, 'true');
+            localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+          } catch(e) {}
+        }
+
         if (typeof updateRequestInSupabase === 'function') {
           updateRequestInSupabase(activeReq.id, {
-            status: 'COMPLETATO // FONDI SVINCOLATI',
+            status: 'COMPLETATO',
             is_delivered: true,
+            is_completed: true,
             is_closed: true,
             is_accepted: false
           });
@@ -29332,8 +29374,44 @@ function renderDealChat(rfpId) {
       const works = AppState.portfolioWorks || [];
       const filter = currentExploreFilter || 'ALL';
 
+      // Recupera gli ID delle opere accettate/commissionate salvate in localStorage
+      let hiddenWorkIds = [];
+      try {
+        hiddenWorkIds = JSON.parse(localStorage.getItem('printforge_hidden_showcase_works') || '[]');
+      } catch(e) {}
+
+      // Identifica anche qualsiasi opera associata a una commessa già accettata, in lavorazione o completata
+      const takenWorkIds = new Set(hiddenWorkIds);
+      const takenWorkTitles = new Set();
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (!r || !r.id || r.isDeleted || r.isRejected) return;
+        const isTakenOrDone = Boolean(
+          r.isAccepted === true ||
+          r.isCompleted === true ||
+          r.isDelivered === true ||
+          (typeof r.status === 'string' && (
+            r.status.toUpperCase().includes('LAVORAZION') ||
+            r.status.toUpperCase().includes('COMPLETAT') ||
+            r.status.toUpperCase().includes('CONSEGNAT') ||
+            r.status.toUpperCase().includes('SVINCOLAT')
+          )) ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
+        );
+        if (isTakenOrDone) {
+          if (r.showcaseWorkId) takenWorkIds.add(r.showcaseWorkId);
+          if (r.title) takenWorkTitles.add(r.title.trim().toLowerCase());
+        }
+      });
+
       const filtered = works.filter(w => {
-        if (!w) return false;
+        if (!w || !w.id) return false;
+
+        // NON MOSTRARE MAI AI CLIENTI OPERE GIA' COMMISSIONATE / ACCETTATE DAL CREATOR!
+        if (w.isAccepted || w.isCommissioned || w.isTaken) return false;
+        if (takenWorkIds.has(w.id)) return false;
+        if (w.title && takenWorkTitles.has(w.title.trim().toLowerCase())) return false;
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_work_accepted_' + w.id) === 'true') return false;
+
         if (filter === 'ALL') return true;
         const mat = (w.material || '').toUpperCase();
         if (filter === 'PETG') return mat.includes('PETG');
@@ -29411,19 +29489,42 @@ function renderDealChat(rfpId) {
 
       const works = AppState.portfolioWorks || [];
       const myUid = AppState.user?.userId || AppState.user?.id || '';
-      const myName = (AppState.user?.name || '').toLowerCase();
+      const myName = ((AppState.user?.name) || '').toLowerCase().trim();
+      const myEmail = ((AppState.user?.email) || '').toLowerCase().trim();
+      const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
 
       const myWorks = works.filter(w => {
         if (!w) return false;
+        if (isAdmin) return true;
         if (myUid && w.creatorId === myUid) return true;
-        if (myName && (w.creatorName || '').toLowerCase() === myName) return true;
+        if (myName && (w.creatorName || '').toLowerCase().trim() === myName) return true;
         return true;
       });
 
-      if (myWorks.length === 0) {
+      // Trova anche commesse broadcast completate per questo creator che non hanno un'opera correlata nel portfolio
+      const additionalCompletedOrders = (AppState.broadcastRequests || []).filter(r => {
+        if (!r || !r.id || r.isDeleted || r.isRejected) return false;
+        const isDone = Boolean(
+          r.isCompleted || r.isDelivered || r.isClosed ||
+          (typeof r.status === 'string' && (r.status.includes('COMPLETAT') || r.status.includes('SVINCOLAT'))) ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
+        );
+        if (!isDone) return false;
+        const makerName = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase();
+        const makerUid = (r.makerUserId || r.assigned_creator_id || '').toLowerCase();
+        const makerEmail = (r.makerEmail || '').toLowerCase();
+        const isMine = (myUid && makerUid && (makerUid === myUid)) ||
+                       (myName && makerName && (makerName === myName || makerName.includes(myName) || myName.includes(makerName))) ||
+                       (myEmail && makerEmail && makerEmail === myEmail) ||
+                       isAdmin;
+        if (!isMine) return false;
+        return !myWorks.some(w => w.id === r.showcaseWorkId || (w.title && r.title && w.title.trim().toLowerCase() === r.title.trim().toLowerCase()));
+      });
+
+      if (myWorks.length === 0 && additionalCompletedOrders.length === 0) {
         container.innerHTML = `
           <div class="col-span-full p-8 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-            <p class="text-xs font-mono text-zinc-400">Non hai ancora pubblicato opere nel tuo portfolio.</p>
+            <p class="text-xs font-mono text-zinc-400">Non hai ancora pubblicato opere o completato commesse nel tuo portfolio.</p>
             <p class="text-[11px] text-zinc-500 font-sans">Compila il modulo sopra per pubblicare il tuo primo componente.</p>
           </div>
         `;
@@ -29431,24 +29532,54 @@ function renderDealChat(rfpId) {
         return;
       }
 
-      container.innerHTML = myWorks.map(w => {
+      // Render delle opere pubblicate dal creator
+      const worksHtml = myWorks.map(w => {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
         const safePrice = escapeHtml(w.price || '€ 35,00');
         const photo = w.photoUrl || '/images/cube.jpg';
 
-        // Cerca se esiste un ordine attivo piazzato da un cliente per questa specifica opera
-        const activeOrder = (AppState.broadcastRequests || []).find(r => {
+        // Cerca se esiste una commessa per questa specifica opera
+        const associatedOrder = (AppState.broadcastRequests || []).find(r => {
           if (!r || !r.id || r.isDeleted || r.isRejected) return false;
-          return r.showcaseWorkId === w.id || (r.title && w.title && r.title.toLowerCase() === w.title.toLowerCase());
+          return r.showcaseWorkId === w.id || (r.title && w.title && r.title.trim().toLowerCase() === w.title.trim().toLowerCase());
         });
+
+        // Controlla se il lavoro è COMPLETATO (dopo il 4° passaggio o completamento esplicito)
+        const isJobCompleted = Boolean(
+          w.isCompleted === true ||
+          (associatedOrder && (
+            associatedOrder.isCompleted === true ||
+            associatedOrder.isDelivered === true ||
+            associatedOrder.isClosed === true ||
+            (typeof associatedOrder.status === 'string' && (associatedOrder.status.includes('COMPLETAT') || associatedOrder.status.includes('SVINCOLAT'))) ||
+            (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + associatedOrder.id) === 'true')
+          )) ||
+          (typeof localStorage !== 'undefined' && (
+            localStorage.getItem('printforge_completed_work_' + w.id) === 'true' ||
+            (AppState.stage4Completed && associatedOrder)
+          ))
+        );
+
+        // Ordine attivo in corso (accettato ma non ancora completato al 4° passaggio)
+        const isOrderActive = Boolean(
+          associatedOrder && !isJobCompleted && (
+            associatedOrder.isAccepted === true ||
+            (typeof associatedOrder.status === 'string' && associatedOrder.status.includes('LAVORAZION'))
+          )
+        );
 
         return `
           <div class="rounded-2xl bg-[#0E0E14] border border-white/10 p-3.5 space-y-2.5 shadow-lg flex flex-col justify-between">
             <div class="space-y-2">
               <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
                 <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
-                ${activeOrder ? `
+                ${isJobCompleted ? `
+                  <span class="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9.5px] uppercase tracking-wider shadow-lg flex items-center gap-1.5 border border-emerald-400">
+                    <i data-lucide="check" class="w-3.5 h-3.5 text-black stroke-[3]"></i>
+                    LAVORO COMPLETATO
+                  </span>
+                ` : isOrderActive ? `
                   <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9px] uppercase tracking-wider shadow-lg flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span>
                     ORDINE ATTIVO
@@ -29466,19 +29597,36 @@ function renderDealChat(rfpId) {
               <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(w.material)} // ${escapeHtml(w.dimensions)}</span>
             </div>
 
-            <!-- Sezione Azioni Dinamiche per il Creator: Chat 1-1 & Stanza Escrow -->
-            ${activeOrder ? `
+            <!-- Sezione Stato Commessa -->
+            ${isJobCompleted ? `
+              <div class="pt-2 border-t border-emerald-500/25 bg-emerald-500/[0.06] p-2.5 rounded-xl space-y-2 border border-emerald-500/20">
+                <div class="flex items-center justify-between text-[10.5px] font-mono">
+                  <span class="text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(associatedOrder ? associatedOrder.clientName : 'Cliente')}</strong></span>
+                  <span class="text-emerald-400 font-bold font-cyber text-xs">${escapeHtml(w.price || (associatedOrder && associatedOrder.budget) || '€ 35,00')} INCASSATI</span>
+                </div>
+                <div class="flex items-center justify-between text-[9.5px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
+                  <span class="flex items-center gap-1 text-emerald-400 font-bold">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                    4° Passaggio Concluso // Fondi Svincolati
+                  </span>
+                  <button type="button" onclick="openCreatorReviewsModal('${myUid}', '${escapeHtml(AppState.user?.name || '')}')" class="px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 cursor-pointer transition">
+                    <i data-lucide="star" class="w-2.5 h-2.5 text-amber-400 fill-amber-400"></i>
+                    <span>Recensioni</span>
+                  </button>
+                </div>
+              </div>
+            ` : isOrderActive ? `
               <div class="pt-2 border-t border-emerald-500/20 bg-emerald-500/[0.04] p-2 rounded-xl space-y-1.5">
                 <div class="flex items-center justify-between text-[10px] font-mono">
-                  <span class="text-zinc-400">Cliente: <strong class="text-white">${escapeHtml(activeOrder.clientName || 'Cliente')}</strong></span>
-                  <span class="text-emerald-400 font-bold">#${escapeHtml(activeOrder.id)}</span>
+                  <span class="text-zinc-400">Cliente: <strong class="text-white">${escapeHtml(associatedOrder.clientName || 'Cliente')}</strong></span>
+                  <span class="text-emerald-400 font-bold">#${escapeHtml(associatedOrder.id)}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-1.5 pt-0.5">
-                  <button type="button" onclick="openDealChat('${activeOrder.id}')" class="py-1.5 px-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition shadow active:scale-95 cursor-pointer">
+                  <button type="button" onclick="openDealChat('${associatedOrder.id}')" class="py-1.5 px-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition shadow active:scale-95 cursor-pointer">
                     <i data-lucide="message-square" class="w-3 h-3"></i>
                     <span>CHAT</span>
                   </button>
-                  <button type="button" onclick="openEscrowRoomForOrder('${activeOrder.id}')" class="py-1.5 px-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer">
+                  <button type="button" onclick="openEscrowRoomForOrder('${associatedOrder.id}')" class="py-1.5 px-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer">
                     <i data-lucide="shield-check" class="w-3 h-3 text-cyan-400"></i>
                     <span>ESCROW</span>
                   </button>
@@ -29494,6 +29642,51 @@ function renderDealChat(rfpId) {
         `;
       }).join('');
 
+      // Render di eventuali commesse broadcast completate non presenti come opere in vetrina
+      const additionalHtml = additionalCompletedOrders.map(r => {
+        const safeId = escapeHtml(r.id);
+        const safeTitle = escapeHtml(r.title);
+        const safePrice = escapeHtml(r.budget || '€ 35,00');
+        const photo = r.workPhotoUrl || r.aiImage || '/images/cube.jpg';
+
+        return `
+          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 p-3.5 space-y-2.5 shadow-lg flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
+                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
+                <span class="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9.5px] uppercase tracking-wider shadow-lg flex items-center gap-1.5 border border-emerald-400">
+                  <i data-lucide="check" class="w-3.5 h-3.5 text-black stroke-[3]"></i>
+                  LAVORO COMPLETATO
+                </span>
+              </div>
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="font-bold text-white truncate max-w-[140px]">${safeTitle}</span>
+                <span class="text-emerald-400 font-bold">${safePrice}</span>
+              </div>
+              <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(r.material || 'PETG')} // ${escapeHtml(r.dimensions || '1 pezzo')}</span>
+            </div>
+
+            <div class="pt-2 border-t border-emerald-500/25 bg-emerald-500/[0.06] p-2.5 rounded-xl space-y-2 border border-emerald-500/20">
+              <div class="flex items-center justify-between text-[10.5px] font-mono">
+                <span class="text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(r.clientName || 'Cliente')}</strong></span>
+                <span class="text-emerald-400 font-bold font-cyber text-xs">${safePrice} INCASSATI</span>
+              </div>
+              <div class="flex items-center justify-between text-[9.5px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
+                <span class="flex items-center gap-1 text-emerald-400 font-bold">
+                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  4° Passaggio Concluso // Fondi Svincolati
+                </span>
+                <button type="button" onclick="openCreatorReviewsModal('${myUid}', '${escapeHtml(AppState.user?.name || '')}')" class="px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 cursor-pointer transition">
+                  <i data-lucide="star" class="w-2.5 h-2.5 text-amber-400 fill-amber-400"></i>
+                  <span>Recensioni</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      container.innerHTML = worksHtml + additionalHtml;
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.renderCreatorPortfolioView = renderCreatorPortfolioView;
