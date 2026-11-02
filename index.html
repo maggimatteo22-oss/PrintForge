@@ -17275,20 +17275,7 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // 2. VETRINA 2D (Tradotta)
-        const isExp = (v === 'explore' || v === 'esplora');
-        html += `
-          <button onclick="navigateTo('esplora')" id="navExploreBtn" class="${isExp ? activeClass : inactiveClass}">
-            <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
-            <span>${showcaseLabel}</span>
-          </button>
-        `;
-        mobileHtml += `
-          <button onclick="navigateTo('esplora')" class="${isExp ? mActive : mInactive}">
-            <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
-            <span>${mShowcaseLabel}</span>
-          </button>
-        `;
+        // Vetrina 2D / Esplora nascosta per i Creator su richiesta utente (riservata ai Clienti)
 
         // 3. I MIEI PROGETTI
         const isPortfolio = (v === 'creator-portfolio');
@@ -21403,7 +21390,8 @@ END-ISO-10303-21;`;
         showToast(msg, 'info');
 
         try {
-          const redirectUrl = window.location.origin + window.location.pathname;
+          const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+          const redirectUrl = isLocal ? (window.location.origin + window.location.pathname) : 'https://print-forge-seven.vercel.app/';
           const { error } = await supabaseClient.auth.signInWithOAuth({
             provider: 'google',
             options: {
@@ -22042,6 +22030,10 @@ END-ISO-10303-21;`;
       if (viewId === 'home') viewId = 'client-home';
       if (viewId === 'esplora') viewId = 'explore';
       if (viewId === 'explore') {
+        if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
+          navigateTo('creator-requests');
+          return;
+        }
         try {
           if (window.location.pathname !== '/esplora') {
             window.history.pushState(null, '', '/esplora');
