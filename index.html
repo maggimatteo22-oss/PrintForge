@@ -20410,12 +20410,212 @@ END-ISO-10303-21;`;
         ? '✓ ¡Escáner verificado! Fase 4 completada: fondos liberados (€ 0,00).' 
         : '✓ Scansione corriere verificata! Fase 4 completata: pacco consegnato e fondi Escrow svincolati (€ 0,00)!';
       showToast(toastDelivery, 'success');
+      AppState.stage4Completed = true;
+      if (AppState.user && AppState.user.role === 'creator') {
+        setTimeout(() => {
+          showStage4CompletionModal({
+            rfpId: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || 'RFP-3891',
+            amount: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.budget) || '€ 48,00',
+            clientName: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.clientName) || 'Cliente'
+          });
+        }, 800);
+      }
 
       if (window.lucide && typeof lucide.createIcons === 'function') {
         lucide.createIcons();
       }
     }
     window.scanCourierDelivery = scanCourierDelivery;
+
+    /* ========================================================================= */
+    /* GESTIONE APPROVAZIONE/RIMANDO COLLAUDO CLIENTE & CHIUSURA FASE 4          */
+    /* ========================================================================= */
+    function clientConfirmQcPhotos() {
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+      
+      AppState.clientApprovedQc = true;
+      AppState.stage2Completed = true;
+
+      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      if (activeReq) {
+        activeReq.clientApprovedQc = true;
+        activeReq.qcStatus = 'approvato_dal_cliente';
+        try {
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } catch(e) {}
+        
+        if (typeof updateRequestInSupabase === 'function') {
+          updateRequestInSupabase(activeReq.id, {
+            notes: buildNotesPayload(activeReq, { clientApprovedQc: true, qcStatus: 'approvato_dal_cliente' })
+          });
+        }
+
+        broadcastRealtimeEvent('qc_approved_by_client', {
+          rfpId: activeReq.id,
+          clientName: AppState.user?.name || 'Cliente',
+          approvedAt: new Date().toISOString()
+        });
+      }
+
+      updateEscrowRoom();
+      applyRoleGatingForLabelDownload();
+      syncPipelineUI();
+
+      const msg = isEn
+        ? '✓ QC photos confirmed! Courier shipping label unlocked for the Maker.'
+        : isEs
+        ? '✓ ¡Fotos de control confirmadas! Etiqueta de envío desbloqueada para el Creador.'
+        : '✓ Collaudo fotografico confermato! Etichetta di spedizione sbloccata per il Maker.';
+      showToast(msg, 'success');
+    }
+    window.clientConfirmQcPhotos = clientConfirmQcPhotos;
+
+    function clientRejectQcPhotos() {
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+      
+      const promptMsg = isEn
+        ? 'Specify the modifications or revisions required for the Maker:'
+        : isEs
+        ? 'Indica qué modificaciones o revisiones solicitas al Creador:'
+        : 'Indica cosa desideri far modificare o perfezionare al Maker:';
+        
+      const reason = prompt(promptMsg, isEn ? 'Finishing or dimensions need adjustment' : 'Dettagli di finitura o tolleranza da rivedere');
+      if (!reason) return;
+
+      AppState.clientApprovedQc = false;
+      const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      if (activeReq) {
+        activeReq.clientApprovedQc = false;
+        activeReq.qcStatus = 'revisione_richiesta';
+        if (!activeReq.messages) activeReq.messages = [];
+        activeReq.messages.push({
+          id: 'msg-rev-' + Date.now(),
+          senderRole: 'client',
+          senderName: AppState.user?.name || 'Cliente',
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          text: `⚠️ Richiesta revisione collaudo: ${reason}`
+        });
+        
+        try {
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } catch(e) {}
+
+        if (typeof updateRequestInSupabase === 'function') {
+          updateRequestInSupabase(activeReq.id, {
+            notes: buildNotesPayload(activeReq, { clientApprovedQc: false, qcStatus: 'revisione_richiesta', revisionReason: reason })
+          });
+        }
+
+        broadcastRealtimeEvent('qc_rejected_by_client', {
+          rfpId: activeReq.id,
+          reason: reason
+        });
+      }
+
+      updateEscrowRoom();
+      applyRoleGatingForLabelDownload();
+      syncPipelineUI();
+
+      const msg = isEn
+        ? 'Revision request sent to the Maker in Deal Chat.'
+        : isEs
+        ? 'Solicitud de revisión enviada al Creador en el chat.'
+        : 'Richiesta di revisione inviata al Maker nella Deal Chat.';
+      showToast(msg, 'warning');
+    }
+    window.clientRejectQcPhotos = clientRejectQcPhotos;
+
+    function showStage4CompletionModal(data) {
+      let modal = document.getElementById('stage4CompletionModal');
+      if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'stage4CompletionModal';
+        modal.className = 'fixed inset-0 z-[9999] bg-black/85 backdrop-blur-md flex items-center justify-center p-4';
+        document.body.appendChild(modal);
+      }
+      
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+      const rfpId = data?.rfpId || (AppState.activeEscrowOrder?.id) || 'RFP-3891';
+      const amount = data?.amount || (AppState.activeEscrowOrder?.budget) || '€ 48,00';
+      
+      modal.innerHTML = `
+        <div class="max-w-md w-full bg-[#10121A] border-2 border-emerald-400/80 rounded-2xl p-6 shadow-2xl text-center space-y-4 animate-in fade-in zoom-in duration-200">
+          <div class="w-16 h-16 rounded-full bg-emerald-500/15 border-2 border-emerald-400 text-emerald-400 mx-auto flex items-center justify-center shadow-[0_0_25px_rgba(52,211,153,0.3)]">
+            <i data-lucide="award" class="w-8 h-8"></i>
+          </div>
+          <div>
+            <span class="text-[10px] font-mono uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/40">
+              ✓ 4° PASSAGGIO COMPLETATO
+            </span>
+            <h3 class="text-lg font-cyber font-bold text-white mt-2">
+              ${isEn ? 'COMMISSION COMPLETED SUCCESSFULLY!' : isEs ? '¡TRABAJO COMPLETADO CON ÉXITO!' : 'COMMESSA COMPLETATA CON SUCCESSO!'}
+            </h3>
+            <p class="text-xs text-zinc-300 font-sans mt-1 leading-relaxed">
+              ${isEn 
+                ? 'All 4 stages completed: Escrow deposit secured, QC photos approved by client, tracked courier shipping, and delivery verified. Funds released directly to your payout account!' 
+                : isEs 
+                ? 'Los 4 pasos completados: Depósito Escrow, fotos QC aprobadas por el cliente, envío rastreado y entrega verificada. ¡Fondos liberados!' 
+                : 'Tutti e 4 i passaggi sono stati completati: Deposito Escrow, collaudo 3 foto approvato dal cliente, spedizione tracciata e consegna verificata. I fondi in garanzia sono stati svincolati con successo sul tuo saldo!'}
+            </p>
+          </div>
+
+          <div class="p-3 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between text-xs font-mono">
+            <span class="text-zinc-400">COMMESSA: <strong class="text-white">#${rfpId}</strong></span>
+            <span class="text-emerald-400 font-bold">SVINCOLATI: ${amount}</span>
+          </div>
+
+          <button type="button" onclick="closeActivityAfterStage4()" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-cyber font-bold text-xs uppercase tracking-wider transition shadow-lg active:scale-95 flex items-center justify-center gap-2">
+            <i data-lucide="check-check" class="w-4 h-4"></i>
+            <span>${isEn ? 'CLOSE ACTIVITY & ARCHIVE' : isEs ? 'CERRAR ACTIVIDAD Y ARCHIVAR' : 'CHIUDI ATTIVITÀ & ARCHIVIA'}</span>
+          </button>
+        </div>
+      `;
+      modal.classList.remove('hidden');
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+    window.showStage4CompletionModal = showStage4CompletionModal;
+
+    function closeActivityAfterStage4() {
+      const modal = document.getElementById('stage4CompletionModal');
+      if (modal) modal.classList.add('hidden');
+
+      const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      if (activeReq) {
+        activeReq.isCompleted = true;
+        activeReq.isClosed = true;
+        activeReq.isAccepted = false;
+        try {
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } catch(e) {}
+      }
+
+      AppState.stage4Completed = true;
+      AppState.isDelivered = true;
+
+      // Reset Escrow Room for Creator
+      AppState.activeEscrowOrder = null;
+      AppState.loadedRequestInStudio = null;
+      AppState.cadQcFiles = [];
+      AppState.clientApprovedQc = false;
+      AppState.isShipped = false;
+      AppState.isDelivered = false;
+      AppState.stage2Completed = false;
+      AppState.stage4Completed = false;
+
+      // Update tabs (removes ATTIVITÀ tab) and update Escrow Room
+      updateNavigationTabs();
+      updateEscrowRoom();
+
+      // Navigate to creator requests
+      navigateTo('creator-requests');
+      showToast('✓ Attività conclusa e archiviata con successo.', 'success');
+    }
+    window.closeActivityAfterStage4 = closeActivityAfterStage4;
 
     /* ========================================================================= */
     /* ESCROW PICKUP-RELEASE PROTOCOL                                             */
@@ -21805,6 +22005,22 @@ END-ISO-10303-21;`;
 
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
+    // Se il creator ha concluso il 4° passaggio e naviga altrove, azzera completamente la pagina Escrow Room
+    if (AppState.user && AppState.user.role === 'creator') {
+      if (AppState.stage4Completed || AppState.isDelivered) {
+        if (viewId !== 'order-room' && viewId !== 'activity' && viewId !== 'studio') {
+          AppState.activeEscrowOrder = null;
+          AppState.loadedRequestInStudio = null;
+          AppState.cadQcFiles = [];
+          AppState.clientApprovedQc = false;
+          AppState.isShipped = false;
+          AppState.isDelivered = false;
+          AppState.stage2Completed = false;
+          AppState.stage4Completed = false;
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+        }
+      }
+    }
       // PROTEZIONE ESCLUSIVA PAGINA RICHIESTE CLIENTE
       if (viewId === 'client-request') {
         const isClient = AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'client';
@@ -22186,7 +22402,7 @@ END-ISO-10303-21;`;
         klarnaMini: '3 interest-free monthly installments',
         escrowDisclaimer: 'Funds remain frozen and protected until your approval of the 3-photo caliper inspection.',
         btnEdit: 'Edit Specifications',
-        ctaApple: (tot) => ` Pay ${tot} in Escrow with Apple Pay`,
+        ctaApple: (tot) => `Apple Pay | Pay ${tot} in Escrow`,
         ctaGoogle: (tot) => `GPay | Pay ${tot} in Escrow`,
         ctaKlarna: (tot) => `Klarna | Pay in 3 installments & Find Maker`,
         ctaCard: (tot) => `🔒 Pay ${tot} in Escrow & Find Maker`,
