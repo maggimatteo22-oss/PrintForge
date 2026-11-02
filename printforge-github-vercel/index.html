@@ -5879,53 +5879,68 @@
                 </div>
               </div>
 
-              <!-- Accordion Tecnico Collassabile per Ingegneri (Zero Disordine per i Clienti) -->
-              <div class="pt-2 border-t border-white/[0.06]">
-                <button type="button" onclick="toggleAdvancedManufacturingSpecs()" class="w-full py-2 px-3 rounded-xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/10 flex items-center justify-between text-xs font-cyber text-zinc-300 transition">
-                  <span class="flex items-center gap-1.5 font-bold" id="i18n-advancedSpecsBtnTitle">
-                    <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-zinc-400"></i>
-                    Specifiche Avanzate (Tolleranze &amp; Post-Process)
-                  </span>
-                  <i data-lucide="chevron-down" id="advancedSpecsChevron" class="w-4 h-4 text-zinc-400 transition-transform"></i>
-                </button>
+              <!-- SELETTORE OPZIONI DI SPEDIZIONE & TEMPISTICHE -->
+              <div class="pt-3 border-t border-white/[0.08] space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10px] font-cyber font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <i data-lucide="truck" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span id="i18n-shippingOptionLabelText">Opzione di Spedizione &amp; Tempistiche</span>
+                  </label>
+                  <span class="text-[9px] font-mono text-zinc-400" id="i18n-shippingParamHint">Parametri di costo calcolati in tempo reale</span>
+                </div>
 
-                <div id="advancedSpecsAccordionContent" class="hidden mt-2 p-3 rounded-xl bg-[#121317] border border-white/[0.08] space-y-3">
-                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
-                    <div class="space-y-1">
-                      <label class="text-[9px] text-zinc-400 uppercase block font-cyber font-bold" id="i18n-reqToleranceLabel">Tolleranza Dimensionale</label>
-                      <select id="reqTolerance" onchange="updateLiveRequestSummary()" class="w-full bg-[#181920] border border-white/10 rounded-lg px-2 py-1.5 text-white text-[11px] focus:outline-none">
-                        <option value="Standard ±0.20 mm" selected>Standard ±0.20 mm (Stampe standard)</option>
-                        <option value="Meccanica Fine ±0.10 mm">Meccanica Fine ±0.10 mm (Incastri e scocche)</option>
-                        <option value="Alta Precisione ±0.05 mm">Alta Precisione ±0.05 mm (Componenti critici SLA)</option>
-                      </select>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <!-- Flessibile (-10% Sconto) -->
+                  <div id="shippingCardFlexible" onclick="selectShippingOption('Flessibile 7-10 giorni')" class="shipping-card p-3 rounded-xl bg-[#101218] border border-white/10 hover:border-emerald-500/50 cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/30" id="i18n-shipFlexBadge">-10% Sconto</span>
+                      <div class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                      </div>
                     </div>
-
-                    <div class="space-y-1">
-                      <label class="text-[9px] text-zinc-400 uppercase block font-cyber font-bold" id="i18n-reqPostProcessLabel">Post-Processing &amp; Finitura</label>
-                      <select id="reqPostProcess" onchange="updateLiveRequestSummary()" class="w-full bg-[#181920] border border-white/10 rounded-lg px-2 py-1.5 text-white text-[11px] focus:outline-none">
-                        <option value="Grezzo (Rimozione supporti standard)" selected>Grezzo (Rimozione supporti)</option>
-                        <option value="Sabbiatura a microsfere">Sabbiatura a microsfere</option>
-                        <option value="Lisciatura chimica vapore">Lisciatura chimica vapore</option>
-                        <option value="Inserti filettati termo-fissati">Inserti filettati termo-fissati</option>
-                      </select>
+                    <div>
+                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-emerald-300 transition" id="i18n-shipFlexTitle">Flessibile</h4>
+                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipFlexDays">7 - 10 giorni lavorativi</p>
                     </div>
+                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipFlexDesc">Ottimizzazione tempi morti stampante. Risparmi il 10% sul totale.</p>
                   </div>
 
-                  <!-- File CAD Diretto / Alternativo -->
-                  <div class="space-y-1 pt-1 border-t border-white/[0.05]">
+                  <!-- Standard (1.0x Base - Consigliata) -->
+                  <div id="shippingCardStandard" onclick="selectShippingOption('Standard 3-5 giorni')" class="shipping-card p-3 rounded-xl bg-[#101218] border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.25)] cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
                     <div class="flex items-center justify-between">
-                      <label class="text-[9px] font-cyber font-bold text-zinc-400 uppercase block" id="i18n-reqCadFileLabel">File CAD Diretto (.STL, .STEP, .3MF)</label>
-                      <span class="text-[8px] text-zinc-500 font-mono" id="i18n-cadNdaText">PROTETTO NDA</span>
+                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/40" id="i18n-shipStdBadge">Consigliata</span>
+                      <div class="w-6 h-6 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
+                        <i data-lucide="package" class="w-3.5 h-3.5"></i>
+                      </div>
                     </div>
-                    <div class="relative">
-                      <input type="file" id="reqFileInput" accept=".stl,.step,.stp,.obj,.3mf" class="hidden" onchange="handleFileSelected(event)" />
-                      <button type="button" onclick="document.getElementById('reqFileInput').click()" class="w-full py-1.5 px-3 rounded-lg bg-[#181920] hover:bg-[#20222B] border border-white/10 text-xs font-mono text-zinc-400 flex items-center justify-between transition">
-                        <span id="labelUploadedFile" class="truncate text-zinc-400 text-[11px]">Nessun file selezionato</span>
-                        <i data-lucide="file-up" class="w-3.5 h-3.5 text-white shrink-0 ml-1.5"></i>
-                      </button>
+                    <div>
+                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-cyan-300 transition" id="i18n-shipStdTitle">Standard</h4>
+                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipStdDays">3 - 5 giorni lavorativi</p>
                     </div>
+                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipStdDesc">Tariffa base bilanciata con spedizione tracciata e imballo protettivo.</p>
+                  </div>
+
+                  <!-- Urgente (+30% Priorità) -->
+                  <div id="shippingCardUrgent" onclick="selectShippingOption('Urgente Flash 24-48h')" class="shipping-card p-3 rounded-xl bg-[#101218] border border-white/10 hover:border-amber-500/50 cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30" id="i18n-shipUrgBadge">+30% Priorità</span>
+                      <div class="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-amber-300 transition" id="i18n-shipUrgTitle">Urgente Flash</h4>
+                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipUrgDays">24 - 48 ore</p>
+                    </div>
+                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipUrgDesc">Priorità assoluta in coda macchina e lavorazione immediata h24.</p>
                   </div>
                 </div>
+
+                <!-- Input nascosti per preservare piena retrocompatibilità con form & DB -->
+                <input type="hidden" id="reqTolerance" value="Standard ±0.20 mm" />
+                <input type="hidden" id="reqPostProcess" value="Grezzo (Rimozione supporti standard)" />
+                <input type="file" id="reqFileInput" accept=".stl,.step,.stp,.obj,.3mf" class="hidden" onchange="handleFileSelected(event)" />
+                <span id="labelUploadedFile" class="hidden">Nessun file selezionato</span>
               </div>
 
             </div>
@@ -11388,6 +11403,20 @@
         reqCadFileLabel: 'File CAD (.STEP, .STL, .3MF) *',
         reqBudgetLabel: 'Budget Totale Calcolato (\u20AC)',
         reqDeadlineLabel: 'Tempistica Desiderata',
+        shippingOptionLabel: 'Opzione di Spedizione & Tempistiche',
+        shippingParamHint: 'Parametri di costo calcolati in tempo reale',
+        shipFlexBadge: '-10% Sconto',
+        shipFlexTitle: 'Flessibile',
+        shipFlexDays: '7 - 10 giorni lavorativi',
+        shipFlexDesc: 'Ottimizzazione tempi morti stampante. Risparmi il 10% sul totale.',
+        shipStdBadge: 'Consigliata',
+        shipStdTitle: 'Standard',
+        shipStdDays: '3 - 5 giorni lavorativi',
+        shipStdDesc: 'Tariffa base bilanciata con spedizione tracciata e imballo protettivo.',
+        shipUrgBadge: '+30% Priorità',
+        shipUrgTitle: 'Urgente Flash',
+        shipUrgDays: '24 - 48 ore',
+        shipUrgDesc: 'Priorità assoluta in coda macchina e lavorazione immediata h24.',
         reqNotesLabel: 'Note Tecniche / Specifiche di Carico & Montaggio',
         legalText: 'Garanzia Tolleranza Zero & Manleva Legale: Dichiaro che il modello CAD non costituisce componente di armi, oggetti illegali o protetti da copyright commerciale di terzi. Accetto che l\'importo sia custodito in Escrow Stripe fino al caricamento delle 3 foto di collaudo con calibro e svincolato al ritiro tracciato del corriere.',
         escrowNotice: 'Pagamento protetto in garanzia Escrow Stripe solo all\'approvazione del pezzo.',
@@ -12156,6 +12185,20 @@
         reqCadFileLabel: 'CAD File (.STEP, .STL, .3MF) *',
         reqBudgetLabel: 'Calculated Budget Total (\u20AC)',
         reqDeadlineLabel: 'Required Lead Time',
+        shippingOptionLabel: 'Shipping & Turnaround Options',
+        shippingParamHint: 'Real-time dynamic pricing parameters',
+        shipFlexBadge: '-10% Discount',
+        shipFlexTitle: 'Flexible',
+        shipFlexDays: '7 - 10 business days',
+        shipFlexDesc: 'Optimizes printer idle time and batching. Save 10% on total.',
+        shipStdBadge: 'Recommended',
+        shipStdTitle: 'Standard',
+        shipStdDays: '3 - 5 business days',
+        shipStdDesc: 'Balanced baseline rate with tracked shipping and secure packaging.',
+        shipUrgBadge: '+30% Priority',
+        shipUrgTitle: 'Rush Priority',
+        shipUrgDays: '24 - 48 hours',
+        shipUrgDesc: 'Top machine queue priority and round-the-clock urgent fabrication.',
         reqNotesLabel: 'Technical Notes / Load & Assembly Specs',
         legalText: 'Zero-Tolerance Guarantee & Legal Waiver: I certify that this CAD model is not a weapon component, illicit item, or infringing third-party copyright. I agree funds are held in Stripe Escrow until the 3 caliper QC photos are uploaded and released upon tracked carrier delivery.',
         escrowNotice: 'Payment secured in Stripe Escrow custody released only upon part approval.',
@@ -12924,6 +12967,20 @@
         reqCadFileLabel: 'Archivo CAD (.STEP, .STL, .3MF) *',
         reqBudgetLabel: 'Presupuesto Total Calculado (€)',
         reqDeadlineLabel: 'Plazo Deseado',
+        shippingOptionLabel: 'Opción de Envío y Plazos',
+        shippingParamHint: 'Parámetros de coste calculados en tiempo real',
+        shipFlexBadge: '-10% Descuento',
+        shipFlexTitle: 'Flexible',
+        shipFlexDays: '7 - 10 días laborables',
+        shipFlexDesc: 'Optimiza tiempos muertos de impresora. Ahorra un 10% en total.',
+        shipStdBadge: 'Recomendada',
+        shipStdTitle: 'Estándar',
+        shipStdDays: '3 - 5 días laborables',
+        shipStdDesc: 'Tarifa base equilibrada con envío rastreado y embalaje protector.',
+        shipUrgBadge: '+30% Prioridad',
+        shipUrgTitle: 'Urgente Flash',
+        shipUrgDays: '24 - 48 horas',
+        shipUrgDesc: 'Prioridad absoluta en cola de máquina y fabricación inmediata 24h.',
         reqNotesLabel: 'Notas Técnicas / Ajustes & Montaje',
         legalText: 'Garantía Tolerancia Cero & Descargo Legal: Certifico que el modelo 3D no constituye armas, objetos ilícitos ni infringe propiedad intelectual de terceros. Acepto que los fondos se custodien en Stripe Escrow hasta subir las 3 fotos de control con calibre y se liberen con la recogida del transportista.',
         escrowNotice: 'Pago protegido bajo custodia en garantía Stripe Escrow liberado solo tras aprobar la pieza.',
@@ -14166,6 +14223,20 @@ END-ISO-10303-21;`;
         'i18n-reqCadFileLabel': t.reqCadFileLabel,
         'i18n-reqBudgetLabel': t.reqBudgetLabel,
         'i18n-reqDeadlineLabel': t.reqDeadlineLabel,
+        'i18n-shippingOptionLabelText': t.shippingOptionLabel,
+        'i18n-shippingParamHint': t.shippingParamHint,
+        'i18n-shipFlexBadge': t.shipFlexBadge,
+        'i18n-shipFlexTitle': t.shipFlexTitle,
+        'i18n-shipFlexDays': t.shipFlexDays,
+        'i18n-shipFlexDesc': t.shipFlexDesc,
+        'i18n-shipStdBadge': t.shipStdBadge,
+        'i18n-shipStdTitle': t.shipStdTitle,
+        'i18n-shipStdDays': t.shipStdDays,
+        'i18n-shipStdDesc': t.shipStdDesc,
+        'i18n-shipUrgBadge': t.shipUrgBadge,
+        'i18n-shipUrgTitle': t.shipUrgTitle,
+        'i18n-shipUrgDays': t.shipUrgDays,
+        'i18n-shipUrgDesc': t.shipUrgDesc,
         'i18n-reqNotesLabel': t.reqNotesLabel,
         'i18n-legalText': t.legalText,
         'i18n-escrowNotice': t.escrowNotice,
@@ -16036,6 +16107,43 @@ END-ISO-10303-21;`;
       }
     }
     window.toggleAdvancedManufacturingSpecs = toggleAdvancedManufacturingSpecs;
+
+    function selectShippingOption(option) {
+      const dSel = document.getElementById('reqDeadline');
+      if (dSel) {
+        dSel.value = option;
+        dSel.dispatchEvent(new Event('change'));
+      }
+
+      const cardFlex = document.getElementById('shippingCardFlexible');
+      const cardStd = document.getElementById('shippingCardStandard');
+      const cardUrg = document.getElementById('shippingCardUrgent');
+
+      const baseClasses = 'shipping-card p-3 rounded-xl bg-[#101218] cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group';
+
+      if (cardFlex) cardFlex.className = `${baseClasses} border border-white/10 hover:border-emerald-500/50`;
+      if (cardStd) cardStd.className = `${baseClasses} border border-white/10 hover:border-cyan-400/50`;
+      if (cardUrg) cardUrg.className = `${baseClasses} border border-white/10 hover:border-amber-500/50`;
+
+      if (option.includes('Flessibile') || option.includes('7-10')) {
+        if (cardFlex) cardFlex.className = `${baseClasses} border-2 border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]`;
+      } else if (option.includes('Urgente') || option.includes('24-48h')) {
+        if (cardUrg) cardUrg.className = `${baseClasses} border-2 border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]`;
+      } else {
+        if (cardStd) cardStd.className = `${baseClasses} border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)]`;
+      }
+
+      if (typeof recalculateInstantQuote === 'function') {
+        recalculateInstantQuote();
+      }
+      if (typeof updateLiveRequestSummary === 'function') {
+        updateLiveRequestSummary();
+      }
+      if (window.lucide && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+    window.selectShippingOption = selectShippingOption;
 
     /* GESTIONE DIMENSIONI PERSONALIZZATE E SCALA RAPIDA DEL PEZZO */
     let originalDimensions = { x: 80, y: 60, z: 25 };
