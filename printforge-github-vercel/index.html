@@ -18493,6 +18493,26 @@ END-ISO-10303-21;`;
         renderEmailHistoryList();
       }
 
+      // Tentativo di consegna reale via API Resend
+      try {
+        const bodyLines = Array.isArray(emailObj.body) ? emailObj.body.join('<br>') : (emailObj.body || emailObj.summary || '');
+        const textLines = Array.isArray(emailObj.body) ? emailObj.body.join('\n') : (emailObj.body || emailObj.summary || '');
+        fetch('/api/email/send', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            to: emailObj.to,
+            subject: emailObj.subject,
+            html: bodyLines,
+            text: textLines
+          })
+        }).then(r => r.json()).then(data => {
+          if (data && data.realDelivered) {
+            console.log('✅ [Email Delivered]:', data.id);
+          }
+        }).catch(err => {});
+      } catch(e) {}
+
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
       const toastText = isEn 
