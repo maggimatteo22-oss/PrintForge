@@ -570,6 +570,32 @@
       border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
+        /* SELETTORE LINGUA UFFICIALE: OPACITÀ 100% ASSOLUTA, ZERO TRASPARENZA, ZERO SOVRAPPOSIZIONI */
+    #officialLangDropdown {
+      background: #0d0e14 !important;
+      background-color: #0d0e14 !important;
+      opacity: 1 !important;
+      z-index: 99999 !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+    }
+    html.light #officialLangDropdown {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      opacity: 1 !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      border: 1px solid rgba(0, 0, 0, 0.15) !important;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light #officialLangDropdown button {
+      color: #111111 !important;
+    }
+    html.light #officialLangDropdown button:hover {
+      background: rgba(0, 0, 0, 0.05) !important;
+    }
+
     html.light #mobileNavBar {
       background: rgba(255, 255, 255, 0.85) !important;
       -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
@@ -3680,7 +3706,7 @@
           </button>
 
           <!-- Dropdown Menu aperto sia al click che al tocco (Mobile & Desktop) posizionato in modo sicuro sotto al pulsante -->
-          <div id="officialLangDropdown" class="hidden flex-col gap-1 absolute right-0 top-full mt-2 p-1.5 rounded-xl bg-[#0c0d12]/98 backdrop-blur-xl border border-white/20 shadow-2xl z-[100] min-w-[135px]">
+          <div id="officialLangDropdown" class="hidden flex-col gap-1 absolute left-0 sm:left-auto sm:right-0 top-full mt-2 p-1.5 rounded-xl bg-[#0d0e14] border border-white/20 shadow-2xl z-[99999] min-w-[145px]" style="background-color: #0d0e14 !important; opacity: 1 !important;">
             <button type="button" onclick="selectAppLanguage('it', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn">
               <div class="flex items-center gap-2">
                 <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0">
