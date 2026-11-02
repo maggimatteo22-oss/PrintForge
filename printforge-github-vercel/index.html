@@ -570,6 +570,32 @@
       border-top: 1px solid rgba(255, 255, 255, 0.08) !important;
     }
 
+        /* SELETTORE LINGUA UFFICIALE: OPACITÀ 100% ASSOLUTA, ZERO TRASPARENZA, ZERO SOVRAPPOSIZIONI */
+    #officialLangDropdown {
+      background: #0d0e14 !important;
+      background-color: #0d0e14 !important;
+      opacity: 1 !important;
+      z-index: 99999 !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.9), 0 0 0 1px rgba(255, 255, 255, 0.18) !important;
+    }
+    html.light #officialLangDropdown {
+      background: #ffffff !important;
+      background-color: #ffffff !important;
+      opacity: 1 !important;
+      -webkit-backdrop-filter: none !important;
+      backdrop-filter: none !important;
+      border: 1px solid rgba(0, 0, 0, 0.15) !important;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.08) !important;
+    }
+    html.light #officialLangDropdown button {
+      color: #111111 !important;
+    }
+    html.light #officialLangDropdown button:hover {
+      background: rgba(0, 0, 0, 0.05) !important;
+    }
+
     html.light #mobileNavBar {
       background: rgba(255, 255, 255, 0.85) !important;
       -webkit-backdrop-filter: blur(24px) saturate(180%) !important;
@@ -3680,7 +3706,7 @@
           </button>
 
           <!-- Dropdown Menu aperto sia al click che al tocco (Mobile & Desktop) posizionato in modo sicuro sotto al pulsante -->
-          <div id="officialLangDropdown" class="hidden flex-col gap-1 absolute right-0 top-full mt-2 p-1.5 rounded-xl bg-[#0c0d12]/98 backdrop-blur-xl border border-white/20 shadow-2xl z-[100] min-w-[135px]">
+          <div id="officialLangDropdown" class="hidden flex-col gap-1 absolute left-0 sm:left-auto sm:right-0 top-full mt-2 p-1.5 rounded-xl bg-[#0d0e14] border border-white/20 shadow-2xl z-[99999] min-w-[145px]" style="background-color: #0d0e14 !important; opacity: 1 !important;">
             <button type="button" onclick="selectAppLanguage('it', event)" class="w-full h-8 px-2.5 rounded-lg flex items-center justify-between hover:bg-white/15 transition text-left text-xs font-mono font-bold text-white group/btn">
               <div class="flex items-center gap-2">
                 <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0">
@@ -17847,22 +17873,7 @@ END-ISO-10303-21;`;
             `;
           }
         } else {
-          const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed).length;
-          const isReqs = (v === 'creator-requests');
-          html += `
-            <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>${creatorRequestsLabel}</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
-            </button>
-          `;
-          mobileHtml += `
-            <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>${mRequestsLabel}</span>
-              <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
-            </button>
-          `;
+          // Quando il creator non ha una commessa accettata, non mostra bacheca né attività: solo Home e I Miei Progetti
         }
 
       } else {
@@ -20611,6 +20622,21 @@ END-ISO-10303-21;`;
             ${guarText}
           </span>
         </div>
+
+        <!-- AZIONE RISOLUZIONE: CHIUSURA COMMESSA & RESET STANZA -->
+        <div class="pt-2 border-t border-white/10 flex items-center justify-end relative z-10">
+          ${(AppState.user && AppState.user.role === 'creator') ? `
+            <button type="button" onclick="concludeAndResetAfterDelivery()" class="btn-kowalski-primary py-2 px-3.5 rounded-xl text-xs font-cyber font-bold tracking-wider flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition">
+              <i data-lucide="check-circle" class="w-4 h-4 text-black"></i>
+              <span>${isEn ? 'CLOSE WORKSHOP & ARCHIVE JOB' : isEs ? 'CERRAR ACTIVIDAD Y ARCHIVAR' : 'ARCHIVIA COMMESSA & CHIUDI ATTIVITÀ'}</span>
+            </button>
+          ` : `
+            <button type="button" onclick="concludeAndResetAfterDelivery()" class="btn-kowalski-primary py-2 px-3.5 rounded-xl text-xs font-cyber font-bold tracking-wider flex items-center gap-2 shadow-lg hover:scale-105 active:scale-95 transition">
+              <i data-lucide="home" class="w-4 h-4 text-black"></i>
+              <span>${isEn ? 'CLOSE ORDER & RETURN HOME' : isEs ? 'CERRAR PEDIDO Y VOLVER' : 'CHIUDI ORDINE & TORNA ALLA HOME'}</span>
+            </button>
+          `}
+        </div>
       `;
       banner.classList.remove('hidden');
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -20887,6 +20913,77 @@ END-ISO-10303-21;`;
       }, 4500);
     }
     window.shipParcelAndCloseActivity = shipParcelAndCloseActivity;
+    
+    /* ========================================================================= */
+    /* CONCLUDE AND RESET AFTER DELIVERY (FASE 4 CHIUSURA E AZZERAMENTO)         */
+    /* ========================================================================= */
+    function concludeAndResetAfterDelivery() {
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+      const isCreator = AppState.user && AppState.user.role === 'creator';
+
+      const completedReqId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) ||
+                             AppState.activeDealRfpId ||
+                             (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
+
+      // 1. Elimina la richiesta dal broadcast del cliente e dal database
+      if (completedReqId) {
+        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== completedReqId && !r.isCompleted && !r.isDelivered && !r.isClosed);
+        try {
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } catch(e) {}
+
+        if (typeof updateRequestInSupabase === 'function') {
+          updateRequestInSupabase(completedReqId, {
+            status: 'CONSEGNATO // FONDI SVINCOLATI',
+            is_delivered: true,
+            is_closed: true,
+            is_completed: true,
+            is_deleted: true
+          });
+        }
+      }
+
+      // 2. Blocca la pagina Escrow e azzera fondi come all'inizio (€ 0,00)
+      AppState.activeEscrowOrder = null;
+      AppState.loadedRequestInStudio = null;
+      AppState.cadQcFiles = [];
+      AppState.clientApprovedQc = false;
+      AppState.stage2Completed = false;
+      AppState.isShipped = false;
+      AppState.isDelivered = false;
+      AppState.stage4Completed = true;
+
+      const budgetEl = document.getElementById('escrowOrderBudget');
+      if (budgetEl) budgetEl.innerText = '€ 0,00';
+      const resBanner = document.getElementById('escrowResolutionBanner');
+      if (resBanner) {
+        resBanner.classList.add('hidden');
+        resBanner.innerHTML = '';
+      }
+
+      if (typeof resetEscrowRoomUI === 'function') {
+        resetEscrowRoomUI();
+      }
+
+      // 3. Render tabelle e feeds aggiornati senza la commessa completata
+      if (typeof renderBroadcastTable === 'function') renderBroadcastTable();
+      if (typeof renderCreatorRequestsFeed === 'function') renderCreatorRequestsFeed();
+
+      // 4. Per il creator: elimina totalmente la pagina attività fino alla prossima richiesta
+      if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
+
+      // 5. Reindirizzamento appropriato
+      if (isCreator) {
+        navigateTo('creator-portfolio');
+        showToast(isEn ? 'Order completed and archived. Workshop reset.' : isEs ? 'Trabajo archivado y completado. Taller restablecido.' : 'Commessa conclusa e archiviata con successo! Attività azzerata.', 'success');
+      } else {
+        navigateTo('client-home');
+        showToast(isEn ? 'Order delivered and concluded successfully!' : isEs ? '¡Pedido entregado y finalizado con éxito!' : 'Ordine consegnato e concluso con successo!', 'success');
+      }
+    }
+    window.concludeAndResetAfterDelivery = concludeAndResetAfterDelivery;
+
     /* Scansione pacco corriere e avanzamento alla Fase 4 (Consegna & Svincolo) */
     function scanCourierDelivery() {
       const isEn = currentLang === 'en';
@@ -22506,30 +22603,27 @@ END-ISO-10303-21;`;
           countdownSub.innerText = isEn ? 'Funds automatically released to Creator upon certified delivery' : 'Fondi svincolati automaticamente al Creator a seguito della consegna certificata';
         }
 
-        const banner = document.getElementById('escrowResolutionBanner');
-        if (banner) {
-          banner.className = 'p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-left space-y-2 font-mono text-xs';
-          banner.innerHTML = `
-            <div class="flex items-center justify-between">
-              <div class="flex items-center gap-2">
-                <i data-lucide="check-circle-2" class="w-4 h-4 text-emerald-400"></i>
-                <span class="font-cyber font-bold text-xs uppercase text-emerald-300 tracking-wider">
-                  ${isEn ? 'STRIPE ESCROW RELEASED // CARRIER DELIVERY CERTIFIED' : isEs ? 'ESCROW LIBERADO // ENTREGA CERTIFICADA' : 'FONDI ESCROW SVINCOLATI // CONSEGNA CORRIERE CERTIFICATA'}
-                </span>
-              </div>
-              <span class="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">
-                OPZIONE 2 // SVINCOLO ALLA CONSEGNA
-              </span>
-            </div>
-            <p class="text-xs text-zinc-300 font-sans leading-relaxed">
-              ${isEn 
-                ? 'Package delivered to client with confirmed recipient signature. In accordance with PrintForge Option 2 protocol, the €48.00 Escrow funds were automatically released and transferred to Creator IBAN via Stripe Connect without requiring manual client action.' 
-                : isEs 
-                ? 'Paquete entregado al cliente con firma confirmada. De acuerdo con el protocolo Opción 2 de PrintForge, los fondos Escrow de 48,00 € se liberaron automáticamente al IBAN del Creador vía Stripe Connect.' 
-                : 'Pacco consegnato al cliente con firma ricevente certificata dal corriere Packlink PRO. In base al protocollo PrintForge Opzione 2, l\'importo custodito in garanzia Escrow (€ 48,00) è stato automaticamente svincolato e accreditato al Creator su Stripe Connect senza attendere conferme manuali. Ordine completato con successo!'}
-            </p>
-          `;
+        AppState.isDelivered = true;
+        AppState.stage4Completed = true;
+        if (AppState.activeEscrowOrder) {
+          AppState.activeEscrowOrder.isDelivered = true;
+          AppState.activeEscrowOrder.budget = '€ 0,00';
         }
+        const budgetEl = document.getElementById('escrowOrderBudget');
+        if (budgetEl) budgetEl.innerText = '€ 0,00';
+
+        // Purge completed request from broadcast requests and sync
+        const completedReqId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
+        if (completedReqId) {
+          AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== completedReqId && !r.isCompleted && !r.isDelivered && !r.isClosed);
+          try {
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+          if (typeof renderBroadcastTable === 'function') renderBroadcastTable();
+          if (typeof renderCreatorRequestsFeed === 'function') renderCreatorRequestsFeed();
+        }
+
+        renderEscrowResolutionBanner();
 
         showToast(isEn ? 'Package delivered! Escrow funds automatically released to Creator (Option 2).' : isEs ? '¡Paquete entregado! Fondos liberados automáticamente al Creador.' : 'Pacco consegnato! Fondi svincolati automaticamente al Creator (Opzione 2).', 'success');
         lucide.createIcons();
@@ -23371,9 +23465,13 @@ END-ISO-10303-21;`;
         : `Admin Switch: ora stai navigando come ${newRole.toUpperCase()}!`;
       showToast(switchMsg);
       if (newRole === 'creator') {
-        navigateTo('creator-requests');
+        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
+          navigateTo('activity');
+        } else {
+          navigateTo('creator-portfolio');
+        }
       } else {
-        navigateTo('esplora');
+        navigateTo('client-home');
       }
     }
 
@@ -23439,11 +23537,14 @@ END-ISO-10303-21;`;
       if (viewId === 'creator-requests') {
         if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
           navigateTo('activity');
-          return;
         } else {
           navigateTo('creator-portfolio');
-          return;
         }
+        return;
+      }
+      if ((viewId === 'activity' || viewId === 'studio') && typeof hasAcceptedRequest === 'function' && !hasAcceptedRequest()) {
+        navigateTo('creator-portfolio');
+        return;
       }
       if (viewId === 'explore') {
         if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
@@ -24785,6 +24886,11 @@ END-ISO-10303-21;`;
       // MULTI-TENANT ISOLATION: il cliente vede ESCLUSIVAMENTE le proprie richieste
       const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
         if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return false;
+        if (r.isCompleted || r.isDelivered || r.isClosed) return false;
+        if (typeof r.status === 'string') {
+          const s = r.status.toUpperCase();
+          if (s.includes('CONSEGNAT') || s.includes('SVINCOLAT') || s.includes('ARCHIVIAT') || s.includes('COMPLETAT')) return false;
+        }
         if (isAdmin) return true;
         if (isClient) {
           const reqEmail = (r.clientEmail || '').toLowerCase().trim();
@@ -27470,7 +27576,11 @@ function renderDealChat(rfpId) {
       setUserRole(targetRole);
 
       if (targetRole === 'creator') {
-        navigateTo('creator-requests');
+        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
+          navigateTo('activity');
+        } else {
+          navigateTo('creator-portfolio');
+        }
         showToast(currentLang === 'it' 
           ? 'Portatile Founder: Ruolo impostato su CREATOR. Accesso a Bacheca e Studio CAD sbloccato.' 
           : 'Founder Laptop: Role set to CREATOR. Access to Requests Board and CAD Studio unlocked.');
@@ -29933,6 +30043,9 @@ function renderDealChat(rfpId) {
           }
           if (targetView === 'order-room' && !hasActiveEscrowOrder()) {
             targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'client-home';
+          }
+          if (targetView === 'creator-requests' && AppState.user && AppState.user.role === 'creator') {
+            targetView = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio';
           }
           navigateTo(targetView);
         } else {
