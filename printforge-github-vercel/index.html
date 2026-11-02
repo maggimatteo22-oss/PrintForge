@@ -1153,6 +1153,38 @@
       background-repeat: no-repeat;
       background-position: right 0.75rem center;
       background-size: 1.1em;
+      color-scheme: dark !important;
+      background-color: #0E0F16 !important;
+      color: #FFFFFF !important;
+      border: 1px solid rgba(255, 255, 255, 0.15) !important;
+      border-radius: 0.75rem !important;
+      cursor: pointer !important;
+    }
+    select:focus {
+      border-color: #10B981 !important;
+      box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.3) !important;
+    }
+    select optgroup {
+      background-color: #0B0C12 !important;
+      color: #34D399 !important;
+      font-weight: 800 !important;
+      font-family: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif !important;
+      letter-spacing: 0.05em !important;
+      padding: 8px 10px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
+    }
+    select option {
+      background-color: #13141D !important;
+      color: #F4F4F5 !important;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+      font-size: 12px !important;
+      padding: 10px 14px !important;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04) !important;
+    }
+    select option:hover, select option:focus, select option:checked {
+      background-color: #10B981 !important;
+      color: #050505 !important;
+      font-weight: 700 !important;
     }
 
     /* Complete OS select shielding & unstyled popover elimination */
@@ -6340,6 +6372,179 @@
       </div>
 
     </section>
+
+    
+    <!-- ========================================================================= -->
+    <!-- VISTA ESCLUSIVA: ORDINE DIRETTO OPERA DA VETRINA 2D (PAGINA SEPARATA)     -->
+    <!-- Completamente isolata dalla normale pagina richieste del cliente           -->
+    <!-- NESSUNO PUÒ MODIFICARE LE SPECIFICHE STABILITE DAL CREATOR                -->
+    <!-- ========================================================================= -->
+    <section id="view-showcase-order" class="space-y-6 hidden">
+      <!-- Breadcrumb / Back button -->
+      <div class="flex items-center justify-between pb-1">
+        <button type="button" onclick="navigateTo('explore')" class="text-xs font-mono text-zinc-400 hover:text-white flex items-center gap-1.5 transition cursor-pointer">
+          <i data-lucide="arrow-left" class="w-4 h-4"></i>
+          <span>TORNA ALLA VETRINA</span>
+        </button>
+        <div class="flex items-center gap-2">
+          <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-cyber font-bold text-[10px] tracking-wider uppercase flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            ORDINE DIRETTO VETRINA 2D
+          </span>
+        </div>
+      </div>
+
+      <!-- 1. Scheda Opera & Maker Certificato Assegnato -->
+      <div class="p-4 sm:p-6 rounded-2xl bg-[#0D0E15] border border-white/15 shadow-2xl flex flex-col sm:flex-row items-center gap-5">
+        <img id="showcaseOrderArtworkPhoto" src="/images/cube.jpg" class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border border-white/15 shrink-0 shadow-lg" alt="Foto Opera Vetrina" />
+        <div class="min-w-0 flex-1 space-y-2 text-center sm:text-left">
+          <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
+            <span class="text-xs font-mono text-zinc-400">Maker: <strong id="showcaseOrderMakerName" class="text-white font-bold">--</strong></span>
+            <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 font-mono font-bold flex items-center gap-1">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i>
+              Maker Certificato PrintForge
+            </span>
+          </div>
+          <h2 id="showcaseOrderArtworkTitle" class="text-lg sm:text-2xl font-cyber font-black text-white truncate">--</h2>
+          <p id="showcaseOrderArtworkDesc" class="text-xs text-zinc-400 line-clamp-2 font-sans">--</p>
+          <div class="pt-1 flex items-center justify-center sm:justify-start gap-3">
+            <span class="text-xs font-mono text-zinc-400">Prezzo stabilito dal Maker:</span>
+            <span id="showcaseOrderPriceBadge" class="text-lg sm:text-xl font-mono font-black text-emerald-400">€ --</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Specifiche Tecniche Bloccate dal Maker (NESSUNO PUÒ MODIFICARLE) -->
+      <div class="p-5 sm:p-6 rounded-2xl bg-[#0E0F16] border border-white/10 space-y-4 shadow-xl">
+        <div class="flex items-center justify-between border-b border-white/10 pb-3 flex-wrap gap-2">
+          <div class="flex items-center gap-2">
+            <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
+            <h3 class="text-xs sm:text-sm font-cyber font-bold text-white uppercase tracking-wider">
+              Specifiche Tecniche Stabilite dal Maker
+            </h3>
+          </div>
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 uppercase">
+            BLOCCATE • NON MODIFICABILI
+          </span>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
+          <!-- Nome Opera / Componente -->
+          <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
+            <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
+              <span>Nome Opera</span>
+              <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
+            </div>
+            <div id="showcaseSpecTitle" class="text-xs font-cyber font-bold text-white truncate">--</div>
+          </div>
+
+          <!-- Materiale Tecnico Scelto -->
+          <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
+            <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
+              <span>Materiale Tecnico</span>
+              <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
+            </div>
+            <div id="showcaseSpecMaterial" class="text-xs font-mono font-bold text-emerald-300 truncate">--</div>
+          </div>
+
+          <!-- Colore Selezionato -->
+          <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
+            <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
+              <span>Colore di Stampa</span>
+              <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
+            </div>
+            <div class="flex items-center gap-2">
+              <span id="showcaseSpecColorDot" class="w-3.5 h-3.5 rounded-full border border-white/30 shrink-0" style="background-color: #18181B;"></span>
+              <span id="showcaseSpecColor" class="text-xs font-mono font-bold text-white truncate">--</span>
+            </div>
+          </div>
+
+          <!-- Dimensioni / Grandezza XYZ -->
+          <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
+            <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
+              <span>Dimensioni (XYZ)</span>
+              <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
+            </div>
+            <div id="showcaseSpecDimensions" class="text-xs font-mono font-bold text-white truncate">--</div>
+          </div>
+
+          <!-- Quantità Pezzi -->
+          <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
+            <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
+              <span>Pezzi / Quantità</span>
+              <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
+            </div>
+            <div id="showcaseSpecQuantity" class="text-xs font-mono font-bold text-white truncate">1 pezzo (Opera Unica)</div>
+          </div>
+
+          <!-- Riempimento / Infill Meccanico -->
+          <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
+            <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
+              <span>Riempimento (Infill)</span>
+              <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
+            </div>
+            <div id="showcaseSpecInfill" class="text-xs font-mono font-bold text-white truncate">50% Meccanico Strutturale</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Indirizzo di Spedizione del Cliente (UNICO CAMPO EDITABILE) -->
+      <div class="p-5 sm:p-6 rounded-2xl bg-[#0E0F16] border border-white/10 space-y-4 shadow-xl">
+        <div class="flex items-center gap-2 border-b border-white/10 pb-3">
+          <i data-lucide="truck" class="w-4 h-4 text-cyan-400"></i>
+          <h3 class="text-xs sm:text-sm font-cyber font-bold text-white uppercase tracking-wider">
+            Indirizzo di Spedizione e Consegna Corriere
+          </h3>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="space-y-1 sm:col-span-2">
+            <label class="text-[10px] font-mono text-zinc-400 uppercase block">Via e Numero Civico *</label>
+            <input type="text" id="showcaseShipStreet" placeholder="es. Via Alessandro Manzoni 12" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" />
+          </div>
+          <div class="space-y-1">
+            <label class="text-[10px] font-mono text-zinc-400 uppercase block">Città *</label>
+            <input type="text" id="showcaseShipCity" placeholder="es. Milano" value="Milano" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" />
+          </div>
+          <div class="grid grid-cols-2 gap-2">
+            <div class="space-y-1">
+              <label class="text-[10px] font-mono text-zinc-400 uppercase block">CAP *</label>
+              <input type="text" id="showcaseShipCap" placeholder="20121" value="20121" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-emerald-400 transition" />
+            </div>
+            <div class="space-y-1">
+              <label class="text-[10px] font-mono text-zinc-400 uppercase block">Prov. *</label>
+              <input type="text" id="showcaseShipProv" placeholder="MI" value="MI" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-mono uppercase focus:outline-none focus:border-emerald-400 transition" />
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-1 pt-1">
+          <label class="text-[10px] font-mono text-zinc-400 uppercase block">Istruzioni Corriere / Note Consegna (Opzionale)</label>
+          <input type="text" id="showcaseShipNotes" placeholder="es. Citofono Maggi, scala B secondo piano" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" />
+        </div>
+      </div>
+
+      <!-- 4. Barra Azione Finale con Deposito Escrow e Tasto "CONTATTA IL MAKER" -->
+      <div class="p-4 sm:p-5 rounded-2xl bg-[#0B0C12] border border-emerald-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl">
+        <div class="space-y-1 text-center sm:text-left">
+          <div class="flex items-center justify-center sm:justify-start gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+            <span class="text-xs font-mono text-zinc-300">Fondo Fiduciario Escrow: fondi sbloccati solo a collaudo positivo</span>
+          </div>
+          <div class="flex items-center justify-center sm:justify-start gap-2">
+            <span class="text-xs font-mono text-zinc-400">Totale Ordine:</span>
+            <span id="showcaseOrderTotalDisplay" class="text-xl sm:text-2xl font-mono font-black text-emerald-400">€ --</span>
+          </div>
+        </div>
+
+        <!-- TASTO FINALE: SEMPRE E SOLAMENTE "CONTATTA IL MAKER" -->
+        <button type="button" id="btnSubmitShowcaseOrder" onclick="submitShowcaseOrder()" class="w-full sm:w-auto btn-kowalski-primary px-8 py-3.5 rounded-xl font-cyber font-extrabold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition cursor-pointer">
+          <i data-lucide="message-square" class="w-4 h-4 text-black"></i>
+          <span>CONTATTA IL MAKER</span>
+        </button>
+      </div>
+    </section>
+
 
     <!-- ===================================================================== -->
     <!-- VISTA 3: BACHECA RICHIESTE CLIENTI PER I CREATOR                      -->
@@ -16891,6 +17096,39 @@ END-ISO-10303-21;`;
     window.updateCalculatedDimensionMetrics = updateCalculatedDimensionMetrics;
 
     function resetRequestSpecifications(silent = false) {
+      // Garantisci SEMPRE il testo originale per la pagina richieste in-app del cliente
+      const reqSubmitSpan = document.getElementById('i18n-btnSubmitRfp');
+      if (reqSubmitSpan) {
+        const lang = currentLang || 'it';
+        const t = (typeof i18n !== 'undefined' && i18n[lang]) || {};
+        reqSubmitSpan.innerText = t.btnSubmitRfp || 'TROVA IL MAKER PER QUESTA COMMESSA';
+      }
+      const directBanner = document.getElementById('directShowcaseLockBanner');
+      if (directBanner) directBanner.remove();
+
+      // Sblocca qualsiasi campo
+      ['dimX', 'dimY', 'dimZ', 'reqDimensions', 'reqTolerance', 'reqPostProcess', 'reqMaterial', 'reqUsage', 'reqQuantity', 'reqCustomQtyInput'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.disabled = false;
+          el.readOnly = false;
+          el.style.pointerEvents = 'auto';
+          el.classList.remove('opacity-80', 'opacity-75', 'cursor-not-allowed', 'border-emerald-500/50', 'border-emerald-500/40');
+        }
+      });
+      const trigMat = document.getElementById('customTrigger_reqMaterial');
+      if (trigMat) {
+        trigMat.style.pointerEvents = 'auto';
+        trigMat.classList.remove('opacity-80', 'opacity-75', 'cursor-not-allowed', 'border-emerald-500/50');
+      }
+      const trigUsage = document.getElementById('customTrigger_reqUsage');
+      if (trigUsage) {
+        trigUsage.style.pointerEvents = 'auto';
+        trigUsage.classList.remove('opacity-80', 'opacity-75', 'cursor-not-allowed', 'border-emerald-500/50');
+      }
+      window._currentShowcaseWorkOrder = null;
+      window._directAssignedCreator = null;
+
       const reqTitle = document.getElementById('reqTitle');
       if (reqTitle) reqTitle.value = '';
 
@@ -23986,7 +24224,7 @@ END-ISO-10303-21;`;
           headerBarEl.classList.add('header-relative');
         }
       }
-      ['login-gate', 'client-home', 'client-request', 'creator-requests', 'deal-chat', 'studio', 'order-room', 'explore', 'creator-portfolio'].forEach(v => {
+      ['login-gate', 'client-home', 'client-request', 'creator-requests', 'deal-chat', 'studio', 'order-room', 'explore', 'creator-portfolio', 'showcase-order'].forEach(v => {
         const sec = document.getElementById(`view-${v}`);
         if (sec) {
           sec.classList.add('hidden');
@@ -24336,7 +24574,8 @@ END-ISO-10303-21;`;
       const infill = document.getElementById('reqInfill')?.value || '50% Meccanico Strutturale';
       const postProcess = document.getElementById('reqPostProcess')?.value || 'Grezzo (Rimozione supporti standard)';
       const rawBudgetVal = document.getElementById('reqBudget')?.value;
-      const budgetNum = (rawBudgetVal && !isNaN(parseFloat(rawBudgetVal)) && parseFloat(rawBudgetVal) > 0) ? parseFloat(rawBudgetVal) : 0;
+      const parsedBudget = parseFloat(rawBudgetVal);
+      const budgetNum = (!isNaN(parsedBudget) && parsedBudget > 0) ? parsedBudget : 45.00;
       const budgetStr = formatEuroClean(budgetNum);
       const shippingNum = 0;
       const escrowTotalStr = budgetStr;
@@ -24631,9 +24870,9 @@ END-ISO-10303-21;`;
         tolerance: draft.tolerance,
         infill: draft.infill,
         postProcess: draft.postProcess,
-        budget: draft.budgetStr,
+        budget: (draft.budgetStr && draft.budgetStr !== '€ 0,00' && draft.budgetStr !== '€ 0') ? draft.budgetStr : ((draft.budgetNum && draft.budgetNum > 0) ? formatEuroClean(draft.budgetNum) : (directWork && directWork.price ? directWork.price : '€ 45,00')),
         shippingPrice: draft.shippingNum,
-        escrowTotal: draft.escrowTotalStr,
+        escrowTotal: (draft.escrowTotalStr && draft.escrowTotalStr !== '€ 0,00' && draft.escrowTotalStr !== '€ 0') ? draft.escrowTotalStr : ((draft.budgetNum && draft.budgetNum > 0) ? formatEuroClean(draft.budgetNum) : (directWork && directWork.price ? directWork.price : '€ 45,00')),
         paymentMethod: currentSelectedPaymentMethod,
         shippingCarrier: selectedShippingCarrierId.includes('ups') ? 'UPS Standard' : selectedShippingCarrierId.includes('dhl') ? 'DHL Express' : selectedShippingCarrierId.includes('gls') ? 'GLS Parcel' : 'Poste Italiane',
         trackingNumber: `PF-UPS-${Math.floor(100000 + Math.random() * 900000)}`,
@@ -25609,15 +25848,20 @@ END-ISO-10303-21;`;
       }
 
       const cardsHtml = visibleRequests.map((r, idx) => {
-        let displayBudget = r.budget;
-        if (!displayBudget || displayBudget === '€ 0,00' || displayBudget === '€ 0' || displayBudget === '0') {
+        // Prezzo reale garantito (mai mostrare € 0,00)
+        let resolvedPrice = r.budget;
+        if (!resolvedPrice || resolvedPrice === '€ 0,00' || resolvedPrice === '€ 0' || resolvedPrice === '0' || String(resolvedPrice).trim() === '') {
           if (r.showcaseWorkId && AppState.portfolioWorks) {
             const w = AppState.portfolioWorks.find(x => x && x.id === r.showcaseWorkId);
-            if (w && w.price) displayBudget = w.price;
+            if (w && w.price) resolvedPrice = w.price;
           }
-          if (!displayBudget || displayBudget === '€ 0,00') displayBudget = r.itemBudget || r.escrowTotal || '€ 45,00';
-          r.budget = displayBudget;
+          if (!resolvedPrice || resolvedPrice === '€ 0,00' || resolvedPrice === '€ 0' || resolvedPrice === '0') {
+            resolvedPrice = r.itemBudget || r.escrowTotal || '€ 45,00';
+          }
+          if (resolvedPrice === '€ 0,00' || resolvedPrice === '€ 0') resolvedPrice = '€ 45,00';
         }
+        const displayBudget = resolvedPrice;
+        r.budget = displayBudget;
         const displayMaterial = r.material || 'PETG';
         const displayColor = r.color || 'Nero Opaco';
         const displayTolerance = r.tolerance || '±0.05 mm';
@@ -29965,8 +30209,163 @@ function renderDealChat(rfpId) {
     window.closeItemDetailModal = closeItemDetailModal;
 
     
-    /* PREPARA L'ORDINE DA VETRINA NELLA PAGINA RICHIESTE: BLOCCO SPECIFICHE TECNICHE, SOLO SPEDIZIONE EDITABILE */
-    function prepareShowcaseOrderInRequestPage(work, orderDraft) {
+    /* ========================================================================= */
+    /* GESTIONE PAGINA SEPARATA: ORDINE OPERA DA VETRINA 2D (view-showcase-order) */
+    /* Specifiche bloccate e non modificabili da nessuno                         */
+    /* Tasto esclusivo e bloccato: "CONTATTA IL MAKER"                           */
+    /* ========================================================================= */
+    function populateShowcaseOrderView(work) {
+      if (!work) return;
+
+      const photoEl = document.getElementById('showcaseOrderArtworkPhoto');
+      if (photoEl) photoEl.src = work.photoUrl || '/images/cube.jpg';
+
+      const makerEl = document.getElementById('showcaseOrderMakerName');
+      if (makerEl) makerEl.textContent = work.creatorName || 'Maker Certificato';
+
+      const titleEl = document.getElementById('showcaseOrderArtworkTitle');
+      if (titleEl) titleEl.textContent = work.title || 'Opera';
+
+      const descEl = document.getElementById('showcaseOrderArtworkDesc');
+      if (descEl) descEl.textContent = work.description || 'Opera verificata dalla rete Maker PrintForge.';
+
+      let numPrice = 45.00;
+      if (work.price) {
+        const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
+        const parsed = parseFloat(rawNum);
+        if (!isNaN(parsed) && parsed > 0) numPrice = parsed;
+      }
+      const budgetStr = '€ ' + numPrice.toFixed(2).replace('.', ',');
+
+      const priceBadge = document.getElementById('showcaseOrderPriceBadge');
+      if (priceBadge) priceBadge.textContent = budgetStr;
+
+      const totalDisplay = document.getElementById('showcaseOrderTotalDisplay');
+      if (totalDisplay) totalDisplay.textContent = budgetStr;
+
+      // Specifiche bloccate NESSUNO PUÒ MODIFICARLE
+      const specTitle = document.getElementById('showcaseSpecTitle');
+      if (specTitle) specTitle.textContent = work.title || 'Opera';
+
+      const specMaterial = document.getElementById('showcaseSpecMaterial');
+      if (specMaterial) specMaterial.textContent = work.material || 'PETG Tecnico';
+
+      const specColor = document.getElementById('showcaseSpecColor');
+      if (specColor) specColor.textContent = work.color || 'Nero Cyber';
+
+      const specColorDot = document.getElementById('showcaseSpecColorDot');
+      if (specColorDot) specColorDot.style.backgroundColor = work.colorHex || '#18181B';
+
+      const specDimensions = document.getElementById('showcaseSpecDimensions');
+      if (specDimensions) specDimensions.textContent = work.dimensions || '80 × 60 × 25 mm';
+
+      const specQuantity = document.getElementById('showcaseSpecQuantity');
+      if (specQuantity) specQuantity.textContent = work.quantity || '1 pezzo (Opera Unica)';
+
+      const specInfill = document.getElementById('showcaseSpecInfill');
+      if (specInfill) specInfill.textContent = work.infill || '50% Meccanico Strutturale';
+
+      // Pre-popola indirizzo se disponibile dall'utente
+      const streetEl = document.getElementById('showcaseShipStreet');
+      if (streetEl && (!streetEl.value || streetEl.value.trim() === '')) {
+        streetEl.value = (AppState.user && AppState.user.street) || '';
+      }
+      const cityEl = document.getElementById('showcaseShipCity');
+      if (cityEl && (!cityEl.value || cityEl.value.trim() === '')) {
+        cityEl.value = (AppState.user && AppState.user.city) || 'Milano';
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+    window.populateShowcaseOrderView = populateShowcaseOrderView;
+
+    function submitShowcaseOrder() {
+      const work = window._currentShowcaseWorkOrder;
+      if (!work) {
+        showToast('Nessuna opera selezionata dalla vetrina.', 'warning');
+        navigateTo('explore');
+        return;
+      }
+
+      if (!AppState.user || !AppState.user.isLoggedIn) {
+        showToast('Effettua l\'accesso per ordinare quest\'opera direttamente dal Maker.', 'warning');
+        navigateTo('login-gate');
+        return;
+      }
+
+      const street = (document.getElementById('showcaseShipStreet')?.value || '').trim();
+      const city = (document.getElementById('showcaseShipCity')?.value || '').trim() || 'Milano';
+      const cap = (document.getElementById('showcaseShipCap')?.value || '').trim() || '20121';
+      const prov = (document.getElementById('showcaseShipProv')?.value || '').trim() || 'MI';
+      const extraNotes = (document.getElementById('showcaseShipNotes')?.value || '').trim();
+
+      if (!street) {
+        showToast('Inserisci la via e numero civico per la consegna con corriere.', 'warning');
+        const stInput = document.getElementById('showcaseShipStreet');
+        if (stInput) stInput.focus();
+        return;
+      }
+
+      const shippingFull = `${street}, ${cap} ${city} (${prov})`;
+
+      let numPrice = 45.00;
+      if (work.price) {
+        const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
+        const parsed = parseFloat(rawNum);
+        if (!isNaN(parsed) && parsed > 0) numPrice = parsed;
+      }
+      const budgetStr = '€ ' + numPrice.toFixed(2).replace('.', ',');
+
+      const orderDraft = {
+        title: work.title,
+        shippingStreet: street,
+        shippingCity: city,
+        shippingCap: cap,
+        shippingProv: prov,
+        shippingFull: shippingFull,
+        usage: 'Design & Prototipo Certificato',
+        material: work.material || 'PETG Tecnico',
+        color: work.color || 'Nero Cyber',
+        colorHexVal: work.colorHex || '#18181b',
+        dimensionsStr: work.dimensions || '80 × 60 × 25 mm',
+        tolerance: 'Alta Precisione ±0.05 mm',
+        infill: work.infill || '50% Meccanico Strutturale',
+        postProcess: 'Grezzo (Supporti rimossi)',
+        quantity: '1 pezzo',
+        budgetNum: numPrice,
+        budgetStr: budgetStr,
+        shippingNum: 0,
+        escrowTotalStr: budgetStr,
+        deadline: 'Standard 3-5 giorni',
+        notes: extraNotes ? `Ordine Vetrina 2D per "${work.title}". Maker: ${work.creatorName}. Note: ${extraNotes}` : `Ordine diretto da Vetrina 2D per opera "${work.title}". Maker: ${work.creatorName}.`,
+        customFileName: (work.title.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'opera') + '.stl',
+        aiImage: work.photoUrl || '/images/cube.jpg',
+        presetKind: 'custom',
+        clientEmail: (AppState.user && AppState.user.email) || 'cliente@printforge.dev',
+        isDirectShowcase: true,
+        isShowcaseOrder: true,
+        showcaseWorkId: work.id
+      };
+
+      AppState.pendingOrderDraft = orderDraft;
+
+      if (typeof openOrderReviewModal === 'function') {
+        openOrderReviewModal(orderDraft);
+      } else {
+        executeFinalBroadcastSubmit(orderDraft);
+      }
+    }
+    window.submitShowcaseOrder = submitShowcaseOrder;
+
+    function orderFromShowcase(workId) {
+      const work = (AppState.portfolioWorks || []).find(w => w && w.id === workId);
+      if (!work) {
+        showToast('Opera non trovata.', 'warning');
+        return;
+      }
+
       window._currentShowcaseWorkOrder = work;
       window._directAssignedCreator = {
         id: work.creatorId || '',
@@ -29974,329 +30373,10 @@ function renderDealChat(rfpId) {
         email: work.creatorEmail || ''
       };
 
-      try {
-        sessionStorage.setItem('printforge_showcase_order_draft', JSON.stringify({
-          work: work,
-          creator: window._directAssignedCreator
-        }));
-      } catch(e) {}
-
-      navigateTo('client-request');
-
-      const applyShowcaseLock = () => {
-        // 1. Popola e blocca il Titolo
-        const reqTitle = document.getElementById('reqTitle');
-        if (reqTitle) {
-          reqTitle.value = work.title || 'Opera da Vetrina';
-          reqTitle.readOnly = true;
-          reqTitle.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
-        }
-
-        // 2. Popola e blocca Destinazione d'Uso
-        const reqUsage = document.getElementById('reqUsage');
-        if (reqUsage) {
-          const targetUsage = (work.usage || 'Design Estetico & Artistico').trim();
-          let usageMatched = false;
-          for (let i = 0; i < reqUsage.options.length; i++) {
-            const opt = reqUsage.options[i];
-            if (opt.value.toLowerCase() === targetUsage.toLowerCase() || 
-                opt.text.toLowerCase().includes(targetUsage.toLowerCase()) || 
-                targetUsage.toLowerCase().includes(opt.value.toLowerCase())) {
-              reqUsage.selectedIndex = i;
-              usageMatched = true;
-              break;
-            }
-          }
-          if (!usageMatched) {
-            const newOpt = new Option(targetUsage, targetUsage, true, true);
-            reqUsage.add(newOpt);
-            reqUsage.value = targetUsage;
-          }
-          reqUsage.disabled = true;
-          reqUsage.style.pointerEvents = 'none';
-          reqUsage.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
-        }
-
-        // 3. Popola e blocca Materiale Tecnico (Seleziona quello del Maker e non modificabile)
-        const reqMat = document.getElementById('reqMaterial');
-        if (reqMat) {
-          const targetMat = (work.material || 'PETG Tecnico').trim();
-          let matMatched = false;
-          for (let i = 0; i < reqMat.options.length; i++) {
-            const opt = reqMat.options[i];
-            const optVal = opt.value.toLowerCase().trim();
-            const optTxt = opt.text.toLowerCase().trim();
-            const targetLower = targetMat.toLowerCase();
-            if (optVal === targetLower || optTxt.includes(targetLower) || targetLower.includes(optVal) || 
-                (targetLower.startsWith('petg') && optVal.startsWith('petg')) || 
-                (targetLower.startsWith('pla') && optVal.startsWith('pla')) || 
-                (targetLower.startsWith('abs') && optVal.startsWith('abs')) || 
-                (targetLower.startsWith('resina') && optVal.startsWith('resina'))) {
-              reqMat.selectedIndex = i;
-              matMatched = true;
-              break;
-            }
-          }
-          if (!matMatched) {
-            const newOpt = new Option(targetMat + ' (Specifiche Maker)', targetMat, true, true);
-            reqMat.add(newOpt);
-            reqMat.value = targetMat;
-          }
-          reqMat.disabled = true;
-          reqMat.style.pointerEvents = 'none';
-          reqMat.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]', 'border-emerald-500/40');
-          if (typeof CustomSelectEngine !== 'undefined' && CustomSelectEngine.syncTrigger) {
-            CustomSelectEngine.syncTrigger('reqMaterial');
-          }
-          const triggerMat = document.getElementById('customTrigger_reqMaterial');
-          if (triggerMat) {
-            triggerMat.style.pointerEvents = 'none';
-            triggerMat.classList.add('opacity-75', 'cursor-not-allowed', 'border-emerald-500/50');
-            const txt = document.getElementById('customTriggerText_reqMaterial');
-            if (txt) {
-              txt.innerHTML = `${escapeHtml(targetMat)} <span class="ml-2 px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-cyber font-bold text-[9px] tracking-wider">🔒 SPECIFICHE MAKER</span>`;
-            }
-          }
-          const triggerUsage = document.getElementById('customTrigger_reqUsage');
-          if (triggerUsage) {
-            triggerUsage.style.pointerEvents = 'none';
-            triggerUsage.classList.add('opacity-75', 'cursor-not-allowed', 'border-emerald-500/50');
-          }
-        }
-
-        // 4. Popola e blocca Opzione Infill / Riempimento (Seleziona quello del Maker e non modificabile)
-        const targetInfill = (work.infill || '50% Meccanico Strutturale').trim();
-        if (typeof selectQuickInfill === 'function') {
-          selectQuickInfill(targetInfill);
-        } else {
-          const infillEl = document.getElementById('reqInfill');
-          if (infillEl) infillEl.value = targetInfill;
-          const disp = document.getElementById('infillSelectedNameDisplay');
-          if (disp) disp.innerText = targetInfill;
-        }
-        document.querySelectorAll('.infill-pill, #infillPillsContainer button').forEach(b => {
-          b.disabled = true;
-          b.style.pointerEvents = 'none';
-          b.classList.add('cursor-not-allowed', 'opacity-70');
-        });
-        const reqInfillSelect = document.getElementById('reqInfill');
-        if (reqInfillSelect) {
-          reqInfillSelect.disabled = true;
-          reqInfillSelect.style.pointerEvents = 'none';
-        }
-
-        // 5. Popola e blocca Colore / Finitura Cromatica (Ruota, Finitura e Preset bloccati sulle selezioni del Maker)
-        const makerColor = work.color || 'Arancione Meccanico';
-        const makerColorHex = work.colorHex || (makerColor.toLowerCase().includes('aranc') ? '#F97316' : makerColor.toLowerCase().includes('bianco') ? '#F8FAFC' : makerColor.toLowerCase().includes('titan') ? '#64748B' : makerColor.toLowerCase().includes('blu') ? '#2563EB' : makerColor.toLowerCase().includes('rosso') ? '#DC2626' : makerColor.toLowerCase().includes('giallo') ? '#EAB308' : makerColor.toLowerCase().includes('verde') ? '#10B981' : '#18181B');
-        
-        if (typeof applyPresetColor === 'function') {
-          applyPresetColor(makerColorHex, makerColor);
-        }
-        const reqColorHidden = document.getElementById('reqColor');
-        if (reqColorHidden) reqColorHidden.value = makerColor;
-        
-        const customColorTextInput = document.getElementById('customColorTextInput');
-        if (customColorTextInput) {
-          customColorTextInput.value = makerColor + ' (Specifiche Maker)';
-          customColorTextInput.disabled = true;
-          customColorTextInput.readOnly = true;
-          customColorTextInput.style.pointerEvents = 'none';
-          customColorTextInput.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
-        }
-
-        // Blocca apertura Ruota Colori
-        document.querySelectorAll('button[onclick*="openStylishColorWheelModal"]').forEach(b => {
-          b.disabled = true;
-          b.style.pointerEvents = 'none';
-          b.classList.add('opacity-70', 'cursor-not-allowed');
-        });
-
-        // Blocca tutti i bottoni chip / preset colore rapido
-        document.querySelectorAll('button[onclick*="applyPresetColor"], .color-chip-btn, [onclick*="selectColorChip"], [onclick*="selectColorHex"]').forEach(b => {
-          b.disabled = true;
-          b.style.pointerEvents = 'none';
-          b.classList.add('opacity-40', 'cursor-not-allowed');
-        });
-
-        // 6. Popola e blocca Pezzi / Quantità (1 pezzo bloccato)
-        const reqQty = document.getElementById('reqQuantity');
-        if (reqQty) {
-          reqQty.value = work.quantity || '1 pezzo (Prototipo)';
-          reqQty.disabled = true;
-          reqQty.style.pointerEvents = 'none';
-        }
-        const customQtyInput = document.getElementById('reqCustomQtyInput');
-        if (customQtyInput) {
-          customQtyInput.value = '1';
-          customQtyInput.readOnly = true;
-          customQtyInput.disabled = true;
-          customQtyInput.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
-        }
-        document.querySelectorAll('[onclick*="adjustCustomQuantity"]').forEach(b => {
-          b.style.pointerEvents = 'none';
-          b.disabled = true;
-          b.classList.add('opacity-30', 'cursor-not-allowed');
-        });
-
-        // 7. Popola e blocca Prezzo
-        const reqBudget = document.getElementById('reqBudget');
-        if (reqBudget) {
-          let numPrice = 35.00;
-          if (work.price) {
-            const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
-            const parsed = parseFloat(rawNum);
-            if (!isNaN(parsed) && parsed > 0) numPrice = parsed;
-          }
-          reqBudget.value = numPrice.toFixed(2);
-          reqBudget.readOnly = true;
-          reqBudget.classList.add('opacity-80', 'cursor-not-allowed');
-        }
-
-        // 8. Popola e blocca Dimensioni (XYZ) e Scala
-        if (work.dimensions) {
-          const parts = work.dimensions.split(/[x×\-]/i).map(s => parseFloat(s.replace(/[^0-9.]/g, ''))).filter(n => !isNaN(n));
-          if (parts.length >= 3) {
-            const dx = document.getElementById('dimX'); if (dx) dx.value = parts[0];
-            const dy = document.getElementById('dimY'); if (dy) dy.value = parts[1];
-            const dz = document.getElementById('dimZ'); if (dz) dz.value = parts[2];
-          }
-        }
-        ['dimX', 'dimY', 'dimZ', 'reqDimensions', 'reqTolerance', 'reqPostProcess'].forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.disabled = true;
-            el.readOnly = true;
-            el.style.pointerEvents = 'none';
-            el.classList.add('opacity-80', 'cursor-not-allowed', 'bg-white/[0.03]');
-          }
-        });
-        document.querySelectorAll('.scale-pill, [onclick*="setScaleRatio"]').forEach(b => {
-          b.style.pointerEvents = 'none';
-          b.disabled = true;
-          b.classList.add('opacity-40', 'cursor-not-allowed');
-        });
-
-        // 9. Tasto finale bianco: "CONTATTA IL MAKER"
-        const submitBtnSpan = document.getElementById('i18n-btnSubmitRfp');
-        const submitBtn = document.getElementById('btnSubmitRfpForm');
-        if (submitBtnSpan) {
-          const isEn = currentLang === 'en';
-          const isEs = currentLang === 'es';
-          submitBtnSpan.innerText = isEn ? 'CONTATTA IL MAKER' : isEs ? 'CONTACTAR AL MAKER' : 'CONTATTA IL MAKER';
-        }
-        if (submitBtn) {
-          submitBtn.className = "w-full sm:w-auto btn-kowalski-primary px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-xl font-cyber font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition cursor-pointer";
-        }
-
-        // 10. Banner informativo di blocco specifiche in cima al form
-        const formContainer = document.getElementById('view-client-request');
-        if (formContainer) {
-          let banner = document.getElementById('directShowcaseLockBanner');
-          if (!banner) {
-            banner = document.createElement('div');
-            banner.id = 'directShowcaseLockBanner';
-            formContainer.insertBefore(banner, formContainer.firstChild);
-          }
-          banner.className = 'p-3.5 sm:p-4 rounded-2xl bg-[#10121A] border border-emerald-500/40 flex items-center gap-3 shadow-xl mb-4 transition-all';
-          banner.innerHTML = `
-            <img src="${work.photoUrl || '/images/cube.jpg'}" class="w-14 h-14 rounded-xl object-cover border border-white/10 shrink-0 shadow-md" alt="Foto Opera Vetrina" />
-            <div class="min-w-0 flex-1">
-              <div class="flex items-center gap-2 flex-wrap">
-                <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[9px] font-bold">ORDINE DIRETTO VETRINA</span>
-                <span class="text-xs font-mono text-zinc-300">Maker: <strong class="text-white">${escapeHtml(work.creatorName || 'Maker Certificato')}</strong></span>
-              </div>
-              <h4 class="text-xs sm:text-sm font-bold text-white truncate mt-0.5">${escapeHtml(work.title)}</h4>
-              <p class="text-[10px] sm:text-[10.5px] text-zinc-400 font-mono">
-                🔒 Specifiche tecniche bloccate dal Maker: <strong class="text-emerald-300">${escapeHtml(work.material || 'PETG')}</strong> • <strong class="text-emerald-300">${escapeHtml(makerColor)}</strong> • <strong class="text-emerald-300">1 pz</strong> • <strong class="text-emerald-300">${escapeHtml(work.usage || 'Design Estetico')}</strong> • <strong class="text-emerald-300">${escapeHtml(targetInfill)}</strong>
-              </p>
-            </div>
-          `;
-        }
-
-        if (typeof calculateVolumetricShipping === 'function') calculateVolumetricShipping();
-        if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
-        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-      };
-
-      setTimeout(applyShowcaseLock, 100);
-      setTimeout(applyShowcaseLock, 400);
-    }
-    window.prepareShowcaseOrderInRequestPage = prepareShowcaseOrderInRequestPage;
-
-    function orderFromShowcase(workId) {
-      const work = (AppState.portfolioWorks || []).find(w => w && w.id === workId);
-      if (!work) return;
-
-      const isEn = currentLang === 'en';
-      const isEs = currentLang === 'es';
-
-      // 1. Memorizza il creator di questa opera per l'assegnazione diretta
-      window._directAssignedCreator = {
-        id: work.creatorId || '',
-        name: work.creatorName || (isEn ? 'Certified Maker' : 'Maker Certificato'),
-        email: work.creatorEmail || ''
-      };
-
-      // 2. Pre-popola anche i campi del form nel CAD Studio e form richiesta
-      const reqTitle = document.getElementById('reqTitle');
-      if (reqTitle) reqTitle.value = work.title;
-
-      const reqMat = document.getElementById('reqMaterial');
-      if (reqMat) reqMat.value = work.material;
-
-      const reqCol = document.getElementById('reqColor');
-      if (reqCol) reqCol.value = work.color;
-
-      const reqDims = document.getElementById('reqDimensions');
-      if (reqDims) reqDims.value = work.dimensions;
-
-      // 3. Calcola il prezzo
-      let numPrice = 35.00;
-      if (work.price) {
-        const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
-        const parsed = parseFloat(rawNum);
-        if (!isNaN(parsed) && parsed > 0) numPrice = parsed;
-      }
-      const budgetStr = '€ ' + numPrice.toFixed(2).replace('.', ',');
-      const escrowTotalStr = budgetStr;
-
-      // 4. Costruisci il draft d'ordine completo esattamente identico alla procedura del sito
-      const orderDraft = {
-        title: work.title,
-        shippingStreet: '',
-        shippingCity: 'Milano',
-        shippingCap: '20121',
-        shippingProv: 'MI',
-        shippingFull: 'Milano (MI)',
-        usage: 'Parte Meccanica Funzionale',
-        material: work.material || 'PETG Tecnico',
-        color: work.color || 'Nero Cyber',
-        colorHexVal: '#18181b',
-        dimensionsStr: work.dimensions || '80 × 60 × 25 mm',
-        tolerance: 'Alta Precisione ±0.05 mm',
-        infill: '50% Meccanico Standard',
-        postProcess: 'Grezzo (Supporti rimossi)',
-        quantity: '1 pezzo',
-        budgetNum: numPrice,
-        budgetStr: budgetStr,
-        shippingNum: 0,
-        escrowTotalStr: escrowTotalStr,
-        deadline: 'Standard 3-5 giorni',
-        notes: 'Ordine diretto da Vetrina 2D per opera "' + work.title + '". Maker assegnato: ' + work.creatorName + '.',
-        customFileName: (work.title.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'opera') + '.stl',
-        aiImage: work.photoUrl || '/images/cube.jpg',
-        presetKind: 'custom',
-        clientEmail: (AppState.user && AppState.user.email) || 'cliente@printforge.dev'
-      };
-
-      AppState.pendingOrderDraft = orderDraft;
-
-      // 5. Mostra la pagina richieste con tutte le componenti tecniche bloccate tranne opzioni spedizione e indirizzo
-      if (typeof prepareShowcaseOrderInRequestPage === 'function') {
-        prepareShowcaseOrderInRequestPage(work, orderDraft);
-      } else {
-        navigateTo('client-request');
-      }
+      // Popola e apri la pagina SEPARATA view-showcase-order
+      populateShowcaseOrderView(work);
+      navigateTo('showcase-order');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     window.orderFromShowcase = orderFromShowcase;
 
