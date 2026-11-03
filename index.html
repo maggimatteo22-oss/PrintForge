@@ -1208,17 +1208,26 @@
       z-index: -9999 !important;
     }
 
-    /* Custom Cybernetic Glassmorphic Select Component */
+    /* Custom Cybernetic Minimalist Select Component */
     .custom-select-wrapper {
       position: relative;
       width: 100%;
+    }
+    .custom-select-wrapper.is-open {
+      z-index: 99999 !important;
+    }
+    #creatorUploadFormContainer,
+    #view-client-request .cyber-card,
+    .cyber-card:has(.custom-select-wrapper),
+    .cyber-card:has(.custom-select-dropdown.open) {
+      overflow: visible !important;
     }
     .custom-select-trigger {
       width: 100%;
       background: #111218;
       border: 1px solid rgba(255, 255, 255, 0.12);
       border-radius: 0.75rem;
-      padding: 0.625rem 0.875rem;
+      padding: 0.55rem 0.75rem;
       font-size: 0.75rem;
       color: #FFFFFF;
       font-family: 'JetBrains Mono', monospace;
@@ -1228,134 +1237,86 @@
       gap: 0.5rem;
       cursor: pointer;
       user-select: none;
-      transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      transition: all 140ms ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
     }
     .custom-select-trigger:hover {
-      background: #171822;
-      border-color: rgba(255, 255, 255, 0.28);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+      background: #161720;
+      border-color: rgba(255, 255, 255, 0.25);
     }
     .custom-select-trigger.active {
       border-color: rgba(16, 185, 129, 0.6);
-      box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.25), 0 8px 24px rgba(0, 0, 0, 0.8);
-      background: #151620;
-    }
-    .custom-select-badge {
-      width: 1.75rem;
-      height: 1.75rem;
-      border-radius: 0.5rem;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    @media (max-width: 767px) {
-      .custom-select-trigger {
-        padding: 0.75rem 0.95rem;
-        font-size: 0.875rem;
-        min-height: 48px;
-        border-radius: 0.75rem;
-      }
+      box-shadow: 0 0 0 1.5px rgba(16, 185, 129, 0.25);
+      background: #13141C;
     }
     .custom-select-dropdown {
       position: absolute;
-      top: calc(100% + 6px);
+      top: calc(100% + 4px);
       left: 0;
+      width: 100%;
       min-width: 100%;
-      width: max-content;
-      max-width: min(94vw, 440px);
-      z-index: 99999;
-      background: rgba(12, 13, 20, 0.98);
-      backdrop-filter: blur(28px);
-      -webkit-backdrop-filter: blur(28px);
-      border: 1px solid rgba(255, 255, 255, 0.18);
-      border-radius: 1rem;
-      box-shadow: 0 25px 65px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08);
-      max-height: 22rem;
+      max-width: 100%;
+      z-index: 999999 !important;
+      background: #0E0F16;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 0.75rem;
+      box-shadow: 0 16px 36px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(255, 255, 255, 0.06);
+      max-height: 16rem;
       overflow-y: auto;
-      padding: 0.5rem;
+      padding: 0.25rem;
       display: none;
-      transform-origin: top left;
-      animation: selectDropdownEnter 180ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      animation: selectDropdownFade 140ms ease forwards;
+    }
+    @keyframes selectDropdownFade {
+      from { opacity: 0; transform: translateY(-3px); }
+      to { opacity: 1; transform: translateY(0); }
     }
     .custom-select-dropdown.open {
       display: block;
     }
     .custom-options-scrollable {
-      max-height: 18rem;
+      max-height: 15rem;
       overflow-y: auto;
       padding-right: 2px;
     }
     .custom-select-optgroup {
-      font-size: 0.65rem;
-      font-family: 'Space Grotesk', sans-serif;
+      font-size: 0.625rem;
+      font-family: 'JetBrains Mono', monospace;
       font-weight: 700;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.05em;
       text-transform: uppercase;
-      color: #34D399;
-      background: rgba(16, 185, 129, 0.08);
-      padding: 0.4rem 0.75rem;
-      border-radius: 0.5rem;
-      margin: 0.45rem 0 0.25rem 0;
-      border-left: 3px solid #10B981;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+      color: #94A3B8;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 0.35rem 0.5rem;
+      border-radius: 0.375rem;
+      margin: 0.35rem 0 0.15rem 0;
+      border-left: 2px solid #10B981;
     }
     .custom-select-option {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.55rem 0.75rem;
-      border-radius: 0.625rem;
+      gap: 0.5rem;
+      padding: 0.45rem 0.6rem;
+      border-radius: 0.5rem;
       font-size: 0.75rem;
       font-family: 'JetBrains Mono', monospace;
-      color: #E4E4E7;
+      color: #D4D4D8;
       cursor: pointer;
-      transition: all 140ms ease;
-      margin-bottom: 2px;
-      line-height: 1.35;
+      transition: all 120ms ease;
+      margin-bottom: 1px;
+      line-height: 1.3;
       white-space: normal;
       text-align: left;
-      border: 1px solid transparent;
     }
     .custom-select-option:hover {
-      background: rgba(255, 255, 255, 0.08);
-      border-color: rgba(255, 255, 255, 0.14);
+      background: rgba(255, 255, 255, 0.07);
       color: #FFFFFF;
-      transform: translateX(2px);
     }
     .custom-select-option.selected {
       background: rgba(16, 185, 129, 0.15) !important;
-      border-color: rgba(16, 185, 129, 0.45) !important;
-      color: #FFFFFF !important;
+      color: #34D399 !important;
       font-weight: 700;
-    }
-    .option-bullet {
-      width: 6px;
-      height: 6px;
-      border-radius: 9999px;
-      background: rgba(255, 255, 255, 0.25);
-      flex-shrink: 0;
-      transition: all 150ms ease;
-    }
-    .option-bullet.bullet-active {
-      background: #10B981;
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
-    }
-    .selected-check-pill {
-      width: 1.25rem;
-      height: 1.25rem;
-      border-radius: 9999px;
-      background: rgba(16, 185, 129, 0.2);
-      border: 1px solid rgba(16, 185, 129, 0.4);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
     }
 
     /* Packaging Presets Cards & Micro-interactions */
@@ -4140,7 +4101,7 @@
         </div>
 
         <!-- FORM RAPIDO UPLOAD VETRINA CREATOR -->
-        <div id="creatorUploadFormContainer" class="cyber-card p-5 sm:p-7 bg-[#0A0A0E] border border-white/10 rounded-2xl shadow-xl space-y-5">
+        <div id="creatorUploadFormContainer" class="cyber-card p-5 sm:p-7 bg-[#0A0A0E] border border-white/10 rounded-2xl shadow-xl space-y-5 !overflow-visible">
           <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
             <h3 class="font-cyber font-bold text-sm text-white flex items-center gap-2">
               <i data-lucide="upload-cloud" class="w-4 h-4 text-emerald-400"></i>
@@ -4186,8 +4147,8 @@
 
             </div>
 
-            <!-- Parametri Tecnici (Tutti i materiali disponibili per il cliente + Ruota dei Colori) -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 pt-2">
+            <!-- Parametri Tecnici (Materiale, Colore, Dimensioni, Quantità, Infill, Prezzo) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
               
               <!-- 1. MATERIALE (TUTTI I MATERIALI DELLA RETE MAKER IN OPTGROUPS) -->
               <div class="space-y-1">
@@ -4244,7 +4205,33 @@
                 <input type="text" id="portfolioDimensions" name="portfolioDimensions" value="" placeholder="es. 80 × 60 × 25 mm" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none" />
               </div>
 
-              <!-- 4. PREZZO INDICATIVO -->
+              <!-- 4. QUANTITA' PEZZI -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioQuantityLabel">Quantità Pezzi *</label>
+                <select id="portfolioQuantity" class="w-full bg-[#121217] border border-white/10 rounded-xl px-2.5 sm:px-3 py-2 text-white font-mono text-xs focus:border-white outline-none">
+                  <option value="1 pezzo (Opera Unica)" selected>1 pezzo (Opera Unica)</option>
+                  <option value="2 pezzi">2 pezzi</option>
+                  <option value="3 pezzi">3 pezzi</option>
+                  <option value="5 pezzi (Piccola Serie)">5 pezzi (Piccola Serie)</option>
+                  <option value="10 pezzi (Serie)">10 pezzi (Serie)</option>
+                  <option value="20 pezzi (Lotto)">20 pezzi (Lotto)</option>
+                  <option value="50+ pezzi (Produzione)">50+ pezzi (Produzione)</option>
+                </select>
+              </div>
+
+              <!-- 5. RIEMPIMENTO (INFILL) -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioInfillLabel">Riempimento (Infill) *</label>
+                <select id="portfolioInfill" class="w-full bg-[#121217] border border-white/10 rounded-xl px-2.5 sm:px-3 py-2 text-white font-mono text-xs focus:border-white outline-none">
+                  <option value="20% Leggero / Standard">20% Leggero (Standard)</option>
+                  <option value="40% Robusto">40% Robusto</option>
+                  <option value="50% Meccanico Strutturale" selected>50% Meccanico Strutturale</option>
+                  <option value="75% Tecnico Resistente">75% Tecnico Resistente</option>
+                  <option value="100% Pieno / Massiccio">100% Pieno (Massiccio)</option>
+                </select>
+              </div>
+
+              <!-- 6. PREZZO INDICATIVO -->
               <div class="space-y-1">
                 <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioPriceLabel">Prezzo Indicativo *</label>
                 <input type="text" id="portfolioPrice" value="" placeholder="es. € 45,00" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none font-bold" />
@@ -4300,22 +4287,30 @@
         </div>
 
         <!-- Specifiche Tecniche Monospace -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs font-mono">
           <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
             <span class="text-[9px] text-zinc-400 block uppercase">Materiale</span>
-            <span class="text-white font-bold block" id="itemDetailMaterial">PETG</span>
+            <span class="text-white font-bold block truncate" id="itemDetailMaterial">PETG</span>
           </div>
           <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
             <span class="text-[9px] text-zinc-400 block uppercase">Colore</span>
-            <span class="text-white font-bold block" id="itemDetailColor">Nero Cyber</span>
+            <span class="text-white font-bold block truncate" id="itemDetailColor">Nero Cyber</span>
           </div>
           <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
             <span class="text-[9px] text-zinc-400 block uppercase">Dimensioni</span>
-            <span class="text-white font-bold block" id="itemDetailDimensions">80x60x25 mm</span>
+            <span class="text-white font-bold block truncate" id="itemDetailDimensions">80 × 60 × 25 mm</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <span class="text-[9px] text-zinc-400 block uppercase">Quantità</span>
+            <span class="text-white font-bold block truncate" id="itemDetailQuantity">1 pezzo</span>
+          </div>
+          <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
+            <span class="text-[9px] text-zinc-400 block uppercase">Riempimento</span>
+            <span class="text-white font-bold block truncate" id="itemDetailInfill">50% Strutturale</span>
           </div>
           <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/5">
             <span class="text-[9px] text-zinc-400 block uppercase">Prezzo Indicativo</span>
-            <span class="text-emerald-400 font-bold block" id="itemDetailPrice">€ 35,00</span>
+            <span class="text-emerald-400 font-bold block truncate" id="itemDetailPrice">€ 45,00</span>
           </div>
         </div>
 
@@ -11849,6 +11844,8 @@
         portfolioDescHeading: 'Descrizione Tecnica & Collaudo *',
         portfolioDescPlaceholder: "Descrivi il pezzo, le tolleranze raggiunte e la destinazione d'uso...",
         portfolioMaterialHeading: 'Materiale *',
+        portfolioQuantityHeading: 'Quantità Pezzi *',
+        portfolioInfillHeading: 'Riempimento (Infill) *',
         portfolioColorHeading: 'Colore *',
         portfolioWheelBadge: '🎨 Ruota Colori',
         portfolioDimsHeading: 'Dimensioni (mm) *',
@@ -12664,6 +12661,10 @@
         portfolioDescHeading: 'Technical Description & Quality Verification *',
         portfolioDescPlaceholder: 'Describe the component, achieved tolerances and intended use...',
         portfolioMaterialHeading: 'Material *',
+        portfolioQuantityHeading: 'Cantidad de Piezas *',
+        portfolioInfillHeading: 'Relleno (Infill) *',
+        portfolioQuantityHeading: 'Quantity (Pieces) *',
+        portfolioInfillHeading: 'Infill Option *',
         portfolioColorHeading: 'Color *',
         portfolioWheelBadge: '🎨 Color Wheel',
         portfolioDimsHeading: 'Dimensions (mm) *',
@@ -14794,6 +14795,8 @@ END-ISO-10303-21;`;
         'i18n-portfolioTitleLabel': t.portfolioTitleHeading,
         'i18n-portfolioDescLabel': t.portfolioDescHeading,
         'i18n-portfolioMaterialLabel': t.portfolioMaterialHeading,
+        'i18n-portfolioQuantityLabel': t.portfolioQuantityHeading,
+        'i18n-portfolioInfillLabel': t.portfolioInfillHeading,
         'i18n-portfolioColorLabel': t.portfolioColorHeading,
         'i18n-portfolioWheelBtnBadge': t.portfolioWheelBadge,
         'i18n-portfolioDimsLabel': t.portfolioDimsHeading,
@@ -15746,8 +15749,7 @@ END-ISO-10303-21;`;
     /* BESPOKE CYBERNETIC SELECT ENGINE (REPLACES OS WIN32 SELECT MENUS)          */
     /* ========================================================================= */
     const CustomSelectEngine = {
-      selectIds: ['reqMaterial', 'reqUsage', 'portfolioMaterial', 'disputeReason'],
-      activeMobileSelectId: null,
+      selectIds: ['reqMaterial', 'reqUsage', 'portfolioMaterial', 'portfolioQuantity', 'portfolioInfill', 'disputeReason'],
       _listenersAttached: false,
 
       init() {
@@ -15761,15 +15763,17 @@ END-ISO-10303-21;`;
 
         if (!this._listenersAttached) {
           document.addEventListener('click', (e) => {
-            if (!e.target.closest('.custom-select-wrapper') && !e.target.closest('#mobileOptionPickerModal')) {
+            if (!e.target.closest('.custom-select-wrapper')) {
               this.closeAll();
             }
           });
           document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
               this.closeAll();
-              this.closeMobileModal();
             }
+          });
+          window.addEventListener('resize', () => {
+            this.closeAll();
           });
           this._listenersAttached = true;
         }
@@ -15818,15 +15822,21 @@ END-ISO-10303-21;`;
 
       getSelectIcon(id) {
         if (id === 'reqMaterial' || id === 'portfolioMaterial') {
-          return '<i data-lucide="layers" class="w-4 h-4 text-emerald-400"></i>';
+          return '<i data-lucide="layers" class="w-3.5 h-3.5 text-emerald-400"></i>';
         }
         if (id === 'reqUsage') {
-          return '<i data-lucide="compass" class="w-4 h-4 text-cyan-400"></i>';
+          return '<i data-lucide="compass" class="w-3.5 h-3.5 text-cyan-400"></i>';
+        }
+        if (id === 'portfolioQuantity') {
+          return '<i data-lucide="hash" class="w-3.5 h-3.5 text-indigo-400"></i>';
+        }
+        if (id === 'portfolioInfill') {
+          return '<i data-lucide="grid" class="w-3.5 h-3.5 text-amber-400"></i>';
         }
         if (id === 'disputeReason') {
-          return '<i data-lucide="shield-alert" class="w-4 h-4 text-amber-400"></i>';
+          return '<i data-lucide="shield-alert" class="w-3.5 h-3.5 text-amber-400"></i>';
         }
-        return '<i data-lucide="sliders" class="w-4 h-4 text-zinc-400"></i>';
+        return '<i data-lucide="sliders" class="w-3.5 h-3.5 text-zinc-400"></i>';
       },
 
       parseOptionText(rawText) {
@@ -15854,38 +15864,23 @@ END-ISO-10303-21;`;
 
         let optionsHtml = '';
         const optgroups = sel.getElementsByTagName('optgroup');
-        let totalOptionCount = 0;
 
         if (optgroups.length > 0) {
           Array.from(optgroups).forEach(grp => {
             let grpLabel = grp.label || '';
-            let grpTag = '';
-            if (grpLabel.toLowerCase().includes('fdm')) grpTag = 'FILAMENTO';
-            else if (grpLabel.toLowerCase().includes('sla') || grpLabel.toLowerCase().includes('resina')) grpTag = 'RESINA';
-            else if (grpLabel.toLowerCase().includes('sls') || grpLabel.toLowerCase().includes('polvere')) grpTag = 'POLVERE';
-            else if (grpLabel.toLowerCase().includes('metallo') || grpLabel.toLowerCase().includes('dmls')) grpTag = 'METALLO';
-
             optionsHtml += `
               <div class="custom-select-optgroup" data-group-header="true">
-                <span class="font-cyber font-bold tracking-wider">${escapeHtml(grpLabel)}</span>
-                ${grpTag ? `<span class="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">${grpTag}</span>` : ''}
+                ${escapeHtml(grpLabel)}
               </div>
             `;
             Array.from(grp.children).forEach(opt => {
               if (opt.disabled && !opt.value) return;
-              totalOptionCount++;
               const isSel = opt.value === currentVal;
               const parsed = this.parseOptionText(opt.textContent);
               optionsHtml += `
-                <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                  <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                    <div class="option-bullet ${isSel ? 'bullet-active' : ''}"></div>
-                    <div class="min-w-0 flex-1">
-                      <div class="text-xs font-mono font-medium text-white truncate leading-snug">${escapeHtml(parsed.title)}</div>
-                      ${parsed.desc ? `<div class="text-[10px] font-sans text-zinc-400 truncate leading-tight">${escapeHtml(parsed.desc)}</div>` : ''}
-                    </div>
-                  </div>
-                  ${isSel ? '<span class="selected-check-pill"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i></span>' : ''}
+                <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
+                  <span class="text-xs font-mono truncate">${escapeHtml(parsed.title || opt.textContent)}</span>
+                  ${isSel ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2"></i>' : ''}
                 </div>
               `;
             });
@@ -15893,49 +15888,28 @@ END-ISO-10303-21;`;
         } else {
           Array.from(sel.options).forEach(opt => {
             if (opt.disabled && !opt.value) return;
-            totalOptionCount++;
             const isSel = opt.value === currentVal;
             const parsed = this.parseOptionText(opt.textContent);
             optionsHtml += `
-              <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                <div class="flex items-center gap-2.5 min-w-0 flex-1">
-                  <div class="option-bullet ${isSel ? 'bullet-active' : ''}"></div>
-                  <div class="min-w-0 flex-1">
-                    <div class="text-xs font-mono font-medium text-white truncate leading-snug">${escapeHtml(parsed.title)}</div>
-                    ${parsed.desc ? `<div class="text-[10px] font-sans text-zinc-400 truncate leading-tight">${escapeHtml(parsed.desc)}</div>` : ''}
-                  </div>
-                </div>
-                ${isSel ? '<span class="selected-check-pill"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i></span>' : ''}
+              <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
+                <span class="text-xs font-mono truncate">${escapeHtml(parsed.title || opt.textContent)}</span>
+                ${isSel ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2"></i>' : ''}
               </div>
             `;
           });
         }
 
-        const showSearch = totalOptionCount > 5;
-        const searchHtml = showSearch ? `
-          <div class="custom-select-search-wrap mb-2 px-1" onclick="event.stopPropagation()">
-            <div class="relative">
-              <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
-              <input type="text" placeholder="Filtra opzioni..." class="w-full bg-[#161722] border border-white/10 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" oninput="CustomSelectEngine.filterDropdownOptions('${id}', this.value)" />
-            </div>
-          </div>
-        ` : '';
-
         wrapper.innerHTML = `
           <button type="button" class="custom-select-trigger group" id="customTrigger_${id}" onclick="CustomSelectEngine.toggle('${id}', event)">
-            <div class="flex items-center gap-2.5 min-w-0 flex-1">
-              <span class="custom-select-badge shrink-0">${iconHtml}</span>
-              <div class="min-w-0 flex-1 text-left">
-                <span class="truncate font-mono text-xs font-semibold text-white block" id="customTriggerText_${id}">
-                  ${escapeHtml(parsedSelected.title || selectedText || 'Seleziona opzione...')}
-                </span>
-                ${parsedSelected.desc ? `<span class="truncate text-[10px] font-sans text-zinc-400 block" id="customTriggerSub_${id}">${escapeHtml(parsedSelected.desc)}</span>` : ''}
-              </div>
+            <div class="flex items-center gap-2 min-w-0 flex-1">
+              ${iconHtml}
+              <span class="truncate font-mono text-xs font-medium text-white block" id="customTriggerText_${id}">
+                ${escapeHtml(parsedSelected.title || selectedText || 'Seleziona opzione...')}
+              </span>
             </div>
-            <i data-lucide="chevron-down" id="customChevron_${id}" class="w-4 h-4 text-zinc-400 group-hover:text-white transition-transform duration-200 shrink-0"></i>
+            <i data-lucide="chevron-down" id="customChevron_${id}" class="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200 shrink-0"></i>
           </button>
           <div class="custom-select-dropdown custom-scrollbar" id="customDropdown_${id}">
-            ${searchHtml}
             <div class="custom-options-scrollable">
               ${optionsHtml}
             </div>
@@ -15947,38 +15921,16 @@ END-ISO-10303-21;`;
         }
       },
 
-      filterDropdownOptions(id, query) {
-        const dropdown = document.getElementById(`customDropdown_${id}`);
-        if (!dropdown) return;
-        const q = (query || '').toLowerCase().trim();
-        const options = dropdown.querySelectorAll('.custom-select-option');
-        options.forEach(opt => {
-          const text = opt.getAttribute('data-text') || '';
-          if (!q || text.includes(q)) {
-            opt.style.display = 'flex';
-          } else {
-            opt.style.display = 'none';
-          }
-        });
-      },
-
       toggle(id, event) {
         if (event) {
           event.preventDefault();
           event.stopPropagation();
         }
 
-        // On mobile (< 768px), open full-screen option modal!
-        if (window.innerWidth < 768) {
-          this.closeAll();
-          this.openMobileModal(id);
-          return;
-        }
-
-        // Desktop inline dropdown
         const dropdown = document.getElementById(`customDropdown_${id}`);
         const trigger = document.getElementById(`customTrigger_${id}`);
         const chevron = document.getElementById(`customChevron_${id}`);
+        const wrapper = document.getElementById(`customWrapper_${id}`);
         if (!dropdown || !trigger) return;
 
         const isOpen = dropdown.classList.contains('open');
@@ -15987,137 +15939,23 @@ END-ISO-10303-21;`;
         if (!isOpen) {
           dropdown.classList.add('open');
           trigger.classList.add('active');
+          if (wrapper) {
+            wrapper.classList.add('is-open');
+            wrapper.style.zIndex = '99999';
+          }
           if (chevron) chevron.style.transform = 'rotate(180deg)';
 
-          // Smart horizontal alignment on desktop to avoid right-edge clipping
-          const rect = dropdown.getBoundingClientRect();
-          if (rect.right > window.innerWidth - 10) {
-            dropdown.style.left = 'auto';
-            dropdown.style.right = '0';
+          // Smart vertical flip: if opening downwards clips against viewport bottom, open upwards!
+          const triggerRect = trigger.getBoundingClientRect();
+          const dropdownHeight = 220;
+          if (triggerRect.bottom + dropdownHeight > window.innerHeight && triggerRect.top > dropdownHeight) {
+            dropdown.style.top = 'auto';
+            dropdown.style.bottom = 'calc(100% + 4px)';
           } else {
-            dropdown.style.left = '0';
-            dropdown.style.right = 'auto';
-          }
-
-          // Focus search input if available
-          const searchInp = dropdown.querySelector('input[type="text"]');
-          if (searchInp) {
-            searchInp.value = '';
-            this.filterDropdownOptions(id, '');
-            setTimeout(() => searchInp.focus(), 50);
+            dropdown.style.top = 'calc(100% + 4px)';
+            dropdown.style.bottom = 'auto';
           }
         }
-      },
-
-      openMobileModal(id) {
-        const sel = document.getElementById(id);
-        const modal = document.getElementById('mobileOptionPickerModal');
-        const list = document.getElementById('mobilePickerOptionsList');
-        const titleEl = document.getElementById('mobilePickerTitle');
-        const searchBox = document.getElementById('mobilePickerSearchContainer');
-        const searchInput = document.getElementById('mobilePickerSearchInput');
-        if (!sel || !modal || !list) return;
-
-        this.activeMobileSelectId = id;
-
-        // Determine title
-        let title = 'SELEZIONA OPZIONE';
-        if (id === 'reqUsage') title = 'DESTINAZIONE D\'USO';
-        else if (id === 'reqMaterial' || id === 'portfolioMaterial') title = 'MATERIALE DI STAMPA';
-        else if (id === 'disputeReason') title = 'MOTIVO CONTROVERSIA';
-        else {
-          const lbl = sel.closest('.space-y-1')?.querySelector('label');
-          if (lbl) title = lbl.textContent.replace('*', '').trim().toUpperCase();
-        }
-        if (titleEl) titleEl.textContent = title;
-
-        const currentVal = sel.value;
-        const optgroups = sel.getElementsByTagName('optgroup');
-        let optionsHtml = '';
-
-        if (optgroups.length > 0) {
-          Array.from(optgroups).forEach(grp => {
-            optionsHtml += `
-              <div class="mobile-optgroup-header text-[10px] font-cyber font-bold text-emerald-400 uppercase tracking-wider pt-3 pb-1.5 border-b border-emerald-500/20 mb-1 flex items-center justify-between">
-                <span>${escapeHtml(grp.label)}</span>
-              </div>
-            `;
-            Array.from(grp.children).forEach(opt => {
-              if (opt.disabled && !opt.value) return;
-              const isSel = opt.value === currentVal;
-              const parsed = this.parseOptionText(opt.textContent);
-              optionsHtml += `
-                <div class="mobile-picker-option p-3 rounded-xl border ${isSel ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/[0.08] bg-[#12131A]'} active:bg-white/20 flex items-center justify-between gap-3 transition cursor-pointer" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                  <div class="min-w-0 flex-1">
-                    <span class="text-xs sm:text-sm font-mono ${isSel ? 'text-white font-bold' : 'text-zinc-200'} leading-snug break-words block">
-                      ${escapeHtml(parsed.title)}
-                    </span>
-                    ${parsed.desc ? `<span class="text-[10px] font-sans text-zinc-400 block">${escapeHtml(parsed.desc)}</span>` : ''}
-                  </div>
-                  ${isSel ? '<div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i></div>' : '<div class="w-5 h-5 rounded-full border border-white/20 shrink-0"></div>'}
-                </div>
-              `;
-            });
-          });
-        } else {
-          Array.from(sel.options).forEach(opt => {
-            if (opt.disabled && !opt.value) return;
-            const isSel = opt.value === currentVal;
-            const parsed = this.parseOptionText(opt.textContent);
-            optionsHtml += `
-              <div class="mobile-picker-option p-3 rounded-xl border ${isSel ? 'border-emerald-500/50 bg-emerald-500/10' : 'border-white/[0.08] bg-[#12131A]'} active:bg-white/20 flex items-center justify-between gap-3 transition cursor-pointer" data-text="${escapeHtml(opt.textContent.toLowerCase())}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                <div class="min-w-0 flex-1">
-                  <span class="text-xs sm:text-sm font-mono ${isSel ? 'text-white font-bold' : 'text-zinc-200'} leading-snug break-words block">
-                    ${escapeHtml(parsed.title)}
-                  </span>
-                  ${parsed.desc ? `<span class="text-[10px] font-sans text-zinc-400 block">${escapeHtml(parsed.desc)}</span>` : ''}
-                </div>
-                ${isSel ? '<div class="w-6 h-6 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center shrink-0"><i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400"></i></div>' : '<div class="w-5 h-5 rounded-full border border-white/20 shrink-0"></div>'}
-              </div>
-            `;
-          });
-        }
-
-        list.innerHTML = optionsHtml;
-
-        if (searchBox) {
-          if (sel.options.length > 5) {
-            searchBox.style.display = 'block';
-            if (searchInput) searchInput.value = '';
-          } else {
-            searchBox.style.display = 'none';
-          }
-        }
-
-        modal.style.display = 'flex';
-        modal.classList.remove('hidden');
-        document.body.style.overflow = 'hidden';
-        if (window.lucide && typeof window.lucide.createIcons === 'function') {
-          window.lucide.createIcons();
-        }
-      },
-
-      closeMobileModal() {
-        const modal = document.getElementById('mobileOptionPickerModal');
-        if (modal) {
-          modal.style.display = 'none';
-          modal.classList.add('hidden');
-        }
-        document.body.style.overflow = '';
-        this.activeMobileSelectId = null;
-      },
-
-      filterMobileOptions(query) {
-        const q = (query || '').toLowerCase().trim();
-        const options = document.querySelectorAll('.mobile-picker-option');
-        options.forEach(opt => {
-          const text = opt.getAttribute('data-text') || '';
-          if (!q || text.includes(q)) {
-            opt.style.display = 'flex';
-          } else {
-            opt.style.display = 'none';
-          }
-        });
       },
 
       selectOption(id, value) {
@@ -16128,32 +15966,36 @@ END-ISO-10303-21;`;
         this.syncTrigger(id);
         this.highlightSelectedOption(id);
         this.closeAll();
-        this.closeMobileModal();
       },
 
       closeAll() {
         document.querySelectorAll('.custom-select-dropdown').forEach(d => {
           d.classList.remove('open');
-          d.style.left = '0';
-          d.style.right = 'auto';
+          d.style.top = '';
+          d.style.bottom = '';
         });
         document.querySelectorAll('.custom-select-trigger').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+          w.classList.remove('is-open');
+          w.style.zIndex = '';
+        });
         document.querySelectorAll('[id^="customChevron_"]').forEach(c => c.style.transform = 'rotate(0deg)');
       },
+
+      closeMobileModal() {
+        this.closeAll();
+      },
+
+      filterMobileOptions() {},
 
       syncTrigger(id) {
         const sel = document.getElementById(id);
         const triggerText = document.getElementById(`customTriggerText_${id}`);
-        const triggerSub = document.getElementById(`customTriggerSub_${id}`);
         if (!sel || !triggerText) return;
         const selectedOpt = sel.options[sel.selectedIndex] || sel.options[0];
         if (selectedOpt) {
           const parsed = this.parseOptionText(selectedOpt.textContent);
           triggerText.textContent = parsed.title || selectedOpt.textContent;
-          if (triggerSub) {
-            triggerSub.textContent = parsed.desc || '';
-            triggerSub.style.display = parsed.desc ? 'block' : 'none';
-          }
         }
       },
 
@@ -16166,20 +16008,17 @@ END-ISO-10303-21;`;
         const options = dropdown.querySelectorAll('.custom-select-option');
         options.forEach(opt => {
           const val = opt.getAttribute('data-value');
-          const bullet = opt.querySelector('.option-bullet');
           if (val === currentVal) {
             opt.classList.add('selected');
-            if (bullet) bullet.classList.add('bullet-active');
-            if (!opt.querySelector('.selected-check-pill')) {
-              opt.insertAdjacentHTML('beforeend', '<span class="selected-check-pill"><i data-lucide="check" class="w-3 h-3 text-emerald-400"></i></span>');
+            if (!opt.querySelector('svg, i')) {
+              opt.insertAdjacentHTML('beforeend', '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2"></i>');
               if (window.lucide && typeof window.lucide.createIcons === 'function') {
                 window.lucide.createIcons();
               }
             }
           } else {
             opt.classList.remove('selected');
-            if (bullet) bullet.classList.remove('bullet-active');
-            const chk = opt.querySelector('.selected-check-pill');
+            const chk = opt.querySelector('svg, i');
             if (chk) chk.remove();
           }
         });
@@ -29941,6 +29780,8 @@ function renderDealChat(rfpId) {
         colorHex = resolveColorNameToHex(color);
       }
       const dimensions = (document.getElementById('portfolioDimensions')?.value || '').trim();
+      const quantity = (document.getElementById('portfolioQuantity')?.value || '1 pezzo (Opera Unica)').trim();
+      const infill = (document.getElementById('portfolioInfill')?.value || '50% Meccanico Strutturale').trim();
       let price = (document.getElementById('portfolioPrice')?.value || '').trim();
       if (price && !price.startsWith('€')) price = '€ ' + price;
 
@@ -29963,6 +29804,8 @@ function renderDealChat(rfpId) {
         color: color,
         colorHex: colorHex,
         dimensions: dimensions,
+        quantity: quantity,
+        infill: infill,
         price: price,
         photoUrl: photoUrl,
         creatorId: creatorUid,
@@ -29990,6 +29833,8 @@ function renderDealChat(rfpId) {
             color: color,
             color_hex: colorHex,
             dimensions: dimensions,
+            quantity: quantity,
+            infill: infill,
             budget: price,
             notes: JSON.stringify(workObj),
             status: 'PORTFOLIO_WORK'
@@ -30007,6 +29852,18 @@ function renderDealChat(rfpId) {
       document.getElementById('portfolioDesc').value = '';
       document.getElementById('portfolioDimensions').value = '';
       document.getElementById('portfolioPrice').value = '';
+      if (document.getElementById('portfolioQuantity')) {
+        document.getElementById('portfolioQuantity').value = '1 pezzo (Opera Unica)';
+        if (typeof CustomSelectEngine !== 'undefined' && CustomSelectEngine.syncTrigger) {
+          CustomSelectEngine.syncTrigger('portfolioQuantity');
+        }
+      }
+      if (document.getElementById('portfolioInfill')) {
+        document.getElementById('portfolioInfill').value = '50% Meccanico Strutturale';
+        if (typeof CustomSelectEngine !== 'undefined' && CustomSelectEngine.syncTrigger) {
+          CustomSelectEngine.syncTrigger('portfolioInfill');
+        }
+      }
       window._currentPortfolioPhotoDataUrl = null;
       const pImg = document.getElementById('portfolioPhotoPreviewImg');
       const pBox = document.getElementById('portfolioPhotoPreviewBox');
@@ -30451,6 +30308,12 @@ function renderDealChat(rfpId) {
 
       const catBadge = document.getElementById('itemDetailCategoryBadge');
       if (catBadge) catBadge.innerText = work.material || 'SCHEDA TECNICA';
+      if (document.getElementById('itemDetailMaterial')) document.getElementById('itemDetailMaterial').innerText = work.material || 'PETG Tecnico';
+      if (document.getElementById('itemDetailColor')) document.getElementById('itemDetailColor').innerText = work.color || 'Nero Cyber';
+      if (document.getElementById('itemDetailDimensions')) document.getElementById('itemDetailDimensions').innerText = work.dimensions || '80 × 60 × 25 mm';
+      if (document.getElementById('itemDetailQuantity')) document.getElementById('itemDetailQuantity').innerText = work.quantity || '1 pezzo (Opera Unica)';
+      if (document.getElementById('itemDetailInfill')) document.getElementById('itemDetailInfill').innerText = work.infill || '50% Meccanico Strutturale';
+      if (document.getElementById('itemDetailPrice')) document.getElementById('itemDetailPrice').innerText = work.price || '€ 45,00';
 
       modal.classList.remove('hidden');
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
