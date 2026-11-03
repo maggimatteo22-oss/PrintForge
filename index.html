@@ -10270,7 +10270,132 @@
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
-      // 1. DELETE da Supabase Cloud
+      const targetReq = (AppState.broadcastRequests || []).find(r => r && r.id === requestId);
+      const isClient = Boolean(AppState.user && AppState.user.role === 'client');
+
+      // Verifica se la richiesta è terminata/in corso/o derivata da un'opera della vetrina
+      const isFinishedOrTaken = Boolean(
+        targetReq && (
+          targetReq.isCompleted ||
+          targetReq.isDelivered ||
+          targetReq.isClosed ||
+          targetReq.isAccepted ||
+          targetReq.showcaseWorkId ||
+          targetReq.isDirectShowcase ||
+          targetReq.isShowcaseOrder ||
+          (typeof targetReq.status === 'string' && (
+            targetReq.status.includes('COMPLETAT') ||
+            targetReq.status.includes('LAVORAZION') ||
+            targetReq.status.includes('SVINCOLAT')
+          )) ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + requestId) === 'true')
+        )
+      );
+
+      // CASO SPECIALE RICHIESTA FINITA / VETRINA ELIMINATA DAL CLIENTE (PULIZIA DELLO SCHERMO):
+      // - NON rimostrarla MAI PIÙ nella vetrina 2D per i clienti
+      // - MANTIENI i soldi incassati e il progetto completato per il creator!
+      if (isClient && isFinishedOrTaken) {
+        const workTitle = targetReq ? (targetReq.title || '') : '';
+        const showcaseId = targetReq ? (targetReq.showcaseWorkId || '') : '';
+
+        // 1. Sigilla l'opera come VENDUTA/COMMISSIONATA perenne: MAI più visibile nella vetrina 2D ai clienti
+        try {
+          let hiddenWorks = JSON.parse(localStorage.getItem('printforge_hidden_showcase_works') || '[]');
+          if (showcaseId && !hiddenWorks.includes(showcaseId)) hiddenWorks.push(showcaseId);
+          localStorage.setItem('printforge_hidden_showcase_works', JSON.stringify(hiddenWorks));
+
+          if (workTitle) {
+            let soldTitles = JSON.parse(localStorage.getItem('printforge_sold_showcase_titles') || '[]');
+            const tKey = workTitle.trim().toLowerCase();
+            if (!soldTitles.includes(tKey)) soldTitles.push(tKey);
+            localStorage.setItem('printforge_sold_showcase_titles', JSON.stringify(soldTitles));
+          }
+
+          if (showcaseId) {
+            localStorage.setItem('printforge_work_accepted_' + showcaseId, 'true');
+            localStorage.setItem('printforge_work_sold_' + showcaseId, 'true');
+            localStorage.setItem('printforge_completed_work_' + showcaseId, 'true');
+          }
+        } catch(e) {}
+
+        // Aggiorna lo stato anche nell'array delle opere in memoria e localStorage
+        if (AppState.portfolioWorks) {
+          AppState.portfolioWorks.forEach(w => {
+            if (!w) return;
+            if (w.id === showcaseId || (w.title && workTitle && w.title.trim().toLowerCase() === workTitle.trim().toLowerCase())) {
+              w.isSold = true;
+              w.isCommissioned = true;
+              w.isTaken = true;
+              w.isAccepted = true;
+              w.isCompleted = true;
+            }
+          });
+          try {
+            localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+          } catch(e) {}
+        }
+
+        // 2. Archivia in modo permanente nel Registro Incassi del Creator i SOLDI INCASSATI
+        try {
+          let creatorLedger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
+          const safePrice = (targetReq && (targetReq.budget || targetReq.itemBudget || targetReq.escrowTotal)) || '€ 45,00';
+          const makerId = (targetReq && (targetReq.makerUserId || targetReq.assigned_creator_id)) || 'creator';
+          const makerName = (targetReq && (targetReq.maker || targetReq.acceptedBy)) || 'Maker Certificato';
+          
+          if (!creatorLedger.some(entry => entry.id === requestId)) {
+            creatorLedger.push({
+              id: requestId,
+              title: workTitle || 'Componente 3D',
+              price: safePrice,
+              makerUserId: makerId,
+              makerName: makerName,
+              clientName: (targetReq && targetReq.clientName) || 'Cliente',
+              workPhotoUrl: (targetReq && (targetReq.workPhotoUrl || targetReq.aiImage)) || '/images/cube.jpg',
+              completedAt: new Date().toISOString()
+            });
+            localStorage.setItem('printforge_creator_earnings_ledger', JSON.stringify(creatorLedger));
+          }
+          localStorage.setItem('printforge_completed_' + requestId, 'true');
+        } catch(e) {}
+
+        // 3. Nascondi la commessa SOLO per il cliente (pulizia schermo), ma MANTIENILA per il creator!
+        if (targetReq) {
+          targetReq.deletedByClient = true;
+          targetReq.hiddenForClient = true;
+          targetReq.isCompleted = true;
+          targetReq.status = 'COMPLETATO';
+        }
+        try {
+          localStorage.setItem('printforge_client_hidden_req_' + requestId, 'true');
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } catch(e) {}
+
+        // Aggiorna Supabase senza eliminare fisicamente la riga dal cloud
+        if (supabaseClient) {
+          try {
+            await supabaseClient.from('broadcast_requests').update({
+              deleted_by_client: true,
+              is_completed: true,
+              status: 'COMPLETATO'
+            }).eq('id', requestId);
+          } catch(e) {}
+        }
+
+        renderBroadcastTable();
+        if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+        if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+
+        const toastMsg = isEn 
+          ? `✓ Finished request #${requestId} cleared from your view.` 
+          : isEs 
+          ? `✓ Solicitud terminada #${requestId} borrada de tu pantalla.` 
+          : `✓ Richiesta completata #${requestId} rimossa dal tuo schermo.`;
+        showToast(toastMsg, 'success');
+        return;
+      }
+
+      // CASO STANDARD: Eliminazione bozza non presa in carico da nessun maker
       if (supabaseClient) {
         try {
           const { error } = await supabaseClient
@@ -10284,16 +10409,13 @@
         }
       }
 
-      // 2. Blacklist perenne
       recordDeletedRequestIds([requestId]);
 
-      // 3. Rimuovi da AppState
       AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== requestId);
       try {
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
       } catch(e) {}
 
-      // 4. CASCADE RESET se era la commessa attiva in Escrow
       if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id === requestId) {
         AppState.activeEscrowOrder = null;
         AppState.loadedRequestInStudio = null;
@@ -10319,15 +10441,17 @@
 
       renderBroadcastTable();
       renderCreatorRequestsFeed();
+      if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+      if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
       updateNavigationTabs();
       const navLiveReq = document.getElementById('navLiveRequestsCount');
       if (navLiveReq) navLiveReq.innerText = AppState.broadcastRequests.filter(r => !r.isAccepted && !r.isRejected).length;
 
       const toastMsg = isEn 
-        ? `✓ Request #${requestId} permanently deleted from database.` 
+        ? `✓ Request #${requestId} permanently deleted.` 
         : isEs 
         ? `✓ Solicitud #${requestId} eliminada permanentemente.` 
-        : `✓ Richiesta #${requestId} eliminata definitivamente dal database.`;
+        : `✓ Richiesta #${requestId} eliminata definitivamente.`;
       showToast(toastMsg, 'success');
     }
     window.deleteSingleBroadcastRequest = deleteSingleBroadcastRequest;
@@ -25525,6 +25649,10 @@ END-ISO-10303-21;`;
 
         if (isAdmin) return true;
         if (isClient) {
+          // Pulizia schermo: se il cliente ha eliminato la richiesta completata, non mostrarla sul suo schermo
+          if (r.deletedByClient || r.hiddenForClient || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_client_hidden_req_' + r.id) === 'true')) {
+            return false;
+          }
           const reqEmail = (r.clientEmail || '').toLowerCase().trim();
           const reqUid = (r.userId || '').toLowerCase().trim();
           return (userEmail && reqEmail === userEmail) || (userId && reqUid === userId);
@@ -29892,21 +30020,26 @@ function renderDealChat(rfpId) {
       const works = AppState.portfolioWorks || [];
       const filter = currentExploreFilter || 'ALL';
 
-      // Recupera gli ID delle opere accettate/commissionate salvate in localStorage
+      // Recupera gli ID e i titoli delle opere accettate/commissionate/vendute salvate in localStorage
       let hiddenWorkIds = [];
+      let soldTitles = [];
       try {
         hiddenWorkIds = JSON.parse(localStorage.getItem('printforge_hidden_showcase_works') || '[]');
+        soldTitles = JSON.parse(localStorage.getItem('printforge_sold_showcase_titles') || '[]');
       } catch(e) {}
 
-      // Identifica anche qualsiasi opera associata a una commessa già accettata, in lavorazione o completata
+      // Identifica qualsiasi opera associata a una commessa già accettata, in lavorazione, completata o archiviata
       const takenWorkIds = new Set(hiddenWorkIds);
-      const takenWorkTitles = new Set();
+      const takenWorkTitles = new Set(soldTitles.map(t => String(t).trim().toLowerCase()));
+
       (AppState.broadcastRequests || []).forEach(r => {
-        if (!r || !r.id || r.isDeleted || r.isRejected) return;
+        if (!r || !r.id || r.isRejected) return;
         const isTakenOrDone = Boolean(
           r.isAccepted === true ||
           r.isCompleted === true ||
           r.isDelivered === true ||
+          r.deletedByClient === true ||
+          r.hiddenForClient === true ||
           (typeof r.status === 'string' && (
             r.status.toUpperCase().includes('LAVORAZION') ||
             r.status.toUpperCase().includes('COMPLETAT') ||
@@ -29924,11 +30057,18 @@ function renderDealChat(rfpId) {
       const filtered = works.filter(w => {
         if (!w || !w.id) return false;
 
-        // NON MOSTRARE MAI AI CLIENTI OPERE GIA' COMMISSIONATE / ACCETTATE DAL CREATOR!
-        if (w.isAccepted || w.isCommissioned || w.isTaken) return false;
+        // REGOLA ASSOLUTA: NON MOSTRARE MAI AI CLIENTI OPERE GIA' COMMISSIONATE / ACCETTATE / VENDUTE,
+        // ANCHE SE IL CLIENTE ELIMINA LA RICHIESTA DAL PROPRIO SCHERMO!
+        if (w.isAccepted || w.isCommissioned || w.isTaken || w.isSold || w.isCompleted) return false;
+        if (hiddenWorkIds.includes(w.id)) return false;
         if (takenWorkIds.has(w.id)) return false;
         if (w.title && takenWorkTitles.has(w.title.trim().toLowerCase())) return false;
-        if (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_work_accepted_' + w.id) === 'true') return false;
+        if (w.title && soldTitles.includes(w.title.trim().toLowerCase())) return false;
+        if (typeof localStorage !== 'undefined' && (
+          localStorage.getItem('printforge_work_accepted_' + w.id) === 'true' ||
+          localStorage.getItem('printforge_work_sold_' + w.id) === 'true' ||
+          localStorage.getItem('printforge_completed_work_' + w.id) === 'true'
+        )) return false;
 
         if (filter === 'ALL') return true;
         const mat = (w.material || '').toUpperCase();
@@ -29953,7 +30093,7 @@ function renderDealChat(rfpId) {
       container.innerHTML = filtered.map(w => {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
-        const safePrice = escapeHtml(w.price || '€ 35,00');
+        const safePrice = escapeHtml(w.price || (associatedOrder && associatedOrder.budget) || '€ 45,00');
         const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
         const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
         const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
@@ -30020,6 +30160,11 @@ function renderDealChat(rfpId) {
       });
 
       // Trova anche commesse broadcast completate per questo creator che non hanno un'opera correlata nel portfolio
+      let creatorLedger = [];
+      try {
+        creatorLedger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
+      } catch(e) {}
+
       const additionalCompletedOrders = (AppState.broadcastRequests || []).filter(r => {
         if (!r || !r.id || r.isDeleted || r.isRejected) return false;
         const isDone = Boolean(
@@ -30063,9 +30208,16 @@ function renderDealChat(rfpId) {
           return r.showcaseWorkId === w.id || (r.title && w.title && r.title.trim().toLowerCase() === w.title.trim().toLowerCase());
         });
 
+        const inLedger = (creatorLedger || []).find(entry => entry && (
+          entry.id === (associatedOrder && associatedOrder.id) ||
+          (entry.title && w.title && entry.title.trim().toLowerCase() === w.title.trim().toLowerCase())
+        ));
+
         // Controlla se il lavoro è COMPLETATO (dopo il 4° passaggio o completamento esplicito)
         const isJobCompleted = Boolean(
           w.isCompleted === true ||
+          w.isSold === true ||
+          Boolean(inLedger) ||
           (associatedOrder && (
             associatedOrder.isCompleted === true ||
             associatedOrder.isDelivered === true ||
@@ -30075,9 +30227,11 @@ function renderDealChat(rfpId) {
           )) ||
           (typeof localStorage !== 'undefined' && (
             localStorage.getItem('printforge_completed_work_' + w.id) === 'true' ||
+            localStorage.getItem('printforge_work_sold_' + w.id) === 'true' ||
             (AppState.stage4Completed && associatedOrder)
           ))
         );
+        const safeEarnedPrice = escapeHtml(w.price || (associatedOrder && associatedOrder.budget) || (inLedger && inLedger.price) || '€ 45,00');
 
         // Ordine attivo in corso (accettato ma non ancora completato al 4° passaggio)
         const isOrderActive = Boolean(
@@ -30120,7 +30274,7 @@ function renderDealChat(rfpId) {
               <div class="pt-2 border-t border-emerald-500/25 bg-emerald-500/[0.06] p-2.5 rounded-xl space-y-2 border border-emerald-500/20">
                 <div class="flex items-center justify-between text-[10.5px] font-mono">
                   <span class="text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(associatedOrder ? associatedOrder.clientName : 'Cliente')}</strong></span>
-                  <span class="text-emerald-400 font-bold font-cyber text-xs">${escapeHtml(w.price || (associatedOrder && associatedOrder.budget) || '€ 35,00')} INCASSATI</span>
+                  <span class="text-emerald-400 font-bold font-cyber text-xs">${safeEarnedPrice} INCASSATI</span>
                 </div>
                 <div class="flex items-center justify-between text-[9.5px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
                   <span class="flex items-center gap-1 text-emerald-400 font-bold">
@@ -30159,6 +30313,25 @@ function renderDealChat(rfpId) {
           </div>
         `;
       }).join('');
+
+      // Integra eventuali ordini completati dal ledger del creator
+      (creatorLedger || []).forEach(entry => {
+        if (!entry || !entry.id) return;
+        const alreadyInWorks = myWorks.some(w => (entry.showcaseWorkId && w.id === entry.showcaseWorkId) || (w.title && entry.title && w.title.trim().toLowerCase() === entry.title.trim().toLowerCase()));
+        const alreadyInAdd = additionalCompletedOrders.some(r => r.id === entry.id);
+        if (!alreadyInWorks && !alreadyInAdd) {
+          additionalCompletedOrders.push({
+            id: entry.id,
+            title: entry.title,
+            budget: entry.price || '€ 45,00',
+            clientName: entry.clientName || 'Cliente',
+            workPhotoUrl: entry.workPhotoUrl || '/images/cube.jpg',
+            isCompleted: true,
+            isDelivered: true,
+            status: 'COMPLETATO'
+          });
+        }
+      });
 
       // Render di eventuali commesse broadcast completate non presenti come opere in vetrina
       const additionalHtml = additionalCompletedOrders.map(r => {
