@@ -9658,7 +9658,7 @@
               dimensions: dbR.dimensions || '80 × 60 × 25 mm',
               budget: (dbR.budget && dbR.budget !== '€ 0,00' && dbR.budget !== '€ 0' && dbR.budget !== '0') 
                 ? (dbR.budget.includes('€') ? dbR.budget : formatEuroClean(dbR.budget)) 
-                : (meta.originalBudget || meta.budget || meta.itemBudget || '€ 45,00'),
+                : (meta.originalBudget || meta.budget || meta.itemBudget || '€ 0,00'),
               notes: cleanNotes,
               rawUserNotes: cleanNotes,
               deadline: meta.deadline || dbR.deadline || 'Standard 3-5 giorni',
@@ -10557,7 +10557,7 @@
         // 2. Archivia in modo permanente nel Registro Incassi del Creator i SOLDI INCASSATI
         try {
           let creatorLedger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
-          const safePrice = (targetReq && (targetReq.budget || targetReq.itemBudget || targetReq.escrowTotal)) || '€ 45,00';
+          const safePrice = (targetReq && (targetReq.budget || targetReq.escrowTotal || targetReq.itemBudget)) || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.budget || AppState.activeEscrowOrder.escrowTotal)) || '€ 0,00';
           const makerId = (targetReq && (targetReq.makerUserId || targetReq.assigned_creator_id)) || 'creator';
           const makerName = (targetReq && (targetReq.maker || targetReq.acceptedBy)) || 'Maker Certificato';
           
@@ -19605,7 +19605,7 @@ END-ISO-10303-21;`;
           id: data.requestId || data.id || 'PF-ORD-1',
           title: data.title || 'Componente Meccanico',
           maker: data.makerName || 'Maker Certificato PrintForge',
-          budget: data.budget || '€ 45,00',
+          budget: data.budget || (data.escrowTotal ? formatEuroClean(data.escrowTotal) : '€ 0,00'),
           trackingNumber: data.trackingNumber || 'PF-UPS-892104',
           status: eventType === 'maker_accepted' ? 'IN_PRODUCTION' : (eventType === 'qc_photos_ready' ? 'QC_PHOTOS_READY' : 'PENDING')
         },
@@ -20089,7 +20089,7 @@ END-ISO-10303-21;`;
       const makerName = order.maker || AppState.user?.name || (isEn ? 'PrintForge Certified Maker' : isEs ? 'Creador Certificado PrintForge' : 'Maker Certificato PrintForge');
       const partTitle = order.title || activeReq?.title || (isEn ? 'Custom Component' : 'Componente Meccanico');
       const orderId = order.id || activeReq?.id || 'PF-ORD-1';
-      const budgetStr = formatEuroClean(order.budget || order.itemBudget || activeReq?.escrowTotal || activeReq?.budget || '€ 45,00');
+      const budgetStr = formatEuroClean(order.budget || order.itemBudget || activeReq?.escrowTotal || activeReq?.budget || '€ 0,00');
 
       let subject = '';
       let body = '';
@@ -20630,8 +20630,8 @@ END-ISO-10303-21;`;
       if (bApply) bApply.innerText = `€ ${computedPrice},00`;
       if (bRange) bRange.innerText = `€ ${minPrice} – € ${maxPrice}`;
 
-      // Calcola la stima direttamente sul selezionatore budget in tempo reale
-      if (reqBudget) {
+      // Calcola la stima sul selezionatore budget SOLO se il cliente non ha digitato manualmente il proprio prezzo
+      if (reqBudget && reqBudget.dataset.userTyped !== 'true') {
         reqBudget.value = computedPrice;
       }
       handleReqBudgetChange();
@@ -20681,6 +20681,9 @@ END-ISO-10303-21;`;
 
     function handleReqBudgetChange() {
       const bInput = document.getElementById('reqBudget');
+      if (bInput && bInput.value && bInput.value.trim() !== '') {
+        bInput.dataset.userTyped = 'true';
+      }
       const val = parseFloat(bInput?.value) || 0;
       const rec = window.__lastComputedQuotePrice || 0;
       const warnBox = document.getElementById('budgetWarningBox');
@@ -21853,7 +21856,7 @@ END-ISO-10303-21;`;
             r.isDelivered = true;
             r.isClosed = true;
             r.isAccepted = false;
-            if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 45,00'; }
+            if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 0,00'; }
           }
         });
         try {
@@ -22247,7 +22250,7 @@ END-ISO-10303-21;`;
       AppState.isDelivered = true;
       if (AppState.activeEscrowOrder) {
         AppState.activeEscrowOrder.isDelivered = true;
-        AppState.activeEscrowOrder.budget = AppState.activeEscrowOrder.budget || '€ 45,00';
+        AppState.activeEscrowOrder.budget = AppState.activeEscrowOrder.budget || (AppState.activeEscrowOrder.escrowTotal ? formatEuroClean(AppState.activeEscrowOrder.escrowTotal) : '€ 0,00');
       }
 
       // Imposta immediatamente i fondi bloccati in Escrow a € 0,00
@@ -22303,7 +22306,7 @@ END-ISO-10303-21;`;
           r.status = 'COMPLETATO';
           r.isCompleted = true;
           r.isDelivered = true;
-          if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 45,00'; }
+          if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 0,00'; }
         }
       });
       try {
@@ -23886,7 +23889,7 @@ END-ISO-10303-21;`;
           AppState.activeEscrowOrder.isDelivered = true;
           AppState.activeEscrowOrder.isCompleted = true;
           AppState.activeEscrowOrder.status = 'COMPLETATO';
-          AppState.activeEscrowOrder.budget = AppState.activeEscrowOrder.budget || '€ 45,00';
+          AppState.activeEscrowOrder.budget = AppState.activeEscrowOrder.budget || (AppState.activeEscrowOrder.escrowTotal ? formatEuroClean(AppState.activeEscrowOrder.escrowTotal) : '€ 0,00');
         }
         const budgetEl = document.getElementById('escrowOrderBudget');
         if (budgetEl) budgetEl.innerText = '€ 0,00';
@@ -23914,7 +23917,7 @@ END-ISO-10303-21;`;
             r.isDelivered = true;
             r.isClosed = true;
             r.isAccepted = false;
-            if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 45,00'; }
+            if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0') { r.budget = r.itemBudget || r.escrowTotal || '€ 0,00'; }
           }
         });
         try {
@@ -26380,7 +26383,7 @@ END-ISO-10303-21;`;
             if (w && w.price) resolvedPrice = w.price;
           }
           if (!resolvedPrice || resolvedPrice === '€ 0,00') {
-            resolvedPrice = r.itemBudget || r.escrowTotal || '€ 45,00';
+            resolvedPrice = r.budget || r.escrowTotal || r.itemBudget || '€ 0,00';
           }
           r.budget = resolvedPrice;
         }
@@ -26398,7 +26401,7 @@ END-ISO-10303-21;`;
                 <h4 class="text-sm font-cyber font-bold text-white truncate max-w-[200px] sm:max-w-[300px]">${escapeHtml(r.title)}</h4>
               </div>
               <div class="flex items-center gap-2">
-                <span class="text-xs font-mono font-bold text-white">${escapeHtml(resolvedPrice || r.budget || '€ 45,00')}</span>
+                <span class="text-xs font-mono font-bold text-white">${escapeHtml(resolvedPrice || r.budget || '€ 0,00')}</span>
                 ${statusBadge}
               </div>
             </div>
@@ -26692,9 +26695,8 @@ END-ISO-10303-21;`;
             if (w && w.price) resolvedPrice = w.price;
           }
           if (!resolvedPrice || resolvedPrice === '€ 0,00' || resolvedPrice === '€ 0' || resolvedPrice === '0') {
-            resolvedPrice = r.itemBudget || r.escrowTotal || '€ 45,00';
+            resolvedPrice = r.budget || r.escrowTotal || r.itemBudget || '€ 0,00';
           }
-          if (resolvedPrice === '€ 0,00' || resolvedPrice === '€ 0') resolvedPrice = '€ 45,00';
         }
         const displayBudget = resolvedPrice;
         r.budget = displayBudget;
@@ -30783,7 +30785,7 @@ function renderDealChat(rfpId) {
       container.innerHTML = filtered.map(w => {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
-        const safePrice = escapeHtml(w.price || '€ 45,00');
+        const safePrice = escapeHtml(w.price || '€ 0,00');
         const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
         const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
         const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
@@ -31101,7 +31103,7 @@ function renderDealChat(rfpId) {
       container.innerHTML = filtered.map(w => {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
-        const safePrice = escapeHtml(w.price || '€ 45,00');
+        const safePrice = escapeHtml(w.price || '€ 0,00');
         const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
         const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
         const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
@@ -31234,7 +31236,6 @@ function renderDealChat(rfpId) {
       const worksHtml = myWorks.map(w => {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
-        const safePrice = escapeHtml(w.price || '€ 35,00');
         const photo = w.photoUrl || '/images/cube.jpg';
 
         // Cerca se esiste una commessa per questa specifica opera
@@ -31247,6 +31248,15 @@ function renderDealChat(rfpId) {
           entry.id === (associatedOrder && associatedOrder.id) ||
           (entry.title && w.title && entry.title.trim().toLowerCase() === w.title.trim().toLowerCase())
         ));
+
+        // Prezzo esatto: deve combaciare rigorosamente con il prezzo digitato dal cliente nella commessa!
+        const clientActualBudget = (associatedOrder && (associatedOrder.budget || associatedOrder.escrowTotal))
+          || (inLedger && inLedger.price)
+          || w.price
+          || '€ 0,00';
+
+        const safePrice = escapeHtml(clientActualBudget);
+        const safeEarnedPrice = escapeHtml(clientActualBudget);
 
         // Controlla se il lavoro è COMPLETATO (dopo il 4° passaggio o completamento esplicito)
         const isJobCompleted = Boolean(
@@ -31266,7 +31276,6 @@ function renderDealChat(rfpId) {
             (AppState.stage4Completed && associatedOrder)
           ))
         );
-        const safeEarnedPrice = escapeHtml(w.price || (associatedOrder && associatedOrder.budget) || (inLedger && inLedger.price) || '€ 45,00');
 
         // Ordine attivo in corso (accettato ma non ancora completato al 4° passaggio)
         const isOrderActive = Boolean(
@@ -31358,7 +31367,7 @@ function renderDealChat(rfpId) {
           additionalCompletedOrders.push({
             id: entry.id,
             title: entry.title,
-            budget: entry.price || '€ 45,00',
+            budget: entry.price || (entry.budget ? formatEuroClean(entry.budget) : '€ 0,00'),
             clientName: entry.clientName || 'Cliente',
             workPhotoUrl: entry.workPhotoUrl || '/images/cube.jpg',
             isCompleted: true,
@@ -31451,7 +31460,7 @@ function renderDealChat(rfpId) {
       if (document.getElementById('itemDetailDimensions')) document.getElementById('itemDetailDimensions').innerText = work.dimensions || '80 × 60 × 25 mm';
       if (document.getElementById('itemDetailQuantity')) document.getElementById('itemDetailQuantity').innerText = work.quantity || '1 pezzo (Opera Unica)';
       if (document.getElementById('itemDetailInfill')) document.getElementById('itemDetailInfill').innerText = work.infill || '50% Meccanico Strutturale';
-      if (document.getElementById('itemDetailPrice')) document.getElementById('itemDetailPrice').innerText = work.price || '€ 45,00';
+      if (document.getElementById('itemDetailPrice')) document.getElementById('itemDetailPrice').innerText = work.price || '€ 0,00';
 
       modal.classList.remove('hidden');
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
@@ -31485,7 +31494,7 @@ function renderDealChat(rfpId) {
       const descEl = document.getElementById('showcaseOrderArtworkDesc');
       if (descEl) descEl.textContent = work.description || 'Opera verificata dalla rete Maker PrintForge.';
 
-      let numPrice = 45.00;
+      let numPrice = 0.00;
       if (work.price) {
         const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
         const parsed = parseFloat(rawNum);
@@ -31605,7 +31614,7 @@ function renderDealChat(rfpId) {
 
       const shippingFull = `${street}, ${cap} ${city} (${prov})`;
 
-      let numPrice = 45.00;
+      let numPrice = 0.00;
       if (work.price) {
         const rawNum = String(work.price).replace(/[^0-9,.]/g, '').replace(',', '.');
         const parsed = parseFloat(rawNum);
