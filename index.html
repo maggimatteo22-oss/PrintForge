@@ -12710,30 +12710,6 @@
         portfolioDescHeading: 'Technical Description & Quality Verification *',
         portfolioDescPlaceholder: 'Describe the component, achieved tolerances and intended use...',
         portfolioMaterialHeading: 'Material *',
-        portfolioQuantityHeading: 'Cantidad de Piezas *',
-        portfolioInfillHeading: 'Relleno (Infill) *',
-        showcaseOrderBack: 'VOLVER AL ESCAPARATE',
-        showcaseOrderBadge: 'PEDIDO DIRECTO ESCAPARATE 2D',
-        showcaseOrderMakerPrefix: 'Maker',
-        showcaseOrderMakerBadge: 'Maker Certificado PrintForge',
-        showcaseOrderPriceLabel: 'Precio establecido por el Maker:',
-        showcaseOrderSpecsTitle: 'Especificaciones Técnicas Establecidas por el Maker',
-        showcaseOrderSpecsLockedBadge: 'BLOQUEADAS • NO MODIFICABLES',
-        showcaseSpecTitleLabel: 'Nombre de la Obra',
-        showcaseSpecMaterialLabel: 'Material Técnico',
-        showcaseSpecColorLabel: 'Color de Impresión',
-        showcaseSpecDimensionsLabel: 'Dimensiones (XYZ)',
-        showcaseSpecQuantityLabel: 'Piezas / Cantidad',
-        showcaseSpecInfillLabel: 'Relleno (Infill)',
-        showcaseShipTitle: 'Dirección de Envío y Entrega por Mensajería',
-        showcaseShipStreetLabel: 'Calle y Número *',
-        showcaseShipCityLabel: 'Ciudad *',
-        showcaseShipCapLabel: 'Código Postal *',
-        showcaseShipProvLabel: 'Prov. *',
-        showcaseShipNotesLabel: 'Instrucciones para el Mensajero / Notas (Opcional)',
-        showcaseEscrowNotice: 'Fondo de Garantía Escrow: fondos liberados solo tras inspección positiva',
-        showcaseOrderTotalLabel: 'Total del Pedido:',
-        showcaseOrderBtnContact: 'CONTACTAR AL MAKER',
         portfolioQuantityHeading: 'Quantity (Pieces) *',
         portfolioInfillHeading: 'Infill Option *',
         showcaseOrderBack: 'BACK TO SHOWCASE',
@@ -13606,6 +13582,30 @@
         portfolioDescHeading: 'Descripción Técnica & Verificación *',
         portfolioDescPlaceholder: 'Describe la pieza, tolerancias alcanzadas y destino de uso...',
         portfolioMaterialHeading: 'Material *',
+        portfolioQuantityHeading: 'Cantidad de Piezas *',
+        portfolioInfillHeading: 'Relleno (Infill) *',
+        showcaseOrderBack: 'VOLVER AL ESCAPARATE',
+        showcaseOrderBadge: 'PEDIDO DIRECTO ESCAPARATE 2D',
+        showcaseOrderMakerPrefix: 'Maker',
+        showcaseOrderMakerBadge: 'Maker Certificado PrintForge',
+        showcaseOrderPriceLabel: 'Precio establecido por el Maker:',
+        showcaseOrderSpecsTitle: 'Especificaciones Técnicas Establecidas por el Maker',
+        showcaseOrderSpecsLockedBadge: 'BLOQUEADAS • NO MODIFICABLES',
+        showcaseSpecTitleLabel: 'Nombre de la Obra',
+        showcaseSpecMaterialLabel: 'Material Técnico',
+        showcaseSpecColorLabel: 'Color de Impresión',
+        showcaseSpecDimensionsLabel: 'Dimensiones (XYZ)',
+        showcaseSpecQuantityLabel: 'Piezas / Cantidad',
+        showcaseSpecInfillLabel: 'Relleno (Infill)',
+        showcaseShipTitle: 'Dirección de Envío y Entrega por Mensajería',
+        showcaseShipStreetLabel: 'Calle y Número *',
+        showcaseShipCityLabel: 'Ciudad *',
+        showcaseShipCapLabel: 'Código Postal *',
+        showcaseShipProvLabel: 'Prov. *',
+        showcaseShipNotesLabel: 'Instrucciones para el Mensajero / Notas (Opcional)',
+        showcaseEscrowNotice: 'Fondo de Garantía Escrow: fondos liberados solo tras inspección positiva',
+        showcaseOrderTotalLabel: 'Total del Pedido:',
+        showcaseOrderBtnContact: 'CONTACTAR AL MAKER',
         portfolioColorHeading: 'Color *',
         portfolioWheelBadge: '🎨 Rueda de Colores',
         portfolioDimsHeading: 'Dimensiones (mm) *',
@@ -14553,6 +14553,15 @@
       if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
       if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
       if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+      if (window._currentShowcaseWorkOrder && typeof populateShowcaseOrderView === 'function') {
+        populateShowcaseOrderView(window._currentShowcaseWorkOrder);
+      }
+      if (typeof recalculateShippingForDimensions === 'function') {
+        const dx = parseFloat(document.getElementById('dimX')?.value || 0);
+        const dy = parseFloat(document.getElementById('dimY')?.value || 0);
+        const dz = parseFloat(document.getElementById('dimZ')?.value || 0);
+        recalculateShippingForDimensions(dx, dy, dz);
+      }
       if (AppState.activeHomeModelKey) {
         selectStudioModel(AppState.activeHomeModelKey);
       }
@@ -16093,6 +16102,9 @@ END-ISO-10303-21;`;
         const selectedText = selectedOpt ? selectedOpt.textContent : '';
         const parsedSelected = this.parseOptionText(selectedText);
         const iconHtml = this.getSelectIcon(id);
+        const isMaterial = (id === 'reqMaterial' || id === 'portfolioMaterial');
+        const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+        const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
 
         let optionsHtml = '';
         const optgroups = sel.getElementsByTagName('optgroup');
@@ -16100,9 +16112,17 @@ END-ISO-10303-21;`;
         if (optgroups.length > 0) {
           Array.from(optgroups).forEach(grp => {
             let grpLabel = grp.label || '';
+            let badgeText = '';
+            const low = grpLabel.toLowerCase();
+            if (low.includes('fdm') || low.includes('filamento') || low.includes('filament')) badgeText = isEn ? 'FILAMENT' : 'FILAMENTO';
+            else if (low.includes('sla') || low.includes('dlp') || low.includes('resina') || low.includes('resin')) badgeText = isEn ? 'RESIN' : 'RESINA';
+            else if (low.includes('sls') || low.includes('powder') || low.includes('polvo') || low.includes('polvere')) badgeText = isEn ? 'POWDER' : isEs ? 'POLVO' : 'POLVERE';
+            else if (low.includes('dmls') || low.includes('slm') || low.includes('metal') || low.includes('metallo')) badgeText = isEn ? 'METAL' : isEs ? 'METAL' : 'METALLO';
+
             optionsHtml += `
-              <div class="custom-select-optgroup" data-group-header="true">
-                ${escapeHtml(grpLabel)}
+              <div class="custom-select-optgroup flex items-center justify-between" data-group-header="true">
+                <span class="truncate">${escapeHtml(grpLabel)}</span>
+                ${badgeText ? `<span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-white/10 text-zinc-300 font-bold shrink-0 ml-1.5">${badgeText}</span>` : ''}
               </div>
             `;
             Array.from(grp.children).forEach(opt => {
@@ -16111,7 +16131,10 @@ END-ISO-10303-21;`;
               const parsed = this.parseOptionText(opt.textContent);
               optionsHtml += `
                 <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                  <span class="text-xs font-mono truncate">${escapeHtml(parsed.title || opt.textContent)}</span>
+                  <div class="flex flex-col min-w-0 flex-1">
+                    <span class="text-xs font-mono font-bold truncate">${escapeHtml(parsed.title || opt.textContent)}</span>
+                    ${parsed.desc ? `<span class="text-[10px] font-sans text-zinc-400 truncate">${escapeHtml(parsed.desc)}</span>` : ''}
+                  </div>
                   ${isSel ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2"></i>' : ''}
                 </div>
               `;
@@ -16124,24 +16147,41 @@ END-ISO-10303-21;`;
             const parsed = this.parseOptionText(opt.textContent);
             optionsHtml += `
               <div class="custom-select-option ${isSel ? 'selected' : ''}" data-value="${escapeHtml(opt.value)}" onclick="CustomSelectEngine.selectOption('${id}', '${escapeHtml(opt.value)}')">
-                <span class="text-xs font-mono truncate">${escapeHtml(parsed.title || opt.textContent)}</span>
+                <div class="flex flex-col min-w-0 flex-1">
+                  <span class="text-xs font-mono font-bold truncate">${escapeHtml(parsed.title || opt.textContent)}</span>
+                  ${parsed.desc ? `<span class="text-[10px] font-sans text-zinc-400 truncate">${escapeHtml(parsed.desc)}</span>` : ''}
+                </div>
                 ${isSel ? '<i data-lucide="check" class="w-3.5 h-3.5 text-emerald-400 shrink-0 ml-2"></i>' : ''}
               </div>
             `;
           });
         }
 
+        const filterPlaceholder = isEn ? 'Filter options...' : isEs ? 'Filtrar opciones...' : 'Filtra opzioni...';
+        const searchBarHtml = isMaterial ? `
+          <div class="p-2 border-b border-white/[0.08] sticky top-0 bg-[#12131A] z-10" onclick="event.stopPropagation()">
+            <div class="relative">
+              <i data-lucide="search" class="w-3.5 h-3.5 text-zinc-400 absolute left-2.5 top-2.5 pointer-events-none"></i>
+              <input type="text" placeholder="${filterPlaceholder}" oninput="CustomSelectEngine.filterDropdown('${id}', this.value)" class="w-full bg-[#181922] border border-white/10 rounded-lg pl-8 pr-2.5 py-1.5 text-xs text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-emerald-500/50" />
+            </div>
+          </div>
+        ` : '';
+
         wrapper.innerHTML = `
           <button type="button" class="custom-select-trigger group" id="customTrigger_${id}" onclick="CustomSelectEngine.toggle('${id}', event)">
             <div class="flex items-center gap-2 min-w-0 flex-1">
               ${iconHtml}
-              <span class="truncate font-mono text-xs font-medium text-white block" id="customTriggerText_${id}">
-                ${escapeHtml(parsedSelected.title || selectedText || 'Seleziona opzione...')}
-              </span>
+              <div class="flex flex-col min-w-0 text-left">
+                <span class="truncate font-mono text-xs font-medium text-white block" id="customTriggerText_${id}">
+                  ${escapeHtml(parsedSelected.title || selectedText || 'Seleziona opzione...')}
+                </span>
+                ${parsedSelected.desc ? `<span class="truncate font-sans text-[10px] text-zinc-400 block" id="customTriggerDesc_${id}">${escapeHtml(parsedSelected.desc)}</span>` : ''}
+              </div>
             </div>
             <i data-lucide="chevron-down" id="customChevron_${id}" class="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200 shrink-0"></i>
           </button>
           <div class="custom-select-dropdown custom-scrollbar" id="customDropdown_${id}">
+            ${searchBarHtml}
             <div class="custom-options-scrollable">
               ${optionsHtml}
             </div>
@@ -16220,14 +16260,47 @@ END-ISO-10303-21;`;
 
       filterMobileOptions() {},
 
+      filterDropdown(id, query) {
+        const dropdown = document.getElementById(`customDropdown_${id}`);
+        if (!dropdown) return;
+        const q = (query || '').toLowerCase().trim();
+        const options = dropdown.querySelectorAll('.custom-select-option');
+        options.forEach(opt => {
+          const text = (opt.textContent || '').toLowerCase();
+          const val = (opt.getAttribute('data-value') || '').toLowerCase();
+          const matches = !q || text.includes(q) || val.includes(q);
+          opt.style.display = matches ? 'flex' : 'none';
+        });
+
+        // Toggle optgroup headers based on child visibility
+        const optgroups = dropdown.querySelectorAll('.custom-select-optgroup');
+        optgroups.forEach(grp => {
+          let next = grp.nextElementSibling;
+          let hasVisible = false;
+          while (next && next.classList.contains('custom-select-option')) {
+            if (next.style.display !== 'none') {
+              hasVisible = true;
+              break;
+            }
+            next = next.nextElementSibling;
+          }
+          grp.style.display = (!q || hasVisible) ? 'flex' : 'none';
+        });
+      },
+
       syncTrigger(id) {
         const sel = document.getElementById(id);
         const triggerText = document.getElementById(`customTriggerText_${id}`);
+        const triggerDesc = document.getElementById(`customTriggerDesc_${id}`);
         if (!sel || !triggerText) return;
         const selectedOpt = sel.options[sel.selectedIndex] || sel.options[0];
         if (selectedOpt) {
           const parsed = this.parseOptionText(selectedOpt.textContent);
           triggerText.textContent = parsed.title || selectedOpt.textContent;
+          if (triggerDesc) {
+            triggerDesc.textContent = parsed.desc || '';
+            triggerDesc.style.display = parsed.desc ? 'block' : 'none';
+          }
         }
       },
 
@@ -17465,6 +17538,43 @@ END-ISO-10303-21;`;
       }
     }
 
+        function getLocalizedMaterial(matName) {
+      if (!matName) return currentLang === 'en' ? 'Technical PETG' : currentLang === 'es' ? 'PETG Técnico' : 'PETG Tecnico';
+      const low = String(matName).toLowerCase();
+      if (low.includes('petg')) return currentLang === 'en' ? 'Technical PETG' : currentLang === 'es' ? 'PETG Técnico' : 'PETG Tecnico';
+      if (low.includes('pla+')) return currentLang === 'en' ? 'High-Impact PLA+' : currentLang === 'es' ? 'PLA+ Alta Resistencia' : 'PLA+ Alta Resistenza';
+      if (low.includes('pa12') || low.includes('carbon')) return currentLang === 'en' ? 'PA12-CF Carbon Fiber' : currentLang === 'es' ? 'PA12-CF Fibra de Carbono' : 'PA12-CF Carbonio';
+      if (low.includes('tpu 95a') || low.includes('flessibile') || low.includes('flexible')) return currentLang === 'en' ? 'TPU 95A Flexible Elastomer' : currentLang === 'es' ? 'TPU 95A Elastómero Flexible' : 'TPU 95A Flessibile';
+      if (low.includes('abs')) return currentLang === 'en' ? 'Industrial ABS' : currentLang === 'es' ? 'ABS Industrial' : 'ABS Industriale';
+      if (low.includes('asa')) return currentLang === 'en' ? 'ASA UV-Resistant' : currentLang === 'es' ? 'ASA Resistente UV' : 'ASA UV-Resistant';
+      if (low.includes('peek')) return currentLang === 'en' ? 'PEEK Industrial Superpolymer' : currentLang === 'es' ? 'PEEK Superpolímero Industrial' : 'PEEK Superpolimero';
+      if (low.includes('tough')) return currentLang === 'en' ? 'Tough Engineering Resin' : currentLang === 'es' ? 'Resina Tough Ingenieril' : 'Resina Tough Ingegneristica';
+      if (low.includes('alta temperatura') || low.includes('high temp')) return currentLang === 'en' ? 'High Temp Resin (HDT > 280°C)' : currentLang === 'es' ? 'Resina Alta Temperatura' : 'Resina Alta Temperatura';
+      if (low.includes('calcinabile') || low.includes('castable')) return currentLang === 'en' ? 'Castable Jewelry Resin' : currentLang === 'es' ? 'Resina Calcinable Joyería' : 'Resina Calcinabile Oreficeria';
+      if (low.includes('biocompatibile') || low.includes('biocompatible')) return currentLang === 'en' ? 'Biocompatible Resin' : currentLang === 'es' ? 'Resina Biocompatible' : 'Resina Biocompatibile';
+      if (low.includes('sls') || low.includes('sinterizz')) return currentLang === 'en' ? 'Nylon PA12 SLS' : currentLang === 'es' ? 'Nylon PA12 SLS' : 'Nylon PA12 SLS';
+      if (low.includes('acciaio') || low.includes('steel') || low.includes('316l')) return currentLang === 'en' ? '316L Stainless Steel' : currentLang === 'es' ? 'Acero Inox 316L' : 'Acciaio Inox 316L';
+      if (low.includes('alluminio') || low.includes('aluminum') || low.includes('aluminio')) return currentLang === 'en' ? 'AlSi10Mg Aluminum' : currentLang === 'es' ? 'Aluminio AlSi10Mg' : 'Alluminio AlSi10Mg';
+      if (low.includes('titanio') || low.includes('titanium')) return currentLang === 'en' ? 'Grade 5 Titanium' : currentLang === 'es' ? 'Titanio Grado 5' : 'Titanio Grado 5';
+      return matName;
+    }
+
+    function getLocalizedColor(colName) {
+      if (!colName) return currentLang === 'en' ? 'Cyber Matte Black' : currentLang === 'es' ? 'Negro Mate Cyber' : 'Nero Opaco Cyber';
+      const s = String(colName).toLowerCase();
+      if (s.includes('magenta') || s.includes('fucsia')) return currentLang === 'en' ? 'Matte Prototype Magenta' : currentLang === 'es' ? 'Magenta Prototipo Mate' : 'Magenta Prototipo Opaco';
+      if (s.includes('aranc') || s.includes('orange') || s.includes('naranja')) return currentLang === 'en' ? 'Mechanical Orange' : currentLang === 'es' ? 'Naranja Mecánico' : 'Arancione Meccanico';
+      if (s.includes('nero') || s.includes('black') || s.includes('negro')) return currentLang === 'en' ? 'Cyber Matte Black' : currentLang === 'es' ? 'Negro Mate Cyber' : 'Nero Opaco Cyber';
+      if (s.includes('bianco') || s.includes('white') || s.includes('blanco')) return currentLang === 'en' ? 'Pure Natural White' : currentLang === 'es' ? 'Blanco Natural Puro' : 'Bianco Naturale Puro';
+      if (s.includes('blu') || s.includes('blue') || s.includes('azul')) return currentLang === 'en' ? 'Technical Blue' : currentLang === 'es' ? 'Azul Técnico' : 'Blu Meccanico Tecnico';
+      if (s.includes('verde') || s.includes('green')) return currentLang === 'en' ? 'Matrix Green' : currentLang === 'es' ? 'Verde Matrix' : 'Verde Matrix';
+      if (s.includes('giallo') || s.includes('yellow') || s.includes('amarillo')) return currentLang === 'en' ? 'Industrial Yellow' : currentLang === 'es' ? 'Amarillo Industrial' : 'Giallo Industriale';
+      if (s.includes('grigio') || s.includes('grey') || s.includes('gray') || s.includes('gris')) return currentLang === 'en' ? 'Space Grey Metal' : currentLang === 'es' ? 'Gris Espacial Metal' : 'Grigio Spaziale Metallo';
+      if (s.includes('rosso') || s.includes('red') || s.includes('rojo')) return currentLang === 'en' ? 'Racing Red' : currentLang === 'es' ? 'Rojo Racing' : 'Rosso Corsa';
+      if (s.includes('oro') || s.includes('gold')) return currentLang === 'en' ? 'Reflective Gold' : currentLang === 'es' ? 'Oro Reflectante' : 'Oro Riflettente';
+      return colName;
+    }
+
     function updateSelectOptions() {
       const t = i18n[currentLang] || i18n['it'];
       if (!t.selectOptions) return;
@@ -17523,6 +17633,109 @@ END-ISO-10303-21;`;
         } else {
           sel.selectedIndex = 0;
         }
+      }
+
+      // 1. Popola portfolioMaterial del Creator con gli stessi materiali localizzati e optgroup
+      const pfMat = document.getElementById('portfolioMaterial');
+      const matConf = t.selectOptions.reqMaterial;
+      if (pfMat && matConf) {
+        const curVal = pfMat.value;
+        pfMat.innerHTML = '';
+        const phText = currentLang === 'en' ? 'Select technical material...' : currentLang === 'es' ? 'Seleccionar material técnico...' : 'Seleziona materiale tecnico...';
+        const phOpt = document.createElement('option');
+        phOpt.value = '';
+        phOpt.textContent = phText;
+        phOpt.disabled = true;
+        if (!curVal) phOpt.selected = true;
+        pfMat.appendChild(phOpt);
+
+        matConf.forEach(grp => {
+          const og = document.createElement('optgroup');
+          og.label = grp.group;
+          grp.options.forEach(opt => {
+            const o = document.createElement('option');
+            o.value = opt.value;
+            o.textContent = opt.text;
+            if (opt.value === curVal) o.selected = true;
+            og.appendChild(o);
+          });
+          pfMat.appendChild(og);
+        });
+        if (curVal) pfMat.value = curVal;
+      }
+
+      // 2. Popola portfolioQuantity del Creator con opzioni tradotte
+      const pfQty = document.getElementById('portfolioQuantity');
+      if (pfQty) {
+        const curVal = pfQty.value || '1 pezzo (Opera Unica)';
+        const qtyOpts = currentLang === 'en' ? [
+          { val: '1 pezzo (Opera Unica)', text: '1 piece (Single Piece)' },
+          { val: '2 pezzi', text: '2 pieces' },
+          { val: '3 pezzi', text: '3 pieces' },
+          { val: '5 pezzi (Piccola Serie)', text: '5 pieces (Small Batch)' },
+          { val: '10 pezzi (Serie)', text: '10 pieces (Batch)' },
+          { val: '20 pezzi (Lotto)', text: '20 pieces (Lot)' },
+          { val: '50+ pezzi (Produzione)', text: '50+ pieces (Production Run)' }
+        ] : currentLang === 'es' ? [
+          { val: '1 pezzo (Opera Unica)', text: '1 pieza (Obra Única)' },
+          { val: '2 pezzi', text: '2 piezas' },
+          { val: '3 pezzi', text: '3 piezas' },
+          { val: '5 pezzi (Piccola Serie)', text: '5 piezas (Serie Corta)' },
+          { val: '10 pezzi (Serie)', text: '10 piezas (Serie)' },
+          { val: '20 pezzi (Lotto)', text: '20 piezas (Lote)' },
+          { val: '50+ pezzi (Produzione)', text: '50+ piezas (Producción)' }
+        ] : [
+          { val: '1 pezzo (Opera Unica)', text: '1 pezzo (Opera Unica)' },
+          { val: '2 pezzi', text: '2 pezzi' },
+          { val: '3 pezzi', text: '3 pezzi' },
+          { val: '5 pezzi (Piccola Serie)', text: '5 pezzi (Piccola Serie)' },
+          { val: '10 pezzi (Serie)', text: '10 pezzi (Serie)' },
+          { val: '20 pezzi (Lotto)', text: '20 pezzi (Lotto)' },
+          { val: '50+ pezzi (Produzione)', text: '50+ pezzi (Produzione)' }
+        ];
+        pfQty.innerHTML = '';
+        qtyOpts.forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o.val;
+          opt.textContent = o.text;
+          if (o.val === curVal) opt.selected = true;
+          pfQty.appendChild(opt);
+        });
+        pfQty.value = curVal;
+      }
+
+      // 3. Popola portfolioInfill del Creator con opzioni tradotte
+      const pfInf = document.getElementById('portfolioInfill');
+      if (pfInf) {
+        const curVal = pfInf.value || '50% Meccanico Strutturale';
+        const infOpts = currentLang === 'en' ? [
+          { val: '20% Leggero / Standard', text: '20% Light (Standard)' },
+          { val: '40% Robusto', text: '40% Sturdy' },
+          { val: '50% Meccanico Strutturale', text: '50% Structural Mechanical' },
+          { val: '75% Tecnico Resistente', text: '75% Technical Rigid' },
+          { val: '100% Pieno / Massiccio', text: '100% Solid (Full Core)' }
+        ] : currentLang === 'es' ? [
+          { val: '20% Leggero / Standard', text: '20% Ligero (Estándar)' },
+          { val: '40% Robusto', text: '40% Robusto' },
+          { val: '50% Meccanico Strutturale', text: '50% Mecánico Estructural' },
+          { val: '75% Tecnico Resistente', text: '75% Técnico Resistente' },
+          { val: '100% Pieno / Massiccio', text: '100% Sólido (Macizo)' }
+        ] : [
+          { val: '20% Leggero / Standard', text: '20% Leggero (Standard)' },
+          { val: '40% Robusto', text: '40% Robusto' },
+          { val: '50% Meccanico Strutturale', text: '50% Meccanico Strutturale' },
+          { val: '75% Tecnico Resistente', text: '75% Tecnico Resistente' },
+          { val: '100% Pieno / Massiccio', text: '100% Pieno (Massiccio)' }
+        ];
+        pfInf.innerHTML = '';
+        infOpts.forEach(o => {
+          const opt = document.createElement('option');
+          opt.value = o.val;
+          opt.textContent = o.text;
+          if (o.val === curVal) opt.selected = true;
+          pfInf.appendChild(opt);
+        });
+        pfInf.value = curVal;
       }
 
       // Synchronize all custom cybernetic select UI dropdowns & the live dossier table
@@ -17612,6 +17825,26 @@ END-ISO-10303-21;`;
           : isEs
           ? 'Escribe un mensaje o acuerda los últimos detalles técnicos con la otra parte...'
           : 'Scrivi un messaggio o concorda gli ultimi dettagli tecnici con l\'altra parte...';
+      }
+      const pfDims = document.getElementById('portfolioDimensions');
+      if (pfDims) {
+        pfDims.placeholder = isEn ? 'e.g. 80 × 60 × 25 mm' : isEs ? 'ej. 80 × 60 × 25 mm' : 'es. 80 × 60 × 25 mm';
+      }
+      const pfPrice = document.getElementById('portfolioPrice');
+      if (pfPrice) {
+        pfPrice.placeholder = isEn ? 'e.g. € 45.00' : isEs ? 'ej. 45,00 €' : 'es. € 45,00';
+      }
+      const shipStreet = document.getElementById('showcaseShipStreet');
+      if (shipStreet) {
+        shipStreet.placeholder = isEn ? 'e.g. 12 High Street, Suite 4' : isEs ? 'ej. Calle Mayor 12, Piso 2' : 'es. Via Alessandro Manzoni 12';
+      }
+      const shipCity = document.getElementById('showcaseShipCity');
+      if (shipCity) {
+        shipCity.placeholder = isEn ? 'e.g. London' : isEs ? 'ej. Madrid' : 'es. Milano';
+      }
+      const shipNotes = document.getElementById('showcaseShipNotes');
+      if (shipNotes) {
+        shipNotes.placeholder = isEn ? 'e.g. Doorbell Maggi, 2nd floor, leave with concierge' : isEs ? 'ej. Timbre Maggi, 2º piso, dejar en conserjería' : 'es. Citofono Maggi, scala B secondo piano';
       }
     }
 
@@ -24754,15 +24987,15 @@ END-ISO-10303-21;`;
         klarnaMini: '3 rate mensili a tasso zero (zero interessi)',
         escrowDisclaimer: 'I fondi restano congelati e protetti fino alla tua approvazione del collaudo a 3 foto con calibro.',
         btnEdit: 'Modifica Specifiche',
-        ctaApple: (tot) => `Paga ${tot} in Escrow con Apple Pay`,
-        ctaGoogle: (tot) => `GPay | Paga ${tot} in Escrow`,
-        ctaKlarna: (tot) => `Klarna | Paga in 3 rate & Trova Maker`,
-        ctaCard: (tot) => `🔒 Paga ${tot} in Escrow & Trova Maker`,
+        ctaApple: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? 'Paga in Escrow con Apple Pay' : `Paga ${tot} in Escrow con Apple Pay`,
+        ctaGoogle: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? 'GPay | Paga in Escrow' : `GPay | Paga ${tot} in Escrow`,
+        ctaKlarna: (tot) => 'Klarna | Paga in 3 rate & Trova Maker',
+        ctaCard: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? '🔒 Paga in Escrow & Trova Maker' : `🔒 Paga ${tot} in Escrow & Trova Maker`,
         authorizing: 'Autorizzazione Stripe Escrow in corso...',
         authorized: 'Fondi Trattenuti in Escrow con Successo!'
       },
       en: {
-        modalTitle: 'ORDER SUMMARY',
+        modalTitle: 'REQUEST / DEAL SUMMARY',
         matLabel: 'MATERIAL',
         dimsLabel: 'XYZ DIMENSIONS',
         qtyLabel: 'QTY & TOLERANCE',
@@ -24775,15 +25008,15 @@ END-ISO-10303-21;`;
         klarnaMini: '3 interest-free monthly installments',
         escrowDisclaimer: 'Funds remain frozen and protected until your approval of the 3-photo caliper inspection.',
         btnEdit: 'Edit Specifications',
-        ctaApple: (tot) => `Apple Pay | Pay ${tot} in Escrow`,
-        ctaGoogle: (tot) => `GPay | Pay ${tot} in Escrow`,
-        ctaKlarna: (tot) => `Klarna | Pay in 3 installments & Find Maker`,
-        ctaCard: (tot) => `🔒 Pay ${tot} in Escrow & Find Maker`,
+        ctaApple: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? 'Apple Pay | Pay in Escrow' : `Apple Pay | Pay ${tot} in Escrow`,
+        ctaGoogle: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? 'GPay | Pay in Escrow' : `GPay | Pay ${tot} in Escrow`,
+        ctaKlarna: (tot) => 'Klarna | Pay in 3 installments & Find Maker',
+        ctaCard: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? '🔒 Pay in Escrow & Find Maker' : `🔒 Pay ${tot} in Escrow & Find Maker`,
         authorizing: 'Authorizing Stripe Escrow Hold...',
         authorized: 'Funds Secured in Escrow!'
       },
       es: {
-        modalTitle: 'RESUMEN DEL PEDIDO',
+        modalTitle: 'RESUMEN DE LA APUESTA',
         matLabel: 'MATERIAL',
         dimsLabel: 'DIMENSIONES XYZ',
         qtyLabel: 'CANTIDAD & TOL.',
@@ -24796,10 +25029,10 @@ END-ISO-10303-21;`;
         klarnaMini: '3 plazos mensuales sin intereses',
         escrowDisclaimer: 'Los fondos quedan retenidos y protegidos hasta tu aprobación del control de 3 fotos con calibre.',
         btnEdit: 'Modificar Especificaciones',
-        ctaApple: (tot) => `Pagar ${tot} en Escrow con Apple Pay`,
-        ctaGoogle: (tot) => `GPay | Pagar ${tot} en Escrow`,
-        ctaKlarna: (tot) => `Klarna | Pagar en 3 plazos y Buscar Maker`,
-        ctaCard: (tot) => `🔒 Pagar ${tot} en Escrow y Buscar Maker`,
+        ctaApple: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? 'Pagar en Escrow con Apple Pay' : `Pagar ${tot} en Escrow con Apple Pay`,
+        ctaGoogle: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? 'GPay | Pagar en Escrow' : `GPay | Pagar ${tot} en Escrow`,
+        ctaKlarna: (tot) => 'Klarna | Pagar en 3 plazos y Buscar Maker',
+        ctaCard: (tot) => (!tot || tot === '€ 0,00' || tot === '€ 0') ? '🔒 Pagar en Escrow y Buscar Maker' : `🔒 Pagar ${tot} en Escrow y Buscar Maker`,
         authorizing: 'Autorizando retención Stripe Escrow...',
         authorized: '¡Fondos retenidos en Escrow con éxito!'
       }
@@ -24989,21 +25222,50 @@ END-ISO-10303-21;`;
       const btnEdit = document.getElementById('i18n-btnReviewEdit');
       if (btnEdit) btnEdit.innerHTML = `<i data-lucide="edit-3" class="w-3.5 h-3.5"></i> ${t.btnEdit}`;
 
-      // Popola dati reali commessa
+      // Popola dati reali commessa localizzati
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
       const partTitleEl = document.getElementById('reviewPartTitle');
-      if (partTitleEl) partTitleEl.innerText = draft.title;
+      if (partTitleEl) {
+        let pTitle = draft.title || 'Componente';
+        if (pTitle.toLowerCase().includes('componente meccanico') || pTitle.toLowerCase().includes('precision mechanical')) {
+          pTitle = isEn ? 'Precision Mechanical Component' : isEs ? 'Componente Mecánico de Precisión' : 'Componente Meccanico di Precisione';
+        }
+        partTitleEl.innerText = pTitle;
+      }
 
       const fileNameEl = document.getElementById('reviewFileName');
-      if (fileNameEl) fileNameEl.innerText = draft.customFileName;
+      if (fileNameEl) {
+        let fName = draft.customFileName || 'Modello CAD (.stl)';
+        if (fName.includes('Modello CAD') || fName.includes('CAD Model') || fName.includes('Modelo CAD')) {
+          fName = isEn ? 'CAD Model (.stl)' : isEs ? 'Modelo CAD (.stl)' : 'Modello CAD (.stl)';
+        }
+        fileNameEl.innerText = fName;
+      }
 
       const materialColorEl = document.getElementById('reviewMaterialColor');
-      if (materialColorEl) materialColorEl.innerText = `${draft.material} • ${draft.color}`;
+      if (materialColorEl) {
+        const localizedMat = getLocalizedMaterial(draft.material);
+        const localizedCol = getLocalizedColor(draft.color);
+        materialColorEl.innerText = `${localizedMat} • ${localizedCol}`;
+      }
 
       const dimEl = document.getElementById('reviewDimensions');
       if (dimEl) dimEl.innerText = draft.dimensionsStr;
 
       const qtyTolEl = document.getElementById('reviewQuantityTolerance');
-      if (qtyTolEl) qtyTolEl.innerText = `${draft.quantity} • ${draft.tolerance}`;
+      if (qtyTolEl) {
+        let qText = draft.quantity || '1 pezzo';
+        if (qText.includes('1 pezzo') || qText.includes('Opera Unica') || qText.includes('Single Piece') || qText.includes('Obra Única')) {
+          qText = isEn ? '1 piece' : isEs ? '1 pieza' : '1 pezzo';
+        }
+        let tolText = draft.tolerance || 'Standard ±0.2 mm';
+        if (tolText.includes('0.05')) {
+          tolText = isEn ? 'High Precision ±0.05 mm' : isEs ? 'Alta Precisión ±0.05 mm' : 'Alta Precisione ±0.05 mm';
+        }
+        qtyTolEl.innerText = `${qText} • ${tolText}`;
+      }
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
       if (totalEscrowEl) totalEscrowEl.innerText = draft.budgetStr;
@@ -25170,9 +25432,9 @@ END-ISO-10303-21;`;
         tolerance: draft.tolerance,
         infill: draft.infill,
         postProcess: draft.postProcess,
-        budget: (draft.budgetStr && draft.budgetStr !== '€ 0,00' && draft.budgetStr !== '€ 0') ? draft.budgetStr : ((draft.budgetNum && draft.budgetNum > 0) ? formatEuroClean(draft.budgetNum) : (directWork && directWork.price ? directWork.price : '€ 45,00')),
+        budget: (draft.budgetStr && draft.budgetStr !== '€ 0,00' && draft.budgetStr !== '€ 0') ? draft.budgetStr : ((draft.budgetNum && draft.budgetNum > 0) ? formatEuroClean(draft.budgetNum) : (directWork && directWork.price ? directWork.price : '€ 0,00')),
         shippingPrice: draft.shippingNum,
-        escrowTotal: (draft.escrowTotalStr && draft.escrowTotalStr !== '€ 0,00' && draft.escrowTotalStr !== '€ 0') ? draft.escrowTotalStr : ((draft.budgetNum && draft.budgetNum > 0) ? formatEuroClean(draft.budgetNum) : (directWork && directWork.price ? directWork.price : '€ 45,00')),
+        escrowTotal: (draft.escrowTotalStr && draft.escrowTotalStr !== '€ 0,00' && draft.escrowTotalStr !== '€ 0') ? draft.escrowTotalStr : ((draft.budgetNum && draft.budgetNum > 0) ? formatEuroClean(draft.budgetNum) : (directWork && directWork.price ? directWork.price : '€ 0,00')),
         paymentMethod: currentSelectedPaymentMethod,
         shippingCarrier: selectedShippingCarrierId.includes('ups') ? 'UPS Standard' : selectedShippingCarrierId.includes('dhl') ? 'DHL Express' : selectedShippingCarrierId.includes('gls') ? 'GLS Parcel' : 'Poste Italiane',
         trackingNumber: `PF-UPS-${Math.floor(100000 + Math.random() * 900000)}`,
@@ -30665,15 +30927,13 @@ function renderDealChat(rfpId) {
       if (specTitle) specTitle.textContent = work.title || 'Opera';
 
       const specMaterial = document.getElementById('showcaseSpecMaterial');
-      if (specMaterial) specMaterial.textContent = work.material || 'PETG Tecnico';
+      if (specMaterial) specMaterial.textContent = getLocalizedMaterial(work.material);
 
       const specColor = document.getElementById('showcaseSpecColor');
-      if (specColor) specColor.textContent = work.color || 'Nero Cyber';
+      if (specColor) specColor.textContent = getLocalizedColor(work.color);
 
       // Risolvi il colore esatto inserito dal Creator (il pallino DEVE combaciare!)
-      const resolvedHex = (work.colorHex && String(work.colorHex).startsWith('#') && (work.colorHex.toUpperCase() !== '#18181B' || String(work.color || '').toLowerCase().includes('nero')))
-        ? work.colorHex
-        : resolveColorNameToHex(work.color || 'Nero Cyber');
+      const resolvedHex = resolveColorNameToHex(work.colorHex || work.color || 'Magenta Prototipo');
 
       const specColorDot = document.getElementById('showcaseSpecColorDot');
       if (specColorDot) {
