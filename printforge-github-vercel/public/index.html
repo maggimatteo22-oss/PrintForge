@@ -4078,12 +4078,12 @@
           <div class="space-y-1">
             <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-300">
               <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>
-              <span class="uppercase tracking-wider font-bold">GESTIONE PORTFOLIO // CREATOR HUB</span>
+              <span class="uppercase tracking-wider font-bold" id="i18n-creatorHubOverline">GESTIONE PORTFOLIO // CREATOR HUB</span>
             </div>
-            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-cyber">
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white font-cyber" id="i18n-creatorHubMainTitle">
               I Miei Progetti & Vetrina
             </h1>
-            <p class="text-xs text-zinc-400 font-sans">
+            <p class="text-xs text-zinc-400 font-sans" id="i18n-creatorHubSub">
               Carica le tue migliori realizzazioni per metterle in mostra nella Vetrina Globale (/esplora) e ricevere ordini diretti.
             </p>
           </div>
@@ -4095,7 +4095,7 @@
             </button>
             <button type="button" onclick="navigateTo('creator-requests')" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-cyber font-bold text-xs flex items-center gap-2 border border-white/10 transition">
               <i data-lucide="inbox" class="w-4 h-4"></i>
-              <span>Bacheca Richieste</span>
+              <span id="i18n-creatorHubRequestsFeedBtn">Bacheca Richieste</span>
             </button>
           </div>
         </div>
@@ -4251,7 +4251,7 @@
         <div class="space-y-4">
           <h3 class="font-cyber font-bold text-sm text-white flex items-center gap-2 border-b border-white/[0.08] pb-2">
             <i data-lucide="layers" class="w-4 h-4 text-zinc-400"></i>
-            <span>LE TUE PUBBLICAZIONI IN VETRINA</span>
+            <span id="i18n-creatorPublishedCardsTitle">LE TUE PUBBLICAZIONI IN VETRINA</span>
           </h3>
           <div id="creatorPublishedCardsContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             <!-- Popolato dinamicamente -->
@@ -6887,18 +6887,18 @@
 
         <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
           <div class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-2">
-            <span class="text-[10px] font-mono text-zinc-400 uppercase">FONDI IN CUSTODIA:</span>
+            <span class="text-[10px] font-mono text-zinc-400 uppercase" id="i18n-studioFondiEscrowLabel">FONDI IN CUSTODIA:</span>
             <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums" id="studioFondiEscrowBadge">€ 48,00</span>
           </div>
           
-          <button type="button" onclick="downloadClientAttachment()" class="btn-kowalski-primary py-2 px-3.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-sm transition active:scale-95" title="Scarica il file tecnico depositato dal cliente">
+          <button type="button" onclick="downloadClientAttachment()" id="btnDownloadClientAttachment" class="btn-kowalski-primary py-2 px-3.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-sm transition active:scale-95" title="Scarica il file tecnico depositato dal cliente">
             <i data-lucide="download" class="w-4 h-4 text-black"></i>
-            <span>SCARICA FILE TECNICO</span>
+            <span id="i18n-studioDownloadTechFile">SCARICA FILE TECNICO</span>
           </button>
 
-          <button type="button" onclick="navigateTo('creator-requests')" class="px-3 py-2 rounded-xl bg-[#18181D] hover:bg-[#222228] text-zinc-300 hover:text-white text-xs font-cyber transition flex items-center gap-1.5 border border-white/10 shadow-sm" title="Torna alla bacheca richieste">
+          <button type="button" onclick="navigateTo('creator-requests')" id="btnBackToRequestsFeed" class="px-3 py-2 rounded-xl bg-[#18181D] hover:bg-[#222228] text-zinc-300 hover:text-white text-xs font-cyber transition flex items-center gap-1.5 border border-white/10 shadow-sm" title="Torna alla bacheca richieste">
             <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
-            <span>Bacheca</span>
+            <span id="i18n-studioBackRequestsBtn">Bacheca</span>
           </button>
         </div>
       </div>
@@ -12659,7 +12659,30 @@
             payoutTitle: "CONSEGNA CERTIFICATA // FONDI SVINCOLATI ALL'OFFICINA",
             payoutDesc: "Il corriere ha scansionato il pacco consegnato. I fondi di €48,00 sono stati accreditati automaticamente sull'IBAN del Maker. Zero attese!"
           }
-        }
+        },
+
+        creatorHubOverline: 'GESTIONE PORTFOLIO // CREATOR HUB',
+        creatorHubMainTitle: 'I Miei Progetti & Vetrina',
+        creatorHubSub: 'Carica le tue migliori realizzazioni per metterle in mostra nella Vetrina Globale (/esplora) e ricevere ordini diretti.',
+        creatorHubRequestsFeedBtn: 'Bacheca Richieste',
+        creatorPublishedCardsTitle: 'LE TUE PUBBLICAZIONI IN VETRINA',
+        studioFondiEscrowLabel: 'FONDI IN CUSTODIA:',
+        studioDownloadTechFile: 'SCARICA FILE TECNICO',
+        studioDownloadTechFileTitle: 'Scarica il file tecnico depositato dal cliente',
+        studioBackRequestsBtn: 'Bacheca',
+        studioBackRequestsBtnTitle: 'Torna alla bacheca richieste',
+        escrowBtnOpenChat: 'APRI CHAT 1-1 CON IL MAKER & FOTO',
+        portfolioCardWorkCompleted: 'LAVORO COMPLETATO',
+        portfolioCardActiveOrder: 'ORDINE ATTIVO',
+        portfolioCardInShowcase: 'IN VETRINA',
+        portfolioCardClientPrefix: 'Cliente:',
+        portfolioCardEarnedSuffix: 'INCASSATI',
+        portfolioCardStep4Completed: '4° Passaggio Concluso // Fondi Svincolati',
+        portfolioCardReviewsBtn: 'Recensioni',
+        portfolioCardWaitingOrders: 'In attesa di ordini clienti',
+        portfolioCardAvailable: 'Disponibile',
+        portfolioEmptyTitle: 'Non hai ancora pubblicato opere o completato commesse nel tuo portfolio.',
+        portfolioEmptySubtitle: 'Compila il modulo sopra per pubblicare il tuo primo componente.',
       },
       en: {
         code: 'EN',
@@ -13522,7 +13545,30 @@
             payoutTitle: "CERTIFIED DELIVERY // FUNDS RELEASED TO MAKER",
             payoutDesc: "The courier scanned the delivered parcel. The €48.00 payout was automatically credited to the Maker's IBAN. Zero wait!"
           }
-        }
+        },
+
+        creatorHubOverline: 'PORTFOLIO MANAGEMENT // CREATOR HUB',
+        creatorHubMainTitle: 'My Projects & Showcase',
+        creatorHubSub: 'Upload your best creations to showcase them in the Global Showcase (/explore) and receive direct orders.',
+        creatorHubRequestsFeedBtn: 'Requests Board',
+        creatorPublishedCardsTitle: 'YOUR SHOWCASE PUBLICATIONS',
+        studioFondiEscrowLabel: 'FUNDS IN ESCROW:',
+        studioDownloadTechFile: 'DOWNLOAD TECHNICAL FILE',
+        studioDownloadTechFileTitle: 'Download the technical file submitted by the client',
+        studioBackRequestsBtn: 'Requests Board',
+        studioBackRequestsBtnTitle: 'Back to requests board',
+        escrowBtnOpenChat: 'OPEN 1-ON-1 CHAT WITH MAKER & PHOTOS',
+        portfolioCardWorkCompleted: 'WORK COMPLETED',
+        portfolioCardActiveOrder: 'ACTIVE ORDER',
+        portfolioCardInShowcase: 'IN SHOWCASE',
+        portfolioCardClientPrefix: 'Client:',
+        portfolioCardEarnedSuffix: 'EARNED',
+        portfolioCardStep4Completed: 'Step 4 Complete // Funds Released',
+        portfolioCardReviewsBtn: 'Reviews',
+        portfolioCardWaitingOrders: 'Waiting for client orders',
+        portfolioCardAvailable: 'Available',
+        portfolioEmptyTitle: "You haven't published any items or completed orders in your portfolio yet.",
+        portfolioEmptySubtitle: 'Fill out the form above to publish your first component.',
       },
       es: {
         code: 'ES',
@@ -14330,7 +14376,30 @@
             payoutTitle: "ENTREGA CERTIFICADA // FONDOS LIBERADOS AL CREADOR",
             payoutDesc: "El repartidor escaneó el paquete entregado. Los fondos de 48,00€ se acreditaron automáticamente en el IBAN del Creador. ¡Sin esperas!"
           }
-        }
+        },
+
+        creatorHubOverline: 'GESTIÓN DE PORTAFOLIO // HUB CREADOR',
+        creatorHubMainTitle: 'Mis Proyectos & Escaparate',
+        creatorHubSub: 'Sube tus mejores creaciones para exhibirlas en el Escaparate Global (/explorar) y recibir pedidos directos.',
+        creatorHubRequestsFeedBtn: 'Tablón de Solicitudes',
+        creatorPublishedCardsTitle: 'TUS PUBLICACIONES EN EL ESCAPARATE',
+        studioFondiEscrowLabel: 'FONDOS EN CUSTODIA:',
+        studioDownloadTechFile: 'DESCARGAR ARCHIVO TÉCNICO',
+        studioDownloadTechFileTitle: 'Descargar el archivo técnico enviado por el cliente',
+        studioBackRequestsBtn: 'Tablón',
+        studioBackRequestsBtnTitle: 'Volver al tablón de solicitudes',
+        escrowBtnOpenChat: 'ABRIR CHAT 1-A-1 CON EL MAKER & FOTOS',
+        portfolioCardWorkCompleted: 'TRABAJO COMPLETADO',
+        portfolioCardActiveOrder: 'PEDIDO ACTIVO',
+        portfolioCardInShowcase: 'EN ESCAPARATE',
+        portfolioCardClientPrefix: 'Cliente:',
+        portfolioCardEarnedSuffix: 'COBRADOS',
+        portfolioCardStep4Completed: 'Paso 4 Completado // Fondos Liberados',
+        portfolioCardReviewsBtn: 'Reseñas',
+        portfolioCardWaitingOrders: 'Esperando pedidos de clientes',
+        portfolioCardAvailable: 'Disponible',
+        portfolioEmptyTitle: 'Aún no has publicado obras ni completado pedidos en tu portafolio.',
+        portfolioEmptySubtitle: 'Completa el formulario de arriba para publicar tu primer componente.',
       }
     };
 
@@ -14440,6 +14509,16 @@
       if (shipBtnEl) {
         shipBtnEl.style.display = 'none';
       }
+      const dlBtn = document.getElementById('btnDownloadClientAttachment');
+      if (dlBtn && t.studioDownloadTechFileTitle) dlBtn.setAttribute('title', t.studioDownloadTechFileTitle);
+      const backReqBtn = document.getElementById('btnBackToRequestsFeed');
+      if (backReqBtn && t.studioBackRequestsBtnTitle) backReqBtn.setAttribute('title', t.studioBackRequestsBtnTitle);
+      if (typeof renderCreatorPortfolioView === 'function') {
+        renderCreatorPortfolioView();
+      }
+      if (typeof renderExploreShowcase === 'function') {
+        renderExploreShowcase();
+      }
       updateNavigationTabs();
       updateLaptopBarButtons();
       renderNavUserArea();
@@ -14447,6 +14526,9 @@
       renderCreatorRequestsFeed();
       renderStudioSpecs();
       renderNotificationsList();
+      if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+      if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+      if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
       if (AppState.activeHomeModelKey) {
         selectStudioModel(AppState.activeHomeModelKey);
       }
@@ -14892,6 +14974,15 @@ END-ISO-10303-21;`;
         'i18n-btnPublishPortfolioText': t.btnPublishPortfolio,
         
         'i18n-creatorStripeBtn': t.creatorStripeBtn,
+        'i18n-creatorHubOverline': t.creatorHubOverline,
+        'i18n-creatorHubMainTitle': t.creatorHubMainTitle,
+        'i18n-creatorHubSub': t.creatorHubSub,
+        'i18n-creatorHubRequestsFeedBtn': t.creatorHubRequestsFeedBtn,
+        'i18n-creatorPublishedCardsTitle': t.creatorPublishedCardsTitle,
+        'i18n-studioFondiEscrowLabel': t.studioFondiEscrowLabel,
+        'i18n-studioDownloadTechFile': t.studioDownloadTechFile,
+        'i18n-studioBackRequestsBtn': t.studioBackRequestsBtn,
+        'escrowBtnOpenChat': t.escrowBtnOpenChat,
         'i18n-googleModalTitle': t.googleModalTitle,
         'i18n-googleModalRoleLabel': t.googleModalRoleLabel,
         'i18n-googleRoleClient': t.googleRoleClient,
@@ -17411,6 +17502,22 @@ END-ISO-10303-21;`;
     function updateFormPlaceholders() {
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
+      const pfTitle = document.getElementById('portfolioTitle');
+      if (pfTitle) {
+        pfTitle.placeholder = isEn 
+          ? 'e.g. Reinforced Motor Mount with Bushings' 
+          : isEs 
+          ? 'ej. Soporte de Motor Reforzado con Casquillos' 
+          : 'Es. Supporto Motore Rinforzato con Bussole';
+      }
+      const pfDesc = document.getElementById('portfolioDesc');
+      if (pfDesc) {
+        pfDesc.placeholder = isEn 
+          ? 'Describe the part, achieved tolerances and intended use...' 
+          : isEs 
+          ? 'Describe la pieza, tolerancias alcanzadas y uso previsto...' 
+          : "Descrivi il pezzo, le tolleranze raggiunte e la destinazione d'uso...";
+      }
       const aiPrompt = document.getElementById('aiPromptInput');
       if (aiPrompt) {
         aiPrompt.placeholder = isEn 
@@ -30164,6 +30271,10 @@ function renderDealChat(rfpId) {
       const container = document.getElementById('creatorPublishedCardsContainer');
       if (!container) return;
 
+      const t = i18n[currentLang] || i18n.it;
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+
       const works = AppState.portfolioWorks || [];
       const myUid = AppState.user?.userId || AppState.user?.id || '';
       const myName = ((AppState.user?.name) || '').toLowerCase().trim();
@@ -30206,8 +30317,8 @@ function renderDealChat(rfpId) {
       if (myWorks.length === 0 && additionalCompletedOrders.length === 0) {
         container.innerHTML = `
           <div class="col-span-full p-8 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-            <p class="text-xs font-mono text-zinc-400">Non hai ancora pubblicato opere o completato commesse nel tuo portfolio.</p>
-            <p class="text-[11px] text-zinc-500 font-sans">Compila il modulo sopra per pubblicare il tuo primo componente.</p>
+            <p class="text-xs font-mono text-zinc-400">${t.portfolioEmptyTitle || (isEn ? "You haven't published any items or completed orders in your portfolio yet." : isEs ? "Aún no has publicado obras ni completado pedidos en tu portafolio." : "Non hai ancora pubblicato opere o completato commesse nel tuo portfolio.")}</p>
+            <p class="text-[11px] text-zinc-500 font-sans">${t.portfolioEmptySubtitle || (isEn ? "Fill out the form above to publish your first component." : isEs ? "Completa el formulario de arriba para publicar tu primer componente." : "Compila il modulo sopra per pubblicare il tuo primo componente.")}</p>
           </div>
         `;
         if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
@@ -30268,16 +30379,16 @@ function renderDealChat(rfpId) {
                 ${isJobCompleted ? `
                   <span class="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9.5px] uppercase tracking-wider shadow-lg flex items-center gap-1.5 border border-emerald-400">
                     <i data-lucide="check" class="w-3.5 h-3.5 text-black stroke-[3]"></i>
-                    LAVORO COMPLETATO
+                    ${t.portfolioCardWorkCompleted || (isEn ? 'WORK COMPLETED' : isEs ? 'TRABAJO COMPLETADO' : 'LAVORO COMPLETATO')}
                   </span>
                 ` : isOrderActive ? `
                   <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9px] uppercase tracking-wider shadow-lg flex items-center gap-1">
                     <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span>
-                    ORDINE ATTIVO
+                    ${t.portfolioCardActiveOrder || (isEn ? 'ACTIVE ORDER' : isEs ? 'PEDIDO ACTIVO' : 'ORDINE ATTIVO')}
                   </span>
                 ` : `
                   <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-500/30 font-mono text-[9px]">
-                    IN VETRINA
+                    ${t.portfolioCardInShowcase || (isEn ? 'IN SHOWCASE' : isEs ? 'EN ESCAPARATE' : 'IN VETRINA')}
                   </span>
                 `}
               </div>
@@ -30292,24 +30403,24 @@ function renderDealChat(rfpId) {
             ${isJobCompleted ? `
               <div class="pt-2 border-t border-emerald-500/25 bg-emerald-500/[0.06] p-2.5 rounded-xl space-y-2 border border-emerald-500/20">
                 <div class="flex items-center justify-between text-[10.5px] font-mono">
-                  <span class="text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(associatedOrder ? associatedOrder.clientName : 'Cliente')}</strong></span>
-                  <span class="text-emerald-400 font-bold font-cyber text-xs">${safeEarnedPrice} INCASSATI</span>
+                  <span class="text-zinc-300">${t.portfolioCardClientPrefix || (isEn ? 'Client:' : isEs ? 'Cliente:' : 'Cliente:')} <strong class="text-white">${escapeHtml(associatedOrder ? associatedOrder.clientName : (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente'))}</strong></span>
+                  <span class="text-emerald-400 font-bold font-cyber text-xs">${safeEarnedPrice} ${t.portfolioCardEarnedSuffix || (isEn ? 'EARNED' : isEs ? 'COBRADOS' : 'INCASSATI')}</span>
                 </div>
                 <div class="flex items-center justify-between text-[9.5px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
                   <span class="flex items-center gap-1 text-emerald-400 font-bold">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    4° Passaggio Concluso // Fondi Svincolati
+                    ${t.portfolioCardStep4Completed || (isEn ? 'Step 4 Complete // Funds Released' : isEs ? 'Paso 4 Completado // Fondos Liberados' : '4° Passaggio Concluso // Fondi Svincolati')}
                   </span>
                   <button type="button" onclick="openCreatorReviewsModal('${myUid}', '${escapeHtml(AppState.user?.name || '')}')" class="px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 cursor-pointer transition">
                     <i data-lucide="star" class="w-2.5 h-2.5 text-amber-400 fill-amber-400"></i>
-                    <span>Recensioni</span>
+                    <span>${t.portfolioCardReviewsBtn || (isEn ? 'Reviews' : isEs ? 'Reseñas' : 'Recensioni')}</span>
                   </button>
                 </div>
               </div>
             ` : isOrderActive ? `
               <div class="pt-2 border-t border-emerald-500/20 bg-emerald-500/[0.04] p-2 rounded-xl space-y-1.5">
                 <div class="flex items-center justify-between text-[10px] font-mono">
-                  <span class="text-zinc-400">Cliente: <strong class="text-white">${escapeHtml(associatedOrder.clientName || 'Cliente')}</strong></span>
+                  <span class="text-zinc-400">${t.portfolioCardClientPrefix || (isEn ? 'Client:' : isEs ? 'Cliente:' : 'Cliente:')} <strong class="text-white">${escapeHtml(associatedOrder.clientName || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente'))}</strong></span>
                   <span class="text-emerald-400 font-bold">#${escapeHtml(associatedOrder.id)}</span>
                 </div>
                 <div class="grid grid-cols-2 gap-1.5 pt-0.5">
@@ -30325,8 +30436,8 @@ function renderDealChat(rfpId) {
               </div>
             ` : `
               <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
-                <span>In attesa di ordini clienti</span>
-                <span class="text-emerald-500">Disponibile</span>
+                <span>${t.portfolioCardWaitingOrders || (isEn ? 'Waiting for client orders' : isEs ? 'Esperando pedidos de clientes' : 'In attesa di ordini clienti')}</span>
+                <span class="text-emerald-500">${t.portfolioCardAvailable || (isEn ? 'Available' : isEs ? 'Disponible' : 'Disponibile')}</span>
               </div>
             `}
           </div>
@@ -30378,8 +30489,8 @@ function renderDealChat(rfpId) {
 
             <div class="pt-2 border-t border-emerald-500/25 bg-emerald-500/[0.06] p-2.5 rounded-xl space-y-2 border border-emerald-500/20">
               <div class="flex items-center justify-between text-[10.5px] font-mono">
-                <span class="text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(r.clientName || 'Cliente')}</strong></span>
-                <span class="text-emerald-400 font-bold font-cyber text-xs">${safePrice} INCASSATI</span>
+                <span class="text-zinc-300">${t.portfolioCardClientPrefix || (isEn ? 'Client:' : isEs ? 'Cliente:' : 'Cliente:')} <strong class="text-white">${escapeHtml(r.clientName || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente'))}</strong></span>
+                <span class="text-emerald-400 font-bold font-cyber text-xs">${safePrice} ${t.portfolioCardEarnedSuffix || (isEn ? 'EARNED' : isEs ? 'COBRADOS' : 'INCASSATI')}</span>
               </div>
               <div class="flex items-center justify-between text-[9.5px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
                 <span class="flex items-center gap-1 text-emerald-400 font-bold">
@@ -30509,10 +30620,30 @@ function renderDealChat(rfpId) {
       if (specDimensions) specDimensions.textContent = work.dimensions || '80 × 60 × 25 mm';
 
       const specQuantity = document.getElementById('showcaseSpecQuantity');
-      if (specQuantity) specQuantity.textContent = work.quantity || '1 pezzo (Opera Unica)';
+      if (specQuantity) {
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+        let qText = work.quantity || '1 pezzo (Opera Unica)';
+        if (qText.includes('1 pezzo') || qText.includes('Opera Unica') || qText.includes('Single Piece') || qText.includes('Obra Única')) {
+          qText = isEn ? '1 piece (Single Piece)' : isEs ? '1 pieza (Obra Única)' : '1 pezzo (Opera Unica)';
+        }
+        specQuantity.textContent = qText;
+      }
 
       const specInfill = document.getElementById('showcaseSpecInfill');
-      if (specInfill) specInfill.textContent = work.infill || '50% Meccanico Strutturale';
+      if (specInfill) {
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+        let infText = work.infill || '50% Meccanico Strutturale';
+        if (infText.includes('20%')) {
+          infText = isEn ? '20% Light Infill' : isEs ? '20% Relleno Ligero' : '20% Riempimento Leggero';
+        } else if (infText.includes('100%')) {
+          infText = isEn ? '100% Solid Full Core' : isEs ? '100% Sólido Núcleo Completo' : '100% Pieno Nucleo Pieno';
+        } else {
+          infText = isEn ? '50% Mechanical Structural' : isEs ? '50% Mecánico Estructural' : '50% Meccanico Strutturale';
+        }
+        specInfill.textContent = infText;
+      }
 
       // Pre-popola indirizzo se disponibile dall'utente
       const streetEl = document.getElementById('showcaseShipStreet');
