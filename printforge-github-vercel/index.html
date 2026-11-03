@@ -973,190 +973,194 @@
 
     /* ========================================================================= */
     /* ========================================================================= */
-    /* EFFETTO METALLO LIQUIDO / MERCURIO IPER-REALISTICO (Ispirato alla foto)    */
-    /* Menisco bulboso a specchio, riflesso cromo bianco, bordo di contatto scuro  */
-    /* e gocce satelliti a tensione superficiale organica (Mercurio / Gallio)     */
+    /* EFFETTO METALLO LIQUIDO AUTENTICO (Ispirato alla foto del mercurio reale)  */
+    /* Senza luccichio artificiale: vero, fluido, con transizione continua        */
+    /* tra Bianco e Nero, e inversione del logo: quando è bianco, il logo è nero */
     /* ========================================================================= */
     
     .liquid-metal-tile {
       position: relative;
       cursor: pointer;
-      border-radius: 48% 52% 62% 38% / 46% 54% 46% 54%;
-      border: 1.5px solid rgba(15, 23, 42, 0.75);
-      background: linear-gradient(135deg, #FFFFFF 0%, #F1F5F9 14%, #CBD5E1 28%, #78889B 44%, #94A3B8 58%, #E2E8F0 74%, #CBD5E1 86%, #475569 100%);
-      box-shadow: 
-        0 24px 55px rgba(0, 0, 0, 0.85),
-        0 8px 20px rgba(0, 0, 0, 0.6),
-        inset 0 3px 6px rgba(255, 255, 255, 0.98),
-        inset 0 -5px 12px rgba(15, 23, 42, 0.9),
-        inset 0 0 0 1px rgba(255, 255, 255, 0.5);
-      animation: liquidMetalMorph 7.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-      will-change: border-radius, transform, box-shadow;
-      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+      border: 1.5px solid rgba(255, 255, 255, 0.2);
+      animation: liquidColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      will-change: background-color, border-color, border-radius, transform, box-shadow;
+      transition: transform 0.4s ease, box-shadow 0.4s ease;
       overflow: hidden;
     }
 
-    /* Strato Corpo Metallo Liquido Cromo/Mercurio con Riflessi Ambientali */
-    .liquid-metal-body-layer {
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      background: 
-        radial-gradient(circle at 72% 70%, rgba(51, 65, 85, 0.6) 0%, transparent 55%),
-        radial-gradient(circle at 35% 24%, rgba(255, 255, 255, 0.95) 0%, rgba(241, 245, 249, 0.55) 30%, transparent 62%),
-        linear-gradient(140deg, #FFFFFF 0%, #E2E8F0 16%, #94A3B8 38%, #475569 50%, #94A3B8 62%, #F8FAFC 80%, #CBD5E1 100%);
-      pointer-events: none;
-      z-index: 1;
-      will-change: opacity, transform;
-      animation: liquidBodyShimmer 8s ease-in-out infinite;
-    }
-
-    /* Menisco Curvo Superiore con Riflesso Bianco Speculare Lucido (Highlight tipico del mercurio nella foto) */
+    /* Strato Tensione Superficiale e Menisco Naturale (Vero, senza riflessi accecanti) */
     .liquid-metal-meniscus-highlight {
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      background: radial-gradient(ellipse at 42% 20%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.55) 28%, rgba(255, 255, 255, 0.1) 50%, transparent 68%);
-      mix-blend-mode: overlay;
+      background: radial-gradient(ellipse at 38% 22%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.12) 36%, transparent 68%);
       pointer-events: none;
       z-index: 2;
-      animation: liquidMeniscusPulse 7.5s ease-in-out infinite;
     }
 
-    /* Fascio di Luce Ambientale Fluida (Sweeping Chrome Reflection) */
-    .liquid-metal-light-sweep {
-      position: absolute;
-      inset: -40%;
-      background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.6) 47%, rgba(255, 255, 255, 0.95) 50%, rgba(255, 255, 255, 0.6) 53%, transparent 65%);
-      pointer-events: none;
-      z-index: 3;
-      mix-blend-mode: color-dodge;
-      transform: translate3d(-100%, 0, 0) rotate(15deg);
-      animation: liquidMetalSweep 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-    }
-
-    /* Tensione Superficiale e Bordo di Contatto Scuro */
+    /* Bordo Perimetrale di Contatto Naturale (Ombra di contatto fisica del mercurio) */
     .liquid-metal-surface-tension-rim {
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      box-shadow: inset 0 0 12px rgba(15, 23, 42, 0.85), inset 0 0 4px rgba(0, 0, 0, 0.95);
+      box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.55), inset 0 0 2px rgba(0, 0, 0, 0.85);
       pointer-events: none;
       z-index: 4;
     }
 
-    /* Gocce Satellite di Metallo Liquido (Fedeli alla foto di riferimento del mercurio) */
+    /* Gocce Satellite Autentiche (Fedeli alla foto di riferimento, senza luccichio) */
     .liquid-metal-droplet {
       position: absolute;
-      background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 20%, #78889B 50%, #CBD5E1 75%, #334155 100%);
-      border: 1px solid rgba(15, 23, 42, 0.75);
-      box-shadow: 
-        0 12px 24px rgba(0, 0, 0, 0.85),
-        inset 0 2px 3px rgba(255, 255, 255, 0.95),
-        inset 0 -3px 6px rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      animation: liquidDropletColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
       pointer-events: none;
       z-index: 20;
       overflow: hidden;
+      will-change: background-color, border-radius, transform;
     }
     .liquid-droplet-highlight {
       position: absolute;
       inset: 0;
       border-radius: inherit;
-      background: radial-gradient(circle at 36% 24%, rgba(255, 255, 255, 0.98) 0%, rgba(255, 255, 255, 0.45) 35%, transparent 65%);
+      background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 35%, transparent 65%);
     }
 
-    /* Goccia Media Satellite (in basso a destra, esattamente come nella foto) */
+    /* Goccia Media Satellite (in basso a destra, come nella foto) */
     .liquid-droplet-medium {
-      width: 26px;
-      height: 22px;
+      width: 25px;
+      height: 21px;
       right: -8px;
       bottom: -4px;
-      border-radius: 54% 46% 50% 50% / 48% 52% 48% 52%;
-      animation: liquidDropletMediumMorph 7.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: liquidDropletColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite, liquidDropletMediumMorph 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
     }
 
     /* Goccia Piccola Satellite (sotto alla goccia media, come nella foto) */
     .liquid-droplet-small {
-      width: 15px;
-      height: 14px;
+      width: 14px;
+      height: 13px;
       right: 22px;
-      bottom: -15px;
-      border-radius: 50% 50% 48% 52% / 52% 48% 52% 48%;
-      animation: liquidDropletSmallMorph 7.5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      bottom: -14px;
+      animation: liquidDropletColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite, liquidDropletSmallMorph 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
     }
 
-    /* Monogramma PF a Incastro Metallo Liquido */
+    /* Monogramma PF a Incastro: Inversione Colore Perfetta */
+    /* QUANDO LA GOCCIA È BIANCA, IL LOGO DIVENTA NERO! QUANDO È NERA, IL LOGO DIVENTA BIANCO! */
     .pf-liquid-monogram {
-      filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.9));
+      z-index: 10;
     }
     .pf-liquid-monogram .pf-p-path,
     .pf-liquid-monogram .pf-f1-path,
     .pf-liquid-monogram .pf-f2-path {
-      transition: fill 0.5s ease, filter 0.5s ease;
+      animation: liquidPfMonogramInvert 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      will-change: fill, filter;
     }
 
-    /* Glow Ambientale Speculare */
+    /* Glow Ambientale Naturale */
     .liquid-metal-ambient-glow {
-      animation: liquidGlowPulse 7.5s ease-in-out infinite;
+      animation: liquidAmbientGlowCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
     }
 
-    /* Modalità Alternativa 1: Metallo Liquido Titanio Ossidiana Scura */
-    .liquid-mode-dark {
-      background: linear-gradient(135deg, #2D3748 0%, #1A202C 25%, #0B0E14 55%, #1A202C 75%, #4A5568 100%) !important;
-      border-color: rgba(255, 255, 255, 0.35) !important;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.95), inset 0 3px 5px rgba(255, 255, 255, 0.6), inset 0 -5px 12px rgba(0, 0, 0, 0.95) !important;
-    }
-    .liquid-mode-dark .liquid-metal-body-layer {
-      background: linear-gradient(140deg, #374151 0%, #1F2937 40%, #111827 70%, #030712 100%) !important;
-    }
-    .liquid-mode-dark .pf-p-path,
-    .liquid-mode-dark .pf-f1-path,
-    .liquid-mode-dark .pf-f2-path {
-      fill: #FFFFFF !important;
-      filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)) !important;
-    }
-
-    /* Modalità Alternativa 2: Metallo Liquido Platino Specchiato */
-    .liquid-mode-platinum {
-      background: linear-gradient(135deg, #FFFFFF 0%, #F8FAFC 30%, #CBD5E1 55%, #FFFFFF 80%, #94A3B8 100%) !important;
-      border-color: rgba(255, 255, 255, 0.9) !important;
-      box-shadow: 0 25px 60px rgba(255, 255, 255, 0.35), 0 15px 30px rgba(0, 0, 0, 0.4), inset 0 3px 6px rgba(255, 255, 255, 1) !important;
-    }
-
-    /* Hover State */
+    /* Hover State Naturale */
     .group:hover .liquid-metal-tile {
-      transform: scale(1.05) !important;
-      box-shadow: 
-        0 28px 65px rgba(0, 0, 0, 0.9),
-        0 10px 24px rgba(0, 0, 0, 0.7),
-        inset 0 3px 6px rgba(255, 255, 255, 1),
-        inset 0 -5px 14px rgba(15, 23, 42, 0.95) !important;
-    }
-    .group:hover .liquid-metal-ambient-glow {
-      opacity: 1 !important;
+      transform: scale(1.04) !important;
     }
 
     /* ========================================================================= */
-    /* KEYFRAMES ANIMAZIONI METALLO LIQUIDO MERCURIO                             */
+    /* KEYFRAMES: TRANSIZIONE CONTINUA METALLO VERO BIANCO / NERO                */
     /* ========================================================================= */
     
-    /* Morfismo fluido della goccia principale di metallo liquido (Tensione superficiale) */
-    @keyframes liquidMetalMorph {
+    /* Goccia Principale: Transizione Morbida e Morfismo Naturale */
+    @keyframes liquidColorCycle {
       0%, 100% {
+        background-color: #07080B;
+        border-color: rgba(255, 255, 255, 0.22);
+        box-shadow: 
+          0 20px 45px rgba(0, 0, 0, 0.95),
+          inset 0 2px 4px rgba(255, 255, 255, 0.35),
+          inset 0 -4px 10px rgba(0, 0, 0, 0.95);
         border-radius: 48% 52% 62% 38% / 46% 54% 46% 54%;
         transform: scale(1) rotate(0deg);
       }
       25% {
+        background-color: #3b3f4d;
+        border-color: rgba(255, 255, 255, 0.45);
+        box-shadow: 
+          0 22px 50px rgba(0, 0, 0, 0.7),
+          inset 0 2.5px 5px rgba(255, 255, 255, 0.6),
+          inset 0 -4px 8px rgba(0, 0, 0, 0.7);
         border-radius: 54% 46% 40% 60% / 56% 44% 56% 44%;
-        transform: scale(1.02, 0.985) rotate(1deg);
+        transform: scale(1.02, 0.985) rotate(0.8deg);
       }
       50% {
+        background-color: #FFFFFF;
+        border-color: rgba(0, 0, 0, 0.2);
+        box-shadow: 
+          0 24px 55px rgba(0, 0, 0, 0.35),
+          0 8px 20px rgba(0, 0, 0, 0.2),
+          inset 0 3px 6px rgba(255, 255, 255, 1),
+          inset 0 -4px 10px rgba(100, 116, 139, 0.4);
         border-radius: 42% 58% 55% 45% / 44% 56% 44% 56%;
-        transform: scale(0.985, 1.02) rotate(-0.8deg);
+        transform: scale(0.985, 1.02) rotate(-0.6deg);
       }
       75% {
+        background-color: #3b3f4d;
+        border-color: rgba(255, 255, 255, 0.45);
+        box-shadow: 
+          0 22px 50px rgba(0, 0, 0, 0.7),
+          inset 0 2.5px 5px rgba(255, 255, 255, 0.6),
+          inset 0 -4px 8px rgba(0, 0, 0, 0.7);
         border-radius: 56% 44% 48% 52% / 52% 48% 52% 48%;
         transform: scale(1.01, 0.99) rotate(0.5deg);
+      }
+    }
+
+    /* INVERSIONE PERFETTA DEL LOGO: QUANDO È BIANCO, DIVENTA NERO! */
+    @keyframes liquidPfMonogramInvert {
+      0%, 100% {
+        fill: #FFFFFF !important;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6));
+      }
+      20% {
+        fill: #FFFFFF !important;
+        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7));
+      }
+      40% {
+        fill: #1E232E !important;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+      }
+      50% {
+        fill: #000000 !important;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+      }
+      60% {
+        fill: #1E232E !important;
+        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+      }
+      80% {
+        fill: #FFFFFF !important;
+        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7));
+      }
+    }
+
+    /* Transizione Gocce Satellite */
+    @keyframes liquidDropletColorCycle {
+      0%, 100% {
+        background-color: #0c0d12;
+        border-color: rgba(255, 255, 255, 0.22);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.9), inset 0 2px 3px rgba(255, 255, 255, 0.35), inset 0 -3px 6px rgba(0, 0, 0, 0.9);
+      }
+      25% {
+        background-color: #3b3f4d;
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+      50% {
+        background-color: #FFFFFF;
+        border-color: rgba(0, 0, 0, 0.2);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35), inset 0 2px 3px rgba(255, 255, 255, 1), inset 0 -3px 6px rgba(100, 116, 139, 0.4);
+      }
+      75% {
+        background-color: #3b3f4d;
+        border-color: rgba(255, 255, 255, 0.4);
       }
     }
 
@@ -1188,76 +1192,28 @@
       }
     }
 
-    /* Scorrimento del fascio di luce riflessa cromata a specchio */
-    @keyframes liquidMetalSweep {
-      0% {
-        transform: translate3d(-120%, 0, 0) rotate(18deg);
-        opacity: 0;
-      }
-      15% {
-        opacity: 0.9;
-      }
-      45% {
-        transform: translate3d(120%, 0, 0) rotate(18deg);
-        opacity: 0.9;
-      }
-      50%, 100% {
-        transform: translate3d(120%, 0, 0) rotate(18deg);
-        opacity: 0;
-      }
-    }
-
-    /* Pulsazione del riflesso speculare del menisco */
-    @keyframes liquidMeniscusPulse {
+    /* Glow ambientale in sincronia */
+    @keyframes liquidAmbientGlowCycle {
       0%, 100% {
-        opacity: 0.95;
+        opacity: 0.4;
         transform: scale(1);
       }
       50% {
         opacity: 0.75;
-        transform: scale(0.97);
+        transform: scale(1.05);
       }
     }
 
-    /* Shimmer del corpo liquido metallico */
-    @keyframes liquidBodyShimmer {
-      0%, 100% {
-        opacity: 0.92;
-      }
-      50% {
-        opacity: 1;
-      }
-    }
-
-    /* Glow ambientale che respira */
-    @keyframes liquidGlowPulse {
-      0%, 100% {
-        opacity: 0.55;
-        transform: scale(1);
-      }
-      50% {
-        opacity: 0.85;
-        transform: scale(1.06);
-      }
-    }
-
-    /* Brand Logo Tile nella Navbar (Finitura Metallo Liquido Cromo) */
+    /* Brand Logo Tile nella Navbar (Transizione liquida e pulita senza bagliori) */
     .brand-logo-tile {
-      background: linear-gradient(135deg, #FFFFFF 0%, #E2E8F0 18%, #8292A6 45%, #CBD5E1 70%, #FFFFFF 100%) !important;
-      border: 1px solid rgba(15, 23, 42, 0.7) !important;
-      box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.4),
-        inset 0 1.5px 2px rgba(255, 255, 255, 0.95),
-        inset 0 -2px 4px rgba(15, 23, 42, 0.75) !important;
-      border-radius: 48% 52% 50% 50% / 50% 48% 52% 50% !important;
-      animation: liquidDropletMediumMorph 6s ease-in-out infinite !important;
+      animation: liquidColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
       position: relative;
       overflow: hidden;
       transition: all 0.4s ease;
     }
     .brand-logo-tile svg path {
-      fill: #0B0D14 !important;
-      filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.6)) !important;
+      animation: liquidPfMonogramInvert 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
     }
 
     .modal-spring-enter {
@@ -4606,57 +4562,39 @@
       <!-- Minimalist High-Tech Hero (Simpl Aesthetic Matching media_1792168337494_9bb5f7a0.jpg) -->
       <div class="max-w-4xl mx-auto text-center space-y-3 pt-2 pb-1">
         
-        <!-- BRAND 2D IDENTITY HERO: EFFETTO METALLO LIQUIDO (Ispirato alla foto del mercurio liquido) -->
+        <!-- BRAND 2D IDENTITY HERO: EFFETTO METALLO LIQUIDO AUTENTICO (Ispirato alla foto del mercurio reale) -->
         <div class="flex flex-col items-center justify-center space-y-3 pt-2 pb-2">
-          <!-- 2D Monogram Emblem with Hyper-Realistic Liquid Metal Mercury Morphing (Inspired by User Liquid Mercury Photo) -->
-          <div class="relative group cursor-pointer inline-block" onclick="togglePfLogoMode()" title="PrintForge Monogramma Metallo Liquido (Ispirato al Mercurio Liquido - Clicca per alternare la finitura)">
+          <!-- 2D Monogram Emblem with Real Liquid Metal Color Shift (White Puddle -> Black Logo) -->
+          <div class="relative group cursor-pointer inline-block" onclick="togglePfLogoMode()" title="PrintForge Monogramma Metallo Liquido (Transizione fluida tra Bianco e Nero)">
             <!-- Alone e bagliore specchiato del metallo liquido -->
-            <div class="liquid-metal-ambient-glow absolute -inset-6 bg-gradient-to-r from-zinc-700/40 via-white/25 to-slate-800/40 rounded-full blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
+            <div class="liquid-metal-ambient-glow absolute -inset-6 bg-gradient-to-r from-zinc-700/30 via-white/20 to-slate-800/30 rounded-full blur-2xl opacity-50 group-hover:opacity-90 transition-opacity duration-700 pointer-events-none"></div>
 
-            <!-- Goccia Principale di Metallo Liquido (Puddle con Menisco a Specchio) -->
+            <!-- Goccia Principale di Metallo Liquido (Puddle Autentico con Tensione Superficiale) -->
             <div id="hero2dLogoBox" class="liquid-metal-tile relative w-28 h-28 sm:w-32 sm:h-32 flex items-center justify-center group-hover:scale-105 transition-all duration-500 overflow-hidden select-none">
               
-              <!-- Strato Base Corpo Metallo Liquido Cromo/Mercurio -->
-              <div class="liquid-metal-body-layer"></div>
-
-              <!-- Menisco Curvo Superiore con Riflesso Bianco Speculare Lucido (come nella foto) -->
+              <!-- Menisco Curvo Naturale (Senza luccichio artificiale) -->
               <div class="liquid-metal-meniscus-highlight"></div>
-
-              <!-- Fascio di Luce Ambientale Fluida (Sweeping Chrome Reflection) -->
-              <div class="liquid-metal-light-sweep"></div>
 
               <!-- Micro-rilievo della tensione superficiale del metallo liquido -->
               <div class="liquid-metal-surface-tension-rim"></div>
 
-              <!-- Monogramma PF a Incastro (Metallo Ossidiana/Titanio con Bordo Cromato per Massima Leggibilità e Contrasto 3D) -->
+              <!-- Monogramma PF a Incastro (Quando la goccia è bianca, il logo diventa nero!) -->
               <svg id="hero2dLogoSvg" class="relative z-10 w-20 h-20 sm:w-24 sm:h-24 pf-liquid-monogram transition-transform duration-500 group-hover:scale-110" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                  <linearGradient id="liquidPfBodyGrad" x1="0" y1="0" x2="140" y2="140" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#0B0D14" />
-                    <stop offset="45%" stop-color="#141824" />
-                    <stop offset="85%" stop-color="#1E2333" />
-                    <stop offset="100%" stop-color="#08090E" />
-                  </linearGradient>
-                  <linearGradient id="liquidPfJointGrad" x1="0" y1="0" x2="140" y2="140" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stop-color="#181C28" />
-                    <stop offset="100%" stop-color="#283044" />
-                  </linearGradient>
-                </defs>
                 <!-- P Stem & Loop -->
-                <path class="pf-p-path" d="M 38 26 L 76 26 C 90 26 98 34 98 46 C 98 58 90 66 76 66 L 56 66 L 56 114 L 38 114 Z M 56 42 L 56 50 L 74 50 C 80 50 82 48 82 46 C 82 44 80 42 74 42 Z" fill="url(#liquidPfBodyGrad)" />
+                <path class="pf-p-path" d="M 38 26 L 76 26 C 90 26 98 34 98 46 C 98 58 90 66 76 66 L 56 66 L 56 114 L 38 114 Z M 56 42 L 56 50 L 74 50 C 80 50 82 48 82 46 C 82 44 80 42 74 42 Z" />
                 <!-- F Upper Joint Arm (Micrometric Interlock) -->
-                <path class="pf-f1-path" d="M 64 68 L 102 68 L 102 84 L 64 84 Z" fill="url(#liquidPfJointGrad)" />
+                <path class="pf-f1-path" d="M 64 68 L 102 68 L 102 84 L 64 84 Z" />
                 <!-- F Lower Joint Arm (Micrometric Interlock) -->
-                <path class="pf-f2-path" d="M 64 92 L 92 92 L 92 106 L 64 106 Z" fill="url(#liquidPfJointGrad)" />
+                <path class="pf-f2-path" d="M 64 92 L 92 92 L 92 106 L 64 106 Z" />
               </svg>
             </div>
 
-            <!-- Gocce Satellite di Metallo Liquido (Esattamente come nella foto di riferimento!) -->
-            <!-- Goccia Media Satellite (in basso a destra) -->
+            <!-- Gocce Satellite di Metallo Liquido Autentiche -->
+            <!-- Goccia Media Satellite (in basso a destra, come nella foto) -->
             <div class="liquid-metal-droplet liquid-droplet-medium">
               <div class="liquid-droplet-highlight"></div>
             </div>
-            <!-- Goccia Piccola Satellite (sotto alla goccia media) -->
+            <!-- Goccia Piccola Satellite (sotto alla goccia media, come nella foto) -->
             <div class="liquid-metal-droplet liquid-droplet-small">
               <div class="liquid-droplet-highlight"></div>
             </div>
@@ -29143,33 +29081,27 @@ function renderDealChat(rfpId) {
     function togglePfLogoMode() {
       const tile = document.getElementById('hero2dLogoBox');
       if (!tile) return;
-      if (tile.classList.contains('liquid-mode-dark')) {
-        tile.classList.remove('liquid-mode-dark');
-        tile.classList.add('liquid-mode-platinum');
+      if (tile.style.animationPlayState === 'paused') {
+        tile.style.animationPlayState = 'running';
+        const pPaths = tile.querySelectorAll('.pf-p-path, .pf-f1-path, .pf-f2-path');
+        pPaths.forEach(p => p.style.animationPlayState = 'running');
         if (typeof showToast === 'function') {
           showToast(currentLang === 'en' 
-            ? '✨ Logo: Liquid Mirror Platinum Mode (Pure High-Gloss Reflection)' 
+            ? '💧 Logo: Dynamic Fluid Monochrome Transition (Active)' 
             : currentLang === 'es'
-            ? '✨ Logo: Modo Metal Líquido Platino Espejado (Brillo Puro)'
-            : '✨ Logo: Metallo Liquido Platino Specchiato (Lucentezza Pura)');
-        }
-      } else if (tile.classList.contains('liquid-mode-platinum')) {
-        tile.classList.remove('liquid-mode-platinum');
-        if (typeof showToast === 'function') {
-          showToast(currentLang === 'en' 
-            ? '💧 Logo: Liquid Metal Chrome / Mercury Mode (Fluid Natural Morph)' 
-            : currentLang === 'es'
-            ? '💧 Logo: Modo Metal Líquido Cromo / Mercurio (Morfismo Fluido Natural)'
-            : '💧 Logo: Metallo Liquido Cromo / Mercurio (Morfismo Fluido Naturale)');
+            ? '💧 Logo: Transición Dinámica Monocromática (Activa)'
+            : '💧 Logo: Transizione Dinamica Monocromatica Fluida (Attiva)');
         }
       } else {
-        tile.classList.add('liquid-mode-dark');
+        tile.style.animationPlayState = 'paused';
+        const pPaths = tile.querySelectorAll('.pf-p-path, .pf-f1-path, .pf-f2-path');
+        pPaths.forEach(p => p.style.animationPlayState = 'paused');
         if (typeof showToast === 'function') {
           showToast(currentLang === 'en' 
-            ? '🌑 Logo: Liquid Obsidian Titanium Mode (Dark Chrome Reflection)' 
+            ? '⏸️ Logo: Fluid Transition Paused (Click to Resume)' 
             : currentLang === 'es'
-            ? '🌑 Logo: Modo Metal Líquido Titanio Obsidiana (Reflejo Cromo Oscuro)'
-            : '🌑 Logo: Metallo Liquido Titanio Ossidiana (Riflesso Cromo Scuro)');
+            ? '⏸️ Logo: Transición Fluida Pausada (Clic para Reanudar)'
+            : '⏸️ Logo: Transizione Fluida in Pausa (Clicca per Riprendere)');
         }
       }
     }
