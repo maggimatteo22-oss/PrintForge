@@ -972,172 +972,237 @@
     }
 
     /* ========================================================================= */
-    /* OPZIONE 03: MONOGRAMMA MECCANICO PF A INCASTRO (2D B&W DYNAMIC SHIFT)      */
-    /* Lettere P ed F con giunto micrometrico // Transizione Fluida Armonica      */
-    /* ========================================================================= */
-    /* ========================================================================= */
-    /* OPZIONE 03: MONOGRAMMA MECCANICO PF A INCASTRO (2D B&W DYNAMIC SHIFT)      */
-    /* Transizione Continua, Morbida e Fluida tra Bianco e Nero Senza Interruzioni*/
+    /* OPZIONE 03: EFFETTO VENOM - MONOGRAMMA MECCANICO PF SIMBIONTE (2D B&W)     */
+    /* Tentacoli alieni viscosi, riflesso bagnato iper-realistico e morphing fluido*/
     /* ========================================================================= */
     .pf-logo-dynamic-tile {
-      animation: pfLogoBwInvert 6s ease-in-out infinite;
+      position: relative;
+      animation: venomTileMorph 6s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
       cursor: pointer;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      will-change: background-color, border-color, box-shadow, transform;
+      backdrop-filter: blur(28px);
+      -webkit-backdrop-filter: blur(28px);
+      will-change: background-color, border-color, box-shadow, transform, border-radius;
       transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
+      overflow: hidden;
     }
 
-    .pf-logo-dynamic-tile .pf-p-path {
-      animation: pfLogoPathP 6s ease-in-out infinite;
-      will-change: fill, filter;
-    }
-
-    .pf-logo-dynamic-tile .pf-f1-path {
-      animation: pfLogoPathF1 6s ease-in-out infinite;
-      will-change: fill;
-    }
-
-    .pf-logo-dynamic-tile .pf-f2-path {
-      animation: pfLogoPathF2 6s ease-in-out infinite;
-      will-change: fill;
-    }
-
-    .pf-logo-ambient-glow {
-      animation: pfLogoGlowPulse 6s ease-in-out infinite;
+    /* Strato Riflesso Liquido Bagnato Viscido (Venom Wet Oily Sheen) */
+    .venom-wet-sheen {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.1) 35%, transparent 65%);
+      mix-blend-mode: overlay;
+      animation: venomSheenWave 6s ease-in-out infinite;
       will-change: opacity, transform;
+      z-index: 2;
+    }
+
+    /* Strato Tentacoli Simbionte (SVG Living Tendrils) */
+    .venom-tendrils-layer {
+      position: absolute;
+      inset: -2px;
+      pointer-events: none;
+      z-index: 1;
+      will-change: opacity, transform;
+      animation: venomTendrilPulse 6s ease-in-out infinite;
+    }
+
+    /* Strato Alone e Fumo Biologico Venom */
+    .pf-logo-ambient-glow {
+      animation: venomGlowBreathing 6s ease-in-out infinite;
+      will-change: opacity, transform, filter;
     }
 
     /* Manual Forced White on Black Mode */
     .pf-logo-mode-dark {
       animation: none !important;
-      background-color: #08090D !important;
+      background-color: #060709 !important;
       border-color: rgba(255, 255, 255, 0.22) !important;
-      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -4px 10px rgba(0, 0, 0, 0.9) !important;
       transform: scale(1) !important;
+      border-radius: 1.5rem !important;
     }
-    .pf-logo-mode-dark .pf-p-path { animation: none !important; fill: #FFFFFF !important; filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35)) !important; }
-    .pf-logo-mode-dark .pf-f1-path { animation: none !important; fill: #E4E4E7 !important; }
-    .pf-logo-mode-dark .pf-f2-path { animation: none !important; fill: #A1A1AA !important; }
+    .pf-logo-mode-dark .pf-p-path { animation: none !important; fill: #FFFFFF !important; filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.65)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8)) !important; }
+    .pf-logo-mode-dark .pf-f1-path { animation: none !important; fill: #F4F4F5 !important; }
+    .pf-logo-mode-dark .pf-f2-path { animation: none !important; fill: #D4D4D8 !important; }
+    .pf-logo-mode-dark .venom-tendrils-layer { opacity: 0.95 !important; }
 
     /* Manual Forced Black on White Mode */
     .pf-logo-mode-light {
       animation: none !important;
       background-color: #FFFFFF !important;
       border-color: rgba(0, 0, 0, 0.22) !important;
-      box-shadow: 0 22px 50px rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.95) !important;
+      box-shadow: 0 25px 60px rgba(255, 255, 255, 0.45), 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 2px 0 rgba(255, 255, 255, 1) !important;
       transform: scale(1) !important;
+      border-radius: 1.5rem !important;
     }
-    .pf-logo-mode-light .pf-p-path { animation: none !important; fill: #09090B !important; filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3)) !important; }
+    .pf-logo-mode-light .pf-p-path { animation: none !important; fill: #060709 !important; filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45)) !important; }
     .pf-logo-mode-light .pf-f1-path { animation: none !important; fill: #18181B !important; }
-    .pf-logo-mode-light .pf-f2-path { animation: none !important; fill: #3F3F46 !important; }
+    .pf-logo-mode-light .pf-f2-path { animation: none !important; fill: #27272A !important; }
+    .pf-logo-mode-light .venom-tendrils-layer { opacity: 0.2 !important; }
 
-    /* Transizione Sinusoidale Continua: Appena arriva il bianco, subito parte il nero in continuo cambiamento */
-    @keyframes pfLogoBwInvert {
+    /* Animazione Simbionte Venom: Presa Viscosa e Rilascio Continuo tra Bianco e Nero */
+    @keyframes venomTileMorph {
       0% {
-        background-color: #08090D;
-        border-color: rgba(255, 255, 255, 0.16);
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        transform: scale(1);
+        background-color: #060709;
+        border-color: rgba(255, 255, 255, 0.18);
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -4px 10px rgba(0, 0, 0, 0.9);
+        transform: scale(1) rotate(0deg);
       }
-      25% {
-        background-color: #383942;
+      22% {
+        background-color: #1a1b22;
         border-color: rgba(255, 255, 255, 0.35);
-        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-        transform: scale(1.02);
+        border-radius: 1.65rem 1.4rem 1.6rem 1.45rem;
+        box-shadow: 0 24px 55px rgba(0, 0, 0, 0.8), inset 0 3px 6px rgba(255, 255, 255, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.7);
+        transform: scale(1.025) rotate(0.6deg);
       }
       50% {
         background-color: #FFFFFF;
-        border-color: rgba(0, 0, 0, 0.18);
-        box-shadow: 0 22px 50px rgba(255, 255, 255, 0.40), 0 8px 24px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
-        transform: scale(1);
+        border-color: rgba(0, 0, 0, 0.22);
+        border-radius: 1.5rem;
+        box-shadow: 0 25px 60px rgba(255, 255, 255, 0.45), 0 10px 30px rgba(0, 0, 0, 0.25), inset 0 2px 0 rgba(255, 255, 255, 1);
+        transform: scale(1) rotate(0deg);
       }
-      75% {
-        background-color: #383942;
+      78% {
+        background-color: #1a1b22;
         border-color: rgba(255, 255, 255, 0.35);
-        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.45);
-        transform: scale(1.02);
+        border-radius: 1.45rem 1.6rem 1.4rem 1.65rem;
+        box-shadow: 0 24px 55px rgba(0, 0, 0, 0.8), inset 0 3px 6px rgba(255, 255, 255, 0.5), inset 0 -3px 8px rgba(0, 0, 0, 0.7);
+        transform: scale(1.025) rotate(-0.6deg);
       }
       100% {
-        background-color: #08090D;
-        border-color: rgba(255, 255, 255, 0.16);
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-        transform: scale(1);
+        background-color: #060709;
+        border-color: rgba(255, 255, 255, 0.18);
+        border-radius: 1.5rem;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.95), inset 0 2px 4px rgba(255, 255, 255, 0.35), inset 0 -4px 10px rgba(0, 0, 0, 0.9);
+        transform: scale(1) rotate(0deg);
       }
     }
 
+    /* Oscillazione Riflesso Bagnato Viscido */
+    @keyframes venomSheenWave {
+      0%, 100% {
+        opacity: 0.85;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+      25% {
+        opacity: 0.55;
+        transform: translate3d(3px, -2px, 0) scale(1.04);
+      }
+      50% {
+        opacity: 0.15;
+        transform: translate3d(0, 0, 0) scale(1);
+      }
+      75% {
+        opacity: 0.55;
+        transform: translate3d(-3px, 2px, 0) scale(1.04);
+      }
+    }
+
+    /* Pulsazione ed espansione tentacoli simbionte */
+    @keyframes venomTendrilPulse {
+      0%, 100% {
+        opacity: 0.95;
+        transform: scale(1);
+      }
+      25% {
+        opacity: 0.8;
+        transform: scale(1.05) rotate(1deg);
+      }
+      50% {
+        opacity: 0.2;
+        transform: scale(0.95) rotate(-1deg);
+      }
+      75% {
+        opacity: 0.8;
+        transform: scale(1.05) rotate(-1deg);
+      }
+    }
+
+    /* Monogramma PF: Metallo Cromo Liquido in controtempo */
     @keyframes pfLogoPathP {
       0% {
         fill: #FFFFFF;
-        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.45));
+        filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.65)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+        transform: scale(1);
       }
       25% {
-        fill: #8E8E93;
-        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.18));
+        fill: #A1A1AA;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
+        transform: scale(1.015);
       }
       50% {
-        fill: #09090B;
-        filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
+        fill: #060709;
+        filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45));
+        transform: scale(1);
       }
       75% {
-        fill: #8E8E93;
-        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.18));
+        fill: #A1A1AA;
+        filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
+        transform: scale(1.015);
       }
       100% {
         fill: #FFFFFF;
-        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.45));
+        filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.65)) drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+        transform: scale(1);
       }
     }
 
     @keyframes pfLogoPathF1 {
-      0% {
-        fill: #E4E4E7;
+      0%, 100% {
+        fill: #F4F4F5;
+        filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.4));
       }
-      25% {
+      25%, 75% {
         fill: #71717A;
+        filter: none;
       }
       50% {
         fill: #18181B;
-      }
-      75% {
-        fill: #71717A;
-      }
-      100% {
-        fill: #E4E4E7;
+        filter: none;
       }
     }
 
     @keyframes pfLogoPathF2 {
-      0% {
-        fill: #A1A1AA;
+      0%, 100% {
+        fill: #D4D4D8;
       }
-      25% {
+      25%, 75% {
         fill: #52525B;
       }
       50% {
-        fill: #3F3F46;
-      }
-      75% {
-        fill: #52525B;
-      }
-      100% {
-        fill: #A1A1AA;
+        fill: #27272A;
       }
     }
 
-    @keyframes pfLogoGlowPulse {
-      0% {
-        opacity: 0.35;
-        transform: scale(0.98);
+    /* Alone Venom che respira */
+    @keyframes venomGlowBreathing {
+      0%, 100% {
+        opacity: 0.6;
+        transform: scale(1);
+        filter: blur(28px);
+      }
+      25%, 75% {
+        opacity: 0.85;
+        transform: scale(1.08);
+        filter: blur(34px);
       }
       50% {
-        opacity: 0.75;
-        transform: scale(1.04);
+        opacity: 0.45;
+        transform: scale(0.96);
+        filter: blur(24px);
       }
-      100% {
-        opacity: 0.35;
-        transform: scale(0.98);
-      }
+    }
+
+    /* Hover State Venom: Il simbionte reagisce ed è pronto all'attacco */
+    .group:hover .pf-logo-dynamic-tile {
+      box-shadow: 0 30px 70px rgba(0, 0, 0, 0.95), 0 0 30px rgba(255, 255, 255, 0.2), inset 0 2px 8px rgba(255, 255, 255, 0.6) !important;
+      transform: scale(1.07) !important;
+    }
+    .group:hover .venom-wet-sheen {
+      opacity: 1 !important;
     }
 
     .modal-spring-enter {
@@ -4490,9 +4555,33 @@
         <div class="flex flex-col items-center justify-center space-y-3 pt-2 pb-2">
           <!-- 2D Monogram Emblem with Dynamic Black & White Morphing -->
           <div class="relative group cursor-pointer" onclick="togglePfLogoMode()" title="PrintForge Monogramma Meccanico PF a Incastro (Clicca per alternare Bianco / Nero)">
-            <div class="pf-logo-ambient-glow absolute -inset-4 bg-gradient-to-r from-white/10 via-zinc-400/20 to-white/10 rounded-3xl blur-2xl opacity-40 group-hover:opacity-85 transition-opacity duration-700"></div>
+            <div class="pf-logo-ambient-glow absolute -inset-5 bg-gradient-to-r from-zinc-900 via-white/15 to-black rounded-3xl blur-2xl opacity-50 group-hover:opacity-90 transition-opacity duration-700 pointer-events-none"></div>
             <div id="hero2dLogoBox" class="pf-logo-dynamic-tile relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl border border-white/20 flex items-center justify-center group-hover:scale-105 transition-all duration-500 overflow-hidden select-none">
-              <svg id="hero2dLogoSvg" class="w-20 h-20 sm:w-24 sm:h-24 pf-bw-logo-svg transition-transform duration-500 group-hover:scale-110" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+              
+              <!-- Strato Riflesso Liquido Bagnato Viscido (Venom Wet Oily Sheen) -->
+              <div class="venom-wet-sheen"></div>
+
+              <!-- Strato Tentacoli Simbionte (SVG Living Tendrils) -->
+              <svg class="venom-tendrils-layer w-full h-full" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <!-- Tendril Top-Left creeping hook -->
+                <path d="M 0 0 C 24 6, 32 24, 22 44 C 18 30, 10 18, 0 14 Z" fill="url(#venomSymbioteGrad)" opacity="0.9" />
+                <!-- Tendril Bottom-Right creeping claw -->
+                <path d="M 140 140 C 116 134, 108 116, 118 96 C 122 110, 130 122, 140 126 Z" fill="url(#venomSymbioteGrad)" opacity="0.9" />
+                <!-- Tendril Top-Right creeping filament -->
+                <path d="M 140 0 C 122 14, 116 22, 120 38 C 124 28, 132 16, 140 12 Z" fill="url(#venomSymbioteGrad)" opacity="0.85" />
+                <!-- Tendril Bottom-Left creeping filament -->
+                <path d="M 0 140 C 18 126, 24 118, 20 102 C 16 112, 8 124, 0 128 Z" fill="url(#venomSymbioteGrad)" opacity="0.85" />
+                <defs>
+                  <linearGradient id="venomSymbioteGrad" x1="0" y1="0" x2="140" y2="140" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#050608" stop-opacity="0.98" />
+                    <stop offset="60%" stop-color="#14151C" stop-opacity="0.88" />
+                    <stop offset="100%" stop-color="#2D2F3C" stop-opacity="0.75" />
+                  </linearGradient>
+                </defs>
+              </svg>
+
+              <!-- Monogramma PF a Incastro (Z-index 10 per risaltare sopra al simbionte) -->
+              <svg id="hero2dLogoSvg" class="relative z-10 w-20 h-20 sm:w-24 sm:h-24 pf-bw-logo-svg transition-transform duration-500 group-hover:scale-110" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- P Stem & Loop -->
                 <path class="pf-p-path" d="M 38 26 L 76 26 C 90 26 98 34 98 46 C 98 58 90 66 76 66 L 56 66 L 56 114 L 38 114 Z M 56 42 L 56 50 L 74 50 C 80 50 82 48 82 46 C 82 44 80 42 74 42 Z" />
                 <!-- F Upper Joint Arm (Micrometric Interlock) -->
@@ -28958,10 +29047,10 @@ function renderDealChat(rfpId) {
         tile.classList.remove('pf-logo-mode-light');
         if (typeof showToast === 'function') {
           showToast(currentLang === 'en' 
-            ? 'Logo: Dynamic Alternating Mode (White / Black Shift)' 
+            ? '🕷️ Logo: Venom Symbiote Mode (Fluid Living Morph)' 
             : currentLang === 'es'
-            ? 'Logo: Modo Dinámico Alterno (Blanco / Negro)'
-            : 'Logo: Modalità Dinamica (Alternanza Bianco / Nero)');
+            ? '🕷️ Logo: Modo Simbionte Venom (Fluido Viviente)'
+            : '🕷️ Logo: Modalità Venom Simbionte (Fluido Vivente)');
         }
       } else {
         tile.classList.add('pf-logo-mode-dark');
