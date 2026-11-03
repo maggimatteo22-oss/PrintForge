@@ -4241,13 +4241,13 @@
               <!-- 3. DIMENSIONI (MM) -->
               <div class="space-y-1">
                 <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioDimsLabel">Dimensioni (mm) *</label>
-                <input type="text" id="portfolioDimensions" name="portfolioDimensions" value="80 × 60 × 25 mm" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none" />
+                <input type="text" id="portfolioDimensions" name="portfolioDimensions" value="" placeholder="es. 80 × 60 × 25 mm" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none" />
               </div>
 
               <!-- 4. PREZZO INDICATIVO -->
               <div class="space-y-1">
                 <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioPriceLabel">Prezzo Indicativo *</label>
-                <input type="text" id="portfolioPrice" value="€ 35,00" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none font-bold" />
+                <input type="text" id="portfolioPrice" value="" placeholder="es. € 45,00" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none font-bold" />
               </div>
             </div>
 
@@ -29940,12 +29940,12 @@ function renderDealChat(rfpId) {
       if (!colorHex || !colorHex.startsWith('#')) {
         colorHex = resolveColorNameToHex(color);
       }
-      const dimensions = (document.getElementById('portfolioDimensions')?.value || '80 × 60 × 25 mm').trim();
-      let price = (document.getElementById('portfolioPrice')?.value || '€ 35,00').trim();
-      if (!price.startsWith('€')) price = '€ ' + price;
+      const dimensions = (document.getElementById('portfolioDimensions')?.value || '').trim();
+      let price = (document.getElementById('portfolioPrice')?.value || '').trim();
+      if (price && !price.startsWith('€')) price = '€ ' + price;
 
-      if (!title || !desc) {
-        showToast('Compila tutti i campi obbligatori del lavoro.', 'warning');
+      if (!title || !desc || !dimensions || !price) {
+        showToast('Compila tutti i campi obbligatori (titolo, descrizione, dimensioni, prezzo).', 'warning');
         return;
       }
 
