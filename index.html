@@ -25513,7 +25513,7 @@ END-ISO-10303-21;`;
 
       const rfpId = `RFP-${Math.floor(1000 + Math.random()*9000)}`;
       const timeNow = isEn ? 'Just now' : isEs ? 'Ahora' : 'Adesso';
-      const statusOpen = isEn ? 'OPEN (PENDING CREATOR)' : isEs ? 'ABIERTA (ESPERANDO CREADOR)' : 'APERTA (IN ATTESA CREATOR)';
+      const statusOpen = isEn ? 'WAITING FOR CREATOR' : isEs ? 'EN ESPERA DEL CREADOR' : 'IN ATTESA DEL CREATOR';
 
       const initMsgText = draft.notes
         ? (isEn 
@@ -25641,6 +25641,8 @@ END-ISO-10303-21;`;
         window._currentShowcaseWorkOrder = null;
         window._directAssignedCreator = null;
       }
+      AppState.stage4Completed = false;
+      AppState.isDelivered = false;
       AppState.clientApprovedQc = false;
       AppState.cadQcFiles = [];
       AppState.stage2Completed = false;
@@ -26167,11 +26169,7 @@ END-ISO-10303-21;`;
         // Elimina sempre recensioni inserite erroneamente come richieste
         if (String(r.id).startsWith('REV-') || (r.title && String(r.title).startsWith('CREATOR_REVIEW:')) || r.status === 'CERTIFIED_REVIEW') return false;
 
-        // Se lo stage 4 è completato, elimina la richiesta in attesa e mostra solo la commessa completata
-        if (AppState.stage4Completed || AppState.isDelivered) {
-          const isCompOrAcc = r.isCompleted || r.isDelivered || r.isAccepted || (typeof r.status === 'string' && (r.status.includes('COMPLETAT') || r.status.includes('LAVORAZION')));
-          if (!isCompOrAcc) return false; // Elimina quella in attesa
-        }
+        // Ogni richiesta ha il proprio ciclo di vita: le nuove richieste in attesa devono essere SEMPRE visibili al cliente!
 
         if (isAdmin) return true;
         if (isClient || !userEmail) {
@@ -26254,7 +26252,7 @@ END-ISO-10303-21;`;
 
         let statusBadge = '';
         const isPendingTakingCharge = !isCompleted && (!isAcc || r.isAccepted === false);
-        const pendingBadgeText = isEn ? 'PENDING MAKER ACCEPTANCE' : isEs ? 'EN ESPERA DE ASIGNACIÓN' : 'IN ATTESA DI PRESA IN CARICO';
+        const pendingBadgeText = isEn ? 'WAITING FOR CREATOR' : isEs ? 'EN ESPERA DEL CREADOR' : 'IN ATTESA DEL CREATOR';
 
         if (isCompleted) {
           statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ' + (isEn ? 'COMPLETED' : isEs ? 'COMPLETADO' : 'COMPLETATO') + '</span>';
@@ -30750,6 +30748,22 @@ function renderDealChat(rfpId) {
       const container = document.getElementById('creatorPublishedCardsContainer');
       if (!container) return;
 
+      // Gestione visibilità tasto Stripe Connect: se il creator ha collegato Stripe nel suo account, NON MOSTRARLO PIÙ nella sezione I Miei Progetti!
+      const stripeBtn = document.getElementById('btnCreatorConnectStripe');
+      if (stripeBtn) {
+        const isStripeConnected = Boolean(
+          (AppState.user && (AppState.user.stripeConnected === true || AppState.user.stripeAccountId)) ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stripe_connected') === 'true')
+        );
+        if (isStripeConnected) {
+          stripeBtn.style.display = 'none';
+          stripeBtn.classList.add('hidden');
+        } else {
+          stripeBtn.style.display = 'inline-flex';
+          stripeBtn.classList.remove('hidden');
+        }
+      }
+
       const t = i18n[currentLang] || i18n.it;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
@@ -31867,9 +31881,23 @@ function renderDealChat(rfpId) {
         if (data && data.url) {
           window.location.href = data.url;
         } else {
+          if (AppState.user) AppState.user.stripeConnected = true;
+          try {
+            localStorage.setItem('printforge_stripe_connected', 'true');
+            if (AppState.user) localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+          } catch(e) {}
+          const sBtn = document.getElementById('btnCreatorConnectStripe');
+          if (sBtn) { sBtn.style.display = 'none'; sBtn.classList.add('hidden'); }
           showToast('Account Stripe Express collegato (Modalità Test).', 'success');
         }
       } catch(e) {
+        if (AppState.user) AppState.user.stripeConnected = true;
+        try {
+          localStorage.setItem('printforge_stripe_connected', 'true');
+          if (AppState.user) localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+        } catch(err) {}
+        const sBtn = document.getElementById('btnCreatorConnectStripe');
+        if (sBtn) { sBtn.style.display = 'none'; sBtn.classList.add('hidden'); }
         showToast('Collegamento Stripe simulato con successo.', 'success');
       }
     }
