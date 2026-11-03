@@ -6343,7 +6343,7 @@
 
           <button type="submit" id="btnSubmitRfpForm" onclick="handleBroadcastSubmit(event)" class="w-full sm:w-auto btn-kowalski-primary px-5 sm:px-8 py-2.5 sm:py-3.5 rounded-xl font-cyber font-extrabold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 transition cursor-pointer">
             <i data-lucide="send" class="w-3.5 h-3.5 sm:w-4 sm:h-4"></i>
-            <span id="i18n-btnSubmitRfp">TROVA IL MAKER PER QUESTA COMMESSA</span>
+            <span id="i18n-btnSubmitRfp">TROVA IL MAKER PER QUESTA SCOMMESSA</span>
           </button>
         </div>
 
@@ -8411,7 +8411,7 @@
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5 shrink-0">
         <div class="flex items-center gap-2">
           <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-          <h3 class="text-xs sm:text-sm font-cyber font-bold text-white tracking-wide uppercase" id="i18n-orderReviewTitle">RIEPILOGO COMMESSA</h3>
+          <h3 class="text-xs sm:text-sm font-cyber font-bold text-white tracking-wide uppercase" id="i18n-orderReviewTitle">RIEPILOGO SCOMMESSA</h3>
           <span class="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-mono font-bold text-[9px] border border-emerald-500/30">STRIPE ESCROW</span>
         </div>
         <button type="button" onclick="closeOrderReviewModal()" class="text-zinc-400 hover:text-white p-1 rounded-lg transition" title="Chiudi">
@@ -12039,7 +12039,7 @@
         reqNotesLabel: 'Note Tecniche / Specifiche di Carico & Montaggio',
         legalText: 'Garanzia Tolleranza Zero & Manleva Legale: Dichiaro che il modello CAD non costituisce componente di armi, oggetti illegali o protetti da copyright commerciale di terzi. Accetto che l\'importo sia custodito in Escrow Stripe fino al caricamento delle 3 foto di collaudo con calibro e svincolato al ritiro tracciato del corriere.',
         escrowNotice: 'Pagamento protetto in garanzia Escrow Stripe solo all\'approvazione del pezzo.',
-        btnSubmitRfp: 'TROVA IL MAKER PER QUESTA COMMESSA',
+        btnSubmitRfp: 'TROVA IL MAKER PER QUESTA SCOMMESSA',
         liveDossierTitle: 'SPECIFICHE RICHIESTA LIVE // MATRICE ATTIVA SELEZIONATA',
         liveDossierReactive: 'REATTIVA',
         liveDossierSub: 'La tabella ricrea istantaneamente ogni parametro e colore selezionato',
@@ -17098,7 +17098,7 @@ END-ISO-10303-21;`;
       if (reqSubmitSpan) {
         const lang = currentLang || 'it';
         const t = (typeof i18n !== 'undefined' && i18n[lang]) || {};
-        reqSubmitSpan.innerText = t.btnSubmitRfp || 'TROVA IL MAKER PER QUESTA COMMESSA';
+        reqSubmitSpan.innerText = t.btnSubmitRfp || 'TROVA IL MAKER PER QUESTA SCOMMESSA';
       }
       const directBanner = document.getElementById('directShowcaseLockBanner');
       if (directBanner) directBanner.remove();
@@ -24485,7 +24485,7 @@ END-ISO-10303-21;`;
 
     const ORDER_REVIEW_I18N = {
       it: {
-        modalTitle: 'RIEPILOGO COMMESSA',
+        modalTitle: 'RIEPILOGO SCOMMESSA',
         matLabel: 'MATERIALE',
         dimsLabel: 'DIMENSIONI XYZ',
         qtyLabel: 'QUANTITÀ & TOLL.',
@@ -24584,7 +24584,7 @@ END-ISO-10303-21;`;
 
       let title = document.getElementById('reqTitle')?.value?.trim();
       if (!title) {
-        title = isEn ? 'Precision Mechanical Component' : isEs ? 'Componente Mecánico de Precisión' : 'Componente Meccanico di Precisione';
+        title = isEn ? 'New Custom Bid (Pending Specs)' : isEs ? 'Nueva Apuesta a Medida' : 'Nuova Scommessa di Stampa (Da Definire)';
       }
       const usage = document.getElementById('reqUsage')?.value || 'Parte Meccanica Funzionale';
       const material = document.getElementById('reqMaterial')?.value || 'PETG Tecnico';
@@ -24603,18 +24603,23 @@ END-ISO-10303-21;`;
         quantity = customQtyVal === 1 ? '1 pezzo' : `${customQtyVal} pezzi`;
       }
 
-      // Rilevamento Dimensioni XYZ
-      const dx = Math.round(parseFloat(document.getElementById('dimX')?.value)) || 85;
-      const dy = Math.round(parseFloat(document.getElementById('dimY')?.value)) || 85;
-      const dz = Math.round(parseFloat(document.getElementById('dimZ')?.value)) || 42;
-      const dimensionsStr = `${dx} × ${dy} × ${dz} mm`;
+      // Rilevamento Dimensioni XYZ - SE VUOTE NON MOSTRARE 85x85x42 MA 0 x 0 x 0 mm (AZZERATO)
+      const rawDimX = parseFloat(document.getElementById('dimX')?.value);
+      const rawDimY = parseFloat(document.getElementById('dimY')?.value);
+      const rawDimZ = parseFloat(document.getElementById('dimZ')?.value);
+      const dx = (!isNaN(rawDimX) && rawDimX > 0) ? Math.round(rawDimX) : 0;
+      const dy = (!isNaN(rawDimY) && rawDimY > 0) ? Math.round(rawDimY) : 0;
+      const dz = (!isNaN(rawDimZ) && rawDimZ > 0) ? Math.round(rawDimZ) : 0;
+      const dimensionsStr = (dx > 0 && dy > 0 && dz > 0) ? `${dx} × ${dy} × ${dz} mm` : '0 × 0 × 0 mm';
 
-      const tolerance = document.getElementById('reqTolerance')?.value || 'Alta Precisione ±0.05 mm';
+      const tolerance = document.getElementById('reqTolerance')?.value || 'Standard ±0.2 mm';
       const infill = document.getElementById('reqInfill')?.value || '50% Meccanico Strutturale';
       const postProcess = document.getElementById('reqPostProcess')?.value || 'Grezzo (Rimozione supporti standard)';
+
+      // SE VUOTO NON MOSTRARE PIÙ 45 EURO MA TUTTO AZZERATO (€ 0,00)
       const rawBudgetVal = document.getElementById('reqBudget')?.value;
       const parsedBudget = parseFloat(rawBudgetVal);
-      const budgetNum = (!isNaN(parsedBudget) && parsedBudget > 0) ? parsedBudget : 45.00;
+      const budgetNum = (!isNaN(parsedBudget) && parsedBudget > 0) ? parsedBudget : 0.00;
       const budgetStr = formatEuroClean(budgetNum);
       const shippingNum = 0;
       const escrowTotalStr = budgetStr;
