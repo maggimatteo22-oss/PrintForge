@@ -6379,12 +6379,12 @@
       <div class="flex items-center justify-between pb-1">
         <button type="button" onclick="navigateTo('explore')" class="text-xs font-mono text-zinc-400 hover:text-white flex items-center gap-1.5 transition cursor-pointer">
           <i data-lucide="arrow-left" class="w-4 h-4"></i>
-          <span>TORNA ALLA VETRINA</span>
+          <span id="i18n-showcaseOrderBack">TORNA ALLA VETRINA</span>
         </button>
         <div class="flex items-center gap-2">
           <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 font-cyber font-bold text-[10px] tracking-wider uppercase flex items-center gap-1.5">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            ORDINE DIRETTO VETRINA 2D
+            <span id="i18n-showcaseOrderBadge">ORDINE DIRETTO VETRINA 2D</span>
           </span>
         </div>
       </div>
@@ -6394,16 +6394,16 @@
         <img id="showcaseOrderArtworkPhoto" src="/images/cube.jpg" class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border border-white/15 shrink-0 shadow-lg" alt="Foto Opera Vetrina" />
         <div class="min-w-0 flex-1 space-y-2 text-center sm:text-left">
           <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
-            <span class="text-xs font-mono text-zinc-400">Maker: <strong id="showcaseOrderMakerName" class="text-white font-bold">--</strong></span>
+            <span class="text-xs font-mono text-zinc-400"><span id="i18n-showcaseOrderMakerPrefix">Maker</span>: <strong id="showcaseOrderMakerName" class="text-white font-bold">--</strong></span>
             <span class="text-[11px] px-2.5 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/30 font-mono font-bold flex items-center gap-1">
               <i data-lucide="shield-check" class="w-3.5 h-3.5 text-amber-400"></i>
-              Maker Certificato PrintForge
+              <span id="i18n-showcaseOrderMakerBadge">Maker Certificato PrintForge</span>
             </span>
           </div>
           <h2 id="showcaseOrderArtworkTitle" class="text-lg sm:text-2xl font-cyber font-black text-white truncate">--</h2>
           <p id="showcaseOrderArtworkDesc" class="text-xs text-zinc-400 line-clamp-2 font-sans">--</p>
           <div class="pt-1 flex items-center justify-center sm:justify-start gap-3">
-            <span class="text-xs font-mono text-zinc-400">Prezzo stabilito dal Maker:</span>
+            <span class="text-xs font-mono text-zinc-400" id="i18n-showcaseOrderPriceLabel">Prezzo stabilito dal Maker:</span>
             <span id="showcaseOrderPriceBadge" class="text-lg sm:text-xl font-mono font-black text-emerald-400">€ --</span>
           </div>
         </div>
@@ -6414,11 +6414,11 @@
         <div class="flex items-center justify-between border-b border-white/10 pb-3 flex-wrap gap-2">
           <div class="flex items-center gap-2">
             <i data-lucide="lock" class="w-4 h-4 text-emerald-400"></i>
-            <h3 class="text-xs sm:text-sm font-cyber font-bold text-white uppercase tracking-wider">
+            <h3 class="text-xs sm:text-sm font-cyber font-bold text-white uppercase tracking-wider" id="i18n-showcaseOrderSpecsTitle">
               Specifiche Tecniche Stabilite dal Maker
             </h3>
           </div>
-          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 uppercase">
+          <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 uppercase" id="i18n-showcaseOrderSpecsLockedBadge">
             BLOCCATE • NON MODIFICABILI
           </span>
         </div>
@@ -6427,7 +6427,7 @@
           <!-- Nome Opera / Componente -->
           <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
             <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
-              <span>Nome Opera</span>
+              <span id="i18n-showcaseSpecTitleLabel">Nome Opera</span>
               <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
             </div>
             <div id="showcaseSpecTitle" class="text-xs font-cyber font-bold text-white truncate">--</div>
@@ -6436,7 +6436,7 @@
           <!-- Materiale Tecnico Scelto -->
           <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
             <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
-              <span>Materiale Tecnico</span>
+              <span id="i18n-showcaseSpecMaterialLabel">Materiale Tecnico</span>
               <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
             </div>
             <div id="showcaseSpecMaterial" class="text-xs font-mono font-bold text-emerald-300 truncate">--</div>
@@ -6445,7 +6445,7 @@
           <!-- Colore Selezionato -->
           <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
             <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
-              <span>Colore di Stampa</span>
+              <span id="i18n-showcaseSpecColorLabel">Colore di Stampa</span>
               <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
             </div>
             <div class="flex items-center gap-2">
@@ -6457,7 +6457,7 @@
           <!-- Dimensioni / Grandezza XYZ -->
           <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
             <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
-              <span>Dimensioni (XYZ)</span>
+              <span id="i18n-showcaseSpecDimensionsLabel">Dimensioni (XYZ)</span>
               <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
             </div>
             <div id="showcaseSpecDimensions" class="text-xs font-mono font-bold text-white truncate">--</div>
@@ -6466,7 +6466,7 @@
           <!-- Quantità Pezzi -->
           <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
             <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
-              <span>Pezzi / Quantità</span>
+              <span id="i18n-showcaseSpecQuantityLabel">Pezzi / Quantità</span>
               <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
             </div>
             <div id="showcaseSpecQuantity" class="text-xs font-mono font-bold text-white truncate">1 pezzo (Opera Unica)</div>
@@ -6475,7 +6475,7 @@
           <!-- Riempimento / Infill Meccanico -->
           <div class="p-3 rounded-xl bg-[#14151E] border border-white/10 select-none">
             <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400 uppercase pb-1">
-              <span>Riempimento (Infill)</span>
+              <span id="i18n-showcaseSpecInfillLabel">Riempimento (Infill)</span>
               <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
             </div>
             <div id="showcaseSpecInfill" class="text-xs font-mono font-bold text-white truncate">50% Meccanico Strutturale</div>
@@ -6487,34 +6487,34 @@
       <div class="p-5 sm:p-6 rounded-2xl bg-[#0E0F16] border border-white/10 space-y-4 shadow-xl">
         <div class="flex items-center gap-2 border-b border-white/10 pb-3">
           <i data-lucide="truck" class="w-4 h-4 text-cyan-400"></i>
-          <h3 class="text-xs sm:text-sm font-cyber font-bold text-white uppercase tracking-wider">
+          <h3 class="text-xs sm:text-sm font-cyber font-bold text-white uppercase tracking-wider" id="i18n-showcaseShipTitle">
             Indirizzo di Spedizione e Consegna Corriere
           </h3>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           <div class="space-y-1 sm:col-span-2">
-            <label class="text-[10px] font-mono text-zinc-400 uppercase block">Via e Numero Civico *</label>
+            <label class="text-[10px] font-mono text-zinc-400 uppercase block" id="i18n-showcaseShipStreetLabel">Via e Numero Civico *</label>
             <input type="text" id="showcaseShipStreet" placeholder="es. Via Alessandro Manzoni 12" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" />
           </div>
           <div class="space-y-1">
-            <label class="text-[10px] font-mono text-zinc-400 uppercase block">Città *</label>
+            <label class="text-[10px] font-mono text-zinc-400 uppercase block" id="i18n-showcaseShipCityLabel">Città *</label>
             <input type="text" id="showcaseShipCity" placeholder="es. Milano" value="Milano" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" />
           </div>
           <div class="grid grid-cols-2 gap-2">
             <div class="space-y-1">
-              <label class="text-[10px] font-mono text-zinc-400 uppercase block">CAP *</label>
+              <label class="text-[10px] font-mono text-zinc-400 uppercase block" id="i18n-showcaseShipCapLabel">CAP *</label>
               <input type="text" id="showcaseShipCap" placeholder="20121" value="20121" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-emerald-400 transition" />
             </div>
             <div class="space-y-1">
-              <label class="text-[10px] font-mono text-zinc-400 uppercase block">Prov. *</label>
+              <label class="text-[10px] font-mono text-zinc-400 uppercase block" id="i18n-showcaseShipProvLabel">Prov. *</label>
               <input type="text" id="showcaseShipProv" placeholder="MI" value="MI" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-mono uppercase focus:outline-none focus:border-emerald-400 transition" />
             </div>
           </div>
         </div>
 
         <div class="space-y-1 pt-1">
-          <label class="text-[10px] font-mono text-zinc-400 uppercase block">Istruzioni Corriere / Note Consegna (Opzionale)</label>
+          <label class="text-[10px] font-mono text-zinc-400 uppercase block" id="i18n-showcaseShipNotesLabel">Istruzioni Corriere / Note Consegna (Opzionale)</label>
           <input type="text" id="showcaseShipNotes" placeholder="es. Citofono Maggi, scala B secondo piano" class="w-full bg-[#14151E] border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-sans focus:outline-none focus:border-emerald-400 transition" />
         </div>
       </div>
@@ -6524,10 +6524,10 @@
         <div class="space-y-1 text-center sm:text-left">
           <div class="flex items-center justify-center sm:justify-start gap-2">
             <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0"></i>
-            <span class="text-xs font-mono text-zinc-300">Fondo Fiduciario Escrow: fondi sbloccati solo a collaudo positivo</span>
+            <span class="text-xs font-mono text-zinc-300" id="i18n-showcaseEscrowNotice">Fondo Fiduciario Escrow: fondi sbloccati solo a collaudo positivo</span>
           </div>
           <div class="flex items-center justify-center sm:justify-start gap-2">
-            <span class="text-xs font-mono text-zinc-400">Totale Ordine:</span>
+            <span class="text-xs font-mono text-zinc-400" id="i18n-showcaseOrderTotalLabel">Totale Ordine:</span>
             <span id="showcaseOrderTotalDisplay" class="text-xl sm:text-2xl font-mono font-black text-emerald-400">€ --</span>
           </div>
         </div>
@@ -6535,7 +6535,7 @@
         <!-- TASTO FINALE: SEMPRE E SOLAMENTE "CONTATTA IL MAKER" -->
         <button type="button" id="btnSubmitShowcaseOrder" onclick="submitShowcaseOrder()" class="w-full sm:w-auto btn-kowalski-primary px-8 py-3.5 rounded-xl font-cyber font-extrabold text-sm uppercase tracking-wider flex items-center justify-center gap-2 shadow-2xl active:scale-95 transition cursor-pointer">
           <i data-lucide="message-square" class="w-4 h-4 text-black"></i>
-          <span>CONTATTA IL MAKER</span>
+          <span id="i18n-showcaseOrderBtnContact">CONTATTA IL MAKER</span>
         </button>
       </div>
     </section>
@@ -11846,6 +11846,28 @@
         portfolioMaterialHeading: 'Materiale *',
         portfolioQuantityHeading: 'Quantità Pezzi *',
         portfolioInfillHeading: 'Riempimento (Infill) *',
+        showcaseOrderBack: 'TORNA ALLA VETRINA',
+        showcaseOrderBadge: 'ORDINE DIRETTO VETRINA 2D',
+        showcaseOrderMakerPrefix: 'Maker',
+        showcaseOrderMakerBadge: 'Maker Certificato PrintForge',
+        showcaseOrderPriceLabel: 'Prezzo stabilito dal Maker:',
+        showcaseOrderSpecsTitle: 'Specifiche Tecniche Stabilite dal Maker',
+        showcaseOrderSpecsLockedBadge: 'BLOCCATE • NON MODIFICABILI',
+        showcaseSpecTitleLabel: 'Nome Opera',
+        showcaseSpecMaterialLabel: 'Materiale Tecnico',
+        showcaseSpecColorLabel: 'Colore di Stampa',
+        showcaseSpecDimensionsLabel: 'Dimensioni (XYZ)',
+        showcaseSpecQuantityLabel: 'Pezzi / Quantità',
+        showcaseSpecInfillLabel: 'Riempimento (Infill)',
+        showcaseShipTitle: 'Indirizzo di Spedizione e Consegna Corriere',
+        showcaseShipStreetLabel: 'Via e Numero Civico *',
+        showcaseShipCityLabel: 'Città *',
+        showcaseShipCapLabel: 'CAP *',
+        showcaseShipProvLabel: 'Prov. *',
+        showcaseShipNotesLabel: 'Istruzioni Corriere / Note Consegna (Opzionale)',
+        showcaseEscrowNotice: 'Fondo Fiduciario Escrow: fondi sbloccati solo a collaudo positivo',
+        showcaseOrderTotalLabel: 'Totale Ordine:',
+        showcaseOrderBtnContact: 'CONTATTA IL MAKER',
         portfolioColorHeading: 'Colore *',
         portfolioWheelBadge: '🎨 Ruota Colori',
         portfolioDimsHeading: 'Dimensioni (mm) *',
@@ -12663,8 +12685,52 @@
         portfolioMaterialHeading: 'Material *',
         portfolioQuantityHeading: 'Cantidad de Piezas *',
         portfolioInfillHeading: 'Relleno (Infill) *',
+        showcaseOrderBack: 'VOLVER AL ESCAPARATE',
+        showcaseOrderBadge: 'PEDIDO DIRECTO ESCAPARATE 2D',
+        showcaseOrderMakerPrefix: 'Maker',
+        showcaseOrderMakerBadge: 'Maker Certificado PrintForge',
+        showcaseOrderPriceLabel: 'Precio establecido por el Maker:',
+        showcaseOrderSpecsTitle: 'Especificaciones Técnicas Establecidas por el Maker',
+        showcaseOrderSpecsLockedBadge: 'BLOQUEADAS • NO MODIFICABLES',
+        showcaseSpecTitleLabel: 'Nombre de la Obra',
+        showcaseSpecMaterialLabel: 'Material Técnico',
+        showcaseSpecColorLabel: 'Color de Impresión',
+        showcaseSpecDimensionsLabel: 'Dimensiones (XYZ)',
+        showcaseSpecQuantityLabel: 'Piezas / Cantidad',
+        showcaseSpecInfillLabel: 'Relleno (Infill)',
+        showcaseShipTitle: 'Dirección de Envío y Entrega por Mensajería',
+        showcaseShipStreetLabel: 'Calle y Número *',
+        showcaseShipCityLabel: 'Ciudad *',
+        showcaseShipCapLabel: 'Código Postal *',
+        showcaseShipProvLabel: 'Prov. *',
+        showcaseShipNotesLabel: 'Instrucciones para el Mensajero / Notas (Opcional)',
+        showcaseEscrowNotice: 'Fondo de Garantía Escrow: fondos liberados solo tras inspección positiva',
+        showcaseOrderTotalLabel: 'Total del Pedido:',
+        showcaseOrderBtnContact: 'CONTACTAR AL MAKER',
         portfolioQuantityHeading: 'Quantity (Pieces) *',
         portfolioInfillHeading: 'Infill Option *',
+        showcaseOrderBack: 'BACK TO SHOWCASE',
+        showcaseOrderBadge: 'DIRECT 2D SHOWCASE ORDER',
+        showcaseOrderMakerPrefix: 'Maker',
+        showcaseOrderMakerBadge: 'Certified PrintForge Maker',
+        showcaseOrderPriceLabel: 'Price set by the Maker:',
+        showcaseOrderSpecsTitle: 'Technical Specifications Set by the Maker',
+        showcaseOrderSpecsLockedBadge: 'LOCKED • NON-MODIFIABLE',
+        showcaseSpecTitleLabel: 'Artwork Name',
+        showcaseSpecMaterialLabel: 'Technical Material',
+        showcaseSpecColorLabel: 'Print Color',
+        showcaseSpecDimensionsLabel: 'Dimensions (XYZ)',
+        showcaseSpecQuantityLabel: 'Pieces / Quantity',
+        showcaseSpecInfillLabel: 'Infill Density',
+        showcaseShipTitle: 'Shipping Address & Courier Delivery',
+        showcaseShipStreetLabel: 'Street Address *',
+        showcaseShipCityLabel: 'City *',
+        showcaseShipCapLabel: 'Postal Code *',
+        showcaseShipProvLabel: 'State / Prov. *',
+        showcaseShipNotesLabel: 'Courier Instructions / Delivery Notes (Optional)',
+        showcaseEscrowNotice: 'Escrow Trust Fund: funds released only upon positive inspection',
+        showcaseOrderTotalLabel: 'Order Total:',
+        showcaseOrderBtnContact: 'CONTACT THE MAKER',
         portfolioColorHeading: 'Color *',
         portfolioWheelBadge: '🎨 Color Wheel',
         portfolioDimsHeading: 'Dimensions (mm) *',
@@ -14797,6 +14863,28 @@ END-ISO-10303-21;`;
         'i18n-portfolioMaterialLabel': t.portfolioMaterialHeading,
         'i18n-portfolioQuantityLabel': t.portfolioQuantityHeading,
         'i18n-portfolioInfillLabel': t.portfolioInfillHeading,
+        'i18n-showcaseOrderBack': t.showcaseOrderBack,
+        'i18n-showcaseOrderBadge': t.showcaseOrderBadge,
+        'i18n-showcaseOrderMakerPrefix': t.showcaseOrderMakerPrefix,
+        'i18n-showcaseOrderMakerBadge': t.showcaseOrderMakerBadge,
+        'i18n-showcaseOrderPriceLabel': t.showcaseOrderPriceLabel,
+        'i18n-showcaseOrderSpecsTitle': t.showcaseOrderSpecsTitle,
+        'i18n-showcaseOrderSpecsLockedBadge': t.showcaseOrderSpecsLockedBadge,
+        'i18n-showcaseSpecTitleLabel': t.showcaseSpecTitleLabel,
+        'i18n-showcaseSpecMaterialLabel': t.showcaseSpecMaterialLabel,
+        'i18n-showcaseSpecColorLabel': t.showcaseSpecColorLabel,
+        'i18n-showcaseSpecDimensionsLabel': t.showcaseSpecDimensionsLabel,
+        'i18n-showcaseSpecQuantityLabel': t.showcaseSpecQuantityLabel,
+        'i18n-showcaseSpecInfillLabel': t.showcaseSpecInfillLabel,
+        'i18n-showcaseShipTitle': t.showcaseShipTitle,
+        'i18n-showcaseShipStreetLabel': t.showcaseShipStreetLabel,
+        'i18n-showcaseShipCityLabel': t.showcaseShipCityLabel,
+        'i18n-showcaseShipCapLabel': t.showcaseShipCapLabel,
+        'i18n-showcaseShipProvLabel': t.showcaseShipProvLabel,
+        'i18n-showcaseShipNotesLabel': t.showcaseShipNotesLabel,
+        'i18n-showcaseEscrowNotice': t.showcaseEscrowNotice,
+        'i18n-showcaseOrderTotalLabel': t.showcaseOrderTotalLabel,
+        'i18n-showcaseOrderBtnContact': t.showcaseOrderBtnContact,
         'i18n-portfolioColorLabel': t.portfolioColorHeading,
         'i18n-portfolioWheelBtnBadge': t.portfolioWheelBadge,
         'i18n-portfolioDimsLabel': t.portfolioDimsHeading,
@@ -15382,6 +15470,28 @@ END-ISO-10303-21;`;
           }
         }
       }
+
+      
+      // Update dynamic placeholders across views
+      const isEnLang = currentLang === 'en';
+      const isEsLang = currentLang === 'es';
+      
+      const cardNum = document.getElementById('reviewCardNumber');
+      if (cardNum) cardNum.placeholder = isEnLang ? 'Card number' : isEsLang ? 'Número de tarjeta' : 'Numero di carta';
+      const cardHolder = document.getElementById('reviewCardHolder');
+      if (cardHolder) cardHolder.placeholder = isEnLang ? 'Cardholder full name' : isEsLang ? 'Nombre y apellido del titular' : 'Nome e cognome titolare';
+      const cardExp = document.getElementById('reviewCardExpiry');
+      if (cardExp) cardExp.placeholder = isEnLang ? 'MM/YY' : 'MM/AA';
+      const cardCvc = document.getElementById('reviewCardCvc');
+      if (cardCvc) cardCvc.placeholder = 'CVC';
+
+      const dealInput = document.getElementById('dealChatInput');
+      if (dealInput) dealInput.placeholder = isEnLang ? 'Type a message or paste a screenshot with Ctrl+V...' : isEsLang ? 'Escribe un mensaje o pega una captura con Ctrl+V...' : 'Scrivi un messaggio o incolla uno screenshot con Ctrl+V...';
+
+      const streetInp = document.getElementById('showcaseShipStreet');
+      if (streetInp) streetInp.placeholder = isEnLang ? 'e.g. 12 Oxford Street' : isEsLang ? 'ej. Calle Mayor 12' : 'es. Via Alessandro Manzoni 12';
+      const notesInp = document.getElementById('showcaseShipNotes');
+      if (notesInp) notesInp.placeholder = isEnLang ? 'e.g. Floor 2, intercom Maggi' : isEsLang ? 'ej. Segundo piso, timbre Maggi' : 'es. Citofono Maggi, scala B secondo piano';
 
       // Update dynamic price labels
       document.querySelectorAll('.lblEstimatedPrice').forEach(el => {
@@ -21287,7 +21397,7 @@ END-ISO-10303-21;`;
       if (btnLabel) {
         if (!AppState.clientApprovedQc) {
           btnLabel.className = 'w-full py-3 px-4 rounded-xl bg-white/5 border border-white/10 text-zinc-400 font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 cursor-pointer hover:border-amber-400/40 transition';
-          btnLabel.innerHTML = '<i data-lucide="lock" class="w-4 h-4 text-amber-400"></i> <span id="labelDownloadPacklinkPdf">' + (isEn ? 'LABEL LOCKED (AWAITING CLIENT CONFIRMATION)' : '🔒 ETICHETTA BLOCCATA (IN ATTESA CONFERMA CLIENTE)') + '</span>';
+          btnLabel.innerHTML = '<i data-lucide="lock" class="w-4 h-4 text-amber-400"></i> <span id="labelDownloadPacklinkPdf">' + (isEn ? '🔒 LABEL LOCKED (AWAITING CLIENT CONFIRMATION)' : isEs ? '🔒 ETIQUETA BLOQUEADA (ESPERANDO CONFIRMACIÓN DEL CLIENTE)' : '🔒 ETICHETTA BLOCCATA (IN ATTESA CONFERMA CLIENTE)') + '</span>';
         } else {
           btnLabel.className = 'btn-kowalski-primary w-full py-3 px-4 rounded-xl font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl active:scale-95 transition cursor-pointer';
           btnLabel.innerHTML = '<i data-lucide="file-text" class="w-4 h-4"></i> <span id="labelDownloadPacklinkPdf">' + (isEn ? 'DOWNLOAD SHIPPING LABEL (PDF)' : isEs ? 'DESCARGAR ETIQUETA DE ENVÍO (PDF)' : 'SCARICA ETICHETTA DI SPEDIZIONE (PDF)') + '</span>';
@@ -25039,14 +25149,16 @@ END-ISO-10303-21;`;
         : `Richiesta ${rfpId} autorizzata con ${methodLabel}! Fondi bloccati in Escrow e ricerca avviata!`;
       showToast(toastSuccess);
 
+      // Navigazione immediata alla vista Richieste Attive del Cliente
+      navigateTo('client-request');
       renderBroadcastTable();
       renderCreatorRequestsFeed();
-      const bTable = document.getElementById('broadcastTableContainer');
-      if (bTable) {
-        setTimeout(() => {
-          bTable.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }, 120);
-      }
+      setTimeout(() => {
+        const bTable = document.getElementById('broadcastTableContainer');
+        if (bTable) {
+          bTable.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 150);
     }
     window.openOrderReviewModal = openOrderReviewModal;
     window.closeOrderReviewModal = closeOrderReviewModal;
@@ -25526,14 +25638,18 @@ END-ISO-10303-21;`;
         }
 
         if (isAdmin) return true;
-        if (isClient) {
+        if (isClient || !userEmail) {
           // Pulizia schermo: se il cliente ha eliminato la richiesta completata, non mostrarla sul suo schermo
           if (r.deletedByClient || r.hiddenForClient || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_client_hidden_req_' + r.id) === 'true')) {
             return false;
           }
           const reqEmail = (r.clientEmail || '').toLowerCase().trim();
           const reqUid = (r.userId || '').toLowerCase().trim();
-          return (userEmail && reqEmail === userEmail) || (userId && reqUid === userId);
+          if (userEmail && reqEmail && reqEmail === userEmail) return true;
+          if (userId && reqUid && reqUid === userId) return true;
+          if (!userEmail && !userId) return true;
+          if (r.id === AppState.activeDealRfpId) return true;
+          return false;
         }
         return false;
       });
@@ -25601,14 +25717,15 @@ END-ISO-10303-21;`;
         );
 
         let statusBadge = '';
+        const isPendingTakingCharge = !isCompleted && (!isAcc || r.isAccepted === false);
+        const pendingBadgeText = isEn ? 'PENDING MAKER ACCEPTANCE' : isEs ? 'EN ESPERA DE ASIGNACIÓN' : 'IN ATTESA DI PRESA IN CARICO';
+
         if (isCompleted) {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> COMPLETATO</span>';
-        } else if (r.isDirectShowcase || r.isShowcaseOrder || (typeof r.status === 'string' && r.status.toUpperCase().includes('LAVORAZION'))) {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> IN LAVORAZIONE</span>';
-        } else if (isAcc) {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> IN LAVORAZIONE (PRESA IN CARICO)</span>';
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ' + (isEn ? 'COMPLETED' : isEs ? 'COMPLETADO' : 'COMPLETATO') + '</span>';
+        } else if (isPendingTakingCharge) {
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse flex items-center gap-1.5 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> ' + pendingBadgeText + '</span>';
         } else {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse">IN ATTESA DEL MAKER</span>';
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ' + (isEn ? 'IN PRODUCTION (TAKEN IN CHARGE)' : isEs ? 'EN PRODUCCIÓN (ASIGNADO)' : 'IN LAVORAZIONE (PRESA IN CARICO)') + '</span>';
         }
 
         // Risoluzione prezzo reale garantito (mai mostrare € 0,00)
