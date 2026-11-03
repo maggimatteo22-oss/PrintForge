@@ -4335,18 +4335,12 @@
     <!-- MODULO 5: MODALE LASCIA RECENSIONE CERTIFICATA                         -->
     <!-- ===================================================================== -->
     <div id="modalLeaveReview" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;">
-      <div class="w-full max-w-lg bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
-        <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
-          <div class="flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <h3 class="font-cyber font-bold text-sm text-white uppercase tracking-wider">RECENSIONE CERTIFICATA // ACQUISTO VERIFICATO</h3>
-          </div>
-          <button onclick="closeLeaveReviewModal()" class="text-zinc-400 hover:text-white p-1">
-            <i data-lucide="x" class="w-4 h-4"></i>
-          </button>
-        </div>
+      <div class="w-full max-w-lg bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative animate-in fade-in zoom-in-95 duration-200">
+        <button type="button" onclick="closeLeaveReviewModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition z-10" title="Chiudi">
+          <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
 
-        <p class="text-xs text-zinc-400 font-sans">
+        <p class="text-xs text-zinc-300 font-sans pt-1 pr-8 leading-relaxed" id="i18n-reviewModalSubtitle">
           Il tuo ordine è stato completato e svincolato con successo. Lascia una valutazione trasparente sul Creator per aiutare la community.
         </p>
 
@@ -4357,7 +4351,7 @@
 
           <!-- Voto Generale (1-5 Stelle) -->
           <div class="space-y-1.5 p-3.5 rounded-xl bg-white/[0.02] border border-white/5 text-center">
-            <label class="text-[11px] font-mono text-zinc-300 block uppercase font-bold">Valutazione Generale *</label>
+            <label class="text-[11px] font-mono text-zinc-300 block uppercase font-bold" id="i18n-reviewGeneralLabel">Valutazione Generale *</label>
             <div class="flex items-center justify-center gap-2 text-2xl py-1 cursor-pointer" id="starRatingGeneral">
               <span onclick="setReviewRating('general', 1)" class="star-rating text-zinc-600 hover:text-amber-400 transition">&#9733;</span>
               <span onclick="setReviewRating('general', 2)" class="star-rating text-zinc-600 hover:text-amber-400 transition">&#9733;</span>
@@ -4371,7 +4365,7 @@
           <!-- 3 Sotto-Rating -->
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 text-center text-[10px] font-mono">
             <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
-              <span class="text-zinc-400 block uppercase">Qualità Stampa</span>
+              <span class="text-zinc-400 block uppercase" id="i18n-reviewQualityLabel">Qualità Stampa</span>
               <div class="flex justify-center gap-1 text-sm cursor-pointer" id="starRatingQuality">
                 <span onclick="setReviewRating('quality', 1)">&#9733;</span>
                 <span onclick="setReviewRating('quality', 2)">&#9733;</span>
@@ -4383,7 +4377,7 @@
             </div>
 
             <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
-              <span class="text-zinc-400 block uppercase">Comunicazione</span>
+              <span class="text-zinc-400 block uppercase" id="i18n-reviewCommsLabel">Comunicazione</span>
               <div class="flex justify-center gap-1 text-sm cursor-pointer" id="starRatingComms">
                 <span onclick="setReviewRating('comms', 1)">&#9733;</span>
                 <span onclick="setReviewRating('comms', 2)">&#9733;</span>
@@ -4395,7 +4389,7 @@
             </div>
 
             <div class="p-2.5 rounded-xl bg-white/[0.02] border border-white/5 space-y-1">
-              <span class="text-zinc-400 block uppercase">Velocità</span>
+              <span class="text-zinc-400 block uppercase" id="i18n-reviewSpeedLabel">Velocità</span>
               <div class="flex justify-center gap-1 text-sm cursor-pointer" id="starRatingSpeed">
                 <span onclick="setReviewRating('speed', 1)">&#9733;</span>
                 <span onclick="setReviewRating('speed', 2)">&#9733;</span>
@@ -4409,13 +4403,13 @@
 
           <!-- Commento Testuale -->
           <div class="space-y-1">
-            <label class="text-[11px] font-mono text-zinc-400 block font-bold">Commento Testuale *</label>
+            <label class="text-[11px] font-mono text-zinc-400 block font-bold" id="i18n-reviewCommentLabel">Commento Testuale *</label>
             <textarea id="reviewComment" rows="3" required placeholder="Condividi la tua esperienza sulla precisione delle quote e sui tempi di consegna..." class="w-full bg-[#121217] border border-white/10 rounded-xl p-3 text-white font-sans text-xs focus:border-white outline-none resize-none"></textarea>
           </div>
 
           <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2">
             <i data-lucide="check" class="w-4 h-4 text-black"></i>
-            <span>Pubblica Recensione Certificata</span>
+            <span id="i18n-reviewSubmitBtn">Pubblica Recensione Certificata</span>
           </button>
         </form>
       </div>
@@ -12683,6 +12677,16 @@
         portfolioCardAvailable: 'Disponibile',
         portfolioEmptyTitle: 'Non hai ancora pubblicato opere o completato commesse nel tuo portfolio.',
         portfolioEmptySubtitle: 'Compila il modulo sopra per pubblicare il tuo primo componente.',
+
+        reviewModalSubtitle: 'Il tuo ordine è stato completato e svincolato con successo. Lascia una valutazione trasparente sul Creator per aiutare la community.',
+        reviewGeneralLabel: 'Valutazione Generale *',
+        reviewQualityLabel: 'Qualità Stampa',
+        reviewCommsLabel: 'Comunicazione',
+        reviewSpeedLabel: 'Velocità',
+        reviewCommentLabel: 'Commento Testuale *',
+        reviewCommentPlaceholder: 'Condividi la tua esperienza sulla precisione delle quote e sui tempi di consegna...',
+        reviewSubmitBtn: 'Pubblica Recensione Certificata',
+
       },
       en: {
         code: 'EN',
@@ -13569,6 +13573,16 @@
         portfolioCardAvailable: 'Available',
         portfolioEmptyTitle: "You haven't published any items or completed orders in your portfolio yet.",
         portfolioEmptySubtitle: 'Fill out the form above to publish your first component.',
+
+        reviewModalSubtitle: 'Your order has been completed and funds released successfully. Leave a transparent rating on the Creator to help the community.',
+        reviewGeneralLabel: 'Overall Rating *',
+        reviewQualityLabel: 'Print Quality',
+        reviewCommsLabel: 'Communication',
+        reviewSpeedLabel: 'Speed',
+        reviewCommentLabel: 'Written Feedback *',
+        reviewCommentPlaceholder: 'Share your experience on dimension accuracy and delivery times...',
+        reviewSubmitBtn: 'Publish Certified Review',
+
       },
       es: {
         code: 'ES',
@@ -14400,6 +14414,16 @@
         portfolioCardAvailable: 'Disponible',
         portfolioEmptyTitle: 'Aún no has publicado obras ni completado pedidos en tu portafolio.',
         portfolioEmptySubtitle: 'Completa el formulario de arriba para publicar tu primer componente.',
+
+        reviewModalSubtitle: 'Tu pedido ha sido completado y liberado con éxito. Deja una valoración transparente del Creador para ayudar a la comunidad.',
+        reviewGeneralLabel: 'Valoración General *',
+        reviewQualityLabel: 'Calidad de Impresión',
+        reviewCommsLabel: 'Comunicación',
+        reviewSpeedLabel: 'Velocidad',
+        reviewCommentLabel: 'Comentario Escrito *',
+        reviewCommentPlaceholder: 'Comparte tu experiencia sobre la precisión de las medidas y los plazos de entrega...',
+        reviewSubmitBtn: 'Publicar Reseña Certificada',
+
       }
     };
 
@@ -14979,6 +15003,13 @@ END-ISO-10303-21;`;
         'i18n-creatorHubSub': t.creatorHubSub,
         'i18n-creatorHubRequestsFeedBtn': t.creatorHubRequestsFeedBtn,
         'i18n-creatorPublishedCardsTitle': t.creatorPublishedCardsTitle,
+        'i18n-reviewModalSubtitle': t.reviewModalSubtitle,
+        'i18n-reviewGeneralLabel': t.reviewGeneralLabel,
+        'i18n-reviewQualityLabel': t.reviewQualityLabel,
+        'i18n-reviewCommsLabel': t.reviewCommsLabel,
+        'i18n-reviewSpeedLabel': t.reviewSpeedLabel,
+        'i18n-reviewCommentLabel': t.reviewCommentLabel,
+        'i18n-reviewSubmitBtn': t.reviewSubmitBtn,
         'i18n-studioFondiEscrowLabel': t.studioFondiEscrowLabel,
         'i18n-studioDownloadTechFile': t.studioDownloadTechFile,
         'i18n-studioBackRequestsBtn': t.studioBackRequestsBtn,
@@ -17509,6 +17540,14 @@ END-ISO-10303-21;`;
           : isEs 
           ? 'ej. Soporte de Motor Reforzado con Casquillos' 
           : 'Es. Supporto Motore Rinforzato con Bussole';
+      }
+      const revComment = document.getElementById('reviewComment');
+      if (revComment) {
+        revComment.placeholder = isEn 
+          ? 'Share your experience on dimension accuracy and delivery times...' 
+          : isEs 
+          ? 'Comparte tu experiencia sobre la precisión de las medidas y los plazos de entrega...' 
+          : 'Condividi la tua esperienza sulla precisione delle quote e sui tempi di consegna...';
       }
       const pfDesc = document.getElementById('portfolioDesc');
       if (pfDesc) {
@@ -25868,17 +25907,44 @@ END-ISO-10303-21;`;
 
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs font-mono">
               <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
-                <span class="text-[9px] text-zinc-400 block">Materiale & Infill:</span>
-                <span class="text-zinc-200 truncate block font-bold">${escapeHtml(r.material || 'PETG')} (${escapeHtml(r.infill || '50%')})</span>
+                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Material & Infill:' : isEs ? 'Material & Relleno:' : 'Materiale & Infill:'}</span>
+                <span class="text-zinc-200 truncate block font-bold">${(function() {
+                  let mat = r.material || 'PETG Tecnico';
+                  let inf = r.infill || '50% Meccanico Strutturale';
+                  if (isEn) {
+                    if (mat.includes('PETG')) mat = 'Technical PETG';
+                    if (mat.includes('PLA')) mat = 'Reinforced PLA+';
+                    if (mat.includes('CF') || mat.includes('Carbon')) mat = 'PA12-CF Carbon';
+                    if (mat.includes('Inox') || mat.includes('Acciaio')) mat = 'Stainless Steel 316L';
+                    if (inf.includes('50%')) inf = '50% Mechanical Struct...';
+                    else if (inf.includes('20%')) inf = '20% Light...';
+                    else if (inf.includes('100%')) inf = '100% Solid Core';
+                  } else if (isEs) {
+                    if (mat.includes('PETG')) mat = 'PETG Técnico';
+                    if (mat.includes('PLA')) mat = 'PLA+ Reforzado';
+                    if (mat.includes('CF') || mat.includes('Carbon')) mat = 'PA12-CF Carbono';
+                    if (mat.includes('Inox') || mat.includes('Acciaio')) mat = 'Acero Inox 316L';
+                    if (inf.includes('50%')) inf = '50% Mecánico Estruct...';
+                    else if (inf.includes('20%')) inf = '20% Ligero...';
+                    else if (inf.includes('100%')) inf = '100% Núcleo Sólido';
+                  }
+                  return escapeHtml(mat) + ' (' + escapeHtml(inf) + ')';
+                })()}</span>
               </div>
               <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
-                <span class="text-[9px] text-zinc-400 block">Quantità:</span>
-                <span class="text-zinc-200 truncate block font-bold">${escapeHtml(r.quantity || '1 pezzo')}</span>
+                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Quantity:' : isEs ? 'Cantidad:' : 'Quantità:'}</span>
+                <span class="text-zinc-200 truncate block font-bold">${(function() {
+                  const q = r.quantity || '1 pezzo';
+                  if (q.includes('1 pezzo') || q.includes('1 piece') || q.includes('1 pieza')) {
+                    return isEn ? '1 piece' : isEs ? '1 pieza' : '1 pezzo';
+                  }
+                  return escapeHtml(q);
+                })()}</span>
               </div>
               <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5 col-span-2">
                 <span class="text-[9px] text-zinc-400 block flex items-center gap-1">
                   <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i>
-                  Indirizzo Consegna Etichetta:
+                  ${isEn ? 'Delivery Label Address:' : isEs ? 'Dirección Entrega Etiqueta:' : 'Indirizzo Consegna Etichetta:'}
                 </span>
                 <span class="text-zinc-200 truncate block font-bold">${escapeHtml(addressText)}</span>
               </div>
@@ -25886,7 +25952,7 @@ END-ISO-10303-21;`;
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
               <div class="text-[10px] font-mono text-zinc-400 flex items-center gap-1.5">
-                <span>Maker Assegnato:</span>
+                <span>${isEn ? 'Assigned Maker:' : isEs ? 'Maker Asignado:' : 'Maker Assegnato:'}</span>
                 ${(isAcc || isCompleted) ? `
                   <div class="relative inline-block text-left" id="dropdown-wrapper-${safeId}">
                     <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="font-bold text-white hover:text-emerald-400 underline decoration-dotted flex items-center gap-1.5 cursor-pointer" title="Visualizza Recensioni Certificate">
@@ -25924,24 +25990,24 @@ END-ISO-10303-21;`;
                 ${isCompleted ? `
                   <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="px-3.5 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
                     <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400 fill-amber-400"></i>
-                    <span>Recensioni Creator</span>
+                    <span>${isEn ? 'Creator Reviews' : isEs ? 'Reseñas Creador' : 'Recensioni Creator'}</span>
                   </button>
                   <button type="button" onclick="openLeaveReviewModal('${safeId}', '${realMakerUid}', '${realMakerName}')" class="px-3 py-1.5 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition active:scale-95 shadow-sm">
-                    <span>★ Lascia Recensione</span>
+                    <span>★ ${isEn ? 'Leave Review' : isEs ? 'Dejar Reseña' : 'Lascia Recensione'}</span>
                   </button>
                 ` : isAcc ? `
                   <button type="button" onclick="openDealChat('${safeId}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 transition active:scale-95">
                     <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
-                    <span>Chat 1-1 & Foto</span>
+                    <span>${isEn ? '1-on-1 Chat & Photos' : isEs ? 'Chat 1-1 & Fotos' : 'Chat 1-1 & Foto'}</span>
                   </button>
                   <button type="button" onclick="navigateTo('order-room')" class="px-3 py-1.5 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition active:scale-95">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
-                    <span>Stanza Escrow</span>
+                    <span>${isEn ? 'Escrow Room' : isEs ? 'Sala Escrow' : 'Stanza Escrow'}</span>
                   </button>
                 ` : `
                   <span class="text-[10px] font-mono text-zinc-500 px-2.5 py-1 rounded-lg bg-white/[0.03] border border-white/5 flex items-center gap-1">
                     <i data-lucide="clock" class="w-3 h-3 text-zinc-500"></i>
-                    <span>In attesa del Maker (Chat protetta)</span>
+                    <span>${isEn ? 'Waiting for Maker (Protected Chat)' : isEs ? 'Esperando al Creador (Chat protegido)' : 'In attesa del Maker (Chat protetta)'}</span>
                   </span>
                 `}
                 <button type="button" onclick="deleteSingleBroadcastRequest('${safeId}')" class="p-1.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-400 text-xs transition active:scale-95" title="Elimina richiesta definitivamente">
@@ -30949,9 +31015,12 @@ function renderDealChat(rfpId) {
       const modal = document.getElementById('modalCreatorReviews');
       if (!modal) return;
 
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
       const titleEl = document.getElementById('creatorReviewsModalTitle');
       if (titleEl) {
-        titleEl.innerText = 'RECENSIONI CERTIFICATE // ' + (makerName ? makerName.toUpperCase() : 'CREATOR');
+        const titlePrefix = isEn ? 'CERTIFIED REVIEWS // ' : isEs ? 'RESEÑAS CERTIFICADAS // ' : 'RECENSIONI CERTIFICATE // ';
+        titleEl.innerText = titlePrefix + (makerName ? makerName.toUpperCase() : (isEn ? 'CREATOR' : isEs ? 'CREADOR' : 'CREATOR'));
       }
 
       const stats = getCreatorReviewStats(makerId, makerName);
@@ -30977,9 +31046,15 @@ function renderDealChat(rfpId) {
       }
 
       if (countEl) {
-        countEl.innerText = stats.count === 0 
-          ? '0 recensioni verificate' 
-          : `${stats.count} recension${stats.count === 1 ? 'e verificata' : 'i verificate'} su custodia Escrow`;
+        if (stats.count === 0) {
+          countEl.innerText = isEn ? '0 verified reviews' : isEs ? '0 reseñas verificadas' : '0 recensioni verificate';
+        } else {
+          countEl.innerText = isEn 
+            ? `${stats.count} verified review${stats.count === 1 ? '' : 's'} on Escrow custody` 
+            : isEs 
+            ? `${stats.count} reseña${stats.count === 1 ? ' verificada' : 's verificadas'} en custodia Escrow` 
+            : `${stats.count} recension${stats.count === 1 ? 'e verificata' : 'i verificate'} su custodia Escrow`;
+        }
       }
 
       // Storico completo di tutte le recensioni rilasciate da chi per questo creator
@@ -31019,7 +31094,7 @@ function renderDealChat(rfpId) {
                     </div>
                     <div>
                       <span class="font-bold text-white block">${escapeHtml(r.clientName || 'Cliente Verificato')}</span>
-                      <span class="text-[9px] font-mono text-emerald-400/80">Acquisto Escrow Verificato ✓</span>
+                      <span class="text-[9px] font-mono text-emerald-400/80">${isEn ? 'Verified Escrow Purchase ✓' : isEs ? 'Compra Escrow Verificada ✓' : 'Acquisto Escrow Verificato ✓'}</span>
                     </div>
                   </div>
                   <div class="text-right">
@@ -31031,11 +31106,11 @@ function renderDealChat(rfpId) {
                   "${escapeHtml(r.comment || 'Componente stampato con accuratezza dimensionale e finiture eccellenti.')}"
                 </p>
                 <div class="flex items-center gap-3 text-[10px] font-mono text-zinc-400 pt-1">
-                  <span>Qualità: <strong class="text-white">${r.quality || rating}/5</strong></span>
+                  <span>${isEn ? 'Quality:' : isEs ? 'Calidad:' : 'Qualità:'} <strong class="text-white">${r.quality || rating}/5</strong></span>
                   <span>•</span>
-                  <span>Comunicazione: <strong class="text-white">${r.comms || rating}/5</strong></span>
+                  <span>${isEn ? 'Communication:' : isEs ? 'Comunicación:' : 'Comunicazione:'} <strong class="text-white">${r.comms || rating}/5</strong></span>
                   <span>•</span>
-                  <span>Velocità: <strong class="text-white">${r.speed || rating}/5</strong></span>
+                  <span>${isEn ? 'Speed:' : isEs ? 'Velocidad:' : 'Velocità:'} <strong class="text-white">${r.speed || rating}/5</strong></span>
                 </div>
               </div>
             `;
