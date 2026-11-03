@@ -9356,6 +9356,7 @@
                     description: '',
                     material: dbR.material || 'PETG Tecnico',
                     color: dbR.color || 'Nero Cyber',
+                    colorHex: dbR.color_hex || dbR.colorHex || resolveColorNameToHex(dbR.color || 'Nero Cyber'),
                     dimensions: dbR.dimensions || '80 × 60 × 25 mm',
                     price: dbR.budget || '€ 35,00',
                     photoUrl: '/images/cube.jpg',
@@ -16596,6 +16597,39 @@ END-ISO-10303-21;`;
       const toHex = (n) => n.toString(16).padStart(2, '0').toUpperCase();
       return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
+
+    function resolveColorNameToHex(colorName, fallbackHex = '#F97316') {
+      if (!colorName) return fallbackHex;
+      const str = String(colorName).trim();
+      if (/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(str)) {
+        return str.toUpperCase();
+      }
+
+      const s = str.toLowerCase();
+
+      // Risoluzione esatta nomi palette PrintForge Studio e nomi tecnici
+      if (s.includes('magenta') || s.includes('fucsia') || s.includes('fuchsia')) return '#D946EF'; // Magenta Prototipo
+      if (s.includes('viola') || s.includes('purple') || s.includes('violet') || s.includes('slicing')) return '#8B5CF6'; // Viola Slicing
+      if (s.includes('indaco') || s.includes('indigo')) return '#6366F1';
+      if (s.includes('ciano') || s.includes('cyan') || s.includes('azzurro') || s.includes('aerospaziale') || s.includes('sky')) return '#06B6D4'; // Ciano Aerospaziale
+      if (s.includes('blu') || s.includes('blue') || s.includes('cobalto') || s.includes('navy')) return '#2563EB'; // Blu Cobalto
+      if (s.includes('verde') || s.includes('green') || s.includes('matrix') || s.includes('smeraldo') || s.includes('lime')) return '#10B981'; // Verde Matrix
+      if (s.includes('giallo') || s.includes('yellow') || s.includes('industriale') || s.includes('amber')) return '#EAB308'; // Giallo Industriale
+      if (s.includes('aranc') || s.includes('orange') || s.includes('meccanico')) return '#F97316'; // Arancio Meccanico
+      if (s.includes('rosso') || s.includes('red') || s.includes('corsa') || s.includes('rubino')) return '#EF4444'; // Rosso Corsa
+      if (s.includes('rosa') || s.includes('pink')) return '#EC4899';
+      if (s.includes('oro') || s.includes('gold')) return '#EAB308';
+      if (s.includes('argento') || s.includes('silver') || s.includes('alluminio')) return '#94A3B8';
+      if (s.includes('bronzo') || s.includes('bronze')) return '#B45309';
+      if (s.includes('rame') || s.includes('copper')) return '#B45309';
+      if (s.includes('bianco') || s.includes('white') || s.includes('calce') || s.includes('puro')) return '#F8FAFC'; // Bianco Calce
+      if (s.includes('nero') || s.includes('black') || s.includes('stealth') || s.includes('dark') || s.includes('cyber')) return '#18181B'; // Nero Stealth
+      if (s.includes('grigio') || s.includes('gray') || s.includes('grey') || s.includes('titanio') || s.includes('antracite')) return '#64748B'; // Grigio Titanio
+      if (s.includes('trasparente') || s.includes('clear')) return '#E2E8F0';
+
+      return fallbackHex;
+    }
+    window.resolveColorNameToHex = resolveColorNameToHex;
 
     function getColorFamilyName(h, s, l) {
       if (s < 0.12) {
@@ -29902,6 +29936,10 @@ function renderDealChat(rfpId) {
       const desc = (document.getElementById('portfolioDesc')?.value || '').trim();
       const material = document.getElementById('portfolioMaterial')?.value || 'PETG Tecnico';
       const color = document.getElementById('portfolioColor')?.value || 'Nero Cyber';
+      let colorHex = document.getElementById('portfolioColorHexDisplay')?.innerText?.trim();
+      if (!colorHex || !colorHex.startsWith('#')) {
+        colorHex = resolveColorNameToHex(color);
+      }
       const dimensions = (document.getElementById('portfolioDimensions')?.value || '80 × 60 × 25 mm').trim();
       let price = (document.getElementById('portfolioPrice')?.value || '€ 35,00').trim();
       if (!price.startsWith('€')) price = '€ ' + price;
@@ -29923,6 +29961,7 @@ function renderDealChat(rfpId) {
         description: desc,
         material: material,
         color: color,
+        colorHex: colorHex,
         dimensions: dimensions,
         price: price,
         photoUrl: photoUrl,
@@ -29949,6 +29988,7 @@ function renderDealChat(rfpId) {
             client_email: creatorEmail,
             material: material,
             color: color,
+            color_hex: colorHex,
             dimensions: dimensions,
             budget: price,
             notes: JSON.stringify(workObj),
@@ -30093,7 +30133,7 @@ function renderDealChat(rfpId) {
       container.innerHTML = filtered.map(w => {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
-        const safePrice = escapeHtml(w.price || (associatedOrder && associatedOrder.budget) || '€ 45,00');
+        const safePrice = escapeHtml(w.price || '€ 45,00');
         const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
         const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
         const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
@@ -30468,8 +30508,17 @@ function renderDealChat(rfpId) {
       const specColor = document.getElementById('showcaseSpecColor');
       if (specColor) specColor.textContent = work.color || 'Nero Cyber';
 
+      // Risolvi il colore esatto inserito dal Creator (il pallino DEVE combaciare!)
+      const resolvedHex = (work.colorHex && String(work.colorHex).startsWith('#') && (work.colorHex.toUpperCase() !== '#18181B' || String(work.color || '').toLowerCase().includes('nero')))
+        ? work.colorHex
+        : resolveColorNameToHex(work.color || 'Nero Cyber');
+
       const specColorDot = document.getElementById('showcaseSpecColorDot');
-      if (specColorDot) specColorDot.style.backgroundColor = work.colorHex || '#18181B';
+      if (specColorDot) {
+        specColorDot.style.backgroundColor = resolvedHex;
+        specColorDot.style.borderColor = (resolvedHex === '#F8FAFC' || resolvedHex === '#FFFFFF') ? '#94A3B8' : 'rgba(255,255,255,0.7)';
+        specColorDot.style.boxShadow = '0 0 10px ' + resolvedHex + '99';
+      }
 
       const specDimensions = document.getElementById('showcaseSpecDimensions');
       if (specDimensions) specDimensions.textContent = work.dimensions || '80 × 60 × 25 mm';
