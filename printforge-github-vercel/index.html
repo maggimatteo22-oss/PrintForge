@@ -8941,6 +8941,29 @@
     };
     window.AppState = AppState;
 
+    // Reset delle richieste, recensioni, portfolio opere e creator di test: lascia SOLO l'account autentico dell'utente
+    (function purgeStaleDataOnce() {
+      const PURGE_KEY = 'printforge_purged_reset_user_only_v4';
+      if (!localStorage.getItem(PURGE_KEY)) {
+        try {
+          localStorage.setItem(PURGE_KEY, 'true');
+          localStorage.removeItem('printforge_broadcast_requests');
+          localStorage.removeItem('printforge_portfolio_works');
+          localStorage.removeItem('printforge_certified_reviews');
+          localStorage.removeItem('printforge_creator_earnings_ledger');
+          localStorage.removeItem('printforge_active_creators_map');
+          localStorage.removeItem('printforge_stage4_completed');
+          localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
+          localStorage.setItem('printforge_accessed_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
+          if (window.AppState) {
+            window.AppState.broadcastRequests = [];
+            window.AppState.portfolioWorks = [];
+            window.AppState.certifiedReviews = [];
+          }
+        } catch(e) {}
+      }
+    })();
+
     /* ========================================================================= */
     /* 1.1. SUPABASE CLOUD CLIENT & REALTIME PROTOCOL                            */
     /* ========================================================================= */
@@ -9419,6 +9442,11 @@
                 localStorage.setItem('printforge_certified_reviews', JSON.stringify(AppState.certifiedReviews));
               } catch(e) {}
             }
+          } else {
+            AppState.certifiedReviews = [];
+            try {
+              localStorage.setItem('printforge_certified_reviews', '[]');
+            } catch(e) {}
           }
 
           // Raccogli i profili creator registrati su Supabase Cloud che hanno effettuato l'accesso
@@ -9437,6 +9465,10 @@
                 localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(cloudCreators));
               } catch(e) {}
             }
+          } else {
+            try {
+              localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
+            } catch(e) {}
           }
           if (typeof updateLiveCreatorsCountDisplay === 'function') {
             updateLiveCreatorsCountDisplay();
@@ -9920,25 +9952,33 @@
     function getActiveCreatorsCount() {
       const creatorKeys = new Set();
 
-      // 1. Creatori registrati nel registro locale di accessi
-      try {
-        const raw = localStorage.getItem(CREATOR_REGISTRY_KEY);
-        const list = raw ? JSON.parse(raw) : [];
-        if (Array.isArray(list)) {
-          list.forEach(k => { if (k && String(k).trim()) creatorKeys.add(String(k).trim().toLowerCase()); });
-        }
-      } catch (e) {}
-
-      // 2. Creatori presenti nel cloud Supabase che hanno effettuato l'accesso
+      // 1. Creatori presenti nel cloud Supabase registrati come creator (soltanto account autentici)
       try {
         const rawCloud = localStorage.getItem('printforge_cloud_creators_registry');
         const cloudList = rawCloud ? JSON.parse(rawCloud) : [];
         if (Array.isArray(cloudList)) {
-          cloudList.forEach(k => { if (k && String(k).trim()) creatorKeys.add(String(k).trim().toLowerCase()); });
+          cloudList.forEach(k => {
+            const keyStr = String(k || '').trim().toLowerCase();
+            if (keyStr && keyStr !== 'null' && keyStr !== 'undefined') creatorKeys.add(keyStr);
+          });
         }
       } catch (e) {}
 
-      // 3. Creatori che hanno pubblicato opere nel portfolio / vetrina
+      // 2. Creatori registrati nel registro locale di accessi verificati
+      try {
+        const raw = localStorage.getItem(CREATOR_REGISTRY_KEY);
+        const list = raw ? JSON.parse(raw) : [];
+        if (Array.isArray(list)) {
+          list.forEach(k => {
+            const keyStr = String(k || '').trim().toLowerCase();
+            if (keyStr && (creatorKeys.has(keyStr) || keyStr.includes('maggimatteo') || (AppState.user && (AppState.user.email || '').toLowerCase().trim() === keyStr))) {
+              creatorKeys.add(keyStr);
+            }
+          });
+        }
+      } catch (e) {}
+
+      // 3. Opere autentiche pubblicate nel portfolio
       (AppState.portfolioWorks || []).forEach(w => {
         if (!w) return;
         const cKey = (w.creatorEmail || w.creatorId || w.creatorName || '').toLowerCase().trim();
@@ -9954,7 +9994,7 @@
         }
       }
 
-      // 5. Maker che hanno preso in carico o gestito commesse
+      // 5. Maker autentici che hanno preso in carico commesse
       (AppState.broadcastRequests || []).forEach(r => {
         if (!r) return;
         const mKey = (r.makerEmail || r.makerUserId || r.targetCreatorEmail || r.targetCreatorId || r.maker || '').toLowerCase().trim();
@@ -9963,9 +10003,9 @@
         }
       });
 
-      // Assicura che se l'utente è attualmente un creator, il conteggio sia almeno 1
-      if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
-        return Math.max(1, creatorKeys.size);
+      // Solo l'account del creator (fallback garantito minimo 1 creator attivo per il sistema)
+      if (creatorKeys.size === 0) {
+        creatorKeys.add('maggimatteo22@gmail.com');
       }
 
       return creatorKeys.size;
