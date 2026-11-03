@@ -18678,9 +18678,11 @@ END-ISO-10303-21;`;
 
         // 4. SCAMBIO TRA "RICHIESTE" E "ATTIVITÀ" (Sia da PC che da Mobile):
         // Quando il creator accetta una richiesta, la pagina "Richieste" viene scambiata con "Attività".
-        // DOPO IL 4° PASSAGGIO: mai più mostrare Attività né Escrow Room al creator! Torna con Home, Progetti e Richieste.
+        // DOPO IL 4° PASSAGGIO: se il creator è ancora su order-room a visionare la schermata finale,
+        // mantieni visibile il tab ESCROW ROOM finché non cambia schermata con cursore o tocco.
         const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
-        if (!isPostStage4 && hasAcceptedRequest()) {
+        const shouldShowCreatorEscrowTab = (v === 'order-room' && AppState.activeEscrowOrder) || (!isPostStage4 && hasAcceptedRequest());
+        if (shouldShowCreatorEscrowTab) {
           const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
           const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
 
@@ -22104,11 +22106,9 @@ END-ISO-10303-21;`;
       AppState.isDelivered = true;
       updateNavigationTabs();
 
-      if (AppState.user && AppState.user.role === 'creator') {
-        setTimeout(() => {
-          navigateTo('creator-portfolio');
-        }, 3500);
-      }
+      // REGOLA RICHIESTA UTENTE: la pagina di affare concluso (DEAL COMPLETED // STRIPE ESCROW FUNDS RELEASED)
+      // DEVE RIMANERE VISIBILE AL CREATOR finché non cambia pagina manualmente con il cursore o con il dito!
+      // Nessun reindirizzamento automatico via setTimeout!
 
       const toastDelivery = isEn 
         ? '✓ Courier scan verified! Stage 4 complete: parcel delivered and Escrow funds released (€ 0,00)!' 
@@ -22122,27 +22122,7 @@ END-ISO-10303-21;`;
         if (completedReqId) {
           localStorage.setItem('printforge_completed_' + completedReqId, 'true');
         }
-        localStorage.removeItem('printforge_active_escrow_order');
-        localStorage.removeItem('printforge_cad_qc_files');
       } catch(e) {}
-
-      // DOPO IL QUARTO PASSAGGIO: reset totale sia per creator che per cliente!
-      // Nessuno vede più la pagina Escrow Room né la pagina Attività.
-      setTimeout(() => {
-        AppState.activeEscrowOrder = null;
-        AppState.loadedRequestInStudio = null;
-        AppState.cadQcFiles = [];
-        AppState.clientApprovedQc = false;
-
-        if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
-        if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
-
-        if (AppState.user && AppState.user.role === 'creator') {
-          navigateTo('creator-portfolio');
-        } else {
-          navigateTo('client-home');
-        }
-      }, 1500);
 
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
@@ -23743,12 +23723,7 @@ END-ISO-10303-21;`;
         renderEscrowResolutionBanner();
         updateNavigationTabs();
 
-        // Se il creator ha completato la consegna, rimuovi le schede e reindirizza a I Miei Progetti
-        if (AppState.user && AppState.user.role === 'creator') {
-          setTimeout(() => {
-            navigateTo('creator-portfolio');
-          }, 3500);
-        }
+        // REGOLA RICHIESTA UTENTE: La pagina di completamento resta visibile finché il creator non cambia pagina con cursore o tocco
 
         showToast(isEn ? 'Package delivered! Escrow funds automatically released to Creator (Option 2).' : isEs ? '¡Paquete entregado! Fondos liberados automáticamente al Creador.' : 'Pacco consegnato! Fondi svincolati automaticamente al Creator (Opzione 2).', 'success');
         lucide.createIcons();
@@ -24628,11 +24603,19 @@ END-ISO-10303-21;`;
 
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
-    // DOPO IL 4° PASSAGGIO: al creator NON mostrare mai più la pagina attività né escrow room
+    // DOPO IL 4° PASSAGGIO: la pagina di affare concluso (order-room) resta visibile al creator
+    // finché non cambia pagina manualmente con il cursore o con il dito.
     if (AppState.user && AppState.user.role === 'creator') {
       const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
       if (isPostStage4) {
-        if (viewId === 'activity' || viewId === 'studio' || viewId === 'order-room') {
+        // Se l'ordine è già stato chiuso/svuotato definitivamente (AppState.activeEscrowOrder === null),
+        // allora non permettere più l'accesso alla stanza Escrow o Attività
+        if (!AppState.activeEscrowOrder && (viewId === 'activity' || viewId === 'studio' || viewId === 'order-room')) {
+          navigateTo('creator-portfolio');
+          return;
+        }
+        // Se invece l'ordine è in fase di completamento ma l'utente tenta di aprire l'attività CAD, reindirizza
+        if (viewId === 'activity' || viewId === 'studio') {
           navigateTo('creator-portfolio');
           return;
         }
@@ -31288,14 +31271,26 @@ function renderDealChat(rfpId) {
       const specColor = document.getElementById('showcaseSpecColor');
       if (specColor) specColor.textContent = getLocalizedColor(work.color);
 
-      // Risolvi il colore esatto inserito dal Creator (il pallino DEVE combaciare!)
-      const resolvedHex = resolveColorNameToHex(work.colorHex || work.color || 'Magenta Prototipo');
+      // Risolvi il colore esatto inserito dal Creator (il pallino DEVE combaciare col colore inserito!)
+      let resolvedHex = null;
+      if (work.color && typeof work.color === 'string') {
+        const hexFromName = resolveColorNameToHex(work.color, '');
+        if (hexFromName && hexFromName !== '') {
+          resolvedHex = hexFromName;
+        }
+      }
+      if (!resolvedHex && work.colorHex && /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(work.colorHex)) {
+        resolvedHex = work.colorHex.toUpperCase();
+      }
+      if (!resolvedHex) {
+        resolvedHex = resolveColorNameToHex(work.color || 'Magenta Prototipo', '#D946EF');
+      }
 
       const specColorDot = document.getElementById('showcaseSpecColorDot');
       if (specColorDot) {
         specColorDot.style.backgroundColor = resolvedHex;
-        specColorDot.style.borderColor = (resolvedHex === '#F8FAFC' || resolvedHex === '#FFFFFF') ? '#94A3B8' : 'rgba(255,255,255,0.7)';
-        specColorDot.style.boxShadow = '0 0 10px ' + resolvedHex + '99';
+        specColorDot.style.borderColor = (resolvedHex === '#F8FAFC' || resolvedHex === '#FFFFFF') ? '#94A3B8' : resolvedHex;
+        specColorDot.style.boxShadow = '0 0 14px ' + resolvedHex;
       }
 
       const specDimensions = document.getElementById('showcaseSpecDimensions');
