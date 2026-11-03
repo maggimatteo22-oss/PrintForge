@@ -975,27 +975,37 @@
     /* OPZIONE 03: MONOGRAMMA MECCANICO PF A INCASTRO (2D B&W DYNAMIC SHIFT)      */
     /* Lettere P ed F con giunto micrometrico // Transizione Fluida Armonica      */
     /* ========================================================================= */
+    /* ========================================================================= */
+    /* OPZIONE 03: MONOGRAMMA MECCANICO PF A INCASTRO (2D B&W DYNAMIC SHIFT)      */
+    /* Transizione Continua, Morbida e Fluida tra Bianco e Nero Senza Interruzioni*/
+    /* ========================================================================= */
     .pf-logo-dynamic-tile {
-      animation: pfLogoBwInvert 8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: pfLogoBwInvert 6s ease-in-out infinite;
       cursor: pointer;
       backdrop-filter: blur(24px);
       -webkit-backdrop-filter: blur(24px);
-      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease, background-color 0.6s ease, border-color 0.6s ease;
+      will-change: background-color, border-color, box-shadow, transform;
+      transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.5s ease;
     }
 
     .pf-logo-dynamic-tile .pf-p-path {
-      animation: pfLogoPathP 8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-      transition: fill 0.6s cubic-bezier(0.16, 1, 0.3, 1), filter 0.6s ease;
+      animation: pfLogoPathP 6s ease-in-out infinite;
+      will-change: fill, filter;
     }
 
     .pf-logo-dynamic-tile .pf-f1-path {
-      animation: pfLogoPathF1 8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-      transition: fill 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: pfLogoPathF1 6s ease-in-out infinite;
+      will-change: fill;
     }
 
     .pf-logo-dynamic-tile .pf-f2-path {
-      animation: pfLogoPathF2 8s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
-      transition: fill 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: pfLogoPathF2 6s ease-in-out infinite;
+      will-change: fill;
+    }
+
+    .pf-logo-ambient-glow {
+      animation: pfLogoGlowPulse 6s ease-in-out infinite;
+      will-change: opacity, transform;
     }
 
     /* Manual Forced White on Black Mode */
@@ -1022,75 +1032,75 @@
     .pf-logo-mode-light .pf-f1-path { animation: none !important; fill: #18181B !important; }
     .pf-logo-mode-light .pf-f2-path { animation: none !important; fill: #3F3F46 !important; }
 
-    /* Continuous fluid harmonic interpolation between obsidian dark & titanium white */
+    /* Transizione Sinusoidale Continua: Appena arriva il bianco, subito parte il nero in continuo cambiamento */
     @keyframes pfLogoBwInvert {
-      0%, 36% {
+      0% {
         background-color: #08090D;
         border-color: rgba(255, 255, 255, 0.16);
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.18);
         transform: scale(1);
       }
-      43% {
-        background-color: #202127;
+      25% {
+        background-color: #383942;
         border-color: rgba(255, 255, 255, 0.35);
-        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.45);
         transform: scale(1.02);
       }
-      50%, 86% {
+      50% {
         background-color: #FFFFFF;
-        border-color: rgba(0, 0, 0, 0.20);
-        box-shadow: 0 22px 50px rgba(255, 255, 255, 0.35), 0 8px 24px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+        border-color: rgba(0, 0, 0, 0.18);
+        box-shadow: 0 22px 50px rgba(255, 255, 255, 0.40), 0 8px 24px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255, 255, 255, 0.95);
         transform: scale(1);
       }
-      93% {
-        background-color: #202127;
+      75% {
+        background-color: #383942;
         border-color: rgba(255, 255, 255, 0.35);
-        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        box-shadow: 0 20px 48px rgba(0, 0, 0, 0.50), inset 0 1px 0 rgba(255, 255, 255, 0.45);
         transform: scale(1.02);
       }
       100% {
         background-color: #08090D;
         border-color: rgba(255, 255, 255, 0.16);
-        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.22);
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.18);
         transform: scale(1);
       }
     }
 
     @keyframes pfLogoPathP {
-      0%, 36% {
+      0% {
         fill: #FFFFFF;
-        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
+        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.45));
       }
-      43% {
-        fill: #71717A;
-        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.1));
+      25% {
+        fill: #8E8E93;
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.18));
       }
-      50%, 86% {
+      50% {
         fill: #09090B;
-        filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+        filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.35));
       }
-      93% {
-        fill: #71717A;
-        filter: drop-shadow(0 0 2px rgba(255, 255, 255, 0.1));
+      75% {
+        fill: #8E8E93;
+        filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.18));
       }
       100% {
         fill: #FFFFFF;
-        filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.35));
+        filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.45));
       }
     }
 
     @keyframes pfLogoPathF1 {
-      0%, 36% {
+      0% {
         fill: #E4E4E7;
       }
-      43% {
-        fill: #52525B;
+      25% {
+        fill: #71717A;
       }
-      50%, 86% {
+      50% {
         fill: #18181B;
       }
-      93% {
-        fill: #52525B;
+      75% {
+        fill: #71717A;
       }
       100% {
         fill: #E4E4E7;
@@ -1098,20 +1108,35 @@
     }
 
     @keyframes pfLogoPathF2 {
-      0%, 36% {
+      0% {
         fill: #A1A1AA;
       }
-      43% {
+      25% {
+        fill: #52525B;
+      }
+      50% {
         fill: #3F3F46;
       }
-      50%, 86% {
-        fill: #3F3F46;
-      }
-      93% {
-        fill: #3F3F46;
+      75% {
+        fill: #52525B;
       }
       100% {
         fill: #A1A1AA;
+      }
+    }
+
+    @keyframes pfLogoGlowPulse {
+      0% {
+        opacity: 0.35;
+        transform: scale(0.98);
+      }
+      50% {
+        opacity: 0.75;
+        transform: scale(1.04);
+      }
+      100% {
+        opacity: 0.35;
+        transform: scale(0.98);
       }
     }
 
@@ -4465,7 +4490,7 @@
         <div class="flex flex-col items-center justify-center space-y-3 pt-2 pb-2">
           <!-- 2D Monogram Emblem with Dynamic Black & White Morphing -->
           <div class="relative group cursor-pointer" onclick="togglePfLogoMode()" title="PrintForge Monogramma Meccanico PF a Incastro (Clicca per alternare Bianco / Nero)">
-            <div class="absolute -inset-4 bg-gradient-to-r from-white/10 via-zinc-400/15 to-white/10 rounded-3xl blur-2xl opacity-40 group-hover:opacity-85 transition-opacity duration-700"></div>
+            <div class="pf-logo-ambient-glow absolute -inset-4 bg-gradient-to-r from-white/10 via-zinc-400/20 to-white/10 rounded-3xl blur-2xl opacity-40 group-hover:opacity-85 transition-opacity duration-700"></div>
             <div id="hero2dLogoBox" class="pf-logo-dynamic-tile relative w-28 h-28 sm:w-32 sm:h-32 rounded-3xl border border-white/20 flex items-center justify-center group-hover:scale-105 transition-all duration-500 overflow-hidden select-none">
               <svg id="hero2dLogoSvg" class="w-20 h-20 sm:w-24 sm:h-24 pf-bw-logo-svg transition-transform duration-500 group-hover:scale-110" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <!-- P Stem & Loop -->
