@@ -4089,6 +4089,10 @@
           </div>
           
           <div class="flex items-center gap-2">
+            <div class="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 shadow-sm">
+              <span class="text-[10px] font-mono text-zinc-400 uppercase" id="i18n-creatorEarnedTotalLabel">INCASSATO:</span>
+              <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums" id="creatorEarnedTotalBadge">€ 0,00</span>
+            </div>
             <button type="button" id="btnCreatorConnectStripe" onclick="initiateStripeConnectOnboarding()" class="px-4 py-2.5 rounded-xl bg-[#635BFF] hover:bg-[#5249ea] text-white border border-[#7A73FF] font-cyber font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-lg cursor-pointer">
               <i data-lucide="credit-card" class="w-4 h-4 text-white"></i>
               <span class="text-white font-extrabold tracking-wide drop-shadow-sm" id="i18n-creatorStripeBtn">Collega Conto Bancario (Stripe)</span>
@@ -12660,6 +12664,7 @@
         creatorHubSub: 'Carica le tue migliori realizzazioni per metterle in mostra nella Vetrina Globale (/esplora) e ricevere ordini diretti.',
         creatorHubRequestsFeedBtn: 'Bacheca Richieste',
         creatorPublishedCardsTitle: 'LE TUE PUBBLICAZIONI IN VETRINA',
+        creatorEarnedTotalLabel: 'INCASSATO:',
         studioFondiEscrowLabel: 'FONDI IN CUSTODIA:',
         studioDownloadTechFile: 'SCARICA FILE TECNICO',
         studioDownloadTechFileTitle: 'Scarica il file tecnico depositato dal cliente',
@@ -13532,6 +13537,7 @@
         creatorHubSub: 'Upload your best creations to showcase them in the Global Showcase (/explore) and receive direct orders.',
         creatorHubRequestsFeedBtn: 'Requests Board',
         creatorPublishedCardsTitle: 'YOUR SHOWCASE PUBLICATIONS',
+        creatorEarnedTotalLabel: 'TOTAL EARNED:',
         studioFondiEscrowLabel: 'FUNDS IN ESCROW:',
         studioDownloadTechFile: 'DOWNLOAD TECHNICAL FILE',
         studioDownloadTechFileTitle: 'Download the technical file submitted by the client',
@@ -14397,6 +14403,7 @@
         creatorHubSub: 'Sube tus mejores creaciones para exhibirlas en el Escaparate Global (/explorar) y recibir pedidos directos.',
         creatorHubRequestsFeedBtn: 'Tablón de Solicitudes',
         creatorPublishedCardsTitle: 'TUS PUBLICACIONES EN EL ESCAPARATE',
+        creatorEarnedTotalLabel: 'TOTAL COBRADO:',
         studioFondiEscrowLabel: 'FONDOS EN CUSTODIA:',
         studioDownloadTechFile: 'DESCARGAR ARCHIVO TÉCNICO',
         studioDownloadTechFileTitle: 'Descargar el archivo técnico enviado por el cliente',
@@ -15012,6 +15019,7 @@ END-ISO-10303-21;`;
         'i18n-creatorHubSub': t.creatorHubSub,
         'i18n-creatorHubRequestsFeedBtn': t.creatorHubRequestsFeedBtn,
         'i18n-creatorPublishedCardsTitle': t.creatorPublishedCardsTitle,
+        'i18n-creatorEarnedTotalLabel': t.creatorEarnedTotalLabel,
         'i18n-reviewModalSubtitle': t.reviewModalSubtitle,
         'i18n-reviewGeneralLabel': t.reviewGeneralLabel,
         'i18n-reviewQualityLabel': t.reviewQualityLabel,
@@ -17557,6 +17565,29 @@ END-ISO-10303-21;`;
       if (low.includes('alluminio') || low.includes('aluminum') || low.includes('aluminio')) return currentLang === 'en' ? 'AlSi10Mg Aluminum' : currentLang === 'es' ? 'Aluminio AlSi10Mg' : 'Alluminio AlSi10Mg';
       if (low.includes('titanio') || low.includes('titanium')) return currentLang === 'en' ? 'Grade 5 Titanium' : currentLang === 'es' ? 'Titanio Grado 5' : 'Titanio Grado 5';
       return matName;
+    }
+
+        function getCreatorTotalEarnings() {
+      let total = 0;
+      try {
+        const ledger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
+        ledger.forEach(entry => {
+          if (entry && entry.price) {
+            const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, '').replace(',', '.'));
+            if (!isNaN(num) && num > 0) total += num;
+          }
+        });
+      } catch(e) {}
+      if (total === 0 && AppState.broadcastRequests) {
+        AppState.broadcastRequests.forEach(r => {
+          if (r && (r.isCompleted || r.isDelivered || (typeof r.status === 'string' && r.status.includes('COMPLETAT')))) {
+            const raw = r.budget || r.itemBudget || r.escrowTotal || '';
+            const num = parseFloat(String(raw).replace(/[^0-9,.]/g, '').replace(',', '.'));
+            if (!isNaN(num) && num > 0) total += num;
+          }
+        });
+      }
+      return total;
     }
 
     function getLocalizedColor(colName) {
@@ -30594,6 +30625,331 @@ function renderDealChat(rfpId) {
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.renderExploreShowcase = renderExploreShowcase;
+
+        // Auto-purge completed phantom works come se non fossero mai esistite
+    (function purgePhantomWorksBoot() {
+      try {
+        const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico'];
+        if (typeof localStorage !== 'undefined') {
+          let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
+          const originalLen = pWorks.length;
+          pWorks = pWorks.filter(w => !w || !phantomPatterns.some(pt => (w.title || '').toLowerCase().includes(pt)));
+          if (pWorks.length !== originalLen) {
+            localStorage.setItem('printforge_portfolio_works', JSON.stringify(pWorks));
+          }
+          let deletedIds = JSON.parse(localStorage.getItem('printforge_deleted_work_ids') || '[]');
+          ['work_papapap', 'papapap', 'work_comp_mecc'].forEach(id => {
+            if (!deletedIds.includes(id)) deletedIds.push(id);
+          });
+          localStorage.setItem('printforge_deleted_work_ids', JSON.stringify(deletedIds));
+        }
+        if (window.AppState && AppState.portfolioWorks) {
+          AppState.portfolioWorks = AppState.portfolioWorks.filter(w => !w || !phantomPatterns.some(pt => (w.title || '').toLowerCase().includes(pt)));
+        }
+      } catch(e) {}
+    })();
+
+    function renderCreatorPortfolioView() {
+      const container = document.getElementById('creatorPublishedCardsContainer');
+      if (!container) return;
+
+      const t = i18n[currentLang] || i18n.it;
+      const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
+
+      // Purge any phantom completed test works
+      let deletedIds = [];
+      try {
+        deletedIds = JSON.parse(localStorage.getItem('printforge_deleted_work_ids') || '[]');
+      } catch(e) {}
+
+      const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico'];
+
+      AppState.portfolioWorks = (AppState.portfolioWorks || []).filter(w => {
+        if (!w || !w.id) return false;
+        if (deletedIds.includes(w.id)) return false;
+        const titleLow = (w.title || '').toLowerCase().trim();
+        if (phantomPatterns.some(p => titleLow.includes(p)) && (w.isCompleted || w.isSold)) return false;
+        return true;
+      });
+
+      // Aggiorna badge incasso totale del creator (mostra i soldi incassati senza inquinare la vetrina con schede finite)
+      const totalEarnedBadge = document.getElementById('creatorEarnedTotalBadge');
+      if (totalEarnedBadge) {
+        const tot = typeof getCreatorTotalEarnings === 'function' ? getCreatorTotalEarnings() : 0;
+        totalEarnedBadge.innerText = '€ ' + tot.toFixed(2).replace('.', ',');
+      }
+
+      const works = AppState.portfolioWorks || [];
+      const myUid = AppState.user?.userId || AppState.user?.id || '';
+      const myName = ((AppState.user?.name) || '').toLowerCase().trim();
+      const myEmail = ((AppState.user?.email) || '').toLowerCase().trim();
+      const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
+
+      // Mostra SOLO le opere attive del creator per la vetrina (NON commesse completate o ordini conclusi!)
+      const myWorks = works.filter(w => {
+        if (!w) return false;
+        if (w.isCompleted && !w.inShowcase) return false;
+        if (isAdmin) return true;
+        if (myUid && w.creatorId === myUid) return true;
+        if (myName && (w.creatorName || '').toLowerCase().trim() === myName) return true;
+        if (myEmail && (w.creatorEmail || '').toLowerCase().trim() === myEmail) return true;
+        return true;
+      });
+
+      if (myWorks.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-8 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
+            <p class="text-xs font-mono text-zinc-400">${t.portfolioEmptyTitle || (isEn ? "You haven't published any items in your showcase portfolio yet." : isEs ? "Aún no has publicado obras en tu portafolio de escaparate." : "Non hai ancora pubblicato opere nella tua vetrina portfolio.")}</p>
+            <p class="text-[11px] text-zinc-500 font-sans">${t.portfolioEmptySubtitle || (isEn ? "Fill out the form above to publish your first component." : isEs ? "Completa el formulario de arriba para publicar tu primer componente." : "Compila il modulo sopra per pubblicare il tuo primo componente.")}</p>
+          </div>
+        `;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = myWorks.map(w => {
+        const safeId = escapeHtml(w.id);
+        const safeTitle = escapeHtml(w.title);
+        const safePrice = escapeHtml(w.price || '€ 35,00');
+        const photo = w.photoUrl || '/images/cube.jpg';
+        const localizedMat = typeof getLocalizedMaterial === 'function' ? getLocalizedMaterial(w.material) : (w.material || 'PETG Tecnico');
+
+        return `
+          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/20 transition p-3.5 space-y-2.5 shadow-lg flex flex-col justify-between group relative">
+            <div class="space-y-2">
+              <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
+                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
+                
+                <!-- Tasto Elimina Opera per Sempre -->
+                <button type="button" onclick="deletePortfolioWork('${safeId}', event)" class="absolute top-2 left-2 p-1.5 rounded-lg bg-black/75 hover:bg-red-500 text-zinc-300 hover:text-white border border-white/20 hover:border-red-400 transition cursor-pointer z-10 shadow-lg" title="${isEn ? 'Delete artwork forever' : isEs ? 'Eliminar obra para siempre' : 'Elimina opera per sempre'}">
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+
+                <!-- Badge In Vetrina -->
+                <span class="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-emerald-400 border border-emerald-500/30 font-mono text-[9px] font-bold">
+                  ${t.portfolioCardInShowcase || (isEn ? 'IN SHOWCASE' : isEs ? 'EN ESCAPARATE' : 'IN VETRINA')}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between text-xs font-mono">
+                <span class="font-bold text-white truncate max-w-[150px]">${safeTitle}</span>
+                <span class="text-emerald-400 font-bold">${safePrice}</span>
+              </div>
+              <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(localizedMat)} // ${escapeHtml(w.dimensions || '80 × 60 × 25 mm')}</span>
+            </div>
+
+            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
+              <span>${t.portfolioCardWaitingOrders || (isEn ? 'Waiting for client orders' : isEs ? 'Esperando pedidos de clientes' : 'In attesa di ordini clienti')}</span>
+              <span class="text-emerald-400 font-bold">${t.portfolioCardAvailable || (isEn ? 'Available' : isEs ? 'Disponible' : 'Disponibile')}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+    }
+    window.renderCreatorPortfolioView = renderCreatorPortfolioView;
+
+    async function deletePortfolioWork(workId, event) {
+      if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+      if (!workId) return;
+
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+
+      const confirmMsg = isEn 
+        ? 'Are you sure you want to permanently delete this artwork as if it never existed?' 
+        : isEs 
+        ? '¿Estás seguro de que deseas eliminar esta obra para siempre como si nunca hubiera existido?' 
+        : 'Sei sicuro di voler eliminare questa opera per sempre come se non fosse mai esistita?';
+
+      if (!confirm(confirmMsg)) return;
+
+      AppState.portfolioWorks = (AppState.portfolioWorks || []).filter(w => w && w.id !== workId);
+      try {
+        localStorage.setItem('printforge_portfolio_works', JSON.stringify(AppState.portfolioWorks));
+      } catch(e) {}
+
+      try {
+        const deletedIds = JSON.parse(localStorage.getItem('printforge_deleted_work_ids') || '[]');
+        if (!deletedIds.includes(workId)) deletedIds.push(workId);
+        localStorage.setItem('printforge_deleted_work_ids', JSON.stringify(deletedIds));
+      } catch(e) {}
+
+      if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+        try {
+          await supabaseClient.from('broadcast_requests').delete().eq('id', workId);
+        } catch(e) {
+          console.warn('Supabase delete error:', e);
+        }
+      }
+      if (typeof supabaseRealtimeChannel !== 'undefined' && supabaseRealtimeChannel) {
+        try {
+          supabaseRealtimeChannel.send({
+            type: 'broadcast',
+            event: 'portfolio_work_deleted',
+            payload: { id: workId }
+          });
+        } catch(e) {}
+      }
+
+      showToast(isEn ? '✓ Artwork permanently deleted!' : isEs ? '✓ ¡Obra eliminada permanentemente!' : '✓ Opera eliminata definitivamente come se non fosse mai esistita!', 'success');
+      if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+      if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
+    }
+    window.deletePortfolioWork = deletePortfolioWork;
+
+    function renderExploreShowcase() {
+      const container = document.getElementById('exploreCardsContainer');
+      if (!container) return;
+
+      const works = AppState.portfolioWorks || [];
+      const filter = currentExploreFilter || 'ALL';
+
+      // Recupera gli ID e i titoli delle opere accettate/commissionate/vendute salvate in localStorage
+      let hiddenWorkIds = [];
+      let soldTitles = [];
+      try {
+        hiddenWorkIds = JSON.parse(localStorage.getItem('printforge_hidden_showcase_works') || '[]');
+        soldTitles = JSON.parse(localStorage.getItem('printforge_sold_showcase_titles') || '[]');
+      } catch(e) {}
+
+      // Identifica qualsiasi opera associata a una commessa già accettata, in lavorazione, completata o archiviata
+      const takenWorkIds = new Set(hiddenWorkIds);
+      const takenWorkTitles = new Set(soldTitles.map(t => String(t).trim().toLowerCase()));
+
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (!r || !r.id || r.isRejected) return;
+        const isTakenOrDone = Boolean(
+          r.isAccepted === true ||
+          r.isCompleted === true ||
+          r.isDelivered === true ||
+          r.deletedByClient === true ||
+          r.hiddenForClient === true ||
+          (typeof r.status === 'string' && (
+            r.status.toUpperCase().includes('LAVORAZION') ||
+            r.status.toUpperCase().includes('COMPLETAT') ||
+            r.status.toUpperCase().includes('CONSEGNAT') ||
+            r.status.toUpperCase().includes('SVINCOLAT')
+          )) ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
+        );
+        if (isTakenOrDone) {
+          if (r.showcaseWorkId) takenWorkIds.add(r.showcaseWorkId);
+          if (r.title) takenWorkTitles.add(r.title.trim().toLowerCase());
+        }
+      });
+
+      const filtered = works.filter(w => {
+        if (!w || !w.id) return false;
+
+        // REGOLA ASSOLUTA: NON MOSTRARE MAI AI CLIENTI OPERE GIA' COMMISSIONATE / ACCETTATE / VENDUTE,
+        // ANCHE SE IL CLIENTE ELIMINA LA RICHIESTA DAL PROPRIO SCHERMO!
+        if (w.isAccepted || w.isCommissioned || w.isTaken || w.isSold || w.isCompleted) return false;
+        if (hiddenWorkIds.includes(w.id)) return false;
+        if (takenWorkIds.has(w.id)) return false;
+        if (w.title && takenWorkTitles.has(w.title.trim().toLowerCase())) return false;
+        if (w.title && soldTitles.includes(w.title.trim().toLowerCase())) return false;
+        if (typeof localStorage !== 'undefined' && (
+          localStorage.getItem('printforge_work_accepted_' + w.id) === 'true' ||
+          localStorage.getItem('printforge_work_sold_' + w.id) === 'true' ||
+          localStorage.getItem('printforge_completed_work_' + w.id) === 'true'
+        )) return false;
+
+        if (filter === 'ALL') return true;
+        const mat = (w.material || '').toUpperCase();
+        if (filter === 'PETG') return mat.includes('PETG');
+        if (filter === 'PLA+') return mat.includes('PLA');
+        if (filter === 'CARBON') return mat.includes('CF') || mat.includes('CARBON') || mat.includes('PA12');
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="col-span-full p-12 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+            <i data-lucide="layers" class="w-8 h-8 text-zinc-500 mx-auto"></i>
+            <h4 id="exploreEmptyTitle" class="font-cyber font-bold text-white text-sm">${(i18n[currentLang] || i18n.it).emptyWorksTitle}</h4>
+            <p id="exploreEmptySubtitle" class="text-xs font-mono text-zinc-400">${(i18n[currentLang] || i18n.it).emptyWorksSubtitle}</p>
+          </div>
+        `;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = filtered.map(w => {
+        const safeId = escapeHtml(w.id);
+        const safeTitle = escapeHtml(w.title);
+        const safePrice = escapeHtml(w.price || '€ 45,00');
+        const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
+        const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
+        const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
+        const photo = w.photoUrl || '/images/cube.jpg';
+
+        return `
+          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/25 transition overflow-hidden shadow-xl flex flex-col justify-between group">
+            <div>
+              <!-- Immagine 2D Cliccabile -->
+              <div onclick="openItemDetailModal('${safeId}')" class="relative w-full h-48 bg-black/60 overflow-hidden cursor-pointer flex items-center justify-center border-b border-white/10">
+                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
+                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[10px] font-mono text-white font-bold">
+                  ${safeMaterial}
+                </span>
+              </div>
+
+              <!-- Dettagli -->
+              <div class="p-4 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-[10px] font-mono text-zinc-400">${(i18n[currentLang] || i18n.it).makerPrefix || "Maker:"} <strong class="text-white">${safeCreator}</strong></span>
+                  <span class="text-sm font-mono font-bold text-emerald-400">${safePrice}</span>
+                </div>
+                <h3 onclick="openItemDetailModal('${safeId}')" class="text-sm font-cyber font-bold text-white hover:text-emerald-400 transition cursor-pointer line-clamp-1">
+                  ${safeTitle}
+                </h3>
+                <p class="text-xs text-zinc-400 line-clamp-2 font-sans">${escapeHtml(w.description || '')}</p>
+                <div class="text-[10px] font-mono text-zinc-500 pt-1">
+                  <span>${(i18n[currentLang] || i18n.it).measuresPrefix || "Misure:"} ${safeDims}</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Pulsante Alto Contrasto Ordina Adesso -->
+            <div class="p-4 pt-0">
+              <button type="button" onclick="orderFromShowcase('${safeId}')" class="w-full py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
+                <i data-lucide="zap" class="w-3.5 h-3.5 text-black"></i>
+                <span>${(i18n[currentLang] || i18n.it).orderNowBtn || "ORDINA ADESSO"}</span>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+    }
+    window.renderExploreShowcase = renderExploreShowcase;
+
+        // Auto-purge completed phantom works come se non fossero mai esistite
+    (function purgePhantomWorksBoot() {
+      try {
+        const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico'];
+        if (typeof localStorage !== 'undefined') {
+          let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
+          const originalLen = pWorks.length;
+          pWorks = pWorks.filter(w => !w || !phantomPatterns.some(pt => (w.title || '').toLowerCase().includes(pt)));
+          if (pWorks.length !== originalLen) {
+            localStorage.setItem('printforge_portfolio_works', JSON.stringify(pWorks));
+          }
+          let deletedIds = JSON.parse(localStorage.getItem('printforge_deleted_work_ids') || '[]');
+          ['work_papapap', 'papapap', 'work_comp_mecc'].forEach(id => {
+            if (!deletedIds.includes(id)) deletedIds.push(id);
+          });
+          localStorage.setItem('printforge_deleted_work_ids', JSON.stringify(deletedIds));
+        }
+        if (window.AppState && AppState.portfolioWorks) {
+          AppState.portfolioWorks = AppState.portfolioWorks.filter(w => !w || !phantomPatterns.some(pt => (w.title || '').toLowerCase().includes(pt)));
+        }
+      } catch(e) {}
+    })();
 
     function renderCreatorPortfolioView() {
       const container = document.getElementById('creatorPublishedCardsContainer');
