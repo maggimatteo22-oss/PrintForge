@@ -4337,96 +4337,7 @@
     <!-- MODULO 5: MODALE LASCIA RECENSIONE CERTIFICATA                         -->
     <!-- ===================================================================== -->
     <!-- ===================================================================== -->
-    <!-- MINI RIQUADRO: CONFIGURAZIONE DATI INCASSO IBAN PER IL CREATOR        -->
-    <!-- ===================================================================== -->
-    <div id="modalPayoutConfig" class="fixed inset-0 z-[9999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 9999999 !important; isolation: isolate !important;">
-      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
-        <!-- Header -->
-        <div class="flex items-start justify-between border-b border-white/10 pb-3">
-          <div class="space-y-1">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold uppercase tracking-wider">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>ACCREDITO BONIFICO DIRETTO</span>
-            </div>
-            <h3 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide">
-              Coordinate di Incasso (IBAN)
-            </h3>
-            <p class="text-xs text-zinc-400 font-sans">
-              I compensi delle tue commesse completate verranno accreditati automaticamente qui.
-            </p>
-          </div>
-          <button type="button" onclick="closePayoutConfigModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer">
-            <i data-lucide="x" class="w-4 h-4"></i>
-          </button>
-        </div>
-
-        <!-- Form Fondamentale -->
-        <form onsubmit="handlePayoutConfigSubmit(event)" class="space-y-3.5 text-xs font-sans">
-          
-          <!-- Intestatario -->
-          <div class="space-y-1">
-            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
-              Intestatario del Conto *
-            </label>
-            <input type="text" 
-                   id="payoutAccountHolder" 
-                   placeholder="Nome e Cognome o Ragione Sociale" 
-                   required 
-                   class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-emerald-400 outline-none transition" />
-          </div>
-
-          <!-- Codice IBAN -->
-          <div class="space-y-1">
-            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
-              Codice IBAN (Conto Corrente o Carta con IBAN) *
-            </label>
-            <div class="relative">
-              <input type="text" 
-                     id="payoutIban" 
-                     placeholder="IT60X0542811101000000123456" 
-                     required 
-                     maxlength="34"
-                     oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');" 
-                     class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase tracking-wider" />
-              <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-emerald-400 font-mono text-[10px] font-bold">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span>SEPA</span>
-              </div>
-            </div>
-            <span class="text-[10px] text-zinc-500 font-mono block">Valido per qualsiasi banca o carta ricaricabile con IBAN (es. Revolut, PostePay Evolution, Intesa, ecc.)</span>
-          </div>
-
-          <!-- Codice Fiscale o P.IVA -->
-          <div class="space-y-1">
-            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
-              Codice Fiscale o Partita IVA *
-            </label>
-            <input type="text" 
-                   id="payoutTaxId" 
-                   placeholder="RSSMRA80A01H501U oppure Partita IVA" 
-                   required 
-                   class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase" />
-          </div>
-
-          <!-- Banner Sicurezza Crittografica -->
-          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2 text-[10.5px] text-zinc-300 leading-relaxed">
-            <i data-lucide="lock" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
-            <span>Dati protetti e crittografati a 256-bit. I compensi vengono svincolati ed erogati automaticamente non appena il pezzo è consegnato.</span>
-          </div>
-
-          <!-- Pulsante di Salvataggio -->
-          <div class="pt-1">
-            <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
-              <i data-lucide="check" class="w-4 h-4 text-black"></i>
-              <span>SALVA & ABILITA BONIFICI</span>
-            </button>
-          </div>
-
-        </form>
-
-      </div>
-    </div>
+    
 
     <div id="modalLeaveReview" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;">
       <div class="w-full max-w-lg bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative animate-in fade-in zoom-in-95 duration-200">
@@ -7596,6 +7507,98 @@
       </div>
     </section>
   </main>
+
+    <!-- MINI RIQUADRO: CONFIGURAZIONE DATI INCASSO IBAN PER IL CREATOR        -->
+    <!-- ===================================================================== -->
+    <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important;">
+      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="flex items-start justify-between border-b border-white/10 pb-3">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold uppercase tracking-wider">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>ACCREDITO BONIFICO DIRETTO</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide">
+              Coordinate di Incasso (IBAN)
+            </h3>
+            <p class="text-xs text-zinc-400 font-sans">
+              I compensi delle tue commesse completate verranno accreditati automaticamente qui.
+            </p>
+          </div>
+          <button type="button" onclick="closePayoutConfigModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Form Fondamentale -->
+        <form onsubmit="handlePayoutConfigSubmit(event)" class="space-y-3.5 text-xs font-sans">
+          
+          <!-- Intestatario -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
+              Intestatario del Conto *
+            </label>
+            <input type="text" 
+                   id="payoutAccountHolder" 
+                   placeholder="Nome e Cognome o Ragione Sociale" 
+                   required 
+                   class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-emerald-400 outline-none transition" />
+          </div>
+
+          <!-- Codice IBAN -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
+              Codice IBAN (Conto Corrente o Carta con IBAN) *
+            </label>
+            <div class="relative">
+              <input type="text" 
+                     id="payoutIban" 
+                     placeholder="IT60X0542811101000000123456" 
+                     required 
+                     maxlength="34"
+                     oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');" 
+                     class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase tracking-wider" />
+              <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-emerald-400 font-mono text-[10px] font-bold">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>SEPA</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-zinc-500 font-mono block">Valido per qualsiasi banca o carta ricaricabile con IBAN (es. Revolut, PostePay Evolution, Intesa, ecc.)</span>
+          </div>
+
+          <!-- Codice Fiscale o P.IVA -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
+              Codice Fiscale o Partita IVA *
+            </label>
+            <input type="text" 
+                   id="payoutTaxId" 
+                   placeholder="RSSMRA80A01H501U oppure Partita IVA" 
+                   required 
+                   class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase" />
+          </div>
+
+          <!-- Banner Sicurezza Crittografica -->
+          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2 text-[10.5px] text-zinc-300 leading-relaxed">
+            <i data-lucide="lock" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+            <span>Dati protetti e crittografati a 256-bit. I compensi vengono svincolati ed erogati automaticamente non appena il pezzo è consegnato.</span>
+          </div>
+
+          <!-- Pulsante di Salvataggio -->
+          <div class="pt-1">
+            <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
+              <i data-lucide="check" class="w-4 h-4 text-black"></i>
+              <span>SALVA & ABILITA BONIFICI</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
 
   <!-- ========================================================================= -->
   <!-- FOOTER: BUROCRAZIE LEGALI, DATI SOCIETARI, COOKIE & STANDARD TECNICI       -->
@@ -32120,6 +32123,8 @@ function renderDealChat(rfpId) {
     function openPayoutConfigModal() {
       const modal = document.getElementById('modalPayoutConfig');
       if (!modal) return;
+      const topHeader = document.getElementById('mainAppHeader');
+      if (topHeader) topHeader.style.display = 'none';
       try {
         const stored = localStorage.getItem('printforge_payout_details');
         if (stored) {
@@ -32145,6 +32150,8 @@ function renderDealChat(rfpId) {
     function closePayoutConfigModal() {
       const modal = document.getElementById('modalPayoutConfig');
       if (modal) modal.classList.add('hidden');
+      const topHeader = document.getElementById('mainAppHeader');
+      if (topHeader) topHeader.style.display = '';
     }
     window.closePayoutConfigModal = closePayoutConfigModal;
 
@@ -32191,7 +32198,7 @@ function renderDealChat(rfpId) {
         } catch(err) {}
       }
 
-      closePayoutConfigModal();
+      closePayoutConfigModal(); const topHeader = document.getElementById('mainAppHeader'); if (topHeader) topHeader.style.display = '';
       showToast(currentLang === 'it' ? 'Coordinate IBAN salvate! I bonifici automatici sono ora attivi.' : 'Payout IBAN saved! Automated payouts are now active.', 'success');
 
       // 1. Posto 1: Aggiorna e nasconde istantaneamente l'avviso nella Escrow Room
