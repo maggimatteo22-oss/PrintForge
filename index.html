@@ -5999,7 +5999,7 @@
                 </div>
 
                 <!-- Alert Guida Gentile se Budget Anomalo (< € 15 o troppo basso rispetto al materiale) -->
-                <div id="budgetWarningBox" class="hidden p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[10px] text-amber-300 font-mono flex items-start gap-1.5" style="display: none !important;">
+                <div id="budgetWarningBox" class="hidden p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300 font-mono flex items-start gap-2 mt-2 shadow-sm transition-all">
                   <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5"></i>
                   <span id="budgetWarningText">Con un budget inferiore a € 18 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno la stima di mercato (€ 28,00).</span>
                 </div>
@@ -20997,11 +20997,10 @@ window.__lastComputedQuotePrice = computedPrice;
       if (bApply) bApply.innerText = `€ ${computedPrice},00`;
       if (bRange) bRange.innerText = `€ ${minPrice} – € ${maxPrice}`;
 
-      // Calcola e aggiorna SEMPRE la stima in tempo reale su ogni modifica (misure, materiale, quantità, consegna flash)
+      // Libero arbitrio ai clienti: non scrivere nulla automaticamente nel campo budget, lasciare che lo inseriscano liberamente
       if (reqBudget) {
-        reqBudget.value = computedPrice.toFixed(2);
-        reqBudget.classList.add('border-emerald-400', 'text-emerald-300');
-        setTimeout(() => reqBudget.classList.remove('border-emerald-400', 'text-emerald-300'), 400);
+        // Aggiorna solo il placeholder come suggerimento discreto senza imporre il valore
+        reqBudget.placeholder = `Es. ${computedPrice.toFixed(2)}`;
       }
       handleReqBudgetChange();
 
@@ -21051,14 +21050,13 @@ window.__lastComputedQuotePrice = computedPrice;
     function handleReqBudgetChange() {
       const bInput = document.getElementById('reqBudget');
       const val = parseFloat(bInput?.value) || 0;
+      const rec = window.__lastComputedQuotePrice || 0;
       const warnBox = document.getElementById('budgetWarningBox');
-      if (warnBox) {
-        warnBox.classList.add('hidden');
-        warnBox.style.display = 'none';
-      }
+      const warnText = document.getElementById('budgetWarningText');
 
-      // OPZIONE 2: Sincronizzazione in tempo reale percentuale Stripe esatta al centesimo (1,5% + € 0,25)
+      // Se il cliente ha inserito un prezzo di suo pugno:
       if (val > 0) {
+        // Scorporo matematico trasparente Opzione 2 (1,5% + € 0,25)
         const mfgVal = Math.max(0, Math.round(((val - 0.25) / 1.015) * 100) / 100);
         const stripeFee = Math.max(0, Math.round((val - mfgVal) * 100) / 100);
         const bMfg = document.getElementById('breakdownMfgPrice');
@@ -21069,9 +21067,43 @@ window.__lastComputedQuotePrice = computedPrice;
         if (bTotal) bTotal.innerText = '€ ' + val.toFixed(2).replace('.', ',');
         const noticeBadge = document.getElementById('liveNoticeStripeBadge');
         if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+
+        // MOSTRA IL MESSAGGIO DI ATTENZIONE SE L'OFFERTA È TROPPO BASSA RISPETTO AL PREZZO DI MERCATO
+        const minThreshold = (rec > 0) ? Math.max(12, Math.round(rec * 0.70)) : 12;
+        if (rec > 0 && val < minThreshold) {
+          if (warnBox) {
+            warnBox.classList.remove('hidden');
+            warnBox.style.display = 'flex';
+          }
+          if (warnText) {
+            warnText.innerText = currentLang === 'en'
+              ? `Notice: With an offer under € ${minThreshold},00, verified Makers may decline the job. Recommended market price: € ${rec.toFixed(2).replace('.', ',')}.`
+              : currentLang === 'es'
+              ? `Atención: Con un presupuesto inferior a € ${minThreshold},00, los Creadores verificados podrían no aceptar el pedido. Precio recomendado: € ${rec.toFixed(2).replace('.', ',')}.`
+              : `Attenzione: Con un budget inferiore a € ${minThreshold},00 i Maker qualificati potrebbero non accettare la commessa. Prezzo consigliato di mercato: € ${rec.toFixed(2).replace('.', ',')}.`;
+          }
+        } else {
+          // Offerta congrua o sopra soglia: nascondi avviso
+          if (warnBox) {
+            warnBox.classList.add('hidden');
+            warnBox.style.display = 'none';
+          }
+        }
+      } else {
+        // Nessun prezzo inserito dal cliente (campo vuoto per libero arbitrio) -> nascondi avviso e reset breakdown
+        if (warnBox) {
+          warnBox.classList.add('hidden');
+          warnBox.style.display = 'none';
+        }
+        const bMfg = document.getElementById('breakdownMfgPrice');
+        if (bMfg) bMfg.innerText = '€ --';
+        const bStripe = document.getElementById('breakdownStripeFee');
+        if (bStripe) bStripe.innerText = '+ € --';
+        const bTotal = document.getElementById('breakdownTotalPrice');
+        if (bTotal) bTotal.innerText = '€ --';
       }
 
-      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
+      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '--';
       ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay', 'liveDossierPrice'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
