@@ -24468,6 +24468,9 @@ END-ISO-10303-21;`;
         ? `✓ ¡Acceso con Google exitoso! Bienvenido, ${name}`
         : `✓ Accesso con Google eseguito! Benvenuto, ${name}`;
       showToast(welcomeMsg, 'success');
+      // Reindirizza istantaneamente via da login-gate
+      const postAuthDest = (AppState.user.role === 'creator') ? 'creator-portfolio' : 'client-home';
+      navigateTo(postAuthDest);
     }
     window.handleSupabaseAuthUser = handleSupabaseAuthUser;
 
@@ -25192,6 +25195,15 @@ END-ISO-10303-21;`;
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
       if (typeof closeUserProfileDropdown === 'function') closeUserProfileDropdown();
+
+      // REQUISITO: Una volta effettuato l'accesso, non mostrare MAI più login-gate!
+      if (viewId === 'login-gate' && AppState.user && AppState.user.isLoggedIn) {
+        const safeView = (AppState.user.role === 'creator') ? 'creator-portfolio' : 'client-home';
+        if (AppState.currentView !== safeView) {
+          navigateTo(safeView);
+        }
+        return;
+      }
     // DOPO IL 4° PASSAGGIO: la pagina di affare concluso (order-room) resta visibile al creator
     // finché non cambia pagina manualmente con il cursore o con il dito.
     if (AppState.user && AppState.user.role === 'creator') {
@@ -32359,7 +32371,8 @@ function renderDealChat(rfpId) {
         const stored = localStorage.getItem('printforge_auth_session');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (parsed && parsed.isLoggedIn) {
+          if (parsed && (parsed.isLoggedIn || parsed.email || parsed.name)) {
+            parsed.isLoggedIn = true;
             AppState.user = parsed;
             sessionRestored = true;
           }
@@ -32531,6 +32544,10 @@ function renderDealChat(rfpId) {
           navigateTo('login-gate');
         }
       } else {
+        // Se autenticato: NON MOSTRARE MAI la schermata di login-gate
+        if (!targetView || targetView === 'login-gate' || targetView === 'home') {
+          targetView = (AppState.user.role === 'creator') ? 'creator-portfolio' : 'client-home';
+        }
         // Se autenticato (sia cliente che creator), apri la vista richiesta o la Home page
         if (targetView && ['client-home', 'order-room', 'client-request', 'creator-requests', 'creator-portfolio', 'explore', 'esplora', 'deal-chat', 'studio', 'activity'].includes(targetView)) {
           if ((targetView === 'studio' || targetView === 'activity') && !hasAcceptedRequest()) {
