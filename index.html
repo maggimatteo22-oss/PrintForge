@@ -235,10 +235,14 @@
       max-width: 100vw;
       overflow: visible !important;
     }
+    #creatorEarnedTotalBadge { white-space: nowrap !important; word-break: keep-all !important; display: inline-block !important; flex-shrink: 0 !important; }
     #userProfileDropdown {
       z-index: 999999 !important;
       position: absolute !important;
       isolation: isolate !important;
+      background-color: #0c0c11 !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
     }
     @media (max-width: 640px) {
       #userProfileDropdown {
@@ -4077,10 +4081,10 @@
             </p>
           </div>
           
-          <div class="flex items-center gap-2">
-            <div class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-1.5 sm:gap-2 shadow-sm whitespace-nowrap shrink-0">
-              <span class="text-[10px] font-mono text-zinc-400 uppercase whitespace-nowrap select-none" id="i18n-creatorEarnedTotalLabel">INCASSATO:</span>
-              <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums whitespace-nowrap" id="creatorEarnedTotalBadge">€&nbsp;0,00</span>
+          <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
+            <div class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-2 shadow-sm whitespace-nowrap shrink-0 flex-nowrap" style="white-space: nowrap !important; flex-shrink: 0 !important; min-width: max-content !important;">
+              <span class="text-[10px] font-mono text-zinc-400 uppercase select-none" style="white-space: nowrap !important; flex-shrink: 0 !important;" id="i18n-creatorEarnedTotalLabel">INCASSATO:</span>
+              <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums" style="white-space: nowrap !important; word-break: keep-all !important; flex-shrink: 0 !important; display: inline-block !important;" id="creatorEarnedTotalBadge">€&nbsp;0,00</span>
             </div>
             <button type="button" id="btnCreatorConnectStripe" onclick="openPayoutConfigModal()" class="px-4 py-2.5 rounded-xl bg-[#635BFF] hover:bg-[#5249ea] text-white border border-[#7A73FF] font-cyber font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-lg cursor-pointer">
               <i data-lucide="credit-card" class="w-4 h-4 text-white"></i>
@@ -17740,18 +17744,44 @@ END-ISO-10303-21;`;
 
         function getCreatorTotalEarnings() {
       let total = 0;
+      const myUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+      const myName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
+      const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+
       try {
         const ledger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
         ledger.forEach(entry => {
-          if (entry && entry.price) {
+          if (!entry) return;
+          // Escludi ordini dove l'utente corrente era il cliente o titolo di test
+          const entryClient = (entry.clientName || '').toLowerCase().trim();
+          const entryTitle = (entry.title || '').toLowerCase().trim();
+          if (myName && entryClient === myName) return;
+          if (entryTitle.includes('viagra') || entryTitle.includes('papapap')) return;
+
+          if (entry.price) {
             const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, '').replace(',', '.'));
             if (!isNaN(num) && num > 0) total += num;
           }
         });
       } catch(e) {}
+
       if (total === 0 && AppState.broadcastRequests) {
         AppState.broadcastRequests.forEach(r => {
-          if (r && (r.isCompleted || r.isDelivered || (typeof r.status === 'string' && r.status.includes('COMPLETAT')))) {
+          if (!r || !r.id || r.isRejected || r.isDeleted) return;
+          // MAI sommare se l'utente corrente è il CLIENTE che ha pagato!
+          const rClient = (r.clientName || '').toLowerCase().trim();
+          const rClientEmail = (r.clientEmail || '').toLowerCase().trim();
+          const rClientUid = (r.userId || r.clientId || '').toLowerCase().trim();
+          if ((myName && rClient === myName) || (myEmail && rClientEmail === myEmail) || (myUid && rClientUid === myUid)) return;
+          const rTitle = (r.title || '').toLowerCase().trim();
+          if (rTitle.includes('viagra') || rTitle.includes('papapap')) return;
+
+          const isMaker = (myUid && (r.makerUserId || r.assigned_creator_id) === myUid) ||
+                          (myName && (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().includes(myName)) ||
+                          (myEmail && (r.makerEmail || '').toLowerCase() === myEmail);
+          if (!isMaker) return;
+
+          if (r.isCompleted || r.isDelivered || (typeof r.status === 'string' && r.status.includes('COMPLETAT'))) {
             const raw = r.budget || r.itemBudget || r.escrowTotal || '';
             const num = parseFloat(String(raw).replace(/[^0-9,.]/g, '').replace(',', '.'));
             if (!isNaN(num) && num > 0) total += num;
@@ -19109,7 +19139,7 @@ END-ISO-10303-21;`;
 
             <!-- Menù a Tendina Profilo / Switch (Opzione 1 - Stile Airbnb / Fiverr) -->
             <div id="userProfileDropdown" 
-                 class="hidden absolute right-0 top-full mt-2 w-[275px] sm:w-72 max-w-[calc(100vw-16px)] bg-[#0d0d12]/98 backdrop-blur-2xl border border-white/20 rounded-2xl p-3 shadow-[0_25px_60px_rgba(0,0,0,0.95)] select-none animate-in fade-in slide-in-from-top-2 duration-150" style="z-index: 999999 !important;">
+                 class="hidden absolute right-0 top-full mt-2 w-[275px] sm:w-72 max-w-[calc(100vw-16px)] bg-[#0c0c11] border border-white/25 rounded-2xl p-3 shadow-[0_25px_60px_rgba(0,0,0,0.98)] select-none animate-in fade-in slide-in-from-top-2 duration-150" style="z-index: 999999 !important;">
               
               <!-- Scheda Profilo & Ruolo Attivo -->
               <div class="profile-header-card flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] mb-2.5">
@@ -25098,6 +25128,9 @@ END-ISO-10303-21;`;
         }
       }
 
+      if (viewId === 'my-requests' || viewId === 'instant-quote' || viewId === 'richieste-cliente') {
+        viewId = 'client-request';
+      }
       if (viewId === 'home') viewId = 'client-home';
       if (viewId === 'esplora') viewId = 'explore';
       if (viewId === 'creator-requests') {
@@ -25872,6 +25905,10 @@ END-ISO-10303-21;`;
             ? `Solicitud ${rfpId} publicada con fondos en Escrow (${currentSelectedPaymentMethod.toUpperCase()}).`
             : `Richiesta ${rfpId} pubblicata con fondi in Escrow Stripe (${currentSelectedPaymentMethod.toUpperCase()}).`);
 
+      const isFlashOrder = Boolean(
+        (draft.deadline && (draft.deadline.includes('Flash') || draft.deadline.includes('24-48h') || draft.deadline.toLowerCase().includes('urgente'))) ||
+        (draft.shipping && String(draft.shipping).toLowerCase().includes('flash'))
+      );
       const isDirectShowcase = Boolean(window._directAssignedCreator && window._currentShowcaseWorkOrder);
       const directWork = window._currentShowcaseWorkOrder;
       const directCreator = window._directAssignedCreator;
@@ -25911,7 +25948,7 @@ END-ISO-10303-21;`;
         paymentMethod: currentSelectedPaymentMethod,
         shippingCarrier: selectedShippingCarrierId.includes('ups') ? 'UPS Standard' : selectedShippingCarrierId.includes('dhl') ? 'DHL Express' : selectedShippingCarrierId.includes('gls') ? 'GLS Parcel' : 'Poste Italiane',
         trackingNumber: `PF-UPS-${Math.floor(100000 + Math.random() * 900000)}`,
-        deadline: draft.deadline,
+        deadline: draft.deadline, isFlash: isFlashOrder,
         notes: draft.notes,
         fileName: draft.customFileName,
         aiImage: isDirectShowcase ? (directWork.photoUrl || draft.aiImage) : draft.aiImage,
@@ -26002,7 +26039,32 @@ END-ISO-10303-21;`;
 
       // Sync insert to Supabase Cloud
       saveRequestToSupabase(newRequest);
-      broadcastRealtimeEvent('request_created', { request: newRequest });
+      broadcastRealtimeEvent('request_created', { request: newRequest, isFlash: isFlashOrder });
+      if (isFlashOrder) {
+        // Notifica permanente broadcast per tutti i Creator del network
+        const flashNotif = {
+          id: 'notif-flash-' + Date.now(),
+          type: 'flash_order_broadcast',
+          isFlash: true,
+          title: '⚡ ORDINE FLASH 24-48H // DISPONIBILE ORA',
+          message: 'Commessa #' + rfpId + ' (' + draft.title + ') con consegna in 24-48h e priorità assoluta! Prendi in carico subito.',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          requestId: rfpId,
+          read: false
+        };
+        if (!window.AppState.notifications) window.AppState.notifications = [];
+        window.AppState.notifications.unshift(flashNotif);
+        try {
+          localStorage.setItem('printforge_notifications', JSON.stringify(window.AppState.notifications));
+        } catch(e) {}
+
+        // Toast in evidenza sia per il cliente che allerta del network creator
+        showToast(isEn 
+          ? '⚡ FLASH ORDER 24-48H DISPATCHED! All verified Creators alerted with top priority.' 
+          : isEs 
+          ? '⚡ ¡PEDIDO FLASH 24-48H ENVIADO! Todos los Creadores acreditados alertados con máxima prioridad.' 
+          : '⚡ ORDINE FLASH 24-48H INVIATO! Tutti i Creator accreditati sono stati allertati in tempo reale.', 'info');
+      }
 
       // Aggiornamento contatore live HUD navbar e badge feed
       const navLiveReq = document.getElementById('navLiveRequestsCount');
@@ -26840,6 +26902,20 @@ END-ISO-10303-21;`;
         }
       }
 
+      // Rileva se ci sono richieste Flash 24-48h disponibili
+      const hasFlashJobs = visibleRequests.some(r => r.isFlash || (r.deadline && (r.deadline.includes('Flash') || r.deadline.includes('24-48h'))));
+      let flashBannerHtml = '';
+      if (hasFlashJobs) {
+        flashBannerHtml = `
+          <div class="col-span-full p-3.5 rounded-xl bg-gradient-to-r from-amber-500/20 via-orange-500/20 to-amber-500/10 border border-amber-500/40 text-amber-200 flex items-center justify-between gap-3 shadow-lg mb-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <span class="w-3 h-3 rounded-full bg-amber-400 animate-ping shrink-0"></span>
+              <span class="text-xs font-cyber font-bold tracking-wide uppercase truncate">⚡ COMMESSE FLASH 24-48H IN BACHECA // PRIORITÀ ASSOLUTA PER I CREATOR</span>
+            </div>
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded-md bg-amber-400/20 border border-amber-400/30 text-amber-300 font-bold uppercase shrink-0">+30% Tariffa Urgenza</span>
+          </div>
+        `;
+      }
       let activeJobBannerHtml = '';
       if (activeCreatorJob) {
         const photoSrc = activeCreatorJob.workPhotoUrl || activeCreatorJob.aiImage || '/images/cube.jpg';
@@ -31074,7 +31150,7 @@ function renderDealChat(rfpId) {
         // Auto-purge completed phantom works come se non fossero mai esistite
     (function purgePhantomWorksBoot() {
       try {
-        const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico'];
+        const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico', 'viagra'];
         if (typeof localStorage !== 'undefined') {
           let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
           const originalLen = pWorks.length;
@@ -31139,7 +31215,7 @@ function renderDealChat(rfpId) {
         deletedIds = JSON.parse(localStorage.getItem('printforge_deleted_work_ids') || '[]');
       } catch(e) {}
 
-      const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico'];
+      const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico', 'viagra'];
 
       AppState.portfolioWorks = (AppState.portfolioWorks || []).filter(w => {
         if (!w || !w.id) return false;
@@ -31153,7 +31229,7 @@ function renderDealChat(rfpId) {
       const totalEarnedBadge = document.getElementById('creatorEarnedTotalBadge');
       if (totalEarnedBadge) {
         const tot = typeof getCreatorTotalEarnings === 'function' ? getCreatorTotalEarnings() : 0;
-        totalEarnedBadge.innerHTML = '€&nbsp;' + tot.toFixed(2).replace('.', ',');
+        totalEarnedBadge.innerHTML = '<span style="white-space: nowrap !important; word-break: keep-all !important; display: inline-block !important;">€&nbsp;' + tot.toFixed(2).replace('.', ',') + '</span>';
       }
 
       const works = AppState.portfolioWorks || [];
@@ -31162,15 +31238,29 @@ function renderDealChat(rfpId) {
       const myEmail = ((AppState.user?.email) || '').toLowerCase().trim();
       const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
 
-      // Mostra SOLO le opere attive del creator per la vetrina (NON commesse completate o ordini conclusi!)
+      // Mostra SOLO ed ESCLUSIVAMENTE le opere caricate per la vetrina dal creator (MAI ordini commissionati da lui come cliente!)
       const myWorks = works.filter(w => {
-        if (!w) return false;
+        if (!w || !w.id) return false;
+        if (deletedIds.includes(w.id)) return false;
+        const tLow = (w.title || '').toLowerCase().trim();
+        if (tLow.includes('viagra') || tLow.includes('papapap')) return false;
+
+        // Se l'opera è associata a un ordine dove l'utente era il CLIENTE che ha acquistato, MAI mostrarlo nella vetrina creator!
+        const wClient = (w.clientName || '').toLowerCase().trim();
+        const wClientEmail = (w.clientEmail || '').toLowerCase().trim();
+        const wClientId = (w.clientId || w.userId || '').toLowerCase().trim();
+        if ((myName && wClient === myName) || (myEmail && wClientEmail === myEmail) || (myUid && wClientId === myUid)) {
+          return false;
+        }
+
+        // Se l'opera è marcata come completata ma non è in vetrina, non mostrare
         if (w.isCompleted && !w.inShowcase) return false;
-        if (isAdmin) return true;
+
         if (myUid && w.creatorId === myUid) return true;
         if (myName && (w.creatorName || '').toLowerCase().trim() === myName) return true;
         if (myEmail && (w.creatorEmail || '').toLowerCase().trim() === myEmail) return true;
-        return true;
+        if (isAdmin && !wClient && !wClientId) return true;
+        return false;
       });
 
       if (myWorks.length === 0) {
@@ -31404,282 +31494,7 @@ function renderDealChat(rfpId) {
     }
     window.renderExploreShowcase = renderExploreShowcase;
 
-        // Auto-purge completed phantom works come se non fossero mai esistite
-    (function purgePhantomWorksBoot() {
-      try {
-        const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico'];
-        if (typeof localStorage !== 'undefined') {
-          let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
-          const originalLen = pWorks.length;
-          pWorks = pWorks.filter(w => !w || !phantomPatterns.some(pt => (w.title || '').toLowerCase().includes(pt)));
-          if (pWorks.length !== originalLen) {
-            localStorage.setItem('printforge_portfolio_works', JSON.stringify(pWorks));
-          }
-          let deletedIds = JSON.parse(localStorage.getItem('printforge_deleted_work_ids') || '[]');
-          ['work_papapap', 'papapap', 'work_comp_mecc'].forEach(id => {
-            if (!deletedIds.includes(id)) deletedIds.push(id);
-          });
-          localStorage.setItem('printforge_deleted_work_ids', JSON.stringify(deletedIds));
-        }
-        if (window.AppState && AppState.portfolioWorks) {
-          AppState.portfolioWorks = AppState.portfolioWorks.filter(w => !w || !phantomPatterns.some(pt => (w.title || '').toLowerCase().includes(pt)));
-        }
-      } catch(e) {}
-    })();
-
-    function renderCreatorPortfolioView() {
-      const container = document.getElementById('creatorPublishedCardsContainer');
-      if (!container) return;
-
-      const t = i18n[currentLang] || i18n.it;
-      const isEn = currentLang === 'en';
-      const isEs = currentLang === 'es';
-
-      const works = AppState.portfolioWorks || [];
-      const myUid = AppState.user?.userId || AppState.user?.id || '';
-      const myName = ((AppState.user?.name) || '').toLowerCase().trim();
-      const myEmail = ((AppState.user?.email) || '').toLowerCase().trim();
-      const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
-
-      const myWorks = works.filter(w => {
-        if (!w) return false;
-        if (isAdmin) return true;
-        if (myUid && w.creatorId === myUid) return true;
-        if (myName && (w.creatorName || '').toLowerCase().trim() === myName) return true;
-        return true;
-      });
-
-      // Trova anche commesse broadcast completate per questo creator che non hanno un'opera correlata nel portfolio
-      let creatorLedger = [];
-      try {
-        creatorLedger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
-      } catch(e) {}
-
-      const additionalCompletedOrders = (AppState.broadcastRequests || []).filter(r => {
-        if (!r || !r.id || r.isDeleted || r.isRejected) return false;
-        const isDone = Boolean(
-          r.isCompleted || r.isDelivered || r.isClosed ||
-          (typeof r.status === 'string' && (r.status.includes('COMPLETAT') || r.status.includes('SVINCOLAT'))) ||
-          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
-        );
-        if (!isDone) return false;
-        const makerName = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase();
-        const makerUid = (r.makerUserId || r.assigned_creator_id || '').toLowerCase();
-        const makerEmail = (r.makerEmail || '').toLowerCase();
-        const isMine = (myUid && makerUid && (makerUid === myUid)) ||
-                       (myName && makerName && (makerName === myName || makerName.includes(myName) || myName.includes(makerName))) ||
-                       (myEmail && makerEmail && makerEmail === myEmail) ||
-                       isAdmin;
-        if (!isMine) return false;
-        return !myWorks.some(w => w.id === r.showcaseWorkId || (w.title && r.title && w.title.trim().toLowerCase() === r.title.trim().toLowerCase()));
-      });
-
-      if (myWorks.length === 0 && additionalCompletedOrders.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full p-8 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-2">
-            <p class="text-xs font-mono text-zinc-400">${t.portfolioEmptyTitle || (isEn ? "You haven't published any items or completed orders in your portfolio yet." : isEs ? "Aún no has publicado obras ni completado pedidos en tu portafolio." : "Non hai ancora pubblicato opere o completato commesse nel tuo portfolio.")}</p>
-            <p class="text-[11px] text-zinc-500 font-sans">${t.portfolioEmptySubtitle || (isEn ? "Fill out the form above to publish your first component." : isEs ? "Completa el formulario de arriba para publicar tu primer componente." : "Compila il modulo sopra per pubblicare il tuo primo componente.")}</p>
-          </div>
-        `;
-        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-        return;
-      }
-
-      // Render delle opere pubblicate dal creator
-      const worksHtml = myWorks.map(w => {
-        const safeId = escapeHtml(w.id);
-        const safeTitle = escapeHtml(w.title);
-        const photo = w.photoUrl || '/images/cube.jpg';
-
-        // Cerca se esiste una commessa per questa specifica opera
-        const associatedOrder = (AppState.broadcastRequests || []).find(r => {
-          if (!r || !r.id || r.isDeleted || r.isRejected) return false;
-          return r.showcaseWorkId === w.id || (r.title && w.title && r.title.trim().toLowerCase() === w.title.trim().toLowerCase());
-        });
-
-        const inLedger = (creatorLedger || []).find(entry => entry && (
-          entry.id === (associatedOrder && associatedOrder.id) ||
-          (entry.title && w.title && entry.title.trim().toLowerCase() === w.title.trim().toLowerCase())
-        ));
-
-        // Prezzo esatto: deve combaciare rigorosamente con il prezzo digitato dal cliente nella commessa!
-        const clientActualBudget = (associatedOrder && (associatedOrder.budget || associatedOrder.escrowTotal))
-          || (inLedger && inLedger.price)
-          || w.price
-          || '€ 0,00';
-
-        const safePrice = escapeHtml(clientActualBudget);
-        const safeEarnedPrice = escapeHtml(clientActualBudget);
-
-        // Controlla se il lavoro è COMPLETATO (dopo il 4° passaggio o completamento esplicito)
-        const isJobCompleted = Boolean(
-          w.isCompleted === true ||
-          w.isSold === true ||
-          Boolean(inLedger) ||
-          (associatedOrder && (
-            associatedOrder.isCompleted === true ||
-            associatedOrder.isDelivered === true ||
-            associatedOrder.isClosed === true ||
-            (typeof associatedOrder.status === 'string' && (associatedOrder.status.includes('COMPLETAT') || associatedOrder.status.includes('SVINCOLAT'))) ||
-            (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + associatedOrder.id) === 'true')
-          )) ||
-          (typeof localStorage !== 'undefined' && (
-            localStorage.getItem('printforge_completed_work_' + w.id) === 'true' ||
-            localStorage.getItem('printforge_work_sold_' + w.id) === 'true' ||
-            (AppState.stage4Completed && associatedOrder)
-          ))
-        );
-
-        // Ordine attivo in corso (accettato ma non ancora completato al 4° passaggio)
-        const isOrderActive = Boolean(
-          associatedOrder && !isJobCompleted && (
-            associatedOrder.isAccepted === true ||
-            (typeof associatedOrder.status === 'string' && associatedOrder.status.includes('LAVORAZION'))
-          )
-        );
-
-        return `
-          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 p-3.5 space-y-2.5 shadow-lg flex flex-col justify-between">
-            <div class="space-y-2">
-              <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
-                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
-                ${isJobCompleted ? `
-                  <span class="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9.5px] uppercase tracking-wider shadow-lg flex items-center gap-1.5 border border-emerald-400">
-                    <i data-lucide="check" class="w-3.5 h-3.5 text-black stroke-[3]"></i>
-                    ${t.portfolioCardWorkCompleted || (isEn ? 'WORK COMPLETED' : isEs ? 'TRABAJO COMPLETADO' : 'LAVORO COMPLETATO')}
-                  </span>
-                ` : isOrderActive ? `
-                  <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9px] uppercase tracking-wider shadow-lg flex items-center gap-1">
-                    <span class="w-1.5 h-1.5 rounded-full bg-black animate-ping"></span>
-                    ${t.portfolioCardActiveOrder || (isEn ? 'ACTIVE ORDER' : isEs ? 'PEDIDO ACTIVO' : 'ORDINE ATTIVO')}
-                  </span>
-                ` : `
-                  <span class="absolute top-2 right-2 px-2 py-0.5 rounded-full bg-black/60 backdrop-blur-md text-emerald-400 border border-emerald-500/30 font-mono text-[9px]">
-                    ${t.portfolioCardInShowcase || (isEn ? 'IN SHOWCASE' : isEs ? 'EN ESCAPARATE' : 'IN VETRINA')}
-                  </span>
-                `}
-              </div>
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="font-bold text-white truncate max-w-[140px]">${safeTitle}</span>
-                <span class="text-emerald-400 font-bold">${safePrice}</span>
-              </div>
-              <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(w.material)} // ${escapeHtml(w.dimensions)}</span>
-            </div>
-
-            <!-- Sezione Stato Commessa -->
-            ${isJobCompleted ? `
-              <div class="pt-2 border-t border-emerald-500/25 bg-emerald-500/[0.06] p-2.5 rounded-xl space-y-2 border border-emerald-500/20">
-                <div class="flex items-center justify-between text-[10.5px] font-mono">
-                  <span class="text-zinc-300">${t.portfolioCardClientPrefix || (isEn ? 'Client:' : isEs ? 'Cliente:' : 'Cliente:')} <strong class="text-white">${escapeHtml(associatedOrder ? associatedOrder.clientName : (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente'))}</strong></span>
-                  <span class="text-emerald-400 font-bold font-cyber text-xs">${safeEarnedPrice} ${t.portfolioCardEarnedSuffix || (isEn ? 'EARNED' : isEs ? 'COBRADOS' : 'INCASSATI')}</span>
-                </div>
-                <div class="flex items-center justify-between text-[9.5px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
-                  <span class="flex items-center gap-1 text-emerald-400 font-bold">
-                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-                    ${t.portfolioCardStep4Completed || (isEn ? 'Step 4 Complete // Funds Released' : isEs ? 'Paso 4 Completado // Fondos Liberados' : '4° Passaggio Concluso // Fondi Svincolati')}
-                  </span>
-                  <button type="button" onclick="openCreatorReviewsModal('${myUid}', '${escapeHtml(AppState.user?.name || '')}')" class="px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 cursor-pointer transition">
-                    <i data-lucide="star" class="w-2.5 h-2.5 text-amber-400 fill-amber-400"></i>
-                    <span>${t.portfolioCardReviewsBtn || (isEn ? 'Reviews' : isEs ? 'Reseñas' : 'Recensioni')}</span>
-                  </button>
-                </div>
-              </div>
-            ` : isOrderActive ? `
-              <div class="pt-2 border-t border-emerald-500/20 bg-emerald-500/[0.04] p-2 rounded-xl space-y-1.5">
-                <div class="flex items-center justify-between text-[10px] font-mono">
-                  <span class="text-zinc-400">${t.portfolioCardClientPrefix || (isEn ? 'Client:' : isEs ? 'Cliente:' : 'Cliente:')} <strong class="text-white">${escapeHtml(associatedOrder.clientName || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente'))}</strong></span>
-                  <span class="text-emerald-400 font-bold">#${escapeHtml(associatedOrder.id)}</span>
-                </div>
-                <div class="grid grid-cols-2 gap-1.5 pt-0.5">
-                  <button type="button" onclick="openDealChat('${associatedOrder.id}')" class="py-1.5 px-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition shadow active:scale-95 cursor-pointer">
-                    <i data-lucide="message-square" class="w-3 h-3"></i>
-                    <span>CHAT</span>
-                  </button>
-                  <button type="button" onclick="openEscrowRoomForOrder('${associatedOrder.id}')" class="py-1.5 px-2 rounded-lg bg-cyan-500/20 hover:bg-cyan-500/30 border border-cyan-500/40 text-cyan-300 font-cyber font-bold text-[10px] flex items-center justify-center gap-1 transition active:scale-95 cursor-pointer">
-                    <i data-lucide="shield-check" class="w-3 h-3 text-cyan-400"></i>
-                    <span>ESCROW</span>
-                  </button>
-                </div>
-              </div>
-            ` : `
-              <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[10px] font-mono text-zinc-500">
-                <span>${t.portfolioCardWaitingOrders || (isEn ? 'Waiting for client orders' : isEs ? 'Esperando pedidos de clientes' : 'In attesa di ordini clienti')}</span>
-                <span class="text-emerald-500">${t.portfolioCardAvailable || (isEn ? 'Available' : isEs ? 'Disponible' : 'Disponibile')}</span>
-              </div>
-            `}
-          </div>
-        `;
-      }).join('');
-
-      // Integra eventuali ordini completati dal ledger del creator
-      (creatorLedger || []).forEach(entry => {
-        if (!entry || !entry.id) return;
-        const alreadyInWorks = myWorks.some(w => (entry.showcaseWorkId && w.id === entry.showcaseWorkId) || (w.title && entry.title && w.title.trim().toLowerCase() === entry.title.trim().toLowerCase()));
-        const alreadyInAdd = additionalCompletedOrders.some(r => r.id === entry.id);
-        if (!alreadyInWorks && !alreadyInAdd) {
-          additionalCompletedOrders.push({
-            id: entry.id,
-            title: entry.title,
-            budget: entry.price || (entry.budget ? formatEuroClean(entry.budget) : '€ 0,00'),
-            clientName: entry.clientName || 'Cliente',
-            workPhotoUrl: entry.workPhotoUrl || '/images/cube.jpg',
-            isCompleted: true,
-            isDelivered: true,
-            status: 'COMPLETATO'
-          });
-        }
-      });
-
-      // Render di eventuali commesse broadcast completate non presenti come opere in vetrina
-      const additionalHtml = additionalCompletedOrders.map(r => {
-        const safeId = escapeHtml(r.id);
-        const safeTitle = escapeHtml(r.title);
-        const safePrice = escapeHtml(r.budget || '€ 35,00');
-        const photo = r.workPhotoUrl || r.aiImage || '/images/cube.jpg';
-
-        return `
-          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 p-3.5 space-y-2.5 shadow-lg flex flex-col justify-between">
-            <div class="space-y-2">
-              <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
-                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
-                <span class="absolute top-2 right-2 px-2.5 py-1 rounded-full bg-emerald-500 text-black font-cyber font-black text-[9.5px] uppercase tracking-wider shadow-lg flex items-center gap-1.5 border border-emerald-400">
-                  <i data-lucide="check" class="w-3.5 h-3.5 text-black stroke-[3]"></i>
-                  LAVORO COMPLETATO
-                </span>
-              </div>
-              <div class="flex items-center justify-between text-xs font-mono">
-                <span class="font-bold text-white truncate max-w-[140px]">${safeTitle}</span>
-                <span class="text-emerald-400 font-bold">${safePrice}</span>
-              </div>
-              <span class="text-[10px] font-mono text-zinc-400 block">${escapeHtml(r.material || 'PETG')} // ${escapeHtml(r.dimensions || '1 pezzo')}</span>
-            </div>
-
-            <div class="pt-2 border-t border-emerald-500/25 bg-emerald-500/[0.06] p-2.5 rounded-xl space-y-2 border border-emerald-500/20">
-              <div class="flex items-center justify-between text-[10.5px] font-mono">
-                <span class="text-zinc-300">${t.portfolioCardClientPrefix || (isEn ? 'Client:' : isEs ? 'Cliente:' : 'Cliente:')} <strong class="text-white">${escapeHtml(r.clientName || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente'))}</strong></span>
-                <span class="text-emerald-400 font-bold font-cyber text-xs">${safePrice} ${t.portfolioCardEarnedSuffix || (isEn ? 'EARNED' : isEs ? 'COBRADOS' : 'INCASSATI')}</span>
-              </div>
-              <div class="flex items-center justify-between text-[9.5px] font-mono text-zinc-400 border-t border-white/5 pt-1.5">
-                <span class="flex items-center gap-1 text-emerald-400 font-bold">
-                  <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
-                  4° Passaggio Concluso // Fondi Svincolati
-                </span>
-                <button type="button" onclick="openCreatorReviewsModal('${myUid}', '${escapeHtml(AppState.user?.name || '')}')" class="px-2 py-0.5 rounded bg-amber-400/10 hover:bg-amber-400/20 text-amber-300 border border-amber-400/30 flex items-center gap-1 cursor-pointer transition">
-                  <i data-lucide="star" class="w-2.5 h-2.5 text-amber-400 fill-amber-400"></i>
-                  <span>Recensioni</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      container.innerHTML = worksHtml + additionalHtml;
-      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-    }
-    window.renderCreatorPortfolioView = renderCreatorPortfolioView;
-
-    function openEscrowRoomForOrder(orderId) {
+        function openEscrowRoomForOrder(orderId) {
       const order = (AppState.broadcastRequests || []).find(r => r && r.id === orderId);
       if (order) {
         AppState.activeEscrowOrder = order;
