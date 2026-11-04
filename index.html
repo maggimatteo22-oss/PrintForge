@@ -233,7 +233,20 @@
     }
     #mainAppHeader {
       max-width: 100vw;
-      overflow-x: hidden;
+      overflow: visible !important;
+    }
+    #userProfileDropdown {
+      z-index: 999999 !important;
+      position: absolute !important;
+      isolation: isolate !important;
+    }
+    @media (max-width: 640px) {
+      #userProfileDropdown {
+        right: 0 !important;
+        left: auto !important;
+        max-width: calc(100vw - 16px) !important;
+        width: 275px !important;
+      }
     }
     /* Masking anonimo password con puntini discreti */
     input[type="password"],
@@ -3851,8 +3864,8 @@
                 <div class="w-1/3 h-full bg-[#ce2b37]"></div>
               </div>
             </span>
-            <span id="currentLangName" class="text-xs font-mono font-bold">Italiano</span>
-            <span class="text-[10px] text-zinc-400 group-hover:text-emerald-400 transition-colors ml-0.5">⇄</span>
+            <span id="currentLangName" class="text-xs font-mono font-bold hidden sm:inline">Italiano</span>
+            <span class="text-[10px] text-zinc-400 group-hover:text-emerald-400 transition-colors ml-0.5 hidden sm:inline">⇄</span>
           </button>
         </div>
 
@@ -18959,11 +18972,11 @@ END-ISO-10303-21;`;
                 ${escapeHtml(userInitial)}
               </div>
               <!-- Nome Utente (Truncate dinamico: visibile sia su mobile che desktop) -->
-              <span class="text-white font-medium text-[11px] sm:text-xs truncate max-w-[65px] sm:max-w-[110px] md:max-w-[140px] tracking-tight">
+              <span class="text-white font-medium text-[11px] sm:text-xs truncate max-w-[50px] sm:max-w-[100px] md:max-w-[130px] tracking-tight">
                 ${escapeHtml(AppState.user.name)}
               </span>
               <!-- Ruolo Badge Subdolo (Visibile da tablet/desktop) -->
-              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isCreator ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'} uppercase hidden md:inline font-bold">
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isCreator ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'} uppercase hidden lg:inline font-bold">
                 ${roleBadgeText}
               </span>
               <!-- Freccia Dropdown Indicativa (Rende 100% intuibile la cliccabilità sia da PC che da Smartphone) -->
@@ -18972,7 +18985,7 @@ END-ISO-10303-21;`;
 
             <!-- Menù a Tendina Profilo / Switch (Opzione 1 - Stile Airbnb / Fiverr) -->
             <div id="userProfileDropdown" 
-                 class="hidden absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-24px)] bg-[#0d0d12]/95 backdrop-blur-2xl border border-white/15 rounded-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 select-none animate-in fade-in slide-in-from-top-2 duration-150">
+                 class="hidden absolute right-0 top-full mt-2 w-[275px] sm:w-72 max-w-[calc(100vw-16px)] bg-[#0d0d12]/98 backdrop-blur-2xl border border-white/20 rounded-2xl p-3 shadow-[0_25px_60px_rgba(0,0,0,0.95)] select-none animate-in fade-in slide-in-from-top-2 duration-150" style="z-index: 999999 !important;">
               
               <!-- Scheda Profilo & Ruolo Attivo -->
               <div class="profile-header-card flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] mb-2.5">
