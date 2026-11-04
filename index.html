@@ -5872,7 +5872,7 @@
                     </div>
                     <div class="relative flex items-center">
                       <span class="absolute left-3 top-2.5 text-sm font-mono text-zinc-400 select-none">€</span>
-                      <input type="number" id="reqBudget" min="1" step="1" value="" placeholder="0.00" oninput="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" onchange="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" class="w-full bg-[#14151B] border border-white/10 rounded-lg sm:rounded-xl pl-8 pr-3 py-2 text-sm text-white font-mono focus:border-white transition min-h-[40px]" />
+                      <input type="number" id="reqBudget" min="1" step="0.01" value="" placeholder="0.00" oninput="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" onchange="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" class="w-full bg-[#14151B] border border-white/10 rounded-lg sm:rounded-xl pl-8 pr-3 py-2 text-sm text-white font-mono focus:border-white transition min-h-[40px]" />
                       <button type="button" id="btnApplyInstantBudget" onclick="applyRecommendedBudget()" class="hidden" style="display: none !important;" title="Stima di mercato calcolata">
                         <span>✨ Stima: <b id="budgetApplyPriceBadge">--</b></span>
                       </button>
@@ -5895,7 +5895,7 @@
                       </div>
                       <div class="flex items-center justify-between text-zinc-400">
                         <span class="flex items-center gap-1">
-                          <span class="text-blue-400">🛡️ Protezione Stripe Escrow (1.5% + €0.25):</span>
+                          <span class="text-blue-400">🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):</span>
                         </span>
                         <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 3,00</span>
                       </div>
@@ -5979,13 +5979,13 @@
                       </div>
                       <div>
                         <span class="text-xs font-bold text-white tracking-wide block">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
-                        <span class="text-[10px] text-blue-300/80 font-mono">Fondi in Custodia Fiduciaria al 100%</span>
+                        <span class="text-[10px] text-blue-300/80 font-mono">Commissione Trasparente Ufficiale 1,5% + € 0,25</span>
                       </div>
                     </div>
-                    <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[11px] font-bold border border-blue-500/40 shrink-0">+ € 3,00</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[11px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">1,5% + € 0,25</span>
                   </div>
                   <p class="text-[11px] text-zinc-300 leading-relaxed font-sans">
-                    Al preventivo viene applicata una quota fissa di <b>€ 3,00</b> per la <b>Protezione Totale Acquirente</b> (commissioni di transazione sicura Stripe 1.5% + €0.25 incluse). 
+                    Al preventivo viene applicata esattamente la tariffa reale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
                     <span class="text-zinc-400 block mt-1">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
                   </p>
                 </div>
@@ -20908,21 +20908,23 @@ const warnBox = document.getElementById('budgetWarningBox');
                                 (parseFloat(totalHours) * machineHourRate * batchDiscount);
 
       const baseManufacturingPrice = Math.max(12, Math.round(manufacturingCost * deadlineMult));
-      const stripeEscrowFee = 3.00; // Quota fissa Stripe Escrow & Protezione Totale Acquirente
-      const computedPrice = baseManufacturingPrice + stripeEscrowFee;
+      // OPZIONE 2: Tariffa Stripe calcolata al centesimo in tempo reale (1,5% + € 0,25)
+      const stripeEscrowFee = Math.round((baseManufacturingPrice * 0.015 + 0.25) * 100) / 100;
+      const computedPrice = parseFloat((baseManufacturingPrice + stripeEscrowFee).toFixed(2));
 
       if (cBbox) cBbox.innerText = `${Math.round(x)} × ${Math.round(y)} × ${Math.round(z)} mm`;
       if (cWeight) cWeight.innerText = `${Math.round(effectiveVolCm3)} cm³ • ${totalGrams} g`;
       if (cHours) cHours.innerText = `~${totalHours} ${hourUnit}`;
-      if (cQuote) cQuote.innerText = `€ ${computedPrice},00`;
-      
+      if (cQuote) cQuote.innerText = `€ ${computedPrice.toFixed(2).replace('.', ',')}`;
       
       const bMfg = document.getElementById('breakdownMfgPrice');
-      if (bMfg) bMfg.innerText = `€ ${baseManufacturingPrice},00`;
+      if (bMfg) bMfg.innerText = `€ ${baseManufacturingPrice.toFixed(2).replace('.', ',')}`;
       const bStripe = document.getElementById('breakdownStripeFee');
-      if (bStripe) bStripe.innerText = `+ € 3,00`;
+      if (bStripe) bStripe.innerText = `+ € ${stripeEscrowFee.toFixed(2).replace('.', ',')}`;
       const bTotal = document.getElementById('breakdownTotalPrice');
-      if (bTotal) bTotal.innerText = `€ ${computedPrice},00`;
+      if (bTotal) bTotal.innerText = `€ ${computedPrice.toFixed(2).replace('.', ',')}`;
+      const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+      if (noticeBadge) noticeBadge.innerText = `+ € ${stripeEscrowFee.toFixed(2).replace('.', ',')} (1,5% + € 0,25)`;
 window.__lastComputedQuotePrice = computedPrice;
       const minPrice = Math.max(10, Math.round(computedPrice * 0.88));
       const maxPrice = Math.round(computedPrice * 1.15);
@@ -20932,7 +20934,7 @@ window.__lastComputedQuotePrice = computedPrice;
 
       // Calcola e aggiorna SEMPRE la stima in tempo reale su ogni modifica (misure, materiale, quantità, consegna flash)
       if (reqBudget) {
-        reqBudget.value = computedPrice;
+        reqBudget.value = computedPrice.toFixed(2);
         reqBudget.classList.add('border-emerald-400', 'text-emerald-300');
         setTimeout(() => reqBudget.classList.remove('border-emerald-400', 'text-emerald-300'), 400);
       }
@@ -20990,16 +20992,18 @@ window.__lastComputedQuotePrice = computedPrice;
         warnBox.style.display = 'none';
       }
 
-      // Sincronizza il breakdown trasparente quote
+      // OPZIONE 2: Sincronizzazione in tempo reale percentuale Stripe esatta al centesimo (1,5% + € 0,25)
       if (val > 0) {
-        const stripeFee = 3.00;
-        const mfgVal = Math.max(0, val - stripeFee);
+        const mfgVal = Math.max(0, Math.round(((val - 0.25) / 1.015) * 100) / 100);
+        const stripeFee = Math.max(0, Math.round((val - mfgVal) * 100) / 100);
         const bMfg = document.getElementById('breakdownMfgPrice');
         if (bMfg) bMfg.innerText = '€ ' + mfgVal.toFixed(2).replace('.', ',');
         const bStripe = document.getElementById('breakdownStripeFee');
-        if (bStripe) bStripe.innerText = '+ € 3,00';
+        if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',');
         const bTotal = document.getElementById('breakdownTotalPrice');
         if (bTotal) bTotal.innerText = '€ ' + val.toFixed(2).replace('.', ',');
+        const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+        if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
       }
 
       const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
@@ -21009,7 +21013,7 @@ window.__lastComputedQuotePrice = computedPrice;
       });
 
       const checkoutPart = document.getElementById('checkoutPartCost');
-      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + Math.max(0, val - 3).toFixed(2).replace('.', ',')) : '--';
+      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + Math.max(0, (val - 0.25)/1.015).toFixed(2).replace('.', ',')) : '--';
       const checkoutTotal = document.getElementById('checkoutTotalEscrow');
       if (checkoutTotal) checkoutTotal.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '--';
 
