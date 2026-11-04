@@ -5962,7 +5962,7 @@
                         <span class="flex items-center gap-1">
                           <span class="text-blue-400">🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):</span>
                         </span>
-                        <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 3,00</span>
+                        <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 0,60 (1,5% + € 0,25)</span>
                       </div>
                       <div class="flex items-center justify-between text-zinc-300 pt-1 border-t border-white/10 font-bold">
                         <span>Totale al Checkout:</span>
@@ -6047,7 +6047,7 @@
                         <span class="text-[10px] text-blue-300/80 font-mono">Commissione Trasparente Ufficiale 1,5% + € 0,25</span>
                       </div>
                     </div>
-                    <span class="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[11px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">1,5% + € 0,25</span>
+                    <span class="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[11px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">OPZIONE 2: 1,5% + € 0,25</span>
                   </div>
                   <p class="text-[11px] text-zinc-300 leading-relaxed font-sans">
                     Al preventivo viene applicata esattamente la tariffa reale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
@@ -8798,12 +8798,24 @@
         </div>
 
         <!-- 2. Breakdown Trasparente Costi & Escrow -->
-        <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
-          <div>
-            <span class="text-[9px] font-mono text-zinc-400 uppercase tracking-wider block" id="i18n-reviewTotalLabel">TOTALE DA CONGELARE IN ESCROW</span>
-            <span class="text-[10px] text-zinc-400 font-sans block" id="i18n-reviewIncludedInfo">Spedizione tracciata 24/48h & Imballo su misura inclusi</span>
+        <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[9px] font-mono text-zinc-400 uppercase tracking-wider block" id="i18n-reviewTotalLabel">TOTALE DA CONGELARE IN ESCROW</span>
+              <span class="text-[10px] text-zinc-400 font-sans block" id="i18n-reviewIncludedInfo">Spedizione tracciata 24/48h &amp; Imballo su misura inclusi</span>
+            </div>
+            <span class="text-xl sm:text-2xl font-cyber font-extrabold text-emerald-400 tracking-tight" id="reviewTotalEscrow">€ 0,00</span>
           </div>
-          <span class="text-xl sm:text-2xl font-cyber font-extrabold text-emerald-400 tracking-tight" id="reviewTotalEscrow">€ 0,00</span>
+          <div class="pt-2 border-t border-white/[0.06] space-y-1 text-[10px] font-mono">
+            <div class="flex items-center justify-between text-zinc-400">
+              <span>Manifattura 3D Netta Maker:</span>
+              <span id="reviewMfgNetto" class="text-zinc-200 font-bold">€ 0,00</span>
+            </div>
+            <div class="flex items-center justify-between text-zinc-400">
+              <span class="text-blue-400">🛡️ Protezione Stripe Escrow (Opzione 2: 1,5% + € 0,25):</span>
+              <span id="reviewStripeFee" class="text-blue-300 font-bold">+ € 0,00</span>
+            </div>
+          </div>
         </div>
 
         <!-- 3. Selezione Metodo di Pagamento Protetto (Minimal, No Fake Demo Data) -->
@@ -20417,6 +20429,9 @@ END-ISO-10303-21;`;
       dispatchEmailWebhook('maker_accepted', {
         requestId: req.id,
         clientEmail: clientEmail,
+        stripeOption: 'OPZIONE_2 (1,5% + €0,25)',
+        mfgPrice: budgetNum > 0 ? ('€ ' + Math.max(0, Math.round(((budgetNum - 0.25)/1.015)*100)/100).toFixed(2).replace('.', ',')) : '€ 0,00',
+        stripeFee: budgetNum > 0 ? ('€ ' + Math.max(0, Math.round((budgetNum - Math.max(0, (budgetNum - 0.25)/1.015))*100)/100).toFixed(2).replace('.', ',')) : '€ 0,00',
         clientName: clientName,
         makerName: makerName,
         title: partTitle,
@@ -21090,17 +21105,30 @@ window.__lastComputedQuotePrice = computedPrice;
           }
         }
       } else {
-        // Nessun prezzo inserito dal cliente (campo vuoto per libero arbitrio) -> nascondi avviso e reset breakdown
+        // Nessun prezzo manuale digitato: mostra nel breakdown la stima Opzione 2 calcolata in tempo reale!
         if (warnBox) {
           warnBox.classList.add('hidden');
           warnBox.style.display = 'none';
         }
-        const bMfg = document.getElementById('breakdownMfgPrice');
-        if (bMfg) bMfg.innerText = '€ --';
-        const bStripe = document.getElementById('breakdownStripeFee');
-        if (bStripe) bStripe.innerText = '+ € --';
-        const bTotal = document.getElementById('breakdownTotalPrice');
-        if (bTotal) bTotal.innerText = '€ --';
+        if (rec > 0) {
+          const mfgVal = Math.max(0, Math.round(((rec - 0.25) / 1.015) * 100) / 100);
+          const stripeFee = Math.max(0, Math.round((rec - mfgVal) * 100) / 100);
+          const bMfg = document.getElementById('breakdownMfgPrice');
+          if (bMfg) bMfg.innerText = '€ ' + mfgVal.toFixed(2).replace('.', ',');
+          const bStripe = document.getElementById('breakdownStripeFee');
+          if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+          const bTotal = document.getElementById('breakdownTotalPrice');
+          if (bTotal) bTotal.innerText = '€ ' + rec.toFixed(2).replace('.', ',') + ' (Stima)';
+          const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+          if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+        } else {
+          const bMfg = document.getElementById('breakdownMfgPrice');
+          if (bMfg) bMfg.innerText = '€ --';
+          const bStripe = document.getElementById('breakdownStripeFee');
+          if (bStripe) bStripe.innerText = '+ € --';
+          const bTotal = document.getElementById('breakdownTotalPrice');
+          if (bTotal) bTotal.innerText = '€ --';
+        }
       }
 
       const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '--';
@@ -26086,6 +26114,15 @@ window.__lastComputedQuotePrice = computedPrice;
       }
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
+      // Calcolo trasparente Opzione 2 nel Riepilogo Commessa (1,5% + € 0,25 al centesimo)
+      const reviewBudgetTotal = draft.budgetNum || 0;
+      const reviewMfgVal = reviewBudgetTotal > 0 ? Math.max(0, Math.round(((reviewBudgetTotal - 0.25) / 1.015) * 100) / 100) : 0;
+      const reviewStripeVal = reviewBudgetTotal > 0 ? Math.max(0, Math.round((reviewBudgetTotal - reviewMfgVal) * 100) / 100) : 0;
+      const mfgNettoEl = document.getElementById('reviewMfgNetto');
+      if (mfgNettoEl) mfgNettoEl.innerText = `€ ${reviewMfgVal.toFixed(2).replace('.', ',')}`;
+      const stripeFeeEl = document.getElementById('reviewStripeFee');
+      if (stripeFeeEl) stripeFeeEl.innerText = `+ € ${reviewStripeVal.toFixed(2).replace('.', ',')} (Opzione 2: 1,5% + €0,25)`;
+
       if (totalEscrowEl) totalEscrowEl.innerText = draft.budgetStr;
 
       // Calcolo rate Klarna reali
@@ -27250,6 +27287,7 @@ window.__lastComputedQuotePrice = computedPrice;
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.color || 'Nero')}</span>
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.quantity || '1 pezzo')}</span>
                   <span class="text-emerald-400 font-bold">${escapeHtml(activeCreatorJob.budget || '€ 35,00')}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">OPZIONE 2 (1,5% + €0,25)</span>
                 </div>
               </div>
               <div class="flex sm:flex-col items-center justify-center gap-2 pt-2 sm:pt-0 sm:border-l sm:border-white/10 sm:pl-4 shrink-0">
@@ -27340,9 +27378,10 @@ window.__lastComputedQuotePrice = computedPrice;
           <div class="p-4 sm:p-5 rounded-2xl bg-[#0D0D12] border border-white/10 hover:border-white/20 transition space-y-4 flex flex-col justify-between">
             <div class="space-y-3">
               <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                   <span class="px-2 py-0.5 rounded-md bg-white/5 text-[10px] font-mono text-zinc-400">#${safeId}</span>
                   <span class="text-xs font-mono text-emerald-400 font-bold">${escapeHtml(displayBudget)}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">OPZIONE 2 (1,5% + €0,25)</span>
                 </div>
                 <span class="text-[10px] font-mono text-zinc-400">${escapeHtml(r.clientCity || 'Milano')}</span>
               </div>
