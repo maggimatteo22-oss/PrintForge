@@ -10198,6 +10198,161 @@
           }
         });
 
+        // 4b. Ascolto SPEDIZIONE PACCO (Sincronizzazione Fase 3 in tempo reale tra Smartphone e PC)
+        supabaseRealtimeChannel.on('broadcast', { event: 'parcel_shipped' }, ({ payload }) => {
+          console.log('📦 [Realtime Parcel Shipped]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.isShipped = true;
+            rfp.trackingNumber = payload.trackingNumber;
+            rfp.status = 'SPEDITO // IN TRANSITO AL CORRIERE';
+          }
+          AppState.isShipped = true;
+          if (AppState.activeEscrowOrder) {
+            AppState.activeEscrowOrder.isShipped = true;
+            AppState.activeEscrowOrder.trackingNumber = payload.trackingNumber;
+            AppState.activeEscrowOrder.carrier = payload.carrier || 'UPS Standard';
+            AppState.activeEscrowOrder.timestamp = 'In Transito con il Corriere';
+          }
+
+          try {
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+
+          const liveTrackingNumDisplay = document.getElementById('liveTrackingNumDisplay');
+          if (liveTrackingNumDisplay) {
+            liveTrackingNumDisplay.innerHTML = '<span class="text-emerald-400 font-bold">' + payload.trackingNumber + '</span>';
+          }
+          const liveCarrierBadge = document.getElementById('liveCarrierBadge');
+          if (liveCarrierBadge) {
+            liveCarrierBadge.innerText = (payload.carrier || 'UPS Standard').toUpperCase();
+          }
+
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          if (AppState.user && AppState.user.role === 'client') {
+            try {
+              if (typeof sendParcelShippedEmailToClient === 'function') {
+                sendParcelShippedEmailToClient(rfp || AppState.activeEscrowOrder);
+              }
+            } catch(e) {}
+            showToast('📦 Il tuo pacco è stato affidato al corriere (' + (payload.carrier || 'UPS') + ': ' + payload.trackingNumber + ')!', 'info');
+          }
+        });
+
+        // 4c. Ascolto APPROVAZIONE COLLAUDO DA PARTE DEL CLIENTE (Sincronizzazione Fase 2 e sblocco etichetta maker)
+        supabaseRealtimeChannel.on('broadcast', { event: 'qc_approved_by_client' }, ({ payload }) => {
+          console.log('🎉 [Realtime QC Approved by Client]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.clientApprovedQc = true;
+            rfp.qcStatus = 'approvato_dal_cliente';
+          }
+          AppState.clientApprovedQc = true;
+          AppState.stage2Completed = true;
+          try {
+            localStorage.setItem('printforge_qc_approved_' + payload.rfpId, 'true');
+            localStorage.setItem('printforge_qc_status_' + payload.rfpId, 'approvato_dal_cliente');
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+
+          if (typeof renderClientQcDecisionUI === 'function') renderClientQcDecisionUI();
+          if (typeof applyRoleGatingForLabelDownload === 'function') applyRoleGatingForLabelDownload();
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          if (AppState.user && AppState.user.role === 'creator') {
+            try {
+              if (typeof sendQcApprovedEmailToCreator === 'function') {
+                sendQcApprovedEmailToCreator(rfp || AppState.activeEscrowOrder);
+              }
+            } catch(e) {}
+            showToast('🎉 Il cliente ha approvato le foto del collaudo! Etichetta PDF sbloccata.', 'success');
+          }
+        });
+
+        // 4d. Ascolto RICHIESTA REVISIONE COLLAUDO DAL CLIENTE
+        supabaseRealtimeChannel.on('broadcast', { event: 'qc_rejected_by_client' }, ({ payload }) => {
+          console.log('⚠️ [Realtime QC Revision Requested]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.clientApprovedQc = false;
+            rfp.qcStatus = 'revisione_richiesta';
+          }
+          AppState.clientApprovedQc = false;
+          try {
+            localStorage.removeItem('printforge_qc_approved_' + payload.rfpId);
+            localStorage.setItem('printforge_qc_status_' + payload.rfpId, 'revisione_richiesta');
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+
+          if (typeof renderClientQcDecisionUI === 'function') renderClientQcDecisionUI();
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          if (AppState.user && AppState.user.role === 'creator') {
+            try {
+              if (typeof sendQcRevisionRequestedEmailToCreator === 'function') {
+                sendQcRevisionRequestedEmailToCreator(rfp || AppState.activeEscrowOrder, payload.reason);
+              }
+            } catch(e) {}
+            showToast('⚠️ Il cliente richiede modifiche alle foto del collaudo: "' + (payload.reason || '') + '"', 'warning');
+          }
+        });
+
+        // 4e. Ascolto COMPLETAMENTO 4° PASSAGGIO (Svincolo Escrow, Recensione Cliente e Modal Creator)
+        supabaseRealtimeChannel.on('broadcast', { event: 'order_completed_stage4' }, ({ payload }) => {
+          console.log('🏁 [Realtime Order Completed Stage 4]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          AppState.isDelivered = true;
+          AppState.stage4Completed = true;
+          if (AppState.activeEscrowOrder) {
+            AppState.activeEscrowOrder.isDelivered = true;
+          }
+
+          // Imposta immediatamente il saldo Escrow a € 0,00
+          const budgetEl = document.getElementById('escrowOrderBudget');
+          if (budgetEl) budgetEl.innerText = '€ 0,00';
+
+          const countdownEl = document.getElementById('escrowCountdown');
+          if (countdownEl) {
+            countdownEl.innerText = '✓ CONSEGNATO // FONDI SVINCOLATI';
+            countdownEl.className = 'font-display text-emerald-400 text-base tracking-wider font-mono';
+          }
+
+          if (typeof renderEscrowResolutionBanner === 'function') renderEscrowResolutionBanner();
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          try {
+            localStorage.setItem('printforge_stage4_completed', 'true');
+            localStorage.setItem('printforge_completed_' + payload.rfpId, 'true');
+          } catch(e) {}
+
+          // DIFFERENZIAZIONE RUOLO IN TEMPO REALE TRA SMARTPHONE E PC:
+          if (AppState.user && AppState.user.role === 'creator') {
+            // IL CREATOR VEDE IL MESSAGGIO DI COMPLETAMENTO COMMESSA E SVINCOLO FONDI
+            if (typeof showStage4CompletionModal === 'function') {
+              showStage4CompletionModal({ rfpId: payload.rfpId, amount: payload.amount });
+            }
+          } else if (AppState.user && AppState.user.role === 'client') {
+            // IL CLIENTE IN TEMPO REALE DAL SUO DISPOSITIVO VEDE LA RECENSIONE DA POTER FARE
+            setTimeout(() => {
+              if (typeof openLeaveReviewModal === 'function') {
+                openLeaveReviewModal(payload.rfpId, payload.makerId, payload.makerName);
+              }
+            }, 600);
+          }
+        });
+
         // 5. Postgres Changes (con try-catch resiliente per non bloccare il canale se la replica non è attiva)
         try {
           supabaseRealtimeChannel.on('postgres_changes', { event: '*', schema: 'public', table: 'broadcast_requests' }, payload => {
@@ -20611,6 +20766,456 @@ END-ISO-10303-21;`;
     }
     window.sendQcPhotosReadyEmailToClient = sendQcPhotosReadyEmailToClient;
 
+    
+    /* ========================================================================= */
+    /* EMAIL SISTEMA PRINTFORGE: DISTINZIONE RIGOROSA TRA CLIENTE E CREATOR      */
+    /* ========================================================================= */
+
+    // 1. DA CLIENTE: Conferma Prenotazione Opera in Vetrina (Showcase Booking Confirmed)
+    function sendShowcaseBookingConfirmedEmailToClient(req) {
+      if (!req) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      const clientName = req.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
+      const clientEmail = req.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : 'matteo@printforge.dev');
+      const makerName = req.acceptedBy || req.maker || (isEn ? 'PrintForge Master Artisan' : 'Creator d\'Autore PrintForge');
+      const partTitle = req.title || (isEn ? 'Artisan Showcase Creation' : 'Opera d\'Autore da Vetrina');
+      const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '✨ Showcase Booking Confirmed! "' + partTitle + '" by ' + makerName;
+        summary = 'Maker ' + makerName + ' confirmed your showcase booking for "' + partTitle + '". Reserved under Stripe Escrow custody.';
+        body = [
+          'Dear ' + clientName + ',',
+          '',
+          'Magnificent choice! Maker & Artisan "' + makerName + '" has officially CONFIRMED your exclusive SHOWCASE BOOKING for "' + partTitle + '" (#' + req.id + ').',
+          '',
+          '🎨 SHOWCASE SPECIFICATIONS & ARTISAN DETAILS:',
+          '• Creation / Work: ' + partTitle,
+          '• Order ID: #' + req.id,
+          '• Verified Creator: ' + makerName,
+          '• Provenance: Exclusive PrintForge Showcase (Pre-verified geometry & technical finish)',
+          '• Material & Finish: ' + (req.material || 'Special Edition') + ' (' + (req.color || 'Artisan Custom') + ')',
+          '• Agreed Value in Escrow: ' + budgetStr,
+          '',
+          '🛡️ EXCLUSIVE SHOWCASE PROTECTION (STRIPE ESCROW):',
+          'Your funds (' + budgetStr + ') remain 100% frozen in Stripe Escrow custody.',
+          'The artisan is now completing the final surface conditioning and preparing the secure anti-shock packaging.',
+          'You will receive an instant notification with tracking details as soon as the package is handed over to the courier.',
+          '',
+          'Inspect your booking in your Escrow Room: https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Warm regards,',
+          'The PrintForge Showcase Protocol',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '✨ ¡Reserva de Escaparate Confirmada! "' + partTitle + '" por ' + makerName;
+        summary = 'El Creador ' + makerName + ' ha confirmado tu reserva de escaparate para "' + partTitle + '". Protegido por Stripe Escrow.';
+        body = [
+          'Estimado/a ' + clientName + ',',
+          '',
+          '¡Excelente elección! El Creador artesanal "' + makerName + '" ha CONFIRMADO tu RESERVA DE ESCAPARATE para "' + partTitle + '" (#' + req.id + ').',
+          '',
+          '🎨 DETALLES DE LA OBRA Y CREADOR:',
+          '• Obra: ' + partTitle,
+          '• ID de Pedido: #' + req.id,
+          '• Creador Asignado: ' + makerName,
+          '• Procedencia: Escaparate Exclusivo PrintForge',
+          '• Presupuesto Protegido en Escrow: ' + budgetStr,
+          '',
+          'Atentamente,',
+          'Protocolo de Escaparate PrintForge',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else {
+        subject = '✨ Prenotazione Vetrina Confermata! L\'opera "' + partTitle + '" è in preparazione da ' + makerName;
+        summary = 'Il Creator ' + makerName + ' ha confermato la tua prenotazione per l\'opera esclusiva "' + partTitle + '". Fondi (' + budgetStr + ') custoditi in garanzia fiduciaria Stripe Escrow.';
+        body = [
+          'Gentile ' + clientName + ',',
+          '',
+          'Splendida scelta! Il Creator e Artigiano verificato "' + makerName + '" ha CONFERMATO ufficialmente la tua PRENOTAZIONE DALLA VETRINA ESCLUSIVA per l\'opera d\'autore "' + partTitle + '" (#' + req.id + ').',
+          '',
+          '🎨 SPECIFICHE DELL\'OPERA DA VETRINA & DETTAGLI CREATOR:',
+          '• Opera / Pezzo: ' + partTitle,
+          '• ID Prenotazione: #' + req.id,
+          '• Creator / Officina Incaricata: ' + makerName,
+          '• Tipologia: Componente Esclusivo da Vetrina d\'Autore (Geometrie e finiture pre-validate all\'origine)',
+          '• Materiale & Finitura: ' + (req.material || 'Tecnico Speciale') + ' (' + (req.color || 'Standard d\'Autore') + ')',
+          '• Quantità: ' + (req.quantity || '1 pezzo') + '',
+          '• Importo Protetto in Escrow: ' + budgetStr + '',
+          '',
+          '🛡️ GARANZIA FIDUCIARIA STRIPE ESCROW DEDICATA:',
+          '1. I tuoi fondi (' + budgetStr + ') rimangono congelati in totale sicurezza nel conto di custodia fiduciaria Stripe Escrow.',
+          '2. Il Creator ha avviato il condizionamento superficiale finale e la preparazione dell\'imballo antiurto personalizzato (Formato S).',
+          '3. Non appena il pacco verrà consegnato al corriere espresso tracciato, riceverai il codice di tracking per monitorare il tragitto fino a casa tua.',
+          '4. Il compenso verrà trasferito al Creator unicamente dopo la consegna effettiva e la tua piena soddisfazione.',
+          '',
+          'Puoi seguire la preparazione nella tua Stanza Escrow:',
+          'https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Cordiali saluti,',
+          'Il Team PrintForge Showcase & Escrow Protocol',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      recordSentEmail({
+        to: clientEmail,
+        from: 'dispatch@printforge.dev',
+        senderName: 'PrintForge Showcase Concierge',
+        subject: subject,
+        summary: summary,
+        body: body,
+        type: 'client_showcase_confirmed',
+        requestId: req.id,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      addAppNotification('✨ PRENOTAZIONE VETRINA CONFERMATA', 'Il Creator "' + makerName + '" ha confermato la tua opera "' + partTitle + '" (# ' + req.id + ')!', {
+        type: 'showcase_confirmed',
+        requestId: req.id,
+        targetPage: 'order-room'
+      });
+    }
+    window.sendShowcaseBookingConfirmedEmailToClient = sendShowcaseBookingConfirmedEmailToClient;
+
+    // 2. DA CLIENTE: Creator Spedisce il Pacco (Parcel Shipped & Tracking Provided)
+    function sendParcelShippedEmailToClient(order) {
+      if (!order) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      const clientName = order.clientName || AppState.user?.name || (isEn ? 'Client' : 'Cliente');
+      const clientEmail = order.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : 'matteo@printforge.dev');
+      const makerName = order.maker || order.acceptedBy || 'Maker Certificato PrintForge';
+      const partTitle = order.title || 'Componente 3D';
+      const trackingCode = order.trackingNumber || 'PF-UPS-892104';
+      const carrier = order.shippingCarrier || order.carrier || 'UPS Standard';
+      const budgetStr = formatEuroClean(order.escrowTotal || order.budget || '€ 0,00');
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '📦 Your Package Has Been Shipped! Tracking: ' + trackingCode + ' (' + carrier + ')';
+        summary = 'Maker "' + makerName + '" has handed over your package for "' + partTitle + '" to ' + carrier + '. Escrow custody active until delivery.';
+        body = [
+          'Dear ' + clientName + ',',
+          '',
+          'Great news! Verified Maker "' + makerName + '" has packed, sealed, and HANDED OVER your component "' + partTitle + '" to express courier ' + carrier + '!',
+          '',
+          '🚚 SHIPPING & TRACKING DETAILS:',
+          '• Component: ' + partTitle,
+          '• Tracking Number: ' + trackingCode,
+          '• Express Carrier: ' + carrier,
+          '• Packaging: Anti-shock customized reinforced box',
+          '• Estimated Delivery: 24-48 business hours',
+          '',
+          '🛡️ STRIPE ESCROW STATUS:',
+          'Your funds (' + budgetStr + ') remain 100% frozen in Stripe Escrow custody until the courier completes delivery at your destination.',
+          '',
+          'Track your parcel in real-time in your Escrow Room: https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Best regards,',
+          'PrintForge Logistics Hub',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '📦 ¡Tu Paquete Ha Sido Enviado! Seguimiento: ' + trackingCode + ' (' + carrier + ')';
+        summary = 'El Maker "' + makerName + '" ha entregado tu paquete para "' + partTitle + '" al transportista ' + carrier + '.';
+        body = [
+          'Estimado/a ' + clientName + ',',
+          '',
+          '¡Tu pedido para "' + partTitle + '" ha sido enviado!',
+          '• Transportista: ' + carrier,
+          '• Número de Seguimiento: ' + trackingCode,
+          '• Fondos en Escrow: ' + budgetStr + ' (retenidos con seguridad hasta la entrega)',
+          '',
+          'PrintForge Logistics Hub',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else {
+        subject = '📦 Il tuo pacco è stato spedito! Tracking: ' + trackingCode + ' (' + carrier + ')';
+        summary = 'L\'officina "' + makerName + '" ha affidato il pacco sigillato per "' + partTitle + '" al corriere ' + carrier + '. Monitora la spedizione in tempo reale.';
+        body = [
+          'Gentile ' + clientName + ',',
+          '',
+          'Ottime notizie! L\'officina e Maker verificato "' + makerName + '" ha completato la lavorazione, sigillato il componente "' + partTitle + '" nell\'imballo antiurto protettivo e lo ha UFFICIALMENTE AFFIDATO AL CORRIERE ESPRESSO ' + carrier + '!',
+          '',
+          '🚚 DETTAGLI SPEDIZIONE & TRACCIAMENTO IN TEMPO REALE:',
+          '• Componente Spedito: ' + partTitle,
+          '• ID Commessa: #' + (order.id || 'PF-ORD') + '',
+          '• Corriere Incaricato: ' + carrier + ' Espresso Assicurato',
+          '• Codice di Tracciamento: ' + trackingCode + '',
+          '• Tipo di Imballo: Scatola su misura Formato S con schiuma ammortizzante ad alta densità',
+          '• Consegna Stimata: 24-48 ore lavorative',
+          '',
+          '🛡️ STATO GARANZIA STRIPE ESCROW (FASE 3 ATTIVA):',
+          'I tuoi fondi (' + budgetStr + ') rimangono rigorosamente custoditi e protetti al 100% nel conto Stripe Escrow. Nessun compenso verrà svincolato all\'officina fino alla verifica ufficiale della consegna al tuo indirizzo.',
+          '',
+          'Puoi seguire la spedizione e il tracciamento in tempo reale nella tua Stanza Escrow:',
+          'https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Cordiali saluti,',
+          'Il Team PrintForge Logistics & Dispatch',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      recordSentEmail({
+        to: clientEmail,
+        from: 'dispatch@printforge.dev',
+        senderName: 'PrintForge Logistics Dispatch',
+        subject: subject,
+        summary: summary,
+        body: body,
+        type: 'client_parcel_shipped',
+        requestId: order.id || 'PF-ORD',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      addAppNotification('📦 PACCO SPEDITO CON CORRIERE', 'Il tuo pacco per "' + partTitle + '" è in viaggio (' + carrier + ': ' + trackingCode + ')!', {
+        type: 'parcel_shipped',
+        requestId: order.id,
+        targetPage: 'order-room'
+      });
+    }
+    window.sendParcelShippedEmailToClient = sendParcelShippedEmailToClient;
+
+    // 3. PER CREATOR: Nuova Offerta Online Globale nel Sito (Global Network Broadcast)
+    function sendGlobalBroadcastRequestEmailToCreator(req) {
+      if (!req) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      // Recupera tutti i creator attivi registrati o usa l'email creator attuale
+      const creatorEmails = new Set();
+      if (AppState.user && AppState.user.role === 'creator' && AppState.user.email) {
+        creatorEmails.add(AppState.user.email.toLowerCase().trim());
+      }
+      try {
+        const reg = JSON.parse(localStorage.getItem('printforge_accessed_creators_registry') || '[]');
+        if (Array.isArray(reg)) {
+          reg.forEach(em => { if (em && em.includes('@')) creatorEmails.add(em.toLowerCase().trim()); });
+        }
+      } catch(e) {}
+      if (creatorEmails.size === 0) creatorEmails.add('maker@printforge.dev');
+
+      const clientName = req.clientName || 'Cliente Verificato';
+      const partTitle = req.title || 'Componente 3D su Misura';
+      const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
+      const budgetNum = parseFloat(String(req.budget).replace(/[^0-9.]/g, '')) || 0;
+      const mfgValStr = budgetNum > 0 ? ('€ ' + Math.max(0, Math.round(((budgetNum - 0.25)/1.015)*100)/100).toFixed(2).replace('.', ',')) : budgetStr;
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '📢 New Global Request Available on Network: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
+        summary = 'A client posted a new open manufacturing request: "' + partTitle + '". Net Maker Payout: ' + mfgValStr + '. Accept it first!';
+        body = [
+          'Hello Maker,',
+          '',
+          'A client has just published a new GLOBAL MANUFACTURING COMMISION on the PrintForge decentralized network:',
+          '',
+          '📋 PROJECT SPECIFICATIONS:',
+          '• Component Title: ' + partTitle,
+          '• Request ID: #' + req.id,
+          '• Material & Precision: ' + (req.material || 'PETG') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
+          '• Dimensions & Infill: ' + (req.dimensions || '~85×85×42 mm') + ' • ' + (req.infill || '50%'),
+          '• Quantity: ' + (req.quantity || '1 pcs'),
+          '• Guaranteed Net Maker Payout: ' + mfgValStr + ' (Stripe Escrow Pre-Auth)',
+          '',
+          '⚡ TAKE CHARGE:',
+          'Commissions on the open board are assigned on a first-come, first-served basis with certified quality standards.',
+          'Review technical files and claim the job: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Global Dispatch',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '📢 Nueva Solicitud Global en la Red: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
+        summary = 'Un cliente ha publicado un nuevo pedido: "' + partTitle + '". Pago neto Maker: ' + mfgValStr + '.';
+        body = [
+          'Hola Creador,',
+          '',
+          'Se ha publicado un nuevo pedido global en la red PrintForge:',
+          '• Pieza: ' + partTitle,
+          '• Presupuesto neto para el Maker: ' + mfgValStr,
+          '• Revisa y acepta el pedido en: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Global Dispatch'
+        ].join('\n');
+      } else {
+        subject = '📢 Nuova Commessa Globale nel Network: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
+        summary = 'Un cliente ha appena pubblicato una nuova richiesta aperta nel network: "' + partTitle + '". Compenso netto Maker: ' + mfgValStr + '. Prendi in carico per primo!';
+        body = [
+          'Gentile Creator & Officina Certificata,',
+          '',
+          'Un cliente ha appena inviato e pubblicato una NUOVA COMMESSA ONLINE GLOBALE sulla rete distribuita PrintForge:',
+          '',
+          '📋 SPECIFICHE TECNICHE DELLA COMMESSA:',
+          '• Titolo Componente: ' + partTitle,
+          '• ID Commessa: #' + req.id,
+          '• Richiedente: ' + clientName,
+          '• Materiale & Tolleranza: ' + (req.material || 'PETG Tecnico') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
+          '• Dimensioni Ingombro & Infill: ' + (req.dimensions || '~85×85×42 mm') + ' • ' + (req.infill || '50% Meccanico'),
+          '• Quantità Richiesta: ' + (req.quantity || '1 pezzo') + '',
+          '• Tempistica Richiesta: ' + (req.deadline || 'Standard (3-5 gg)') + '',
+          '• COMPENSO NETTO MAKER: ' + mfgValStr + ' (Fondi pre-autorizzati in garanzia fiduciaria Stripe Escrow)',
+          '',
+          '⚡ PRESA IN CARICO IMMEDIATA:',
+          'Le commesse pubblicate sulla bacheca aperta sono disponibili per tutti i Maker verificati della rete: il primo che accetta la commessa blocca l\'assegnazione esclusiva!',
+          '',
+          'Visiona i file tecnici CAD/STL e prendi in carico il lavoro:',
+          'https://print-forge-seven.vercel.app/#requests',
+          '',
+          'Cordiali saluti,',
+          'Il Network Dispatch di PrintForge P2P',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      creatorEmails.forEach(toEmail => {
+        recordSentEmail({
+          to: toEmail,
+          from: 'dispatch@printforge.dev',
+          senderName: 'PrintForge Global Network Dispatch',
+          subject: subject,
+          summary: summary,
+          body: body,
+          type: 'creator_global_request',
+          requestId: req.id,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+      });
+    }
+    window.sendGlobalBroadcastRequestEmailToCreator = sendGlobalBroadcastRequestEmailToCreator;
+
+    // 4. PER CREATOR: Richiesta Offerta Diretta nell'Account Personale (Direct Creator Offer / Private Showcase Booking)
+    function sendDirectOfferEmailToCreator(req, targetCreatorEmail) {
+      if (!req) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      const destEmail = targetCreatorEmail || req.targetCreatorEmail || req.makerEmail || (AppState.user?.role === 'creator' ? AppState.user.email : 'maker@printforge.dev');
+      const clientName = req.clientName || 'Cliente';
+      const partTitle = req.title || 'Componente Riservato';
+      const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
+      const budgetNum = parseFloat(String(req.budget).replace(/[^0-9.]/g, '')) || 0;
+      const mfgValStr = budgetNum > 0 ? ('€ ' + Math.max(0, Math.round(((budgetNum - 0.25)/1.015)*100)/100).toFixed(2).replace('.', ',')) : budgetStr;
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '🎯 Direct Job Request for Your Profile: #' + req.id + ' from ' + clientName + ' (' + budgetStr + ')';
+        summary = 'Client "' + clientName + '" sent a direct manufacturing order targeted specifically to your workshop! Reserved Payout: ' + mfgValStr + '.';
+        body = [
+          'Hello Maker,',
+          '',
+          'A client has selected your workshop for a DIRECT PRIVATE ORDER on PrintForge!',
+          '',
+          '🎯 DIRECT REQUEST SPECIFICATIONS:',
+          '• Component: ' + partTitle,
+          '• Request ID: #' + req.id,
+          '• Client: ' + clientName,
+          '• Type: ' + (req.isShowcaseOrder ? 'Showcase Creation Booking' : 'Direct Targeted Order'),
+          '• Reserved Net Maker Payout: ' + mfgValStr + ' (Protected in Stripe Escrow)',
+          '',
+          'No other Maker can take this job. It is assigned directly to you in your requests panel.',
+          'Review specifications and confirm: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Direct Concierge',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '🎯 Pedido Directo para tu Taller: #' + req.id + ' de ' + clientName + ' (' + budgetStr + ')';
+        summary = '¡El cliente "' + clientName + '" te ha enviado un pedido directo! Pago reservado: ' + mfgValStr + '.';
+        body = [
+          'Hola Creador,',
+          '',
+          'Has recibido un pedido directo asignado exclusivamente a tu taller en PrintForge.',
+          '• Obra / Pieza: ' + partTitle,
+          '• Importe reservado: ' + mfgValStr,
+          '• Confirma la commessa en: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Direct Concierge'
+        ].join('\n');
+      } else {
+        subject = '🎯 Nuova Richiesta Diretta per la tua Officina: #' + req.id + ' da ' + clientName + ' (' + budgetStr + ')';
+        summary = 'Il cliente "' + clientName + '" ha richiesto una commessa specifica per il tuo profilo (' + partTitle + '). Budget netto riservato: ' + mfgValStr + '.';
+        body = [
+          'Gentile Creator & Officina Selezionata,',
+          '',
+          'Ottime notizie! Il cliente "' + clientName + '" ha scelto SPECIFICATAMENTE IL TUO PROFILO ARTIGIANO (o una tua opera dalla vetrina) per affidarti una COMMESSA DIRETTA ESCLUSIVA:',
+          '',
+          '🎯 SPECIFICHE DELLA COMMESSA DIRETTA:',
+          '• Componente / Opera: ' + partTitle,
+          '• ID Commessa: #' + req.id,
+          '• Cliente Richiedente: ' + clientName,
+          '• Tipologia: ' + (req.isShowcaseOrder ? 'Prenotazione Opera Esclusiva da Vetrina' : 'Richiesta Personalizzata Diretta sul Profilo Personale') + '',
+          '• Materiale & Requisiti: ' + (req.material || 'PETG Tecnico') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
+          '• COMPENSO NETTO RISERVATO A TE: ' + mfgValStr + ' (Fondi congelati con garanzia fiduciaria Stripe Escrow)',
+          '',
+          '🔒 ASSEGNAZIONE ESCLUSIVA:',
+          'Questa commessa è riservata unicamente al tuo account Creator e non è visibile agli altri maker della piattaforma. Il budget è già bloccato a tuo favore su Stripe Escrow.',
+          '',
+          'Apri il tuo pannello operativo per visionare i dettagli e confermare la presa in carico:',
+          'https://print-forge-seven.vercel.app/#requests',
+          '',
+          'Cordiali saluti,',
+          'Il Team PrintForge Direct VIP Concierge',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      recordSentEmail({
+        to: destEmail,
+        from: 'dispatch@printforge.dev',
+        senderName: 'PrintForge Direct VIP Concierge',
+        subject: subject,
+        summary: summary,
+        body: body,
+        type: 'creator_direct_offer',
+        requestId: req.id,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      addAppNotification('🎯 NUOVA RICHIESTA DIRETTA RICEVUTA', 'Il cliente "' + clientName + '" ha richiesto un lavoro per il tuo profilo (' + partTitle + ')!', {
+        type: 'direct_offer',
+        requestId: req.id,
+        targetPage: 'requests'
+      });
+    }
+    window.sendDirectOfferEmailToCreator = sendDirectOfferEmailToCreator;
+
+    // Alias espliciti per la massima chiarezza e modularità
+    window.sendQcApprovedEmailToCreator = function(order) {
+      if (typeof sendQcDecisionEmailToCreator === 'function') {
+        sendQcDecisionEmailToCreator(order, 'approved');
+      }
+    };
+    window.sendQcRevisionRequestedEmailToCreator = function(order, reason) {
+      if (typeof sendQcDecisionEmailToCreator === 'function') {
+        sendQcDecisionEmailToCreator(order, 'rejected', reason);
+      }
+    };
+
+
     function acceptCreatorRequest(requestId) {
       const req = AppState.broadcastRequests.find(x => x.id === requestId);
       if (!req) return;
@@ -20731,7 +21336,11 @@ END-ISO-10303-21;`;
       updateEscrowRoom();
 
       // 4. Send confirmation email to client in current/specified language
-      sendProjectAcceptedEmailToClient(req);
+      if (req.isShowcaseOrder || req.isDirectShowcase) {
+        sendShowcaseBookingConfirmedEmailToClient(req);
+      } else {
+        sendProjectAcceptedEmailToClient(req);
+      }
 
       // 5. Update UI: remove from requests feed immediately & update live counters
       renderCreatorRequestsFeed();
@@ -22611,6 +23220,25 @@ window.__lastComputedQuotePrice = computedPrice;
         : '✓ Pacco affidato al corriere! Fase 3 completata: spedizione in transito.';
       showToast(toastShip, 'success');
 
+      // 1. Invia email di conferma spedizione con tracking al cliente
+      try {
+        if (typeof sendParcelShippedEmailToClient === 'function') {
+          sendParcelShippedEmailToClient(activeReq || AppState.activeEscrowOrder);
+        }
+      } catch(e) {
+        console.warn('Errore invio email spedizione cliente:', e);
+      }
+
+      // 2. Notifica Realtime a tutti i dispositivi (sincronizzazione Fase 3)
+      try {
+        broadcastRealtimeEvent('parcel_shipped', {
+          rfpId: (activeReq && activeReq.id) || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id),
+          trackingNumber: trackingCode,
+          carrier: (activeReq && activeReq.shippingCarrier) || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.carrier) || 'UPS Standard',
+          shippedAt: new Date().toISOString()
+        });
+      } catch(e) {}
+
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
@@ -22807,6 +23435,27 @@ window.__lastComputedQuotePrice = computedPrice;
         ? '✓ ¡Escáner verificado! Fase 4 completada: fondos liberados (€ 0,00).' 
         : '✓ Scansione corriere verificata! Fase 4 completata: pacco consegnato e fondi Escrow svincolati (€ 0,00)!';
       showToast(toastDelivery, 'success');
+
+      // Notifica Realtime di completamento Fase 4 e rilascio Escrow tra dispositivi
+      try {
+        broadcastRealtimeEvent('order_completed_stage4', {
+          rfpId: completedReqId,
+          amount: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 48,00',
+          makerId: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.makerUserId || AppState.activeEscrowOrder.maker)) || 'maker_certified',
+          makerName: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.maker) || 'Maker Certificato PrintForge',
+          completedAt: new Date().toISOString()
+        });
+      } catch(e) {}
+
+      // DIFFERENZIAZIONE SUL DISPOSITIVO LOCALE:
+      if (AppState.user && AppState.user.role === 'creator') {
+        if (typeof showStage4CompletionModal === 'function') {
+          showStage4CompletionModal({
+            rfpId: completedReqId,
+            amount: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 48,00'
+          });
+        }
+      }
 
       try {
         localStorage.setItem('printforge_stage4_completed', 'true');
@@ -26415,6 +27064,17 @@ window.__lastComputedQuotePrice = computedPrice;
       // Sync insert to Supabase Cloud
       saveRequestToSupabase(newRequest);
       broadcastRealtimeEvent('request_created', { request: newRequest, isFlash: isFlashOrder });
+
+      // Invia email notifica ai Creator: distinta tra offerta globale e richiesta diretta sul profilo/vetrina
+      try {
+        if (newRequest.isShowcaseOrder || newRequest.isDirectShowcase || newRequest.targetCreatorEmail) {
+          sendDirectOfferEmailToCreator(newRequest, newRequest.targetCreatorEmail || newRequest.makerEmail);
+        } else {
+          sendGlobalBroadcastRequestEmailToCreator(newRequest);
+        }
+      } catch(e) {
+        console.warn('Errore invio email notifica creator:', e);
+      }
       if (isFlashOrder) {
         // Notifica permanente broadcast per tutti i Creator del network
         const flashNotif = {
@@ -28380,7 +29040,11 @@ function renderDealChat(rfpId) {
       });
 
       // 4. Send confirmation email & webhook to client in current/specified language
-      sendProjectAcceptedEmailToClient(req);
+      if (req.isShowcaseOrder || req.isDirectShowcase) {
+        sendShowcaseBookingConfirmedEmailToClient(req);
+      } else {
+        sendProjectAcceptedEmailToClient(req);
+      }
 
       // Render full specifications HUD dossier in Studio CAD
       renderStudioSpecs();
