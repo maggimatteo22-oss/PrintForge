@@ -17473,7 +17473,7 @@ END-ISO-10303-21;`;
 
       if (option.includes('Flessibile') || option.includes('7-10')) {
         if (cardFlex) cardFlex.className = `${baseClasses} border-2 border-emerald-400 shadow-[0_0_15px_rgba(52,211,153,0.3)]`;
-      } else if (option.includes('Urgente') || option.includes('24-48h')) {
+      } else if (option.includes('Urgente') || option.includes('24-48h') || option.includes('Flash')) {
         if (cardUrg) cardUrg.className = `${baseClasses} border-2 border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.3)]`;
       } else {
         if (cardStd) cardStd.className = `${baseClasses} border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.3)]`;
@@ -20694,22 +20694,27 @@ END-ISO-10303-21;`;
     /* ALGORITMO DI INSTANT QUOTING REATTIVO: ATTIVO SOLO CON MATERIALE E GRANDEZZA SELEZIONATI */
     function recalculateInstantQuote() {
       const matEl = document.getElementById('reqMaterial');
-      const mat = matEl ? (matEl.value || '').trim() : '';
-      const hasMaterial = Boolean(mat && mat !== '' && !mat.toLowerCase().includes('seleziona'));
+      const rawMat = matEl ? (matEl.value || '').trim() : '';
+      const hasMaterial = Boolean(rawMat && rawMat !== '' && !rawMat.toLowerCase().includes('seleziona'));
+      const mat = hasMaterial ? rawMat : 'PLA+ Alta Resistenza';
       const qtyStr = document.getElementById('reqQuantity')?.value || '1 pezzo';
       const infillStr = document.getElementById('reqInfill')?.value || '50%';
       const hourUnit = currentLang === 'en' ? 'hrs' : currentLang === 'es' ? 'h' : 'ore';
 
-      // 1. Misure pezzo da Ingombro XYZ (mm)
-      const rawX = document.getElementById('dimX')?.value?.trim();
-      const rawY = document.getElementById('dimY')?.value?.trim();
-      const rawZ = document.getElementById('dimZ')?.value?.trim();
+      // 1. Misure pezzo da Ingombro XYZ (mm) - fallback intelligente alle misure standard prototipo se vuote
+      const inpX = document.getElementById('dimX');
+      const inpY = document.getElementById('dimY');
+      const inpZ = document.getElementById('dimZ');
 
-      const valX = Math.round(parseFloat(rawX));
-      const valY = Math.round(parseFloat(rawY));
-      const valZ = Math.round(parseFloat(rawZ));
+      const rawX = inpX?.value?.trim() || inpX?.placeholder || '80';
+      const rawY = inpY?.value?.trim() || inpY?.placeholder || '60';
+      const rawZ = inpZ?.value?.trim() || inpZ?.placeholder || '25';
 
-      const hasDims = (!isNaN(valX) && valX > 0) && (!isNaN(valY) && valY > 0) && (!isNaN(valZ) && valZ > 0);
+      const valX = Math.max(5, Math.round(parseFloat(rawX)) || 80);
+      const valY = Math.max(5, Math.round(parseFloat(rawY)) || 60);
+      const valZ = Math.max(2, Math.round(parseFloat(rawZ)) || 25);
+
+      const hasDims = true;
 
       const bApply = document.getElementById('budgetApplyPriceBadge');
       const bRange = document.getElementById('budgetRangeVal');
@@ -20843,6 +20848,8 @@ END-ISO-10303-21;`;
       // Calcola e aggiorna SEMPRE la stima in tempo reale su ogni modifica (misure, materiale, quantità, consegna flash)
       if (reqBudget) {
         reqBudget.value = computedPrice;
+        reqBudget.classList.add('border-emerald-400', 'text-emerald-300');
+        setTimeout(() => reqBudget.classList.remove('border-emerald-400', 'text-emerald-300'), 400);
       }
       handleReqBudgetChange();
 
