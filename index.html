@@ -3903,253 +3903,92 @@
     <!-- ===================================================================== -->
     <!-- VISTA 0: LOGIN GATE DEDICATA (MOBILE & DESKTOP // CLIENTE & CREATOR) -->
     <!-- ===================================================================== -->
-    <section id="view-login-gate" class="py-4 sm:py-8 hidden">
-      <div class="max-w-xl mx-auto space-y-6 px-3 sm:px-0">
+    <section id="view-login-gate" class="py-6 sm:py-12 hidden">
+      <div class="max-w-md mx-auto space-y-6 px-3 sm:px-0">
         
         <!-- Brand Header with Security Shield -->
         <div class="text-center space-y-3">
           <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#121215] border border-white/10 text-xs text-zinc-300 shadow-sm">
-            <span class="w-2 h-2 rounded-full bg-white animate-pulse"></span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             <span class="font-mono text-[10px] uppercase tracking-wider text-white font-bold" id="i18n-gateSecurityBadge">SECURITY GATE // ACCESSO PROTOCOLLO P2P</span>
           </div>
 
-          <h1 class="text-2xl sm:text-4xl font-bold tracking-tight text-white hero-title">
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white hero-title">
             <span id="i18n-gateTitle">Accedi a PrintForge</span>
           </h1>
-          <p class="text-xs sm:text-sm text-zinc-400 max-w-md mx-auto font-sans" id="i18n-gateSubtitle">
-            Seleziona la tua modalità operativa per accedere al portale di manifattura additiva e gestire pagamenti protetti.
+          <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto font-sans" id="i18n-gateSubtitle">
+            Un unico account per commissionare componenti 3D o produrre come Creator certificato.
           </p>
         </div>
 
-        <!-- Concentric Segmented Role Switcher: CLIENTE vs CREATOR -->
-        <div class="p-1 rounded-2xl bg-[#0E0E12] border border-white/[0.08] grid grid-cols-2 gap-1.5 text-xs font-mono">
-          <button type="button" onclick="setGateRole('client')" id="btnGateRoleClient" class="btn-kowalski-primary py-2.5 px-3 rounded-xl font-bold flex items-center justify-center gap-2 shadow-sm">
-            <i data-lucide="briefcase" class="w-4 h-4 text-black"></i>
-            <span id="i18n-gateTabClient">CLIENTE / COMMITTENTE</span>
+        <!-- Unified Card Container -->
+        <div class="cyber-card p-5 sm:p-7 bg-[#0A0A0C] border border-white/10 shadow-2xl rounded-2xl space-y-5">
+          
+          <!-- One-click Google Login -->
+          <button type="button" 
+                  onclick="loginWithGoogleOAuth('client')" 
+                  class="w-full py-3 px-4 rounded-xl font-cyber font-bold text-xs flex items-center justify-center gap-2.5 bg-white hover:bg-zinc-200 text-black transition shadow-md cursor-pointer transform active:scale-98">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span id="i18n-gateGoogleBtn">Continua con Google</span>
           </button>
-          <button type="button" onclick="setGateRole('creator')" id="btnGateRoleCreator" class="btn-kowalski-secondary py-2.5 px-3 rounded-xl text-zinc-400 hover:text-white font-bold flex items-center justify-center gap-2">
-            <i data-lucide="printer" class="w-4 h-4"></i>
-            <span id="i18n-gateTabCreator">CREATOR / HUB</span>
-          </button>
+
+          <!-- Divider -->
+          <div class="relative flex items-center justify-center my-1">
+            <div class="border-t border-white/10 w-full"></div>
+            <span class="bg-[#0A0A0C] px-3 text-[10px] font-mono text-zinc-500 uppercase tracking-widest relative" id="i18n-gateDivider">OPPURE CON EMAIL</span>
+          </div>
+
+          <!-- Unified Form -->
+          <form onsubmit="handleUnifiedGateSubmit(event)" class="space-y-3.5 text-xs font-sans">
+            <div class="space-y-1">
+              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedNameLabel">Nome Completo o Nickname *</label>
+              <input type="text" id="gateUnifiedName" placeholder="Es. Mario Rossi / Matteo" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedEmailLabel">Email *</label>
+              <input type="email" id="gateUnifiedEmail" placeholder="nome@esempio.it" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
+            </div>
+
+            <div class="space-y-1">
+              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedPassLabel">Password *</label>
+              <div class="relative">
+                <input type="password" id="gateUnifiedPass" placeholder="••••••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
+                <button type="button" onclick="togglePasswordVisibility('gateUnifiedPass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition">
+                  <i data-lucide="eye" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </div>
+
+            <div class="pt-2">
+              <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
+                <span id="i18n-gateSubmitBtn">ENTRA IN PRINTFORGE</span>
+                <i data-lucide="arrow-right" class="w-4 h-4 text-black"></i>
+              </button>
+            </div>
+          </form>
+
+          <!-- Trust Footnote -->
+          <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[11px] text-zinc-400 flex items-start gap-2.5 leading-relaxed">
+            <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+            <span id="i18n-gateUnifiedNote">
+              Accesso unico universale. Potrai passare da Cliente a Creator in qualsiasi momento con 1 click dal tuo profilo.
+            </span>
+          </div>
+
         </div>
 
-        <!-- Card Container with Specular Hairline & Dynamic Spotlight -->
-        <div class="cyber-card p-5 sm:p-7 bg-[#0A0A0C] border border-white/10 shadow-2xl rounded-2xl space-y-6">
-          
-          <!-- TAB CLIENTE -->
-          <div id="gateCardClient" class="space-y-5">
-            
-            <!-- Explanatory Pill -->
-            <div class="p-3.5 rounded-xl bg-[#121215] border border-white/[0.06] text-xs space-y-1">
-              <div class="flex items-center gap-2 text-white font-semibold">
-                <i data-lucide="sparkles" class="w-3.5 h-3.5 text-white"></i>
-                <span id="i18n-gateClientRoleHead">Profilo Cliente & Progettista</span>
-              </div>
-              <p class="text-[11px] text-zinc-400 font-sans leading-relaxed" id="i18n-gateClientRoleDesc">
-                Commissiona componenti CAD, genera geometrie con l'IA, ricevi preventivi istantanei e blocca il budget in garanzia fiduciaria Stripe Escrow.
-              </p>
-            </div>
-
-            <form onsubmit="handleGateClientSubmit(event)" class="space-y-4 text-xs font-sans">
-              <div class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateClientNameLabel">Nome Completo / Ragione Sociale *</label>
-                <input type="text" id="gateClientName" placeholder="Es. Mario Rossi / Azienda" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateClientEmailLabel">Email di Lavoro / Personale *</label>
-                <input type="email" id="gateClientEmail" placeholder="nome@azienda.it" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
-              </div>
-
-              <div class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateClientPassLabel">Password *</label>
-                <div class="relative">
-                  <input type="password" id="gateClientPass" placeholder="••••••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-masked" />
-                  <button type="button" onclick="togglePasswordVisibility('gateClientPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 text-xs cursor-pointer" title="Mostra/Nascondi password">
-                    <i data-lucide="eye-off" class="w-4 h-4"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- STRIPE ESCROW CONNECTION CARD FOR CLIENT -->
-              <div class="p-3.5 rounded-xl bg-[#101014] border border-[#635BFF]/30 space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-[#635BFF] text-white">STRIPE ESCROW</span>
-                    <span class="text-xs font-semibold text-white" id="i18n-gateStripeClientHead">Custodia Fiduciaria Pagamento</span>
-                  </div>
-                  <span class="text-[10px] font-mono text-zinc-400 font-bold" id="gateClientStripeStatus">GARANZIA ATTIVA</span>
-                </div>
-                <p class="text-[11px] text-zinc-400 font-sans leading-relaxed" id="i18n-gateStripeClientDesc">
-                  I fondi rimangono protetti nel conto di garanzia Stripe. Nessun addebito anticipato: il pagamento viene rilasciato al Maker solo all'approvazione delle misure dopo la consegna.
-                </p>
-                <div class="flex items-center justify-between pt-1 text-[11px] font-mono">
-                  <span class="text-zinc-400" id="gateClientCardLabel">Metodo di pagamento richiesto solo alla conferma ordine</span>
-                  <button type="button" onclick="simulateGateStripeConnect('client')" class="text-white hover:underline text-[10px] font-bold" id="btnGateClientStripeAction">Dettagli Escrow</button>
-                </div>
-              </div>
-
-              <button type="submit" class="btn-kowalski-primary w-full py-3.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2" id="i18n-gateSubmitClient">
-                <span>ENTRA COME CLIENTE // APRI PORTALE</span>
-                <i data-lucide="arrow-right" class="w-4 h-4 text-black"></i>
-              </button>
-
-              <div class="relative my-3">
-                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
-                <div class="relative flex justify-center text-xs uppercase"><span class="bg-[#0A0A0C] px-3 text-zinc-500 font-mono text-[9px] tracking-wider">OPPURE</span></div>
-              </div>
-
-              <button type="button" onclick="loginWithGoogleOAuth('client')" class="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 bg-[#121215] hover:bg-[#1A1A20] text-white border border-white/15 transition shadow-sm cursor-pointer transform active:scale-95">
-                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span id="i18n-gateGoogleClient">ACCEDI CON GOOGLE</span>
-              </button>
-
-            </form>
-
-          </div>
-
-          <!-- TAB CREATOR -->
-          <div id="gateCardCreator" class="space-y-5 hidden">
-            
-            <!-- Explanatory Pill -->
-            <div class="p-3.5 rounded-xl bg-[#121215] border border-white/[0.06] text-xs space-y-1">
-              <div class="flex items-center gap-2 text-white font-semibold">
-                <i data-lucide="cpu" class="w-3.5 h-3.5 text-white"></i>
-                <span id="i18n-gateCrRoleHead">Profilo Hub di Manifattura</span>
-              </div>
-              <p class="text-[11px] text-zinc-400 font-sans leading-relaxed" id="i18n-gateCrRoleDesc">
-                Prendi in carico le richieste di stampa, accedi allo Studio CAD completo e ricevi bonifici istantanei direttamente sul tuo IBAN con Stripe Connect.
-              </p>
-            </div>
-
-            <form onsubmit="handleGateCreatorSubmit(event)" class="space-y-3.5 text-xs font-sans">
-              
-              <!-- Selettore Profilo Chiaro: Maker Privato vs Azienda con P.IVA -->
-              <div class="space-y-1.5">
-                <label class="text-[11px] font-mono text-zinc-400 block font-bold" id="i18n-gateCrProfileTypeLabel">
-                  Tipologia Profilo Maker / Creator *
-                </label>
-                <div class="grid grid-cols-2 gap-2 p-1 bg-[#121215] border border-white/10 rounded-xl">
-                  <button type="button" 
-                          id="btnProfilePrivate" 
-                          onclick="switchCreatorProfileType('private')" 
-                          class="py-2.5 px-3 rounded-lg font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition bg-white text-black shadow-md">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500 shrink-0"></span>
-                    <span id="i18n-btnProfilePrivate">Maker Privato / Hobbyist</span>
-                  </button>
-                  <button type="button" 
-                          id="btnProfileBusiness" 
-                          onclick="switchCreatorProfileType('business')" 
-                          class="py-2.5 px-3 rounded-lg font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition text-zinc-400 hover:text-white bg-transparent">
-                    <span class="w-2 h-2 rounded-full border border-zinc-500 shrink-0" id="dotProfileBusiness"></span>
-                    <span id="i18n-btnProfileBusiness">Azienda / Service con P.IVA</span>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Reassuring Legal & Tax Banner for Private Maker -->
-              <div id="gatePrivateMakerHint" class="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 text-[11px] text-zinc-300 font-sans leading-relaxed flex items-start gap-2.5">
-                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
-                <span id="i18n-gatePrivateMakerHint">
-                  <strong>Zero Partita IVA richiesta:</strong> Se operi come hobbista o privato, puoi realizzare pezzi e ricevere pagamenti regolarmente tramite Prestazione Occasionale (fino a 5.000 &euro;/anno esenti da P.IVA). Nessun codice SDI richiesto!
-                </span>
-              </div>
-
-              <!-- Campo 1: Nome Maker / Ragione Sociale Azienda -->
-              <div class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrLabLabel">Nome Maker / Nickname *</label>
-                <input type="text" id="gateCrLabName" placeholder="Es. Lab 3D / Nome Maker" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
-              </div>
-
-              <!-- Campo 2: Email -->
-              <div class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrEmailLabel">Email Maker *</label>
-                <input type="email" id="gateCrEmail" placeholder="es. maker@officina.it" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
-              </div>
-
-              <!-- BLOCCO MAKER PRIVATO: Codice Fiscale Opzionale -->
-              <div id="gatePrivateFields" class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrCfLabel">Codice Fiscale (Opzionale all'iscrizione)</label>
-                <input type="text" id="gateCrCf" placeholder="Es. RSSMRC85M01H501Z (richiesto solo per i pagamenti Stripe)" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-white outline-none transition uppercase" />
-                <span class="text-[10px] text-zinc-500 font-sans block" id="i18n-gateCrCfSub">Puoi inserirlo ora o aggiungerlo al momento del tuo primo prelievo Stripe.</span>
-              </div>
-
-              <!-- BLOCCO AZIENDA / SERVICE: P.IVA e Codice Destinatario SDI / PEC (Nascosti per Maker Privato) -->
-              <div id="gateBusinessFields" class="grid grid-cols-1 sm:grid-cols-2 gap-3 hidden">
-                <div class="space-y-1">
-                  <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrPivaLabel">Partita IVA *</label>
-                  <input type="text" id="gateCrPiva" placeholder="IT00000000000" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-white outline-none transition" />
-                </div>
-                <div class="space-y-1">
-                  <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrSdiLabel">Codice Destinatario SDI o PEC *</label>
-                  <input type="text" id="gateCrSdi" placeholder="SUBM70N o pec@pec.it" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-white outline-none transition" />
-                </div>
-              </div>
-
-              <!-- Campo 3: Macchine Possedute & Tecnologie -->
-              <div class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrPrintersLabel">Macchine Possedute (es. Bambu Lab, Anycubic, ecc.) *</label>
-                <input type="text" id="gateCrPrinters" placeholder="Es. Bambu Lab X1-Carbon, Prusa MK4, Ender 3..." required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
-              </div>
-
-              <!-- Campo 4: Password -->
-              <div class="space-y-1">
-                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateCrPassLabel">Password *</label>
-                <div class="relative">
-                  <input type="password" id="gateCrPass" placeholder="••••••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-masked" />
-                  <button type="button" onclick="togglePasswordVisibility('gateCrPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white p-1 text-xs cursor-pointer" title="Mostra/Nascondi password">
-                    <i data-lucide="eye-off" class="w-4 h-4"></i>
-                  </button>
-                </div>
-              </div>
-
-              <!-- STRIPE CONNECT PAYOUTS CARD FOR CREATOR -->
-              <div class="p-3.5 rounded-xl bg-[#101014] border border-[#635BFF]/30 space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded font-mono font-bold text-[10px] bg-[#635BFF] text-white">STRIPE CONNECT</span>
-                    <span class="text-xs font-semibold text-white" id="i18n-gateStripeCrHead">Accrediti Bancari Diretti (IBAN)</span>
-                  </div>
-                  <button type="button" onclick="triggerStripeConnectOnboarding()" class="px-2.5 py-1 rounded bg-[#635BFF] hover:bg-[#7a73ff] text-white font-mono font-bold text-[10px] transition cursor-pointer">COLLEGA IBAN (STRIPE EXPRESS)</button>
-                </div>
-                <p class="text-[11px] text-zinc-400 font-sans leading-relaxed" id="i18n-gateStripeCrDesc">
-                  Collega il conto bancario per ricevere bonifici automatici su Stripe Connect per ogni pezzo approvato dal cliente.
-                </p>
-                <div class="space-y-1">
-                  <label class="text-[10px] font-mono text-zinc-400 uppercase">IBAN Payout</label>
-                  <input type="text" id="gateCrIban" placeholder="IT00 X 00000 00000 000000000000" class="w-full bg-[#08080A] border border-white/10 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-white outline-none" />
-                </div>
-              </div>
-
-              <button type="submit" class="btn-kowalski-primary w-full py-3.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2" id="i18n-gateSubmitCreator">
-                <span>ENTRA COME CREATOR // SBLOCCA STUDIO CAD</span>
-                <i data-lucide="arrow-right" class="w-4 h-4 text-black"></i>
-              </button>
-
-              <div class="relative my-3">
-                <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-white/10"></div></div>
-                <div class="relative flex justify-center text-xs uppercase"><span class="bg-[#0A0A0C] px-3 text-zinc-500 font-mono text-[9px] tracking-wider">OPPURE</span></div>
-              </div>
-
-              <button type="button" onclick="loginWithGoogleOAuth('client')" class="w-full py-3 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2.5 bg-[#121215] hover:bg-[#1A1A20] text-white border border-white/15 transition shadow-sm cursor-pointer transform active:scale-95">
-                <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-                </svg>
-                <span id="i18n-gateGoogleCreator">ACCEDI CON GOOGLE</span>
-              </button>
-
-            </form>
-
-          </div>
-
+        <!-- Opzione per esplorare la piattaforma prima di accedere -->
+        <div class="text-center pt-1">
+          <button type="button" onclick="navigateTo('client-home')" class="inline-flex items-center gap-1.5 text-xs text-zinc-400 hover:text-white transition py-2 px-3 rounded-lg hover:bg-white/5 cursor-pointer">
+            <span id="i18n-gateExploreGuest">Esplora prima la piattaforma senza accedere</span>
+            <i data-lucide="arrow-right" class="w-3.5 h-3.5"></i>
+          </button>
         </div>
 
       </div>
@@ -24543,6 +24382,78 @@ END-ISO-10303-21;`;
     window.selectOnboardingRole = selectOnboardingRole;
 
 
+    
+    async function handleUnifiedGateSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const nameInput = document.getElementById('gateUnifiedName');
+      const emailInput = document.getElementById('gateUnifiedEmail');
+      const passInput = document.getElementById('gateUnifiedPass');
+
+      const name = nameInput?.value?.trim() || 'Utente';
+      const email = (emailInput?.value?.trim() || 'maggimatteo22@gmail.com').toLowerCase();
+      const pass = passInput?.value || '';
+
+      if (!email || !email.includes('@')) {
+        showToast(currentLang === 'it' ? 'Inserisci un indirizzo email valido' : 'Please enter a valid email address', 'error');
+        return;
+      }
+
+      showToast(currentLang === 'it' ? 'Accesso in corso...' : 'Signing in...', 'info');
+
+      // Cerca profilo cloud esistente per sincronizzare cross-device
+      let userProfile = await fetchUserProfileFromCloud(email);
+      if (!userProfile) {
+        userProfile = {
+          userId: generateUserIdForAccount(email, 'client'),
+          id: generateUserIdForAccount(email, 'client'),
+          isLoggedIn: true,
+          role: 'client',
+          isAdmin: (email === 'maggimatteo22@gmail.com'),
+          name: name,
+          email: email,
+          avatar: name.charAt(0).toUpperCase(),
+          stripeConnected: true,
+          creatorData: null
+        };
+      } else {
+        userProfile.isLoggedIn = true;
+        if (name && name !== 'Utente' && name !== 'Cliente') userProfile.name = name;
+        if (email === 'maggimatteo22@gmail.com') userProfile.isAdmin = true;
+      }
+
+      AppState.user = userProfile;
+      try {
+        localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+      } catch (err) {}
+
+      // Sincronizza nel cloud Supabase per lo smartphone
+      try {
+        syncUserProfileToCloud(AppState.user, pass);
+      } catch (err) {}
+
+      renderNavUserArea();
+      updateNavigationTabs();
+      updateLaptopBarButtons();
+      loadRequestsFromSupabase();
+
+      const welcomeMsg = currentLang === 'it' 
+        ? `Benvenuto su PrintForge, ${AppState.user.name}!` 
+        : `Welcome to PrintForge, ${AppState.user.name}!`;
+      showToast(welcomeMsg, 'success');
+
+      // Reindirizza alla Home o vista appropriata
+      if (AppState.user.role === 'creator') {
+        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
+          navigateTo('activity');
+        } else {
+          navigateTo('creator-portfolio');
+        }
+      } else {
+        navigateTo('client-home');
+      }
+    }
+    window.handleUnifiedGateSubmit = handleUnifiedGateSubmit;
+
     async function handleGateClientSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
       const name = document.getElementById('gateClientName')?.value?.trim() || 'Cliente';
@@ -32352,14 +32263,11 @@ function renderDealChat(rfpId) {
       }
 
       if (!AppState.user.isLoggedIn) {
-        if (targetView === 'login-gate' || urlParams.get('gate') || urlParams.get('login')) {
-          navigateTo('login-gate');
-          if (urlParams.get('gate') === 'creator' || urlParams.get('tab') === 'creator') {
-            setGateRole('creator');
-          }
+        if (targetView && targetView !== 'client-home' && targetView !== 'home' && targetView !== '') {
+          navigateTo(targetView);
         } else {
-          // La Home page è visibile a tutti i visitatori
-          navigateTo(targetView || 'client-home');
+          // Mostra subito la schermata di accesso appena una persona apre il sito ancora prima della home
+          navigateTo('login-gate');
         }
       } else {
         // Se autenticato (sia cliente che creator), apri la vista richiesta o la Home page
