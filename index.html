@@ -2533,6 +2533,40 @@
     html.light #verticalFlagFlyout button {
       color: #0F172A !important;
     }
+    
+    html.light #navProfileBtn {
+      background-color: #FFFFFF !important;
+      border-color: rgba(15, 23, 42, 0.20) !important;
+      color: #0F172A !important;
+    }
+    html.light #navProfileBtn:hover {
+      background-color: #F8FAFC !important;
+      border-color: rgba(15, 23, 42, 0.35) !important;
+    }
+    html.light #navProfileBtn span.text-white {
+      color: #0F172A !important;
+    }
+    html.light #userProfileDropdown {
+      background-color: #FFFFFF !important;
+      border-color: rgba(15, 23, 42, 0.18) !important;
+      box-shadow: 0 20px 40px -4px rgba(15, 23, 42, 0.16) !important;
+      color: #0F172A !important;
+    }
+    html.light #userProfileDropdown .profile-header-card {
+      background-color: #F1F5F9 !important;
+      border-color: rgba(15, 23, 42, 0.12) !important;
+    }
+    html.light #userProfileDropdown .profile-header-name {
+      color: #0F172A !important;
+    }
+    html.light #userProfileDropdown .profile-link-btn {
+      color: #334155 !important;
+    }
+    html.light #userProfileDropdown .profile-link-btn:hover {
+      background-color: #F1F5F9 !important;
+      color: #0F172A !important;
+    }
+
     html.light #verticalFlagFlyout button:hover {
       background-color: #EBEDF0 !important;
     }
@@ -3847,7 +3881,7 @@
         </button>
 
         <!-- User Area: Full Pill CTA (Fai una richiesta) -->
-        <div id="navUserArea" class="shrink-0">
+        <div id="navUserArea" class="shrink-0 relative">
           <!-- Rendered dynamically via renderNavUserArea() -->
         </div>
 
@@ -19038,40 +19072,140 @@ END-ISO-10303-21;`;
           : (isCreator 
               ? (currentLang === 'it' ? 'CREATOR ACCREDITATO' : currentLang === 'es' ? 'CREADOR VERIFICADO' : 'VERIFIED CREATOR') 
               : (currentLang === 'it' ? 'CLIENTE VERIFICATO' : currentLang === 'es' ? 'CLIENTE VERIFICADO' : 'VERIFIED CLIENT'));
-        const stripeLabel = AppState.user.stripeConnected ? '✓ Stripe' : '! Stripe KYC';
-        const logoutTitle = currentLang === 'it' ? 'Disconnetti' : currentLang === 'es' ? 'Cerrar Sesión' : 'Sign Out';
+        const stripeLabel = AppState.user.stripeConnected 
+          ? (currentLang === 'it' ? '✓ Stripe Attivo' : currentLang === 'es' ? '✓ Stripe Activo' : '✓ Stripe Active') 
+          : (currentLang === 'it' ? '! Stripe KYC' : '! Stripe KYC');
 
-        const roleSwitchTitle = isCreator
-          ? (currentLang === "en" ? "Switch to Client Mode" : currentLang === "es" ? "Cambiar a Modo Cliente" : "Passa a Modalità Cliente")
-          : (currentLang === "en" ? "Switch to Creator Mode" : currentLang === "es" ? "Cambiar a Modo Creador" : "Passa a Modalità Creator");
-        const phoneSyncTitle = currentLang === "en" ? "Connect Smartphone / Mobile Sync" : currentLang === "es" ? "Conectar Teléfono" : "Collega Telefono / Sincronizzazione Smartphone";
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+
+        const roleBadgeText = isCreator
+          ? (isEn ? 'CREATOR' : isEs ? 'CREADOR' : 'CREATOR')
+          : (isEn ? 'CLIENTE' : isEs ? 'CLIENTE' : 'CLIENTE');
+
+        const switchActionTitle = isCreator
+          ? (isEn ? 'Switch to Client Mode' : isEs ? 'Cambiar a Modo Cliente' : 'Passa a Modalità Cliente')
+          : (isEn ? 'Switch to Creator Console' : isEs ? 'Cambiar a Consola Creator' : 'Passa alla Console Creator');
+
+        const switchActionSub = isCreator
+          ? (isEn ? 'Browse marketplace as buyer' : isEs ? 'Explora como comprador' : 'Esplora il sito da acquirente')
+          : (isEn ? 'Manage 3D prints & orders' : isEs ? 'Gestiona impresiones y encargos' : 'Gestisci ordini 3D & portfolio');
+
+        const menuTitleProfile = isEn ? 'Profile & Account Management' : isEs ? 'Perfil y Gestión de Cuenta' : 'Profilo e Gestione Account';
+        const labelActiveRole = isEn ? 'Active Role' : isEs ? 'Rol Activo' : 'Ruolo Attivo';
+
+        const shortcutPortfolio = isEn ? 'My Projects & Portfolio' : isEs ? 'Mis Proyectos' : 'I Miei Progetti';
+        const shortcutRequests = isEn ? 'Client Requests Board' : isEs ? 'Solicitudes de Clientes' : 'Bacheca Richieste';
+        const shortcutCad = isEn ? 'CAD Studio & Metrology' : isEs ? 'Estudio CAD 3D' : 'Studio CAD & Metrologia';
+        const shortcutMyOrders = isEn ? 'My Orders & RFPs' : isEs ? 'Mis Pedidos' : 'Le Mie Richieste / Ordini';
+        const shortcutNewRfp = isEn ? 'New Instant Request' : isEs ? 'Nueva Solicitud' : 'Nuovo Ordine 3D';
+        const shortcutExplore = isEn ? 'Explore Creators' : isEs ? 'Explorar Creadores' : 'Vetrina Globale';
+
+        const targetRole = isCreator ? 'client' : 'creator';
+        const userInitial = (AppState.user.name || 'U').charAt(0).toUpperCase();
 
         container.innerHTML = `
-          <div class="flex items-center gap-1 sm:gap-1.5 shrink-0">
-            <!-- Profilo Utente: Compatto su mobile (icona cerchio) e nome su desktop -->
-            <div class="h-8 flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2 bg-[#101014] border border-white/20 rounded-full text-xs font-mono shrink-0 select-none shadow-inner" title="${escapeHtml(AppState.user.name)} (${roleLabel})">
-              <div class="w-5 h-5 rounded-full bg-white text-black flex items-center justify-center font-bold text-[10px] shrink-0">
-                ${AppState.user.name.charAt(0).toUpperCase()}
+          <div class="relative shrink-0">
+            <!-- Pulsante Profilo Intuitivo (Cliccabile con chiarezza sia da PC che da Cellulare) -->
+            <button type="button" 
+                    id="navProfileBtn" 
+                    onclick="toggleUserProfileDropdown(event)" 
+                    class="group h-8 sm:h-9 flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 bg-[#101014] hover:bg-[#181820] border border-white/20 hover:border-white/40 active:border-white/60 rounded-full text-xs font-mono shrink-0 select-none shadow-sm hover:shadow-md transition-all active:scale-95 cursor-pointer ring-0 focus:ring-2 focus:ring-white/20"
+                    title="${menuTitleProfile}"
+                    aria-label="${menuTitleProfile}"
+                    aria-haspopup="true"
+                    aria-expanded="false">
+              <!-- Avatar Lettera Iniziale Con Contrasto -->
+              <div class="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-white text-black flex items-center justify-center font-display font-black text-[10px] sm:text-[11px] shrink-0 shadow-sm ring-1 ring-black/20">
+                ${escapeHtml(userInitial)}
               </div>
-              <span class="text-white font-medium text-[11px] truncate hidden sm:inline max-w-[80px] md:max-w-[110px]">${escapeHtml(AppState.user.name)}</span>
-              <span class="w-1.5 h-1.5 rounded-full ${AppState.user.stripeConnected ? 'bg-emerald-400' : 'bg-zinc-500'} shrink-0 hidden sm:inline" title="${stripeLabel}"></span>
-            </div>
-            
-            <!-- Switch Ruolo Icon Pill Compatta (32x32) -->
-            ${isCreator ? `
-              <button type="button" onclick="switchUserRole('client')" class="w-8 h-8 rounded-full bg-cyan-500/15 hover:bg-cyan-500/25 border border-cyan-500/40 text-cyan-300 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer shadow-inner" title="${roleSwitchTitle}">
-                <i data-lucide="user" class="w-3.5 h-3.5 text-cyan-300"></i>
-              </button>
-            ` : `
-              <button type="button" onclick="switchUserRole('creator')" class="w-8 h-8 rounded-full bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/40 text-emerald-400 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer shadow-inner" title="${roleSwitchTitle}">
-                <i data-lucide="printer" class="w-3.5 h-3.5 text-emerald-400"></i>
-              </button>
-            `}
-
-            <!-- Logout Icon Pill Compatta (32x32) -->
-            <button type="button" onclick="logoutUser()" class="w-8 h-8 rounded-full bg-[#101014] hover:bg-red-500/20 border border-white/20 hover:border-red-500/30 text-zinc-400 hover:text-red-300 flex items-center justify-center transition active:scale-95 shrink-0 cursor-pointer shadow-inner" title="${logoutTitle}">
-              <i data-lucide="log-out" class="w-3.5 h-3.5"></i>
+              <!-- Nome Utente (Truncate dinamico: visibile sia su mobile che desktop) -->
+              <span class="text-white font-medium text-[11px] sm:text-xs truncate max-w-[65px] sm:max-w-[110px] md:max-w-[140px] tracking-tight">
+                ${escapeHtml(AppState.user.name)}
+              </span>
+              <!-- Ruolo Badge Subdolo (Visibile da tablet/desktop) -->
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isCreator ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'} uppercase hidden md:inline font-bold">
+                ${roleBadgeText}
+              </span>
+              <!-- Freccia Dropdown Indicativa (Rende 100% intuibile la cliccabilità sia da PC che da Smartphone) -->
+              <i data-lucide="chevron-down" id="navProfileChevron" class="w-3.5 h-3.5 text-zinc-400 group-hover:text-white transition-transform duration-200 shrink-0"></i>
             </button>
+
+            <!-- Menù a Tendina Profilo / Switch (Opzione 1 - Stile Airbnb / Fiverr) -->
+            <div id="userProfileDropdown" 
+                 class="hidden absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-24px)] bg-[#0d0d12]/95 backdrop-blur-2xl border border-white/15 rounded-2xl p-3 shadow-[0_20px_50px_rgba(0,0,0,0.85)] z-50 select-none animate-in fade-in slide-in-from-top-2 duration-150">
+              
+              <!-- Scheda Profilo & Ruolo Attivo -->
+              <div class="profile-header-card flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] mb-2.5">
+                <div class="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center font-display font-black text-sm shrink-0 shadow-md">
+                  ${escapeHtml(userInitial)}
+                </div>
+                <div class="min-w-0 flex-1">
+                  <div class="profile-header-name text-white font-cyber font-bold text-xs truncate">
+                    ${escapeHtml(AppState.user.name)}
+                  </div>
+                  <div class="flex items-center gap-1.5 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full ${isCreator ? 'bg-cyan-400' : 'bg-emerald-400'} animate-pulse"></span>
+                    <span class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider truncate">
+                      ${labelActiveRole}: <strong class="${isCreator ? 'text-cyan-300' : 'text-emerald-300'}">${roleBadgeText}</strong>
+                    </span>
+                  </div>
+                </div>
+                <div class="shrink-0 text-right">
+                  <span class="text-[9px] font-mono px-1.5 py-0.5 rounded-md ${AppState.user.stripeConnected ? 'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30' : 'bg-zinc-800 text-zinc-400 border border-white/10'}">
+                    ${stripeLabel}
+                  </span>
+                </div>
+              </div>
+
+              <!-- Tasto Principale: PASSA A MODALITÀ CREATOR / CLIENTE -->
+              <button type="button" 
+                      onclick="switchUserRole('${targetRole}'); closeUserProfileDropdown();" 
+                      class="w-full py-2.5 px-3 rounded-xl ${isCreator ? 'bg-gradient-to-r from-cyan-500/20 to-blue-500/20 hover:from-cyan-500/30 hover:to-blue-500/30 border border-cyan-500/45 text-cyan-200' : 'bg-gradient-to-r from-emerald-500/20 to-teal-500/20 hover:from-emerald-500/30 hover:to-teal-500/30 border border-emerald-500/45 text-emerald-200'} font-cyber font-bold text-xs flex items-center justify-between transition transform active:scale-98 shadow-sm cursor-pointer mb-2 group">
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-6 h-6 rounded-lg ${isCreator ? 'bg-cyan-500/20 text-cyan-300' : 'bg-emerald-500/20 text-emerald-300'} flex items-center justify-center shrink-0">
+                    <i data-lucide="${isCreator ? 'user' : 'printer'}" class="w-3.5 h-3.5"></i>
+                  </div>
+                  <div class="text-left min-w-0">
+                    <div class="truncate text-xs font-bold leading-tight">${switchActionTitle}</div>
+                    <div class="text-[9.5px] font-normal text-zinc-400 truncate leading-tight">${switchActionSub}</div>
+                  </div>
+                </div>
+                <i data-lucide="arrow-right-left" class="w-3.5 h-3.5 opacity-60 group-hover:opacity-100 group-hover:scale-110 transition-transform shrink-0 ml-1"></i>
+              </button>
+
+              <!-- Scorciatoie Rapide di Navigazione in base al Ruolo -->
+              <div class="space-y-0.5 pt-1 border-t border-white/10 text-xs font-sans">
+                ${isCreator ? `
+                  <button type="button" onclick="navigateTo('creator-portfolio'); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
+                    <i data-lucide="briefcase" class="w-3.5 h-3.5 text-zinc-400"></i>
+                    <span class="font-medium">${shortcutPortfolio}</span>
+                  </button>
+                  <button type="button" onclick="navigateTo('creator-requests'); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
+                    <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
+                    <span class="font-medium">${shortcutRequests}</span>
+                  </button>
+                  <button type="button" onclick="navigateTo('order-room'); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
+                    <i data-lucide="box" class="w-3.5 h-3.5 text-zinc-400"></i>
+                    <span class="font-medium">${shortcutCad}</span>
+                  </button>
+                ` : `
+                  <button type="button" onclick="navigateTo('my-requests'); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
+                    <i data-lucide="package" class="w-3.5 h-3.5 text-zinc-400"></i>
+                    <span class="font-medium">${shortcutMyOrders}</span>
+                  </button>
+                  <button type="button" onclick="navigateTo('instant-quote'); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
+                    <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-zinc-400"></i>
+                    <span class="font-medium">${shortcutNewRfp}</span>
+                  </button>
+                  <button type="button" onclick="navigateTo('explore'); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
+                    <i data-lucide="compass" class="w-3.5 h-3.5 text-zinc-400"></i>
+                    <span class="font-medium">${shortcutExplore}</span>
+                  </button>
+                `}
+              </div>
+
+            </div>
           </div>
         `;
         const roleInd = document.getElementById('navRoleIndicator');
@@ -24055,6 +24189,58 @@ END-ISO-10303-21;`;
     }
     window.switchUserRole = switchUserRole;
 
+    function toggleUserProfileDropdown(e) {
+      if (e) {
+        e.stopPropagation();
+      }
+      const dropdown = document.getElementById('userProfileDropdown');
+      const chevron = document.getElementById('navProfileChevron');
+      const btn = document.getElementById('navProfileBtn');
+      if (!dropdown) return;
+      const isOpen = !dropdown.classList.contains('hidden');
+      if (isOpen) {
+        closeUserProfileDropdown();
+      } else {
+        dropdown.classList.remove('hidden');
+        if (chevron) chevron.style.transform = 'rotate(180deg)';
+        if (btn) {
+          btn.setAttribute('aria-expanded', 'true');
+          btn.classList.add('ring-2', 'ring-white/20');
+        }
+      }
+    }
+    window.toggleUserProfileDropdown = toggleUserProfileDropdown;
+
+    function closeUserProfileDropdown() {
+      const dropdown = document.getElementById('userProfileDropdown');
+      const chevron = document.getElementById('navProfileChevron');
+      const btn = document.getElementById('navProfileBtn');
+      if (dropdown) dropdown.classList.add('hidden');
+      if (chevron) chevron.style.transform = 'rotate(0deg)';
+      if (btn) {
+        btn.setAttribute('aria-expanded', 'false');
+        btn.classList.remove('ring-2', 'ring-white/20');
+      }
+    }
+    window.closeUserProfileDropdown = closeUserProfileDropdown;
+
+    document.addEventListener('click', function(e) {
+      const dropdown = document.getElementById('userProfileDropdown');
+      const btn = document.getElementById('navProfileBtn');
+      if (!dropdown || dropdown.classList.contains('hidden')) return;
+      if (btn && (btn.contains(e.target) || btn === e.target)) return;
+      if (!dropdown.contains(e.target)) {
+        closeUserProfileDropdown();
+      }
+    });
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeUserProfileDropdown();
+      }
+    });
+
+
     function openGoogleLoginModal() {
       const modal = document.getElementById('modalGoogleLogin');
       if (modal) {
@@ -24768,6 +24954,7 @@ END-ISO-10303-21;`;
 
     /* 4. Navigation & Strict Gating for Studio CAD */
     function navigateTo(viewId) {
+      if (typeof closeUserProfileDropdown === 'function') closeUserProfileDropdown();
     // DOPO IL 4° PASSAGGIO: la pagina di affare concluso (order-room) resta visibile al creator
     // finché non cambia pagina manualmente con il cursore o con il dito.
     if (AppState.user && AppState.user.role === 'creator') {
