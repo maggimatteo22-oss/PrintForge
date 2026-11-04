@@ -5925,7 +5925,7 @@
                     </button>
                   </div>
                   <!-- Select nascosto reqDeadline per retrocompatibilità test e form -->
-                  <select id="reqDeadline" onchange="updateLiveRequestSummary()" class="hidden">
+                  <select id="reqDeadline" onchange="recalculateInstantQuote(); updateLiveRequestSummary();" class="hidden">
                     <option value="" disabled>Seleziona tempistica...</option>
                     <option value="Urgente Flash 24-48h">⚡ Urgente (24-48h)</option>
                     <option value="Standard 3-5 giorni" selected>📦 Standard (3-5 gg)</option>
@@ -5934,7 +5934,7 @@
                 </div>
 
                 <!-- Alert Guida Gentile se Budget Anomalo (< € 15 o troppo basso rispetto al materiale) -->
-                <div id="budgetWarningBox" class="hidden p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[10px] text-amber-300 font-mono flex items-start gap-1.5">
+                <div id="budgetWarningBox" class="hidden p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[10px] text-amber-300 font-mono flex items-start gap-1.5" style="display: none !important;">
                   <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5"></i>
                   <span id="budgetWarningText">Con un budget inferiore a € 18 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno la stima di mercato (€ 28,00).</span>
                 </div>
@@ -17404,6 +17404,9 @@ END-ISO-10303-21;`;
         dSel.value = ddlVal;
         dSel.dispatchEvent(new Event('change'));
       }
+      if (typeof recalculateInstantQuote === 'function') {
+        recalculateInstantQuote();
+      }
       const display = document.getElementById('deadlineSelectedNameDisplay');
       if (display) {
         if (ddlVal.includes('24-48h')) display.innerText = '24-48h';
@@ -17471,6 +17474,9 @@ END-ISO-10303-21;`;
       if (iSel) {
         iSel.value = infillVal;
         iSel.dispatchEvent(new Event('change'));
+      }
+      if (typeof recalculateInstantQuote === 'function') {
+        recalculateInstantQuote();
       }
       const display = document.getElementById('infillSelectedNameDisplay');
       if (display) {
@@ -20792,14 +20798,6 @@ END-ISO-10303-21;`;
       const cWeight = document.getElementById('calcWeight');
       const cHours = document.getElementById('calcHours');
       
-      if (val > 0) {
-        const stripeFee = 3.00;
-        const mfgVal = Math.max(0, val - stripeFee);
-        const bMfg = document.getElementById('breakdownMfgPrice');
-        if (bMfg) bMfg.innerText = `€ ${mfgVal.toFixed(2).replace('.', ',')}`;
-        const bTotal = document.getElementById('breakdownTotalPrice');
-        if (bTotal) bTotal.innerText = `€ ${val.toFixed(2).replace('.', ',')}`;
-      }
 const warnBox = document.getElementById('budgetWarningBox');
       const reqBudget = document.getElementById('reqBudget');
 
@@ -20986,26 +20984,36 @@ window.__lastComputedQuotePrice = computedPrice;
     function handleReqBudgetChange() {
       const bInput = document.getElementById('reqBudget');
       const val = parseFloat(bInput?.value) || 0;
-      const rec = window.__lastComputedQuotePrice || 0;
       const warnBox = document.getElementById('budgetWarningBox');
-      const warnText = document.getElementById('budgetWarningText');
-
-      if (rec > 0 && val > 0 && val < Math.max(12, Math.round(rec * 0.65))) {
-        if (warnBox) warnBox.classList.remove('hidden');
-        if (warnText) {
-          const minAcceptable = Math.max(15, Math.round(rec * 0.75));
-          warnText.innerText = currentLang === 'en'
-            ? `With an offer under € ${minAcceptable}, verified Makers may decline the job. Recommended: at least € ${rec},00.`
-            : `Con un budget inferiore a € ${minAcceptable} i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € ${rec},00.`;
-        }
-      } else {
-        if (warnBox) warnBox.classList.add('hidden');
+      if (warnBox) {
+        warnBox.classList.add('hidden');
+        warnBox.style.display = 'none';
       }
-      const budgetDisplayStr = (val > 0) ? `€ ${val.toFixed(2).replace('.', ',')}` : '--';
-      ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice'].forEach(id => {
+
+      // Sincronizza il breakdown trasparente quote
+      if (val > 0) {
+        const stripeFee = 3.00;
+        const mfgVal = Math.max(0, val - stripeFee);
+        const bMfg = document.getElementById('breakdownMfgPrice');
+        if (bMfg) bMfg.innerText = '€ ' + mfgVal.toFixed(2).replace('.', ',');
+        const bStripe = document.getElementById('breakdownStripeFee');
+        if (bStripe) bStripe.innerText = '+ € 3,00';
+        const bTotal = document.getElementById('breakdownTotalPrice');
+        if (bTotal) bTotal.innerText = '€ ' + val.toFixed(2).replace('.', ',');
+      }
+
+      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
+      ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay', 'liveDossierPrice'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
       });
+
+      const checkoutPart = document.getElementById('checkoutPartCost');
+      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + Math.max(0, val - 3).toFixed(2).replace('.', ',')) : '--';
+      const checkoutTotal = document.getElementById('checkoutTotalEscrow');
+      if (checkoutTotal) checkoutTotal.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '--';
+
+      updateLiveRequestSummary();
     }
 
     /* ========================================================================= */
