@@ -2591,6 +2591,7 @@
     }
 
     /* MODALS & LEGAL OVERLAYS */
+    html.light #modalPayoutConfig,
     html.light #modalAuth,
     html.light #modalDispute,
     html.light #modalRfpSuccess,
@@ -2600,6 +2601,7 @@
       background-color: rgba(244, 245, 247, 0.88) !important;
       backdrop-filter: blur(14px) !important;
     }
+    html.light #modalPayoutConfig > div,
     html.light #modalAuth > div,
     html.light #modalDispute > div,
     html.light #modalRfpSuccess > div,
@@ -4080,10 +4082,15 @@
               <span class="text-[10px] font-mono text-zinc-400 uppercase whitespace-nowrap select-none" id="i18n-creatorEarnedTotalLabel">INCASSATO:</span>
               <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums whitespace-nowrap" id="creatorEarnedTotalBadge">€&nbsp;0,00</span>
             </div>
-            <button type="button" id="btnCreatorConnectStripe" onclick="initiateStripeConnectOnboarding()" class="px-4 py-2.5 rounded-xl bg-[#635BFF] hover:bg-[#5249ea] text-white border border-[#7A73FF] font-cyber font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-lg cursor-pointer">
+            <button type="button" id="btnCreatorConnectStripe" onclick="openPayoutConfigModal()" class="px-4 py-2.5 rounded-xl bg-[#635BFF] hover:bg-[#5249ea] text-white border border-[#7A73FF] font-cyber font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-lg cursor-pointer">
               <i data-lucide="credit-card" class="w-4 h-4 text-white"></i>
-              <span class="text-white font-extrabold tracking-wide drop-shadow-sm" id="i18n-creatorStripeBtn">Collega Conto Bancario (Stripe)</span>
+              <span class="text-white font-extrabold tracking-wide drop-shadow-sm" id="i18n-creatorStripeBtn">Collega IBAN Ricezione</span>
             </button>
+            <div id="badgeCreatorIbanConfigured" class="hidden px-3.5 py-2 rounded-xl bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 font-mono text-xs flex items-center gap-2 shadow-sm whitespace-nowrap">
+              <i data-lucide="check-circle" class="w-4 h-4 text-emerald-400"></i>
+              <span id="badgeCreatorIbanText">IBAN COLLEGATO ✓</span>
+              <button type="button" onclick="openPayoutConfigModal()" class="text-[10px] text-zinc-400 hover:text-white underline ml-1 cursor-pointer">Modifica</button>
+            </div>
             <button type="button" onclick="navigateTo('creator-requests')" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-cyber font-bold text-xs flex items-center gap-2 border border-white/10 transition">
               <i data-lucide="inbox" class="w-4 h-4"></i>
               <span id="i18n-creatorHubRequestsFeedBtn">Bacheca Richieste</span>
@@ -4325,6 +4332,98 @@
     <!-- ===================================================================== -->
     <!-- MODULO 5: MODALE LASCIA RECENSIONE CERTIFICATA                         -->
     <!-- ===================================================================== -->
+    <!-- ===================================================================== -->
+    <!-- MINI RIQUADRO: CONFIGURAZIONE DATI INCASSO IBAN PER IL CREATOR        -->
+    <!-- ===================================================================== -->
+    <div id="modalPayoutConfig" class="fixed inset-0 z-[9999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 9999999 !important; isolation: isolate !important;">
+      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="flex items-start justify-between border-b border-white/10 pb-3">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold uppercase tracking-wider">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>ACCREDITO BONIFICO DIRETTO</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide">
+              Coordinate di Incasso (IBAN)
+            </h3>
+            <p class="text-xs text-zinc-400 font-sans">
+              I compensi delle tue commesse completate verranno accreditati automaticamente qui.
+            </p>
+          </div>
+          <button type="button" onclick="closePayoutConfigModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Form Fondamentale -->
+        <form onsubmit="handlePayoutConfigSubmit(event)" class="space-y-3.5 text-xs font-sans">
+          
+          <!-- Intestatario -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
+              Intestatario del Conto *
+            </label>
+            <input type="text" 
+                   id="payoutAccountHolder" 
+                   placeholder="Nome e Cognome o Ragione Sociale" 
+                   required 
+                   class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-emerald-400 outline-none transition" />
+          </div>
+
+          <!-- Codice IBAN -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
+              Codice IBAN (Conto Corrente o Carta con IBAN) *
+            </label>
+            <div class="relative">
+              <input type="text" 
+                     id="payoutIban" 
+                     placeholder="IT60X0542811101000000123456" 
+                     required 
+                     maxlength="34"
+                     oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');" 
+                     class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase tracking-wider" />
+              <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-emerald-400 font-mono text-[10px] font-bold">
+                <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+                <span>SEPA</span>
+              </div>
+            </div>
+            <span class="text-[10px] text-zinc-500 font-mono block">Valido per qualsiasi banca o carta ricaricabile con IBAN (es. Revolut, PostePay Evolution, Intesa, ecc.)</span>
+          </div>
+
+          <!-- Codice Fiscale o P.IVA -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 block font-bold">
+              Codice Fiscale o Partita IVA *
+            </label>
+            <input type="text" 
+                   id="payoutTaxId" 
+                   placeholder="RSSMRA80A01H501U oppure Partita IVA" 
+                   required 
+                   class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase" />
+          </div>
+
+          <!-- Banner Sicurezza Crittografica -->
+          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-start gap-2 text-[10.5px] text-zinc-300 leading-relaxed">
+            <i data-lucide="lock" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+            <span>Dati protetti e crittografati a 256-bit. I compensi vengono svincolati ed erogati automaticamente non appena il pezzo è consegnato.</span>
+          </div>
+
+          <!-- Pulsante di Salvataggio -->
+          <div class="pt-1">
+            <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
+              <i data-lucide="check" class="w-4 h-4 text-black"></i>
+              <span>SALVA & ABILITA BONIFICI</span>
+            </button>
+          </div>
+
+        </form>
+
+      </div>
+    </div>
+
     <div id="modalLeaveReview" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;">
       <div class="w-full max-w-lg bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative animate-in fade-in zoom-in-95 duration-200">
         <button type="button" onclick="closeLeaveReviewModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition z-10" title="Chiudi">
@@ -7209,6 +7308,30 @@
 
       <!-- Scheda Ordine Attivo in Custodia Escrow (Rimodellata, Spaziosa, Senza Cose Superflue) -->
       <div id="escrowActiveOrderCard" class="hidden max-w-6xl mx-auto space-y-3 sm:space-y-5">
+        <!-- Avviso Configurazione IBAN per il Creator (Opzione 1 - Si nasconde per sempre una volta configurato) -->
+        <div id="escrowCreatorPayoutNotice" class="hidden p-4 rounded-xl bg-gradient-to-r from-amber-500/15 via-[#181510] to-[#12131A] border border-amber-500/35 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
+              <i data-lucide="credit-card" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                <h4 class="font-cyber font-bold text-xs text-white uppercase tracking-wider">Accredito Compensi su IBAN</h4>
+              </div>
+              <p class="text-[11px] text-zinc-300 font-sans mt-0.5">
+                Per ricevere il bonifico automatico di questa commessa alla consegna, inserisci le tue coordinate bancarie.
+              </p>
+            </div>
+          </div>
+          <button type="button" 
+                  onclick="openPayoutConfigModal()" 
+                  class="btn-kowalski-primary py-2 px-4 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-md transition active:scale-95 shrink-0 cursor-pointer">
+            <i data-lucide="plus-circle" class="w-4 h-4 text-black"></i>
+            <span>INSERISCI IBAN</span>
+          </button>
+        </div>
+
         
         <!-- Hero Financial Trust Card (Top Bar) -->
         <div class="p-3.5 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#12131A] via-[#161722] to-[#12131A] border border-white/15 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-5">
@@ -19042,6 +19165,25 @@ END-ISO-10303-21;`;
                     <i data-lucide="box" class="w-3.5 h-3.5 text-zinc-400"></i>
                     <span class="font-medium">${shortcutCad}</span>
                   </button>
+                  <div class="pt-1 mt-1 border-t border-white/[0.08]">
+                    ${isPayoutConfigured() ? `
+                      <div class="flex items-center justify-between px-2.5 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-[11px] font-mono">
+                        <div class="flex items-center gap-1.5 truncate">
+                          <i data-lucide="check-circle" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+                          <span class="truncate">IBAN: ${getPayoutMaskedIban()}</span>
+                        </div>
+                        <button type="button" onclick="openPayoutConfigModal(); closeUserProfileDropdown();" class="text-[10px] text-zinc-400 hover:text-white underline shrink-0 ml-1 cursor-pointer">Modifica</button>
+                      </div>
+                    ` : `
+                      <button type="button" onclick="openPayoutConfigModal(); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-amber-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
+                        <div class="flex items-center gap-1.5">
+                          <i data-lucide="credit-card" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                          <span class="font-medium text-[11px]">Coordinate IBAN</span>
+                        </div>
+                        <span class="text-[9px] font-mono px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 border border-amber-500/30">Configura</span>
+                      </button>
+                    `}
+                  </div>
                 ` : `
                   <button type="button" onclick="navigateTo('my-requests'); closeUserProfileDropdown();" class="profile-link-btn w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-zinc-300 hover:text-white hover:bg-white/5 transition text-left cursor-pointer">
                     <i data-lucide="package" class="w-3.5 h-3.5 text-zinc-400"></i>
@@ -27663,6 +27805,18 @@ function renderDealChat(rfpId) {
       const activeCard = document.getElementById('escrowActiveOrderCard');
       if (!emptyState || !activeCard) return;
 
+      // Gestione Avviso Payout Creator (Opzione 1): visibile solo se non configurato, nascosto per sempre una volta completato!
+      const payoutNotice = document.getElementById('escrowCreatorPayoutNotice');
+      if (payoutNotice) {
+        const isCreator = AppState.user && AppState.user.role === 'creator';
+        const isConfigured = typeof isPayoutConfigured === 'function' ? isPayoutConfigured() : false;
+        if (isCreator && !isConfigured && AppState.activeEscrowOrder) {
+          payoutNotice.classList.remove('hidden');
+        } else {
+          payoutNotice.classList.add('hidden');
+        }
+      }
+
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
@@ -30946,6 +31100,21 @@ function renderDealChat(rfpId) {
 
       // Gestione visibilità tasto Stripe Connect: se il creator ha collegato Stripe nel suo account, NON MOSTRARLO PIÙ nella sezione I Miei Progetti!
       const stripeBtn = document.getElementById('btnCreatorConnectStripe');
+      const ibanBadge = document.getElementById('badgeCreatorIbanConfigured');
+      const isConfigured = typeof isPayoutConfigured === 'function' ? isPayoutConfigured() : false;
+      if (isConfigured) {
+        if (stripeBtn) { stripeBtn.style.display = 'none'; stripeBtn.classList.add('hidden'); }
+        if (ibanBadge) {
+          ibanBadge.classList.remove('hidden');
+          const ibanText = document.getElementById('badgeCreatorIbanText');
+          if (ibanText && typeof getPayoutMaskedIban === 'function') {
+            ibanText.innerText = `IBAN COLLEGATO (${getPayoutMaskedIban()}) ✓`;
+          }
+        }
+      } else {
+        if (stripeBtn) { stripeBtn.style.display = 'inline-flex'; stripeBtn.classList.remove('hidden'); }
+        if (ibanBadge) { ibanBadge.classList.add('hidden'); }
+      }
       if (stripeBtn) {
         const isStripeConnected = Boolean(
           (AppState.user && (AppState.user.stripeConnected === true || AppState.user.stripeAccountId)) ||
@@ -32105,6 +32274,125 @@ function renderDealChat(rfpId) {
       }
     }
     window.initiateStripeConnectOnboarding = initiateStripeConnectOnboarding;
+
+    function isPayoutConfigured() {
+      try {
+        if (localStorage.getItem('printforge_payout_configured') === 'true') return true;
+        if (AppState.user && (AppState.user.payoutConfig || AppState.user.stripeConnected)) return true;
+      } catch(e) {}
+      return false;
+    }
+    window.isPayoutConfigured = isPayoutConfigured;
+
+    function getPayoutMaskedIban() {
+      try {
+        const storedDetails = localStorage.getItem('printforge_payout_details');
+        if (storedDetails) {
+          const parsed = JSON.parse(storedDetails);
+          if (parsed && parsed.iban) {
+            const raw = parsed.iban.replace(/\s+/g, '');
+            if (raw.length > 8) {
+              return raw.substring(0, 4) + '•• ••' + raw.substring(raw.length - 4);
+            }
+            return raw;
+          }
+        }
+      } catch(e) {}
+      return 'IT•• ••34';
+    }
+    window.getPayoutMaskedIban = getPayoutMaskedIban;
+
+    function openPayoutConfigModal() {
+      const modal = document.getElementById('modalPayoutConfig');
+      if (!modal) return;
+      try {
+        const stored = localStorage.getItem('printforge_payout_details');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const holderInput = document.getElementById('payoutAccountHolder');
+          const ibanInput = document.getElementById('payoutIban');
+          const taxIdInput = document.getElementById('payoutTaxId');
+          if (holderInput && parsed.accountHolder) holderInput.value = parsed.accountHolder;
+          if (ibanInput && parsed.iban) ibanInput.value = parsed.iban;
+          if (taxIdInput && parsed.taxId) taxIdInput.value = parsed.taxId;
+        } else if (AppState.user && AppState.user.name) {
+          const holderInput = document.getElementById('payoutAccountHolder');
+          if (holderInput && !holderInput.value) holderInput.value = AppState.user.name;
+        }
+      } catch(e) {}
+      modal.classList.remove('hidden');
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+    window.openPayoutConfigModal = openPayoutConfigModal;
+
+    function closePayoutConfigModal() {
+      const modal = document.getElementById('modalPayoutConfig');
+      if (modal) modal.classList.add('hidden');
+    }
+    window.closePayoutConfigModal = closePayoutConfigModal;
+
+    async function handlePayoutConfigSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const holder = document.getElementById('payoutAccountHolder')?.value?.trim() || '';
+      const iban = (document.getElementById('payoutIban')?.value?.trim() || '').toUpperCase().replace(/\s+/g, '');
+      const taxId = (document.getElementById('payoutTaxId')?.value?.trim() || '').toUpperCase();
+
+      if (!holder) {
+        showToast(currentLang === 'it' ? 'Inserisci l\'intestatario del conto' : 'Please enter account holder name', 'warning');
+        return;
+      }
+      if (!iban || iban.length < 15) {
+        showToast(currentLang === 'it' ? 'Inserisci un codice IBAN valido (min. 15 caratteri)' : 'Please enter a valid IBAN code', 'warning');
+        return;
+      }
+      if (!taxId) {
+        showToast(currentLang === 'it' ? 'Inserisci il Codice Fiscale o la P.IVA' : 'Please enter Tax ID / VAT', 'warning');
+        return;
+      }
+
+      const payoutData = {
+        accountHolder: holder,
+        iban: iban,
+        taxId: taxId,
+        configuredAt: new Date().toISOString()
+      };
+
+      try {
+        localStorage.setItem('printforge_payout_configured', 'true');
+        localStorage.setItem('printforge_payout_details', JSON.stringify(payoutData));
+        localStorage.setItem('printforge_stripe_connected', 'true');
+      } catch(err) {}
+
+      if (AppState.user) {
+        AppState.user.payoutConfig = payoutData;
+        AppState.user.stripeConnected = true;
+        try {
+          localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+          if (typeof syncUserProfileToCloud === 'function') {
+            syncUserProfileToCloud(AppState.user);
+          }
+        } catch(err) {}
+      }
+
+      closePayoutConfigModal();
+      showToast(currentLang === 'it' ? 'Coordinate IBAN salvate! I bonifici automatici sono ora attivi.' : 'Payout IBAN saved! Automated payouts are now active.', 'success');
+
+      // 1. Posto 1: Aggiorna e nasconde istantaneamente l'avviso nella Escrow Room
+      const payoutNotice = document.getElementById('escrowCreatorPayoutNotice');
+      if (payoutNotice) {
+        payoutNotice.classList.add('hidden');
+      }
+
+      // 2. Posto 2: Aggiorna il menù profilo
+      renderNavUserArea();
+
+      // 3. Posto 3: Aggiorna la vista I Miei Progetti
+      renderCreatorPortfolioView();
+    }
+    window.handlePayoutConfigSubmit = handlePayoutConfigSubmit;
+
 
 
 
