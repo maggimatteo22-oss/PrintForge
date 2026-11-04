@@ -4163,6 +4163,22 @@
             <span class="text-[10px] font-mono text-zinc-500 uppercase" id="i18n-portfolioPublishSub">FOTO 2D REALE // SPECS TECNICHE</span>
           </div>
 
+          <!-- BANNER BLOCCO CREATOR SENZA STRIPE/IBAN -->
+          <div id="creatorUploadLockedBanner" class="hidden p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <i data-lucide="lock" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="font-cyber font-bold text-white text-xs block">Vetrina Bloccata: Collega Stripe o IBAN</span>
+                <span class="text-[11px] text-zinc-400 font-sans">Per poter pubblicare le tue creazioni e incassare i compensi dagli acquirenti devi prima configurare il tuo conto di incasso.</span>
+              </div>
+            </div>
+            <button type="button" onclick="openPayoutConfigModal()" class="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-cyber font-bold text-xs shrink-0 cursor-pointer shadow transition active:scale-95">
+              Collega Ora
+            </button>
+          </div>
+
           <form onsubmit="handleCreatorWorkUpload(event)" class="space-y-4 text-xs font-sans">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               
@@ -4292,7 +4308,7 @@
             </div>
 
             <div class="flex justify-end pt-3">
-              <button type="submit" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg active:scale-95">
+              <button type="submit" id="btnPublishPortfolioSubmit" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg active:scale-95">
                 <i data-lucide="plus" class="w-4 h-4 text-black"></i>
                 <span id="i18n-btnPublishPortfolioText">Aggiungi al Portfolio & Vetrina</span>
               </button>
@@ -5870,6 +5886,24 @@
                         <span id="i18n-zeroHiddenFees">Zero costi nascosti</span>
                       </span>
                     </div>
+
+                    <!-- Dettaglio Trasparente Quote: Manifattura + Protezione Stripe Escrow -->
+                    <div id="priceEscrowBreakdownBox" class="p-2 sm:p-2.5 rounded-lg bg-[#0F1015] border border-white/10 space-y-1 text-[10px] font-mono mt-1.5">
+                      <div class="flex items-center justify-between text-zinc-400">
+                        <span>Manifattura 3D &amp; Materiale:</span>
+                        <span id="breakdownMfgPrice" class="text-zinc-200 font-bold">€ --</span>
+                      </div>
+                      <div class="flex items-center justify-between text-zinc-400">
+                        <span class="flex items-center gap-1">
+                          <span class="text-blue-400">🛡️ Protezione Stripe Escrow (1.5% + €0.25):</span>
+                        </span>
+                        <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 3,00</span>
+                      </div>
+                      <div class="flex items-center justify-between text-zinc-300 pt-1 border-t border-white/10 font-bold">
+                        <span>Totale al Checkout:</span>
+                        <span id="breakdownTotalPrice" class="text-emerald-400 text-xs font-mono">€ --</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
@@ -5934,6 +5968,26 @@
                   </select>
                   <!-- Campo reqNotes nascosto per preservare compatibilità script -->
                   <textarea id="reqNotes" class="hidden" style="display: none !important;"></textarea>
+                </div>
+
+                <!-- PROMEMORIA UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (+€3,00) -->
+                <div id="stripeEscrowFeeNotice" class="p-3 sm:p-4 rounded-xl bg-[#0D1117] border border-blue-500/30 shadow-md space-y-2 mt-2">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                      <div class="w-7 h-7 rounded-lg bg-blue-500/15 border border-blue-500/30 flex items-center justify-center text-blue-400 shrink-0">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <span class="text-xs font-bold text-white tracking-wide block">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
+                        <span class="text-[10px] text-blue-300/80 font-mono">Fondi in Custodia Fiduciaria al 100%</span>
+                      </div>
+                    </div>
+                    <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[11px] font-bold border border-blue-500/40 shrink-0">+ € 3,00</span>
+                  </div>
+                  <p class="text-[11px] text-zinc-300 leading-relaxed font-sans">
+                    Al preventivo viene applicata una quota fissa di <b>€ 3,00</b> per la <b>Protezione Totale Acquirente</b> (commissioni di transazione sicura Stripe 1.5% + €0.25 incluse). 
+                    <span class="text-zinc-400 block mt-1">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
+                  </p>
                 </div>
 
                 <!-- 3 Micro-spunte Rassicuranti ad Alta Visibilità -->
@@ -9061,6 +9115,21 @@
       isDelivered: (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')
     };
     window.AppState = AppState;
+
+    // Ripristino autenticazione immediato e sincrono all'avvio: non mostrare MAI login-gate se l'utente ha già effettuato l'accesso
+    try {
+      const storedAuthEarly = localStorage.getItem('printforge_auth_session');
+      if (storedAuthEarly) {
+        const uEarly = JSON.parse(storedAuthEarly);
+        if (uEarly && (uEarly.isLoggedIn || uEarly.email)) {
+          uEarly.isLoggedIn = true;
+          Object.assign(AppState.user, uEarly);
+          if (uEarly.email === 'maggimatteo22@gmail.com' && (!uEarly.role || (typeof window !== 'undefined' && window.location.hash === '#client'))) {
+            AppState.user.role = 'client';
+          }
+        }
+      }
+    } catch(e) {}
 
     // Reset delle richieste, recensioni, portfolio opere e creator di test: lascia SOLO l'account autentico dell'utente
     (function purgeStaleDataOnce() {
@@ -20722,7 +20791,16 @@ END-ISO-10303-21;`;
       const cBbox = document.getElementById('calcBbox');
       const cWeight = document.getElementById('calcWeight');
       const cHours = document.getElementById('calcHours');
-      const warnBox = document.getElementById('budgetWarningBox');
+      
+      if (val > 0) {
+        const stripeFee = 3.00;
+        const mfgVal = Math.max(0, val - stripeFee);
+        const bMfg = document.getElementById('breakdownMfgPrice');
+        if (bMfg) bMfg.innerText = `€ ${mfgVal.toFixed(2).replace('.', ',')}`;
+        const bTotal = document.getElementById('breakdownTotalPrice');
+        if (bTotal) bTotal.innerText = `€ ${val.toFixed(2).replace('.', ',')}`;
+      }
+const warnBox = document.getElementById('budgetWarningBox');
       const reqBudget = document.getElementById('reqBudget');
 
       // Finchè non sono selezionati sia il materiale d'uso sia la grandezza, non mostrare alcun prezzo
@@ -20831,14 +20909,23 @@ END-ISO-10303-21;`;
                                 (totalGrams * pricePerGram * batchDiscount) + 
                                 (parseFloat(totalHours) * machineHourRate * batchDiscount);
 
-      const computedPrice = Math.max(12, Math.round(manufacturingCost * deadlineMult));
+      const baseManufacturingPrice = Math.max(12, Math.round(manufacturingCost * deadlineMult));
+      const stripeEscrowFee = 3.00; // Quota fissa Stripe Escrow & Protezione Totale Acquirente
+      const computedPrice = baseManufacturingPrice + stripeEscrowFee;
 
       if (cBbox) cBbox.innerText = `${Math.round(x)} × ${Math.round(y)} × ${Math.round(z)} mm`;
       if (cWeight) cWeight.innerText = `${Math.round(effectiveVolCm3)} cm³ • ${totalGrams} g`;
       if (cHours) cHours.innerText = `~${totalHours} ${hourUnit}`;
       if (cQuote) cQuote.innerText = `€ ${computedPrice},00`;
       
-      window.__lastComputedQuotePrice = computedPrice;
+      
+      const bMfg = document.getElementById('breakdownMfgPrice');
+      if (bMfg) bMfg.innerText = `€ ${baseManufacturingPrice},00`;
+      const bStripe = document.getElementById('breakdownStripeFee');
+      if (bStripe) bStripe.innerText = `+ € 3,00`;
+      const bTotal = document.getElementById('breakdownTotalPrice');
+      if (bTotal) bTotal.innerText = `€ ${computedPrice},00`;
+window.__lastComputedQuotePrice = computedPrice;
       const minPrice = Math.max(10, Math.round(computedPrice * 0.88));
       const maxPrice = Math.round(computedPrice * 1.15);
 
@@ -30996,6 +31083,19 @@ function renderDealChat(rfpId) {
 
     async function handleCreatorWorkUpload(e) {
       if (e && e.preventDefault) e.preventDefault();
+
+      // REQUISITO BLOCCANTE: Il creator DEVE aver collegato Stripe o IBAN prima di poter pubblicare opere in vetrina
+      const isConfigured = typeof isPayoutConfigured === 'function' ? isPayoutConfigured() : false;
+      if (!isConfigured) {
+        const blockMsg = currentLang === 'it' 
+          ? 'Per pubblicare opere nella Vetrina Globale (/esplora) e ricevere ordini, devi prima collegare il tuo conto Stripe o IBAN!'
+          : currentLang === 'es'
+          ? '¡Para publicar obras en la vitrina global y recibir pedidos, primero debes conectar tu cuenta Stripe o IBAN!'
+          : 'To publish works to the global showcase and receive orders, please connect your Stripe or IBAN payout account first!';
+        showToast(blockMsg, 'warning');
+        openPayoutConfigModal();
+        return;
+      }
       const title = (document.getElementById('portfolioTitle')?.value || '').trim();
       const desc = (document.getElementById('portfolioDesc')?.value || '').trim();
       const material = document.getElementById('portfolioMaterial')?.value || 'PETG Tecnico';
@@ -31294,6 +31394,8 @@ function renderDealChat(rfpId) {
       const stripeBtn = document.getElementById('btnCreatorConnectStripe');
       const ibanBadge = document.getElementById('badgeCreatorIbanConfigured');
       const isConfigured = typeof isPayoutConfigured === 'function' ? isPayoutConfigured() : false;
+      const lockedBanner = document.getElementById('creatorUploadLockedBanner');
+      const submitBtn = document.getElementById('btnPublishPortfolioSubmit');
       if (isConfigured) {
         if (stripeBtn) { stripeBtn.style.display = 'none'; stripeBtn.classList.add('hidden'); }
         if (ibanBadge) {
@@ -31303,9 +31405,21 @@ function renderDealChat(rfpId) {
             ibanText.innerText = `IBAN COLLEGATO (${getPayoutMaskedIban()}) ✓`;
           }
         }
+        if (lockedBanner) lockedBanner.classList.add('hidden');
+        if (submitBtn) {
+          submitBtn.classList.remove('opacity-60');
+          const txtSpan = document.getElementById('i18n-btnPublishPortfolioText');
+          if (txtSpan) txtSpan.innerText = 'Aggiungi al Portfolio & Vetrina';
+        }
       } else {
         if (stripeBtn) { stripeBtn.style.display = 'inline-flex'; stripeBtn.classList.remove('hidden'); }
         if (ibanBadge) { ibanBadge.classList.add('hidden'); }
+        if (lockedBanner) lockedBanner.classList.remove('hidden');
+        if (submitBtn) {
+          submitBtn.classList.add('opacity-60');
+          const txtSpan = document.getElementById('i18n-btnPublishPortfolioText');
+          if (txtSpan) txtSpan.innerText = '🔒 Collega IBAN / Stripe per Pubblicare';
+        }
       }
       if (stripeBtn) {
         const isStripeConnected = Boolean(
@@ -32420,24 +32534,16 @@ function renderDealChat(rfpId) {
 
       // Azzeramento forzato commessa demo RFP-3555 cross-device
       try {
-        recordDeletedRequestIds(['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044']);
-        if (AppState.activeEscrowOrder && ['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044'].includes(AppState.activeEscrowOrder.id)) {
-          AppState.activeEscrowOrder = null;
-          AppState.loadedRequestInStudio = null;
-          AppState.activeDealRfpId = null;
-          localStorage.removeItem('printforge_escrow_order');
-        }
-      } catch(e) {}
-
-      // Ripristino e allineamento sessione: priorità accesso Cliente
-      try {
         const storedAuth = localStorage.getItem('printforge_auth_session');
         if (storedAuth) {
           const u = JSON.parse(storedAuth);
-          if (u && (u.email === 'maggimatteo22@gmail.com' || window.location.hash === '#client' || urlParams.get('role') === 'client')) {
-            u.role = 'client';
-            AppState.user = u;
-            localStorage.setItem('printforge_auth_session', JSON.stringify(u));
+          if (u && (u.isLoggedIn || u.email)) {
+            u.isLoggedIn = true;
+            AppState.user = Object.assign(AppState.user || {}, u);
+            if (u.email === 'maggimatteo22@gmail.com' && (!u.role || window.location.hash === '#client' || urlParams.get('role') === 'client')) {
+              AppState.user.role = 'client';
+            }
+            localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
           }
         }
       } catch(e) {}
