@@ -20840,8 +20840,8 @@ END-ISO-10303-21;`;
       if (bApply) bApply.innerText = `€ ${computedPrice},00`;
       if (bRange) bRange.innerText = `€ ${minPrice} – € ${maxPrice}`;
 
-      // Calcola la stima sul selezionatore budget SOLO se il cliente non ha digitato manualmente il proprio prezzo
-      if (reqBudget && reqBudget.dataset.userTyped !== 'true') {
+      // Calcola e aggiorna SEMPRE la stima in tempo reale su ogni modifica (misure, materiale, quantità, consegna flash)
+      if (reqBudget) {
         reqBudget.value = computedPrice;
       }
       handleReqBudgetChange();
@@ -20891,9 +20891,6 @@ END-ISO-10303-21;`;
 
     function handleReqBudgetChange() {
       const bInput = document.getElementById('reqBudget');
-      if (bInput && bInput.value && bInput.value.trim() !== '') {
-        bInput.dataset.userTyped = 'true';
-      }
       const val = parseFloat(bInput?.value) || 0;
       const rec = window.__lastComputedQuotePrice || 0;
       const warnBox = document.getElementById('budgetWarningBox');
