@@ -4190,9 +4190,9 @@
           </div>
           
           <div class="flex items-center gap-2">
-            <div class="px-3.5 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center gap-2 shadow-sm">
-              <span class="text-[10px] font-mono text-zinc-400 uppercase" id="i18n-creatorEarnedTotalLabel">INCASSATO:</span>
-              <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums" id="creatorEarnedTotalBadge">€ 0,00</span>
+            <div class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-1.5 sm:gap-2 shadow-sm whitespace-nowrap shrink-0">
+              <span class="text-[10px] font-mono text-zinc-400 uppercase whitespace-nowrap select-none" id="i18n-creatorEarnedTotalLabel">INCASSATO:</span>
+              <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums whitespace-nowrap" id="creatorEarnedTotalBadge">€&nbsp;0,00</span>
             </div>
             <button type="button" id="btnCreatorConnectStripe" onclick="initiateStripeConnectOnboarding()" class="px-4 py-2.5 rounded-xl bg-[#635BFF] hover:bg-[#5249ea] text-white border border-[#7A73FF] font-cyber font-bold text-xs flex items-center gap-2 transition active:scale-95 shadow-lg cursor-pointer">
               <i data-lucide="credit-card" class="w-4 h-4 text-white"></i>
@@ -7006,9 +7006,9 @@
         </div>
 
         <div class="flex items-center gap-2.5 shrink-0 flex-wrap">
-          <div class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center gap-2">
-            <span class="text-[10px] font-mono text-zinc-400 uppercase" id="i18n-studioFondiEscrowLabel">FONDI IN CUSTODIA:</span>
-            <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums" id="studioFondiEscrowBadge">€ 48,00</span>
+          <div class="px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/25 inline-flex items-center gap-1.5 sm:gap-2 shadow-sm whitespace-nowrap shrink-0">
+            <span class="text-[10px] font-mono text-zinc-400 uppercase whitespace-nowrap select-none" id="i18n-studioFondiEscrowLabel">FONDI IN CUSTODIA:</span>
+            <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums whitespace-nowrap" id="studioFondiEscrowBadge">€&nbsp;0,00</span>
           </div>
           
           <button type="button" onclick="downloadClientAttachment()" id="btnDownloadClientAttachment" class="btn-kowalski-primary py-2 px-3.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-sm transition active:scale-95" title="Scarica il file tecnico depositato dal cliente">
@@ -30832,7 +30832,7 @@ function renderDealChat(rfpId) {
       const totalEarnedBadge = document.getElementById('creatorEarnedTotalBadge');
       if (totalEarnedBadge) {
         const tot = typeof getCreatorTotalEarnings === 'function' ? getCreatorTotalEarnings() : 0;
-        totalEarnedBadge.innerText = '€ ' + tot.toFixed(2).replace('.', ',');
+        totalEarnedBadge.innerHTML = '€&nbsp;' + tot.toFixed(2).replace('.', ',');
       }
 
       const works = AppState.portfolioWorks || [];
