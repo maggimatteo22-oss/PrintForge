@@ -18952,6 +18952,7 @@ END-ISO-10303-21;`;
         const shortcutMyOrders = isEn ? 'My Orders & RFPs' : isEs ? 'Mis Pedidos' : 'Le Mie Richieste / Ordini';
         const shortcutNewRfp = isEn ? 'New Instant Request' : isEs ? 'Nueva Solicitud' : 'Nuovo Ordine 3D';
         const shortcutExplore = isEn ? 'Explore Creators' : isEs ? 'Explorar Creadores' : 'Vetrina Globale';
+        const logoutActionTitle = isEn ? 'Sign Out' : isEs ? 'Cerrar Sesión' : 'Disconnetti Account';
 
         const targetRole = isCreator ? 'client' : 'creator';
         const userInitial = (AppState.user.name || 'U').charAt(0).toUpperCase();
@@ -19055,6 +19056,19 @@ END-ISO-10303-21;`;
                     <span class="font-medium">${shortcutExplore}</span>
                   </button>
                 `}
+              </div>
+
+              <!-- Tasto Disconnetti Account -->
+              <div class="pt-2 mt-2 border-t border-white/10">
+                <button type="button" 
+                        onclick="logoutUser()" 
+                        class="w-full flex items-center justify-between px-2.5 py-2 rounded-xl text-zinc-400 hover:text-red-400 hover:bg-red-500/10 border border-transparent hover:border-red-500/20 transition-all cursor-pointer group text-xs font-cyber font-bold">
+                  <div class="flex items-center gap-2">
+                    <i data-lucide="log-out" class="w-3.5 h-3.5 text-zinc-400 group-hover:text-red-400 transition-colors"></i>
+                    <span>${logoutActionTitle}</span>
+                  </div>
+                  <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-zinc-600 group-hover:text-red-400 transition-colors"></i>
+                </button>
               </div>
 
             </div>
@@ -24851,6 +24865,9 @@ END-ISO-10303-21;`;
     }
 
     function logoutUser() {
+      if (typeof closeUserProfileDropdown === 'function') {
+        closeUserProfileDropdown();
+      }
       AppState.user = {
         isLoggedIn: false,
         role: 'client',
@@ -24863,13 +24880,37 @@ END-ISO-10303-21;`;
       };
       try {
         localStorage.removeItem('printforge_auth_session');
+        localStorage.removeItem('printforge_pending_auth_role');
+        sessionStorage.clear();
       } catch (e) {}
-      unregisterCreatorPresence();
+
+      if (typeof supabaseClient !== 'undefined' && supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signOut === 'function') {
+        try { supabaseClient.auth.signOut(); } catch(e) {}
+      }
+
+      if (typeof unregisterCreatorPresence === 'function') {
+        unregisterCreatorPresence();
+      }
+
+      try {
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+      } catch(e) {}
+
       renderNavUserArea();
       updateNavigationTabs();
       updateLaptopBarButtons();
-      showToast(currentLang === 'it' ? 'Disconnesso dalla piattaforma.' : 'Signed out from platform.');
-      navigateTo('esplora');
+      
+      const byeMsg = currentLang === 'it' 
+        ? 'Account disconnesso con successo.' 
+        : currentLang === 'es' 
+        ? 'Has cerrado sesión con éxito.' 
+        : 'You have been signed out successfully.';
+      showToast(byeMsg, 'info');
+
+      // Riporta e blocca sulla schermata di accesso login-gate
+      navigateTo('login-gate');
     }
 
     function handleLogoClick() {
