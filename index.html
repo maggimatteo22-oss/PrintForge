@@ -5889,6 +5889,12 @@
                 </select>
               </div>
 
+                <!-- AVVISO SOGLIA MINIMA BUDGET MAKER (IMMAGINE 1 - ZONA CIRCONDATA IN ROSSO SOTTO I COLORI) -->
+                <div id="budgetWarningBox" class="hidden p-3.5 sm:p-4 rounded-2xl bg-[#141008] border border-amber-500/40 text-amber-400 font-mono text-xs sm:text-[13px] items-center gap-3 shadow-lg my-2.5 transition-all">
+                  <div class="w-5 h-5 rounded-full border border-amber-500/80 flex items-center justify-center shrink-0 text-amber-400 font-mono text-xs font-bold leading-none select-none">i</div>
+                  <span id="budgetWarningText" class="leading-relaxed text-[#FBBF24]">Con un budget inferiore a € 77 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € 102,00.</span>
+                </div>
+
                 <!-- PROMEMORIA UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (OPZIONE 2 - INSERITO NELLA ZONA INDICATA) -->
                 <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] to-[#0A0D14] border border-blue-500/35 shadow-xl space-y-2.5 mt-2">
                   <div class="flex items-center justify-between gap-2 flex-wrap">
@@ -6016,12 +6022,6 @@
                     <option value="Standard 3-5 giorni" selected>📦 Standard (3-5 gg)</option>
                     <option value="Flessibile 7-10 giorni">⏳ Flessibile (7-10 gg)</option>
                   </select>
-                </div>
-
-                <!-- Alert Guida Gentile se Budget Anomalo (< € 15 o troppo basso rispetto al materiale) -->
-                <div id="budgetWarningBox" class="hidden p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] text-amber-300 font-mono flex items-start gap-2 mt-2 shadow-sm transition-all">
-                  <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5"></i>
-                  <span id="budgetWarningText">Con un budget inferiore a € 18 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno la stima di mercato (€ 28,00).</span>
                 </div>
 
                 <!-- Opzione Infill / Robustezza (Immediatamente Sotto a Quantità e Budget) -->
@@ -9399,11 +9399,31 @@
       // Polling di sincronizzazione universale continuo ogni 3.5 secondi (Garantisce sync anche su mobile o se i websocket sono instabili)
       if (!window.__printforge_global_poll_started) {
         window.__printforge_global_poll_started = true;
+        // Polling rapido ogni 2 secondi per sincronizzazione fluida telefono <-> pc
         setInterval(() => {
           if (supabaseClient && typeof loadRequestsFromSupabase === 'function') {
             loadRequestsFromSupabase();
           }
-        }, 3500);
+        }, 2000);
+
+        // Sveglia istantanea non appena il telefono viene sbloccato o l'utente torna sulla scheda
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            console.log('📱 [Mobile Wakeup] Schermo acceso o scheda attiva: sync istantaneo...');
+            if (typeof loadRequestsFromSupabase === 'function') loadRequestsFromSupabase();
+            if (typeof setupSupabaseRealtime === 'function') setupSupabaseRealtime();
+          }
+        });
+
+        window.addEventListener('focus', () => {
+          if (typeof loadRequestsFromSupabase === 'function') loadRequestsFromSupabase();
+        });
+
+        window.addEventListener('online', () => {
+          console.log('🌐 [Network Online] Dispositivo riconnesso: sync istantaneo...');
+          if (typeof loadRequestsFromSupabase === 'function') loadRequestsFromSupabase();
+          if (typeof setupSupabaseRealtime === 'function') setupSupabaseRealtime();
+        });
       }
       return true;
     }
@@ -10188,6 +10208,12 @@
 
         supabaseRealtimeChannel.subscribe((status) => {
           console.log('📡 [Supabase Channel Status]:', status);
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            console.warn('⚠️ [Realtime Sync] Canale disconnesso/sospeso, riconnessione automatica in corso...');
+            setTimeout(() => {
+              if (typeof setupSupabaseRealtime === 'function') setupSupabaseRealtime();
+            }, 1500);
+          }
         });
       } catch (err) {
         console.warn('Errore setup Realtime:', err);
@@ -21083,22 +21109,22 @@ window.__lastComputedQuotePrice = computedPrice;
         const noticeBadge = document.getElementById('liveNoticeStripeBadge');
         if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
 
-        // MOSTRA IL MESSAGGIO DI ATTENZIONE SE L'OFFERTA È TROPPO BASSA RISPETTO AL PREZZO DI MERCATO
-        const minThreshold = (rec > 0) ? Math.max(12, Math.round(rec * 0.70)) : 12;
-        if (rec > 0 && val < minThreshold) {
+        // MOSTRA IL MESSAGGIO DI ATTENZIONE SE L'OFFERTA È SOTTO LA SOGLIA CONSIGLIATA
+        const minThreshold = (rec > 0) ? Math.max(12, Math.round(rec * 0.75)) : 12;
+        if (rec > 0 && val < rec) {
           if (warnBox) {
             warnBox.classList.remove('hidden');
             warnBox.style.display = 'flex';
           }
           if (warnText) {
             warnText.innerText = currentLang === 'en'
-              ? `Notice: With an offer under € ${minThreshold},00, verified Makers may decline the job. Recommended market price: € ${rec.toFixed(2).replace('.', ',')}.`
+              ? `With a budget below € ${minThreshold} qualified Makers might not accept the order. At least € ${rec.toFixed(2).replace('.', ',')} is recommended.`
               : currentLang === 'es'
-              ? `Atención: Con un presupuesto inferior a € ${minThreshold},00, los Creadores verificados podrían no aceptar el pedido. Precio recomendado: € ${rec.toFixed(2).replace('.', ',')}.`
-              : `Attenzione: Con un budget inferiore a € ${minThreshold},00 i Maker qualificati potrebbero non accettare la commessa. Prezzo consigliato di mercato: € ${rec.toFixed(2).replace('.', ',')}.`;
+              ? `Con un presupuesto inferior a € ${minThreshold} los Creadores cualificados podrían no aceptar el pedido. Se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
+              : `Con un budget inferiore a € ${minThreshold} i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
           }
         } else {
-          // Offerta congrua o sopra soglia: nascondi avviso
+          // Offerta congrua o sopra soglia consigliata: nascondi avviso
           if (warnBox) {
             warnBox.classList.add('hidden');
             warnBox.style.display = 'none';
