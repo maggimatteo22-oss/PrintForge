@@ -990,22 +990,21 @@
 
     /* ========================================================================= */
     /* ========================================================================= */
-    /* EFFETTO METALLO LIQUIDO AUTENTICO (Ispirato alla foto del mercurio reale)  */
-    /* Senza luccichio artificiale: vero, fluido, con transizione continua        */
-    /* tra Bianco e Nero, e inversione del logo: quando è bianco, il logo è nero */
+    /* EFFETTO METALLO LIQUIDO AUTENTICO (Transizione Fluida Continua Ultra-Silky) */
+    /* Senza scatti: morbido, armonico, con transizione continua e fluida tra Bianco e Nero */
     /* ========================================================================= */
     
     .liquid-metal-tile {
       position: relative;
       cursor: pointer;
       border: 1.5px solid rgba(255, 255, 255, 0.2);
-      animation: liquidColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: liquidColorCycle 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
       will-change: background-color, border-color, border-radius, transform, box-shadow;
-      transition: transform 0.4s ease, box-shadow 0.4s ease;
+      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
       overflow: hidden;
     }
 
-    /* Strato Tensione Superficiale e Menisco Naturale (Vero, senza riflessi accecanti) */
+    /* Strato Tensione Superficiale e Menisco Naturale */
     .liquid-metal-meniscus-highlight {
       position: absolute;
       inset: 0;
@@ -1013,9 +1012,10 @@
       background: radial-gradient(ellipse at 38% 22%, rgba(255, 255, 255, 0.45) 0%, rgba(255, 255, 255, 0.12) 36%, transparent 68%);
       pointer-events: none;
       z-index: 2;
+      transition: opacity 0.8s ease;
     }
 
-    /* Bordo Perimetrale di Contatto Naturale (Ombra di contatto fisica del mercurio) */
+    /* Bordo Perimetrale di Contatto Naturale */
     .liquid-metal-surface-tension-rim {
       position: absolute;
       inset: 0;
@@ -1025,11 +1025,11 @@
       z-index: 4;
     }
 
-    /* Gocce Satellite Autentiche (Fedeli alla foto di riferimento, senza luccichio) */
+    /* Gocce Satellite Autentiche */
     .liquid-metal-droplet {
       position: absolute;
       border: 1px solid rgba(255, 255, 255, 0.2);
-      animation: liquidDropletColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: liquidDropletColorCycle 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
       pointer-events: none;
       z-index: 20;
       overflow: hidden;
@@ -1042,39 +1042,39 @@
       background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.5) 0%, rgba(255, 255, 255, 0.15) 35%, transparent 65%);
     }
 
-    /* Goccia Media Satellite (in basso a destra, come nella foto) */
+    /* Goccia Media Satellite */
     .liquid-droplet-medium {
       width: 25px;
       height: 21px;
       right: -8px;
       bottom: -4px;
-      animation: liquidDropletColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite, liquidDropletMediumMorph 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: liquidDropletColorCycle 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite, liquidDropletMediumMorph 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
     }
 
-    /* Goccia Piccola Satellite (sotto alla goccia media, come nella foto) */
+    /* Goccia Piccola Satellite */
     .liquid-droplet-small {
       width: 14px;
       height: 13px;
       right: 22px;
       bottom: -14px;
-      animation: liquidDropletColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite, liquidDropletSmallMorph 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: liquidDropletColorCycle 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite, liquidDropletSmallMorph 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
     }
 
-    /* Monogramma PF a Incastro: Inversione Colore Perfetta */
-    /* QUANDO LA GOCCIA È BIANCA, IL LOGO DIVENTA NERO! QUANDO È NERA, IL LOGO DIVENTA BIANCO! */
+    /* Monogramma PF a Incastro: Inversione Colore Fluida & Continua */
     .pf-liquid-monogram {
       z-index: 10;
     }
     .pf-liquid-monogram .pf-p-path,
     .pf-liquid-monogram .pf-f1-path,
     .pf-liquid-monogram .pf-f2-path {
-      animation: liquidPfMonogramInvert 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: liquidPfMonogramInvert 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
       will-change: fill, filter;
+      transition: fill 0.4s ease, filter 0.4s ease;
     }
 
     /* Glow Ambientale Naturale */
     .liquid-metal-ambient-glow {
-      animation: liquidAmbientGlowCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+      animation: liquidAmbientGlowCycle 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite;
     }
 
     /* Hover State Naturale */
@@ -1083,101 +1083,165 @@
     }
 
     /* ========================================================================= */
-    /* KEYFRAMES: TRANSIZIONE CONTINUA METALLO VERO BIANCO / NERO                */
+    /* KEYFRAMES: TRANSIZIONE CONTINUA E ULTRA-FLUIDA BIANCO / NERO              */
     /* ========================================================================= */
     
-    /* Goccia Principale: Transizione Morbida e Morfismo Naturale */
+    /* Goccia Principale: Transizione Graduale Armonica */
     @keyframes liquidColorCycle {
       0%, 100% {
         background-color: #07080B;
-        border-color: rgba(255, 255, 255, 0.22);
+        border-color: rgba(255, 255, 255, 0.20);
         box-shadow: 
           0 20px 45px rgba(0, 0, 0, 0.95),
           inset 0 2px 4px rgba(255, 255, 255, 0.35),
           inset 0 -4px 10px rgba(0, 0, 0, 0.95);
-        border-radius: 48% 52% 62% 38% / 46% 54% 46% 54%;
+        border-radius: 48% 52% 60% 40% / 46% 54% 46% 54%;
         transform: scale(1) rotate(0deg);
       }
-      25% {
-        background-color: #3b3f4d;
+      15% {
+        background-color: #1a1c24;
+        border-color: rgba(255, 255, 255, 0.30);
+        box-shadow: 
+          0 21px 47px rgba(0, 0, 0, 0.85),
+          inset 0 2.2px 4.5px rgba(255, 255, 255, 0.45),
+          inset 0 -4px 9px rgba(0, 0, 0, 0.85);
+        border-radius: 51% 49% 52% 48% / 50% 50% 50% 50%;
+        transform: scale(1.008, 0.995) rotate(0.4deg);
+      }
+      30% {
+        background-color: #404454;
         border-color: rgba(255, 255, 255, 0.45);
         box-shadow: 
-          0 22px 50px rgba(0, 0, 0, 0.7),
-          inset 0 2.5px 5px rgba(255, 255, 255, 0.6),
-          inset 0 -4px 8px rgba(0, 0, 0, 0.7);
-        border-radius: 54% 46% 40% 60% / 56% 44% 56% 44%;
-        transform: scale(1.02, 0.985) rotate(0.8deg);
+          0 22px 50px rgba(0, 0, 0, 0.65),
+          inset 0 2.6px 5px rgba(255, 255, 255, 0.65),
+          inset 0 -4px 8px rgba(0, 0, 0, 0.65);
+        border-radius: 54% 46% 42% 58% / 55% 45% 55% 45%;
+        transform: scale(1.018, 0.988) rotate(0.8deg);
+      }
+      42% {
+        background-color: #8c91a3;
+        border-color: rgba(255, 255, 255, 0.60);
+        box-shadow: 
+          0 23px 52px rgba(0, 0, 0, 0.45),
+          inset 0 2.8px 5.5px rgba(255, 255, 255, 0.85),
+          inset 0 -4px 9px rgba(100, 116, 139, 0.4);
+        border-radius: 46% 54% 50% 50% / 48% 52% 48% 52%;
+        transform: scale(1.005, 1.005) rotate(0.2deg);
       }
       50% {
         background-color: #FFFFFF;
-        border-color: rgba(0, 0, 0, 0.2);
+        border-color: rgba(0, 0, 0, 0.22);
         box-shadow: 
           0 24px 55px rgba(0, 0, 0, 0.35),
-          0 8px 20px rgba(0, 0, 0, 0.2),
+          0 8px 20px rgba(0, 0, 0, 0.18),
           inset 0 3px 6px rgba(255, 255, 255, 1),
           inset 0 -4px 10px rgba(100, 116, 139, 0.4);
-        border-radius: 42% 58% 55% 45% / 44% 56% 44% 56%;
-        transform: scale(0.985, 1.02) rotate(-0.6deg);
+        border-radius: 43% 57% 55% 45% / 44% 56% 44% 56%;
+        transform: scale(0.988, 1.018) rotate(-0.6deg);
       }
-      75% {
-        background-color: #3b3f4d;
+      58% {
+        background-color: #8c91a3;
+        border-color: rgba(255, 255, 255, 0.60);
+        box-shadow: 
+          0 23px 52px rgba(0, 0, 0, 0.45),
+          inset 0 2.8px 5.5px rgba(255, 255, 255, 0.85),
+          inset 0 -4px 9px rgba(100, 116, 139, 0.4);
+        border-radius: 46% 54% 50% 50% / 48% 52% 48% 52%;
+        transform: scale(1.005, 1.005) rotate(-0.2deg);
+      }
+      70% {
+        background-color: #404454;
         border-color: rgba(255, 255, 255, 0.45);
         box-shadow: 
-          0 22px 50px rgba(0, 0, 0, 0.7),
-          inset 0 2.5px 5px rgba(255, 255, 255, 0.6),
-          inset 0 -4px 8px rgba(0, 0, 0, 0.7);
-        border-radius: 56% 44% 48% 52% / 52% 48% 52% 48%;
-        transform: scale(1.01, 0.99) rotate(0.5deg);
+          0 22px 50px rgba(0, 0, 0, 0.65),
+          inset 0 2.6px 5px rgba(255, 255, 255, 0.65),
+          inset 0 -4px 8px rgba(0, 0, 0, 0.65);
+        border-radius: 55% 45% 47% 53% / 52% 48% 52% 48%;
+        transform: scale(1.015, 0.99) rotate(0.4deg);
+      }
+      85% {
+        background-color: #1a1c24;
+        border-color: rgba(255, 255, 255, 0.30);
+        box-shadow: 
+          0 21px 47px rgba(0, 0, 0, 0.85),
+          inset 0 2.2px 4.5px rgba(255, 255, 255, 0.45),
+          inset 0 -4px 9px rgba(0, 0, 0, 0.85);
+        border-radius: 50% 50% 55% 45% / 48% 52% 48% 52%;
+        transform: scale(1.008, 0.995) rotate(0.2deg);
       }
     }
 
-    /* INVERSIONE PERFETTA DEL LOGO: QUANDO È BIANCO, DIVENTA NERO! */
+    /* INVERSIONE PERFETTA E FLUIDA DEL LOGO: GRADUALE AL 100% */
     @keyframes liquidPfMonogramInvert {
       0%, 100% {
         fill: #FFFFFF !important;
-        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.6));
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.5));
       }
-      20% {
-        fill: #FFFFFF !important;
-        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7));
+      15% {
+        fill: #E5E7EB !important;
+        filter: drop-shadow(0 2px 3.5px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
       }
-      40% {
-        fill: #1E232E !important;
+      30% {
+        fill: #9CA3AF !important;
+        filter: drop-shadow(0 1.5px 3px rgba(0, 0, 0, 0.5));
+      }
+      42% {
+        fill: #4B5563 !important;
         filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
       }
       50% {
-        fill: #000000 !important;
+        fill: #08090C !important;
         filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
       }
-      60% {
-        fill: #1E232E !important;
+      58% {
+        fill: #4B5563 !important;
         filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
       }
-      80% {
-        fill: #FFFFFF !important;
-        filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.7));
+      70% {
+        fill: #9CA3AF !important;
+        filter: drop-shadow(0 1.5px 3px rgba(0, 0, 0, 0.5));
+      }
+      85% {
+        fill: #E5E7EB !important;
+        filter: drop-shadow(0 2px 3.5px rgba(0, 0, 0, 0.75)) drop-shadow(0 0 1px rgba(255, 255, 255, 0.3));
       }
     }
 
-    /* Transizione Gocce Satellite */
+    /* Transizione Gocce Satellite Fluida */
     @keyframes liquidDropletColorCycle {
       0%, 100% {
         background-color: #0c0d12;
-        border-color: rgba(255, 255, 255, 0.22);
+        border-color: rgba(255, 255, 255, 0.20);
         box-shadow: 0 10px 20px rgba(0, 0, 0, 0.9), inset 0 2px 3px rgba(255, 255, 255, 0.35), inset 0 -3px 6px rgba(0, 0, 0, 0.9);
       }
-      25% {
-        background-color: #3b3f4d;
-        border-color: rgba(255, 255, 255, 0.4);
+      15% {
+        background-color: #1a1c24;
+        border-color: rgba(255, 255, 255, 0.30);
+      }
+      30% {
+        background-color: #404454;
+        border-color: rgba(255, 255, 255, 0.45);
+      }
+      42% {
+        background-color: #8c91a3;
+        border-color: rgba(255, 255, 255, 0.60);
       }
       50% {
         background-color: #FFFFFF;
         border-color: rgba(0, 0, 0, 0.2);
         box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35), inset 0 2px 3px rgba(255, 255, 255, 1), inset 0 -3px 6px rgba(100, 116, 139, 0.4);
       }
-      75% {
-        background-color: #3b3f4d;
-        border-color: rgba(255, 255, 255, 0.4);
+      58% {
+        background-color: #8c91a3;
+        border-color: rgba(255, 255, 255, 0.60);
+      }
+      70% {
+        background-color: #404454;
+        border-color: rgba(255, 255, 255, 0.45);
+      }
+      85% {
+        background-color: #1a1c24;
+        border-color: rgba(255, 255, 255, 0.30);
       }
     }
 
@@ -1212,25 +1276,26 @@
     /* Glow ambientale in sincronia */
     @keyframes liquidAmbientGlowCycle {
       0%, 100% {
-        opacity: 0.4;
+        opacity: 0.35;
         transform: scale(1);
       }
       50% {
-        opacity: 0.75;
+        opacity: 0.70;
         transform: scale(1.05);
       }
     }
 
-    /* Brand Logo Tile nella Navbar (Transizione liquida e pulita senza bagliori) */
+    /* Brand Logo Tile nella Navbar */
     .brand-logo-tile {
-      animation: liquidColorCycle 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+      animation: liquidColorCycle 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite !important;
       border: 1px solid rgba(255, 255, 255, 0.2) !important;
       position: relative;
       overflow: hidden;
-      transition: all 0.4s ease;
+      transition: all 0.6s ease;
     }
     .brand-logo-tile svg path {
-      animation: liquidPfMonogramInvert 7s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite !important;
+      animation: liquidPfMonogramInvert 8.5s cubic-bezier(0.42, 0, 0.58, 1) infinite !important;
+      transition: fill 0.4s ease;
     }
 
     .modal-spring-enter {
@@ -4163,6 +4228,22 @@
             <span class="text-[10px] font-mono text-zinc-500 uppercase" id="i18n-portfolioPublishSub">FOTO 2D REALE // SPECS TECNICHE</span>
           </div>
 
+          <!-- BANNER BLOCCO CREATOR SENZA STRIPE/IBAN -->
+          <div id="creatorUploadLockedBanner" class="hidden p-3.5 sm:p-4 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs mb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <i data-lucide="lock" class="w-4 h-4"></i>
+              </div>
+              <div>
+                <span class="font-cyber font-bold text-white text-xs block">Vetrina Bloccata: Collega Stripe o IBAN</span>
+                <span class="text-[11px] text-zinc-400 font-sans">Per poter pubblicare le tue creazioni e incassare i compensi dagli acquirenti devi prima configurare il tuo conto di incasso.</span>
+              </div>
+            </div>
+            <button type="button" onclick="openPayoutConfigModal()" class="px-3.5 py-2 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-cyber font-bold text-xs shrink-0 cursor-pointer shadow transition active:scale-95">
+              Collega Ora
+            </button>
+          </div>
+
           <form onsubmit="handleCreatorWorkUpload(event)" class="space-y-4 text-xs font-sans">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               
@@ -4292,7 +4373,7 @@
             </div>
 
             <div class="flex justify-end pt-3">
-              <button type="submit" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg active:scale-95">
+              <button type="submit" id="btnPublishPortfolioSubmit" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg active:scale-95">
                 <i data-lucide="plus" class="w-4 h-4 text-black"></i>
                 <span id="i18n-btnPublishPortfolioText">Aggiungi al Portfolio & Vetrina</span>
               </button>
@@ -5806,6 +5887,49 @@
                   <option value="Trasparente / Ambra Naturale">🔲 Trasparente / Ambra Naturale</option>
                   <option value="Naturale Grezzo da Macchina">⚙️ Naturale Grezzo da Macchina</option>
                 </select>
+
+                <!-- AVVISO SOGLIA MINIMA BUDGET MAKER (INSERITO ESATTAMENTE SOTTO IL COLORE) -->
+                <div id="budgetWarningBox" class="hidden p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#141008] border border-amber-500/50 text-amber-400 font-mono text-xs sm:text-[13px] items-center gap-3 shadow-lg my-2 transition-all">
+                  <div class="w-5 h-5 rounded-full border border-amber-500/80 flex items-center justify-center shrink-0 text-amber-400 font-mono text-xs font-bold leading-none select-none">i</div>
+                  <span id="budgetWarningText" class="leading-relaxed text-[#FBBF24]">Con un budget inferiore a € 77 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € 102,00.</span>
+                </div>
+
+                <!-- RIQUADRO UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (OPZIONE 2 - INSERITO ESATTAMENTE NELLA ZONA ROSSA INDICATA) -->
+                <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] via-[#0A0D16] to-[#07090F] border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)] space-y-2.5 mt-2 transition-all block">
+                  <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0 shadow-sm">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <span class="text-xs sm:text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-stripeNoticeTitle">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
+                        <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-stripeNoticeSubtitle">OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo</span>
+                      </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">OPZIONE 2: 1,5% + € 0,25</span>
+                  </div>
+
+                  <!-- Griglia Calcolo Dinamico al Centesimo in Tempo Reale: Manifattura | + Tassa Stripe | Totale Protetto -->
+                  <div class="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-blue-500/30 grid grid-cols-3 gap-2 text-center font-mono text-[10.5px] shadow-inner">
+                    <div class="space-y-0.5">
+                      <span class="text-zinc-400 block text-[9px] uppercase tracking-wider" id="i18n-stripeColMfg">Manifattura</span>
+                      <span id="liveNoticeBasePrice" class="text-white font-bold block">€ 0,00</span>
+                    </div>
+                    <div class="space-y-0.5 border-x border-white/10 px-1">
+                      <span class="text-blue-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColFee">+ Tassa Stripe</span>
+                      <span id="liveNoticeStripeFee" class="text-blue-300 font-bold block">+ € 0,00</span>
+                    </div>
+                    <div class="space-y-0.5">
+                      <span class="text-emerald-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColTotal">Totale Protetto</span>
+                      <span id="liveNoticeTotalPrice" class="text-emerald-400 font-bold block">€ 0,00</span>
+                    </div>
+                  </div>
+
+                  <p class="text-[11px] text-zinc-300 leading-relaxed font-sans" id="i18n-stripeNoticeText">
+                    Al preventivo viene applicata automaticamente la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
+                    <span class="text-zinc-400 block mt-1" id="i18n-stripeNoticeSubtext">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
+                  </p>
+                </div>
               </div>
             </div>
 
@@ -5856,7 +5980,7 @@
                     </div>
                     <div class="relative flex items-center">
                       <span class="absolute left-3 top-2.5 text-sm font-mono text-zinc-400 select-none">€</span>
-                      <input type="number" id="reqBudget" min="1" step="1" value="" placeholder="0.00" oninput="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" onchange="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" class="w-full bg-[#14151B] border border-white/10 rounded-lg sm:rounded-xl pl-8 pr-3 py-2 text-sm text-white font-mono focus:border-white transition min-h-[40px]" />
+                      <input type="number" id="reqBudget" min="1" step="0.01" value="" placeholder="0.00" autocomplete="off" autocorrect="off" autocapitalize="off" oninput="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" onchange="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" class="w-full bg-[#14151B] border border-white/10 rounded-lg sm:rounded-xl pl-8 pr-3 py-2 text-sm text-white font-mono focus:border-white transition min-h-[40px]" />
                       <button type="button" id="btnApplyInstantBudget" onclick="applyRecommendedBudget()" class="hidden" style="display: none !important;" title="Stima di mercato calcolata">
                         <span>✨ Stima: <b id="budgetApplyPriceBadge">--</b></span>
                       </button>
@@ -5869,6 +5993,30 @@
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                         <span id="i18n-zeroHiddenFees">Zero costi nascosti</span>
                       </span>
+                    </div>
+
+                    <!-- Dettaglio Trasparente Quote: Manifattura + Protezione Stripe Escrow -->
+                    <div id="priceEscrowBreakdownBox" class="p-2 sm:p-2.5 rounded-lg bg-[#0F1015] border border-white/10 space-y-1 text-[10px] font-mono mt-1.5">
+                      <div class="flex items-center justify-between text-zinc-400">
+                        <span id="i18n-breakdownMfgLabel">Manifattura 3D &amp; Materiale:</span>
+                        <span id="breakdownMfgPrice" class="text-zinc-200 font-bold">€ 0,00</span>
+                      </div>
+                      <div class="flex items-center justify-between text-zinc-400">
+                        <span class="flex items-center gap-1">
+                          <span class="text-blue-400" id="i18n-breakdownStripeLabel">🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):</span>
+                        </span>
+                        <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 0,00</span>
+                      </div>
+                      <div class="flex items-center justify-between text-zinc-300 pt-1 border-t border-white/10 font-bold">
+                        <span id="i18n-breakdownTotalLabel">Totale al Checkout:</span>
+                        <span id="breakdownTotalPrice" class="text-emerald-400 text-xs font-mono">€ 0,00</span>
+                      </div>
+                      
+                      <!-- Alert di Avviso se Prezzo Troppo Basso nel Riquadro di Sintesi Ordine -->
+                      <div id="summaryBudgetWarningBox" class="hidden p-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] font-mono flex items-center gap-1.5 mt-1.5 shadow-sm transition-all">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                        <span id="summaryBudgetWarningText">Budget basso: si consiglia almeno la stima dei Maker.</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -5891,18 +6039,12 @@
                     </button>
                   </div>
                   <!-- Select nascosto reqDeadline per retrocompatibilità test e form -->
-                  <select id="reqDeadline" onchange="updateLiveRequestSummary()" class="hidden">
+                  <select id="reqDeadline" onchange="recalculateInstantQuote(); updateLiveRequestSummary();" class="hidden">
                     <option value="" disabled>Seleziona tempistica...</option>
                     <option value="Urgente Flash 24-48h">⚡ Urgente (24-48h)</option>
                     <option value="Standard 3-5 giorni" selected>📦 Standard (3-5 gg)</option>
                     <option value="Flessibile 7-10 giorni">⏳ Flessibile (7-10 gg)</option>
                   </select>
-                </div>
-
-                <!-- Alert Guida Gentile se Budget Anomalo (< € 15 o troppo basso rispetto al materiale) -->
-                <div id="budgetWarningBox" class="hidden p-2 rounded-xl bg-amber-500/10 border border-amber-500/25 text-[10px] text-amber-300 font-mono flex items-start gap-1.5">
-                  <i data-lucide="info" class="w-3.5 h-3.5 text-amber-400 shrink-0 mt-0.5"></i>
-                  <span id="budgetWarningText">Con un budget inferiore a € 18 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno la stima di mercato (€ 28,00).</span>
                 </div>
 
                 <!-- Opzione Infill / Robustezza (Immediatamente Sotto a Quantità e Budget) -->
@@ -8678,13 +8820,31 @@
           </div>
         </div>
 
+        <!-- Avviso se Prezzo Troppo Basso nel Messaggio di Sintesi Ordine (Modal) -->
+        <div id="reviewBudgetLowWarning" class="hidden p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono flex items-start gap-2 shadow-sm transition-all">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+          <span id="reviewBudgetLowWarningText">Attenzione: Con un budget inferiore alla stima consigliata i Maker qualificati potrebbero non accettare la commessa.</span>
+        </div>
+
         <!-- 2. Breakdown Trasparente Costi & Escrow -->
-        <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between">
-          <div>
-            <span class="text-[9px] font-mono text-zinc-400 uppercase tracking-wider block" id="i18n-reviewTotalLabel">TOTALE DA CONGELARE IN ESCROW</span>
-            <span class="text-[10px] text-zinc-400 font-sans block" id="i18n-reviewIncludedInfo">Spedizione tracciata 24/48h & Imballo su misura inclusi</span>
+        <div class="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-2">
+          <div class="flex items-center justify-between">
+            <div>
+              <span class="text-[9px] font-mono text-zinc-400 uppercase tracking-wider block" id="i18n-reviewTotalLabel">TOTALE DA CONGELARE IN ESCROW</span>
+              <span class="text-[10px] text-zinc-400 font-sans block" id="i18n-reviewIncludedInfo">Spedizione tracciata 24/48h &amp; Imballo su misura inclusi</span>
+            </div>
+            <span class="text-xl sm:text-2xl font-cyber font-extrabold text-emerald-400 tracking-tight" id="reviewTotalEscrow">€ 0,00</span>
           </div>
-          <span class="text-xl sm:text-2xl font-cyber font-extrabold text-emerald-400 tracking-tight" id="reviewTotalEscrow">€ 0,00</span>
+          <div class="pt-2 border-t border-white/[0.06] space-y-1 text-[10px] font-mono">
+            <div class="flex items-center justify-between text-zinc-400">
+              <span>Manifattura 3D Netta Maker:</span>
+              <span id="reviewMfgNetto" class="text-zinc-200 font-bold">€ 0,00</span>
+            </div>
+            <div class="flex items-center justify-between text-zinc-400">
+              <span class="text-blue-400">🛡️ Protezione Stripe Escrow (Opzione 2: 1,5% + € 0,25):</span>
+              <span id="reviewStripeFee" class="text-blue-300 font-bold">+ € 0,00</span>
+            </div>
+          </div>
         </div>
 
         <!-- 3. Selezione Metodo di Pagamento Protetto (Minimal, No Fake Demo Data) -->
@@ -9062,6 +9222,21 @@
     };
     window.AppState = AppState;
 
+    // Ripristino autenticazione immediato e sincrono all'avvio: non mostrare MAI login-gate se l'utente ha già effettuato l'accesso
+    try {
+      const storedAuthEarly = localStorage.getItem('printforge_auth_session');
+      if (storedAuthEarly) {
+        const uEarly = JSON.parse(storedAuthEarly);
+        if (uEarly && (uEarly.isLoggedIn || uEarly.email)) {
+          uEarly.isLoggedIn = true;
+          Object.assign(AppState.user, uEarly);
+          if (uEarly.email === 'maggimatteo22@gmail.com' && (!uEarly.role || (typeof window !== 'undefined' && window.location.hash === '#client'))) {
+            AppState.user.role = 'client';
+          }
+        }
+      }
+    } catch(e) {}
+
     // Reset delle richieste, recensioni, portfolio opere e creator di test: lascia SOLO l'account autentico dell'utente
     (function purgeStaleDataOnce() {
       const PURGE_KEY = 'printforge_purged_reset_user_only_v4';
@@ -9253,11 +9428,31 @@
       // Polling di sincronizzazione universale continuo ogni 3.5 secondi (Garantisce sync anche su mobile o se i websocket sono instabili)
       if (!window.__printforge_global_poll_started) {
         window.__printforge_global_poll_started = true;
+        // Polling rapido ogni 2 secondi per sincronizzazione fluida telefono <-> pc
         setInterval(() => {
           if (supabaseClient && typeof loadRequestsFromSupabase === 'function') {
             loadRequestsFromSupabase();
           }
-        }, 3500);
+        }, 2000);
+
+        // Sveglia istantanea non appena il telefono viene sbloccato o l'utente torna sulla scheda
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'visible') {
+            console.log('📱 [Mobile Wakeup] Schermo acceso o scheda attiva: sync istantaneo...');
+            if (typeof loadRequestsFromSupabase === 'function') loadRequestsFromSupabase();
+            if (typeof setupSupabaseRealtime === 'function') setupSupabaseRealtime();
+          }
+        });
+
+        window.addEventListener('focus', () => {
+          if (typeof loadRequestsFromSupabase === 'function') loadRequestsFromSupabase();
+        });
+
+        window.addEventListener('online', () => {
+          console.log('🌐 [Network Online] Dispositivo riconnesso: sync istantaneo...');
+          if (typeof loadRequestsFromSupabase === 'function') loadRequestsFromSupabase();
+          if (typeof setupSupabaseRealtime === 'function') setupSupabaseRealtime();
+        });
       }
       return true;
     }
@@ -10032,6 +10227,161 @@
           }
         });
 
+        // 4b. Ascolto SPEDIZIONE PACCO (Sincronizzazione Fase 3 in tempo reale tra Smartphone e PC)
+        supabaseRealtimeChannel.on('broadcast', { event: 'parcel_shipped' }, ({ payload }) => {
+          console.log('📦 [Realtime Parcel Shipped]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.isShipped = true;
+            rfp.trackingNumber = payload.trackingNumber;
+            rfp.status = 'SPEDITO // IN TRANSITO AL CORRIERE';
+          }
+          AppState.isShipped = true;
+          if (AppState.activeEscrowOrder) {
+            AppState.activeEscrowOrder.isShipped = true;
+            AppState.activeEscrowOrder.trackingNumber = payload.trackingNumber;
+            AppState.activeEscrowOrder.carrier = payload.carrier || 'UPS Standard';
+            AppState.activeEscrowOrder.timestamp = 'In Transito con il Corriere';
+          }
+
+          try {
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+
+          const liveTrackingNumDisplay = document.getElementById('liveTrackingNumDisplay');
+          if (liveTrackingNumDisplay) {
+            liveTrackingNumDisplay.innerHTML = '<span class="text-emerald-400 font-bold">' + payload.trackingNumber + '</span>';
+          }
+          const liveCarrierBadge = document.getElementById('liveCarrierBadge');
+          if (liveCarrierBadge) {
+            liveCarrierBadge.innerText = (payload.carrier || 'UPS Standard').toUpperCase();
+          }
+
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          if (AppState.user && AppState.user.role === 'client') {
+            try {
+              if (typeof sendParcelShippedEmailToClient === 'function') {
+                sendParcelShippedEmailToClient(rfp || AppState.activeEscrowOrder);
+              }
+            } catch(e) {}
+            showToast('📦 Il tuo pacco è stato affidato al corriere (' + (payload.carrier || 'UPS') + ': ' + payload.trackingNumber + ')!', 'info');
+          }
+        });
+
+        // 4c. Ascolto APPROVAZIONE COLLAUDO DA PARTE DEL CLIENTE (Sincronizzazione Fase 2 e sblocco etichetta maker)
+        supabaseRealtimeChannel.on('broadcast', { event: 'qc_approved_by_client' }, ({ payload }) => {
+          console.log('🎉 [Realtime QC Approved by Client]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.clientApprovedQc = true;
+            rfp.qcStatus = 'approvato_dal_cliente';
+          }
+          AppState.clientApprovedQc = true;
+          AppState.stage2Completed = true;
+          try {
+            localStorage.setItem('printforge_qc_approved_' + payload.rfpId, 'true');
+            localStorage.setItem('printforge_qc_status_' + payload.rfpId, 'approvato_dal_cliente');
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+
+          if (typeof renderClientQcDecisionUI === 'function') renderClientQcDecisionUI();
+          if (typeof applyRoleGatingForLabelDownload === 'function') applyRoleGatingForLabelDownload();
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          if (AppState.user && AppState.user.role === 'creator') {
+            try {
+              if (typeof sendQcApprovedEmailToCreator === 'function') {
+                sendQcApprovedEmailToCreator(rfp || AppState.activeEscrowOrder);
+              }
+            } catch(e) {}
+            showToast('🎉 Il cliente ha approvato le foto del collaudo! Etichetta PDF sbloccata.', 'success');
+          }
+        });
+
+        // 4d. Ascolto RICHIESTA REVISIONE COLLAUDO DAL CLIENTE
+        supabaseRealtimeChannel.on('broadcast', { event: 'qc_rejected_by_client' }, ({ payload }) => {
+          console.log('⚠️ [Realtime QC Revision Requested]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (rfp) {
+            rfp.clientApprovedQc = false;
+            rfp.qcStatus = 'revisione_richiesta';
+          }
+          AppState.clientApprovedQc = false;
+          try {
+            localStorage.removeItem('printforge_qc_approved_' + payload.rfpId);
+            localStorage.setItem('printforge_qc_status_' + payload.rfpId, 'revisione_richiesta');
+            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          } catch(e) {}
+
+          if (typeof renderClientQcDecisionUI === 'function') renderClientQcDecisionUI();
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          if (AppState.user && AppState.user.role === 'creator') {
+            try {
+              if (typeof sendQcRevisionRequestedEmailToCreator === 'function') {
+                sendQcRevisionRequestedEmailToCreator(rfp || AppState.activeEscrowOrder, payload.reason);
+              }
+            } catch(e) {}
+            showToast('⚠️ Il cliente richiede modifiche alle foto del collaudo: "' + (payload.reason || '') + '"', 'warning');
+          }
+        });
+
+        // 4e. Ascolto COMPLETAMENTO 4° PASSAGGIO (Svincolo Escrow, Recensione Cliente e Modal Creator)
+        supabaseRealtimeChannel.on('broadcast', { event: 'order_completed_stage4' }, ({ payload }) => {
+          console.log('🏁 [Realtime Order Completed Stage 4]:', payload);
+          if (!payload || !payload.rfpId) return;
+
+          AppState.isDelivered = true;
+          AppState.stage4Completed = true;
+          if (AppState.activeEscrowOrder) {
+            AppState.activeEscrowOrder.isDelivered = true;
+          }
+
+          // Imposta immediatamente il saldo Escrow a € 0,00
+          const budgetEl = document.getElementById('escrowOrderBudget');
+          if (budgetEl) budgetEl.innerText = '€ 0,00';
+
+          const countdownEl = document.getElementById('escrowCountdown');
+          if (countdownEl) {
+            countdownEl.innerText = '✓ CONSEGNATO // FONDI SVINCOLATI';
+            countdownEl.className = 'font-display text-emerald-400 text-base tracking-wider font-mono';
+          }
+
+          if (typeof renderEscrowResolutionBanner === 'function') renderEscrowResolutionBanner();
+          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
+
+          try {
+            localStorage.setItem('printforge_stage4_completed', 'true');
+            localStorage.setItem('printforge_completed_' + payload.rfpId, 'true');
+          } catch(e) {}
+
+          // DIFFERENZIAZIONE RUOLO IN TEMPO REALE TRA SMARTPHONE E PC:
+          if (AppState.user && AppState.user.role === 'creator') {
+            // IL CREATOR VEDE IL MESSAGGIO DI COMPLETAMENTO COMMESSA E SVINCOLO FONDI
+            if (typeof showStage4CompletionModal === 'function') {
+              showStage4CompletionModal({ rfpId: payload.rfpId, amount: payload.amount });
+            }
+          } else if (AppState.user && AppState.user.role === 'client') {
+            // IL CLIENTE IN TEMPO REALE DAL SUO DISPOSITIVO VEDE LA RECENSIONE DA POTER FARE
+            setTimeout(() => {
+              if (typeof openLeaveReviewModal === 'function') {
+                openLeaveReviewModal(payload.rfpId, payload.makerId, payload.makerName);
+              }
+            }, 600);
+          }
+        });
+
         // 5. Postgres Changes (con try-catch resiliente per non bloccare il canale se la replica non è attiva)
         try {
           supabaseRealtimeChannel.on('postgres_changes', { event: '*', schema: 'public', table: 'broadcast_requests' }, payload => {
@@ -10042,6 +10392,12 @@
 
         supabaseRealtimeChannel.subscribe((status) => {
           console.log('📡 [Supabase Channel Status]:', status);
+          if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
+            console.warn('⚠️ [Realtime Sync] Canale disconnesso/sospeso, riconnessione automatica in corso...');
+            setTimeout(() => {
+              if (typeof setupSupabaseRealtime === 'function') setupSupabaseRealtime();
+            }, 1500);
+          }
         });
       } catch (err) {
         console.warn('Errore setup Realtime:', err);
@@ -12315,7 +12671,7 @@
         reqInfillLabel: 'Opzione Infill (Riempimento)',
         reqPostProcessLabel: 'Post-Processing',
         reqCadFileLabel: 'File CAD (.STEP, .STL, .3MF) *',
-        reqBudgetLabel: 'Budget Totale Calcolato (\u20AC)',
+        reqBudgetLabel: 'Budget Stampa (\u20AC)',
         reqDeadlineLabel: 'Tempistica Desiderata',
         shippingOptionLabel: 'Opzione di Spedizione & Tempistiche',
         shippingParamHint: 'Parametri di costo calcolati in tempo reale',
@@ -13188,7 +13544,7 @@
         reqInfillLabel: 'Infill Option (Density)',
         reqPostProcessLabel: 'Post-Processing',
         reqCadFileLabel: 'CAD File (.STEP, .STL, .3MF) *',
-        reqBudgetLabel: 'Calculated Budget Total (\u20AC)',
+        reqBudgetLabel: 'Print Budget (\u20AC)',
         reqDeadlineLabel: 'Required Lead Time',
         shippingOptionLabel: 'Shipping & Turnaround Options',
         shippingParamHint: 'Real-time dynamic pricing parameters',
@@ -14061,7 +14417,7 @@
         reqInfillLabel: 'Opción Infill (Relleno)',
         reqPostProcessLabel: 'Post-Procesado',
         reqCadFileLabel: 'Archivo CAD (.STEP, .STL, .3MF) *',
-        reqBudgetLabel: 'Presupuesto Total Calculado (€)',
+        reqBudgetLabel: 'Presupuesto Impresión (€)',
         reqDeadlineLabel: 'Plazo Deseado',
         shippingOptionLabel: 'Opción de Envío y Plazos',
         shippingParamHint: 'Parámetros de coste calculados en tiempo real',
@@ -14852,7 +15208,9 @@
       }
       updateEscrowRoom();
       updateEscrowCountdownDisplay();
+      if (typeof applyFullPageTranslation === 'function') applyFullPageTranslation();
       recalculateInstantQuote();
+      if (typeof handleReqBudgetChange === 'function') handleReqBudgetChange();
       
       if (userTriggered) {
         const toastMsg = lang === 'it' 
@@ -16107,6 +16465,9 @@ END-ISO-10303-21;`;
       if (typeof switchCreatorProfileType === 'function') {
         switchCreatorProfileType(window.currentCreatorProfileType || 'private');
       }
+      if (typeof applyFullPageTranslation === 'function') {
+        applyFullPageTranslation();
+      }
     }
 
     /* TRILINGUAL VIDEO PIPELINE SYNCHRONIZATION */
@@ -17335,6 +17696,9 @@ END-ISO-10303-21;`;
         dSel.value = ddlVal;
         dSel.dispatchEvent(new Event('change'));
       }
+      if (typeof recalculateInstantQuote === 'function') {
+        recalculateInstantQuote();
+      }
       const display = document.getElementById('deadlineSelectedNameDisplay');
       if (display) {
         if (ddlVal.includes('24-48h')) display.innerText = '24-48h';
@@ -17402,6 +17766,9 @@ END-ISO-10303-21;`;
       if (iSel) {
         iSel.value = infillVal;
         iSel.dispatchEvent(new Event('change'));
+      }
+      if (typeof recalculateInstantQuote === 'function') {
+        recalculateInstantQuote();
       }
       const display = document.getElementById('infillSelectedNameDisplay');
       if (display) {
@@ -20277,6 +20644,9 @@ END-ISO-10303-21;`;
       dispatchEmailWebhook('maker_accepted', {
         requestId: req.id,
         clientEmail: clientEmail,
+        stripeOption: 'OPZIONE_2 (1,5% + €0,25)',
+        mfgPrice: budgetNum > 0 ? ('€ ' + Math.max(0, Math.round(((budgetNum - 0.25)/1.015)*100)/100).toFixed(2).replace('.', ',')) : '€ 0,00',
+        stripeFee: budgetNum > 0 ? ('€ ' + Math.max(0, Math.round((budgetNum - Math.max(0, (budgetNum - 0.25)/1.015))*100)/100).toFixed(2).replace('.', ',')) : '€ 0,00',
         clientName: clientName,
         makerName: makerName,
         title: partTitle,
@@ -20430,6 +20800,456 @@ END-ISO-10303-21;`;
     }
     window.sendQcPhotosReadyEmailToClient = sendQcPhotosReadyEmailToClient;
 
+    
+    /* ========================================================================= */
+    /* EMAIL SISTEMA PRINTFORGE: DISTINZIONE RIGOROSA TRA CLIENTE E CREATOR      */
+    /* ========================================================================= */
+
+    // 1. DA CLIENTE: Conferma Prenotazione Opera in Vetrina (Showcase Booking Confirmed)
+    function sendShowcaseBookingConfirmedEmailToClient(req) {
+      if (!req) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      const clientName = req.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
+      const clientEmail = req.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : 'matteo@printforge.dev');
+      const makerName = req.acceptedBy || req.maker || (isEn ? 'PrintForge Master Artisan' : 'Creator d\'Autore PrintForge');
+      const partTitle = req.title || (isEn ? 'Artisan Showcase Creation' : 'Opera d\'Autore da Vetrina');
+      const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '✨ Showcase Booking Confirmed! "' + partTitle + '" by ' + makerName;
+        summary = 'Maker ' + makerName + ' confirmed your showcase booking for "' + partTitle + '". Reserved under Stripe Escrow custody.';
+        body = [
+          'Dear ' + clientName + ',',
+          '',
+          'Magnificent choice! Maker & Artisan "' + makerName + '" has officially CONFIRMED your exclusive SHOWCASE BOOKING for "' + partTitle + '" (#' + req.id + ').',
+          '',
+          '🎨 SHOWCASE SPECIFICATIONS & ARTISAN DETAILS:',
+          '• Creation / Work: ' + partTitle,
+          '• Order ID: #' + req.id,
+          '• Verified Creator: ' + makerName,
+          '• Provenance: Exclusive PrintForge Showcase (Pre-verified geometry & technical finish)',
+          '• Material & Finish: ' + (req.material || 'Special Edition') + ' (' + (req.color || 'Artisan Custom') + ')',
+          '• Agreed Value in Escrow: ' + budgetStr,
+          '',
+          '🛡️ EXCLUSIVE SHOWCASE PROTECTION (STRIPE ESCROW):',
+          'Your funds (' + budgetStr + ') remain 100% frozen in Stripe Escrow custody.',
+          'The artisan is now completing the final surface conditioning and preparing the secure anti-shock packaging.',
+          'You will receive an instant notification with tracking details as soon as the package is handed over to the courier.',
+          '',
+          'Inspect your booking in your Escrow Room: https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Warm regards,',
+          'The PrintForge Showcase Protocol',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '✨ ¡Reserva de Escaparate Confirmada! "' + partTitle + '" por ' + makerName;
+        summary = 'El Creador ' + makerName + ' ha confirmado tu reserva de escaparate para "' + partTitle + '". Protegido por Stripe Escrow.';
+        body = [
+          'Estimado/a ' + clientName + ',',
+          '',
+          '¡Excelente elección! El Creador artesanal "' + makerName + '" ha CONFIRMADO tu RESERVA DE ESCAPARATE para "' + partTitle + '" (#' + req.id + ').',
+          '',
+          '🎨 DETALLES DE LA OBRA Y CREADOR:',
+          '• Obra: ' + partTitle,
+          '• ID de Pedido: #' + req.id,
+          '• Creador Asignado: ' + makerName,
+          '• Procedencia: Escaparate Exclusivo PrintForge',
+          '• Presupuesto Protegido en Escrow: ' + budgetStr,
+          '',
+          'Atentamente,',
+          'Protocolo de Escaparate PrintForge',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else {
+        subject = '✨ Prenotazione Vetrina Confermata! L\'opera "' + partTitle + '" è in preparazione da ' + makerName;
+        summary = 'Il Creator ' + makerName + ' ha confermato la tua prenotazione per l\'opera esclusiva "' + partTitle + '". Fondi (' + budgetStr + ') custoditi in garanzia fiduciaria Stripe Escrow.';
+        body = [
+          'Gentile ' + clientName + ',',
+          '',
+          'Splendida scelta! Il Creator e Artigiano verificato "' + makerName + '" ha CONFERMATO ufficialmente la tua PRENOTAZIONE DALLA VETRINA ESCLUSIVA per l\'opera d\'autore "' + partTitle + '" (#' + req.id + ').',
+          '',
+          '🎨 SPECIFICHE DELL\'OPERA DA VETRINA & DETTAGLI CREATOR:',
+          '• Opera / Pezzo: ' + partTitle,
+          '• ID Prenotazione: #' + req.id,
+          '• Creator / Officina Incaricata: ' + makerName,
+          '• Tipologia: Componente Esclusivo da Vetrina d\'Autore (Geometrie e finiture pre-validate all\'origine)',
+          '• Materiale & Finitura: ' + (req.material || 'Tecnico Speciale') + ' (' + (req.color || 'Standard d\'Autore') + ')',
+          '• Quantità: ' + (req.quantity || '1 pezzo') + '',
+          '• Importo Protetto in Escrow: ' + budgetStr + '',
+          '',
+          '🛡️ GARANZIA FIDUCIARIA STRIPE ESCROW DEDICATA:',
+          '1. I tuoi fondi (' + budgetStr + ') rimangono congelati in totale sicurezza nel conto di custodia fiduciaria Stripe Escrow.',
+          '2. Il Creator ha avviato il condizionamento superficiale finale e la preparazione dell\'imballo antiurto personalizzato (Formato S).',
+          '3. Non appena il pacco verrà consegnato al corriere espresso tracciato, riceverai il codice di tracking per monitorare il tragitto fino a casa tua.',
+          '4. Il compenso verrà trasferito al Creator unicamente dopo la consegna effettiva e la tua piena soddisfazione.',
+          '',
+          'Puoi seguire la preparazione nella tua Stanza Escrow:',
+          'https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Cordiali saluti,',
+          'Il Team PrintForge Showcase & Escrow Protocol',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      recordSentEmail({
+        to: clientEmail,
+        from: 'dispatch@printforge.dev',
+        senderName: 'PrintForge Showcase Concierge',
+        subject: subject,
+        summary: summary,
+        body: body,
+        type: 'client_showcase_confirmed',
+        requestId: req.id,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      addAppNotification('✨ PRENOTAZIONE VETRINA CONFERMATA', 'Il Creator "' + makerName + '" ha confermato la tua opera "' + partTitle + '" (# ' + req.id + ')!', {
+        type: 'showcase_confirmed',
+        requestId: req.id,
+        targetPage: 'order-room'
+      });
+    }
+    window.sendShowcaseBookingConfirmedEmailToClient = sendShowcaseBookingConfirmedEmailToClient;
+
+    // 2. DA CLIENTE: Creator Spedisce il Pacco (Parcel Shipped & Tracking Provided)
+    function sendParcelShippedEmailToClient(order) {
+      if (!order) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      const clientName = order.clientName || AppState.user?.name || (isEn ? 'Client' : 'Cliente');
+      const clientEmail = order.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : 'matteo@printforge.dev');
+      const makerName = order.maker || order.acceptedBy || 'Maker Certificato PrintForge';
+      const partTitle = order.title || 'Componente 3D';
+      const trackingCode = order.trackingNumber || 'PF-UPS-892104';
+      const carrier = order.shippingCarrier || order.carrier || 'UPS Standard';
+      const budgetStr = formatEuroClean(order.escrowTotal || order.budget || '€ 0,00');
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '📦 Your Package Has Been Shipped! Tracking: ' + trackingCode + ' (' + carrier + ')';
+        summary = 'Maker "' + makerName + '" has handed over your package for "' + partTitle + '" to ' + carrier + '. Escrow custody active until delivery.';
+        body = [
+          'Dear ' + clientName + ',',
+          '',
+          'Great news! Verified Maker "' + makerName + '" has packed, sealed, and HANDED OVER your component "' + partTitle + '" to express courier ' + carrier + '!',
+          '',
+          '🚚 SHIPPING & TRACKING DETAILS:',
+          '• Component: ' + partTitle,
+          '• Tracking Number: ' + trackingCode,
+          '• Express Carrier: ' + carrier,
+          '• Packaging: Anti-shock customized reinforced box',
+          '• Estimated Delivery: 24-48 business hours',
+          '',
+          '🛡️ STRIPE ESCROW STATUS:',
+          'Your funds (' + budgetStr + ') remain 100% frozen in Stripe Escrow custody until the courier completes delivery at your destination.',
+          '',
+          'Track your parcel in real-time in your Escrow Room: https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Best regards,',
+          'PrintForge Logistics Hub',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '📦 ¡Tu Paquete Ha Sido Enviado! Seguimiento: ' + trackingCode + ' (' + carrier + ')';
+        summary = 'El Maker "' + makerName + '" ha entregado tu paquete para "' + partTitle + '" al transportista ' + carrier + '.';
+        body = [
+          'Estimado/a ' + clientName + ',',
+          '',
+          '¡Tu pedido para "' + partTitle + '" ha sido enviado!',
+          '• Transportista: ' + carrier,
+          '• Número de Seguimiento: ' + trackingCode,
+          '• Fondos en Escrow: ' + budgetStr + ' (retenidos con seguridad hasta la entrega)',
+          '',
+          'PrintForge Logistics Hub',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else {
+        subject = '📦 Il tuo pacco è stato spedito! Tracking: ' + trackingCode + ' (' + carrier + ')';
+        summary = 'L\'officina "' + makerName + '" ha affidato il pacco sigillato per "' + partTitle + '" al corriere ' + carrier + '. Monitora la spedizione in tempo reale.';
+        body = [
+          'Gentile ' + clientName + ',',
+          '',
+          'Ottime notizie! L\'officina e Maker verificato "' + makerName + '" ha completato la lavorazione, sigillato il componente "' + partTitle + '" nell\'imballo antiurto protettivo e lo ha UFFICIALMENTE AFFIDATO AL CORRIERE ESPRESSO ' + carrier + '!',
+          '',
+          '🚚 DETTAGLI SPEDIZIONE & TRACCIAMENTO IN TEMPO REALE:',
+          '• Componente Spedito: ' + partTitle,
+          '• ID Commessa: #' + (order.id || 'PF-ORD') + '',
+          '• Corriere Incaricato: ' + carrier + ' Espresso Assicurato',
+          '• Codice di Tracciamento: ' + trackingCode + '',
+          '• Tipo di Imballo: Scatola su misura Formato S con schiuma ammortizzante ad alta densità',
+          '• Consegna Stimata: 24-48 ore lavorative',
+          '',
+          '🛡️ STATO GARANZIA STRIPE ESCROW (FASE 3 ATTIVA):',
+          'I tuoi fondi (' + budgetStr + ') rimangono rigorosamente custoditi e protetti al 100% nel conto Stripe Escrow. Nessun compenso verrà svincolato all\'officina fino alla verifica ufficiale della consegna al tuo indirizzo.',
+          '',
+          'Puoi seguire la spedizione e il tracciamento in tempo reale nella tua Stanza Escrow:',
+          'https://print-forge-seven.vercel.app/#order-room',
+          '',
+          'Cordiali saluti,',
+          'Il Team PrintForge Logistics & Dispatch',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      recordSentEmail({
+        to: clientEmail,
+        from: 'dispatch@printforge.dev',
+        senderName: 'PrintForge Logistics Dispatch',
+        subject: subject,
+        summary: summary,
+        body: body,
+        type: 'client_parcel_shipped',
+        requestId: order.id || 'PF-ORD',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      addAppNotification('📦 PACCO SPEDITO CON CORRIERE', 'Il tuo pacco per "' + partTitle + '" è in viaggio (' + carrier + ': ' + trackingCode + ')!', {
+        type: 'parcel_shipped',
+        requestId: order.id,
+        targetPage: 'order-room'
+      });
+    }
+    window.sendParcelShippedEmailToClient = sendParcelShippedEmailToClient;
+
+    // 3. PER CREATOR: Nuova Offerta Online Globale nel Sito (Global Network Broadcast)
+    function sendGlobalBroadcastRequestEmailToCreator(req) {
+      if (!req) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      // Recupera tutti i creator attivi registrati o usa l'email creator attuale
+      const creatorEmails = new Set();
+      if (AppState.user && AppState.user.role === 'creator' && AppState.user.email) {
+        creatorEmails.add(AppState.user.email.toLowerCase().trim());
+      }
+      try {
+        const reg = JSON.parse(localStorage.getItem('printforge_accessed_creators_registry') || '[]');
+        if (Array.isArray(reg)) {
+          reg.forEach(em => { if (em && em.includes('@')) creatorEmails.add(em.toLowerCase().trim()); });
+        }
+      } catch(e) {}
+      if (creatorEmails.size === 0) creatorEmails.add('maker@printforge.dev');
+
+      const clientName = req.clientName || 'Cliente Verificato';
+      const partTitle = req.title || 'Componente 3D su Misura';
+      const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
+      const budgetNum = parseFloat(String(req.budget).replace(/[^0-9.]/g, '')) || 0;
+      const mfgValStr = budgetNum > 0 ? ('€ ' + Math.max(0, Math.round(((budgetNum - 0.25)/1.015)*100)/100).toFixed(2).replace('.', ',')) : budgetStr;
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '📢 New Global Request Available on Network: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
+        summary = 'A client posted a new open manufacturing request: "' + partTitle + '". Net Maker Payout: ' + mfgValStr + '. Accept it first!';
+        body = [
+          'Hello Maker,',
+          '',
+          'A client has just published a new GLOBAL MANUFACTURING COMMISION on the PrintForge decentralized network:',
+          '',
+          '📋 PROJECT SPECIFICATIONS:',
+          '• Component Title: ' + partTitle,
+          '• Request ID: #' + req.id,
+          '• Material & Precision: ' + (req.material || 'PETG') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
+          '• Dimensions & Infill: ' + (req.dimensions || '~85×85×42 mm') + ' • ' + (req.infill || '50%'),
+          '• Quantity: ' + (req.quantity || '1 pcs'),
+          '• Guaranteed Net Maker Payout: ' + mfgValStr + ' (Stripe Escrow Pre-Auth)',
+          '',
+          '⚡ TAKE CHARGE:',
+          'Commissions on the open board are assigned on a first-come, first-served basis with certified quality standards.',
+          'Review technical files and claim the job: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Global Dispatch',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '📢 Nueva Solicitud Global en la Red: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
+        summary = 'Un cliente ha publicado un nuevo pedido: "' + partTitle + '". Pago neto Maker: ' + mfgValStr + '.';
+        body = [
+          'Hola Creador,',
+          '',
+          'Se ha publicado un nuevo pedido global en la red PrintForge:',
+          '• Pieza: ' + partTitle,
+          '• Presupuesto neto para el Maker: ' + mfgValStr,
+          '• Revisa y acepta el pedido en: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Global Dispatch'
+        ].join('\n');
+      } else {
+        subject = '📢 Nuova Commessa Globale nel Network: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
+        summary = 'Un cliente ha appena pubblicato una nuova richiesta aperta nel network: "' + partTitle + '". Compenso netto Maker: ' + mfgValStr + '. Prendi in carico per primo!';
+        body = [
+          'Gentile Creator & Officina Certificata,',
+          '',
+          'Un cliente ha appena inviato e pubblicato una NUOVA COMMESSA ONLINE GLOBALE sulla rete distribuita PrintForge:',
+          '',
+          '📋 SPECIFICHE TECNICHE DELLA COMMESSA:',
+          '• Titolo Componente: ' + partTitle,
+          '• ID Commessa: #' + req.id,
+          '• Richiedente: ' + clientName,
+          '• Materiale & Tolleranza: ' + (req.material || 'PETG Tecnico') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
+          '• Dimensioni Ingombro & Infill: ' + (req.dimensions || '~85×85×42 mm') + ' • ' + (req.infill || '50% Meccanico'),
+          '• Quantità Richiesta: ' + (req.quantity || '1 pezzo') + '',
+          '• Tempistica Richiesta: ' + (req.deadline || 'Standard (3-5 gg)') + '',
+          '• COMPENSO NETTO MAKER: ' + mfgValStr + ' (Fondi pre-autorizzati in garanzia fiduciaria Stripe Escrow)',
+          '',
+          '⚡ PRESA IN CARICO IMMEDIATA:',
+          'Le commesse pubblicate sulla bacheca aperta sono disponibili per tutti i Maker verificati della rete: il primo che accetta la commessa blocca l\'assegnazione esclusiva!',
+          '',
+          'Visiona i file tecnici CAD/STL e prendi in carico il lavoro:',
+          'https://print-forge-seven.vercel.app/#requests',
+          '',
+          'Cordiali saluti,',
+          'Il Network Dispatch di PrintForge P2P',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      creatorEmails.forEach(toEmail => {
+        recordSentEmail({
+          to: toEmail,
+          from: 'dispatch@printforge.dev',
+          senderName: 'PrintForge Global Network Dispatch',
+          subject: subject,
+          summary: summary,
+          body: body,
+          type: 'creator_global_request',
+          requestId: req.id,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        });
+      });
+    }
+    window.sendGlobalBroadcastRequestEmailToCreator = sendGlobalBroadcastRequestEmailToCreator;
+
+    // 4. PER CREATOR: Richiesta Offerta Diretta nell'Account Personale (Direct Creator Offer / Private Showcase Booking)
+    function sendDirectOfferEmailToCreator(req, targetCreatorEmail) {
+      if (!req) return;
+      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      const destEmail = targetCreatorEmail || req.targetCreatorEmail || req.makerEmail || (AppState.user?.role === 'creator' ? AppState.user.email : 'maker@printforge.dev');
+      const clientName = req.clientName || 'Cliente';
+      const partTitle = req.title || 'Componente Riservato';
+      const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
+      const budgetNum = parseFloat(String(req.budget).replace(/[^0-9.]/g, '')) || 0;
+      const mfgValStr = budgetNum > 0 ? ('€ ' + Math.max(0, Math.round(((budgetNum - 0.25)/1.015)*100)/100).toFixed(2).replace('.', ',')) : budgetStr;
+
+      let subject = '';
+      let summary = '';
+      let body = '';
+
+      if (isEn) {
+        subject = '🎯 Direct Job Request for Your Profile: #' + req.id + ' from ' + clientName + ' (' + budgetStr + ')';
+        summary = 'Client "' + clientName + '" sent a direct manufacturing order targeted specifically to your workshop! Reserved Payout: ' + mfgValStr + '.';
+        body = [
+          'Hello Maker,',
+          '',
+          'A client has selected your workshop for a DIRECT PRIVATE ORDER on PrintForge!',
+          '',
+          '🎯 DIRECT REQUEST SPECIFICATIONS:',
+          '• Component: ' + partTitle,
+          '• Request ID: #' + req.id,
+          '• Client: ' + clientName,
+          '• Type: ' + (req.isShowcaseOrder ? 'Showcase Creation Booking' : 'Direct Targeted Order'),
+          '• Reserved Net Maker Payout: ' + mfgValStr + ' (Protected in Stripe Escrow)',
+          '',
+          'No other Maker can take this job. It is assigned directly to you in your requests panel.',
+          'Review specifications and confirm: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Direct Concierge',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      } else if (isEs) {
+        subject = '🎯 Pedido Directo para tu Taller: #' + req.id + ' de ' + clientName + ' (' + budgetStr + ')';
+        summary = '¡El cliente "' + clientName + '" te ha enviado un pedido directo! Pago reservado: ' + mfgValStr + '.';
+        body = [
+          'Hola Creador,',
+          '',
+          'Has recibido un pedido directo asignado exclusivamente a tu taller en PrintForge.',
+          '• Obra / Pieza: ' + partTitle,
+          '• Importe reservado: ' + mfgValStr,
+          '• Confirma la commessa en: https://print-forge-seven.vercel.app/#requests',
+          '',
+          'PrintForge Direct Concierge'
+        ].join('\n');
+      } else {
+        subject = '🎯 Nuova Richiesta Diretta per la tua Officina: #' + req.id + ' da ' + clientName + ' (' + budgetStr + ')';
+        summary = 'Il cliente "' + clientName + '" ha richiesto una commessa specifica per il tuo profilo (' + partTitle + '). Budget netto riservato: ' + mfgValStr + '.';
+        body = [
+          'Gentile Creator & Officina Selezionata,',
+          '',
+          'Ottime notizie! Il cliente "' + clientName + '" ha scelto SPECIFICATAMENTE IL TUO PROFILO ARTIGIANO (o una tua opera dalla vetrina) per affidarti una COMMESSA DIRETTA ESCLUSIVA:',
+          '',
+          '🎯 SPECIFICHE DELLA COMMESSA DIRETTA:',
+          '• Componente / Opera: ' + partTitle,
+          '• ID Commessa: #' + req.id,
+          '• Cliente Richiedente: ' + clientName,
+          '• Tipologia: ' + (req.isShowcaseOrder ? 'Prenotazione Opera Esclusiva da Vetrina' : 'Richiesta Personalizzata Diretta sul Profilo Personale') + '',
+          '• Materiale & Requisiti: ' + (req.material || 'PETG Tecnico') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
+          '• COMPENSO NETTO RISERVATO A TE: ' + mfgValStr + ' (Fondi congelati con garanzia fiduciaria Stripe Escrow)',
+          '',
+          '🔒 ASSEGNAZIONE ESCLUSIVA:',
+          'Questa commessa è riservata unicamente al tuo account Creator e non è visibile agli altri maker della piattaforma. Il budget è già bloccato a tuo favore su Stripe Escrow.',
+          '',
+          'Apri il tuo pannello operativo per visionare i dettagli e confermare la presa in carico:',
+          'https://print-forge-seven.vercel.app/#requests',
+          '',
+          'Cordiali saluti,',
+          'Il Team PrintForge Direct VIP Concierge',
+          'dispatch@printforge.dev'
+        ].join('\n');
+      }
+
+      recordSentEmail({
+        to: destEmail,
+        from: 'dispatch@printforge.dev',
+        senderName: 'PrintForge Direct VIP Concierge',
+        subject: subject,
+        summary: summary,
+        body: body,
+        type: 'creator_direct_offer',
+        requestId: req.id,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      });
+
+      addAppNotification('🎯 NUOVA RICHIESTA DIRETTA RICEVUTA', 'Il cliente "' + clientName + '" ha richiesto un lavoro per il tuo profilo (' + partTitle + ')!', {
+        type: 'direct_offer',
+        requestId: req.id,
+        targetPage: 'requests'
+      });
+    }
+    window.sendDirectOfferEmailToCreator = sendDirectOfferEmailToCreator;
+
+    // Alias espliciti per la massima chiarezza e modularità
+    window.sendQcApprovedEmailToCreator = function(order) {
+      if (typeof sendQcDecisionEmailToCreator === 'function') {
+        sendQcDecisionEmailToCreator(order, 'approved');
+      }
+    };
+    window.sendQcRevisionRequestedEmailToCreator = function(order, reason) {
+      if (typeof sendQcDecisionEmailToCreator === 'function') {
+        sendQcDecisionEmailToCreator(order, 'rejected', reason);
+      }
+    };
+
+
     function acceptCreatorRequest(requestId) {
       const req = AppState.broadcastRequests.find(x => x.id === requestId);
       if (!req) return;
@@ -20550,7 +21370,11 @@ END-ISO-10303-21;`;
       updateEscrowRoom();
 
       // 4. Send confirmation email to client in current/specified language
-      sendProjectAcceptedEmailToClient(req);
+      if (req.isShowcaseOrder || req.isDirectShowcase) {
+        sendShowcaseBookingConfirmedEmailToClient(req);
+      } else {
+        sendProjectAcceptedEmailToClient(req);
+      }
 
       // 5. Update UI: remove from requests feed immediately & update live counters
       renderCreatorRequestsFeed();
@@ -20722,7 +21546,8 @@ END-ISO-10303-21;`;
       const cBbox = document.getElementById('calcBbox');
       const cWeight = document.getElementById('calcWeight');
       const cHours = document.getElementById('calcHours');
-      const warnBox = document.getElementById('budgetWarningBox');
+      
+const warnBox = document.getElementById('budgetWarningBox');
       const reqBudget = document.getElementById('reqBudget');
 
       // Finchè non sono selezionati sia il materiale d'uso sia la grandezza, non mostrare alcun prezzo
@@ -20831,30 +21656,41 @@ END-ISO-10303-21;`;
                                 (totalGrams * pricePerGram * batchDiscount) + 
                                 (parseFloat(totalHours) * machineHourRate * batchDiscount);
 
-      const computedPrice = Math.max(12, Math.round(manufacturingCost * deadlineMult));
+      const baseManufacturingPrice = Math.max(12, Math.round(manufacturingCost * deadlineMult));
+      // OPZIONE 2: Tariffa Stripe calcolata al centesimo in tempo reale (1,5% + € 0,25)
+      const stripeEscrowFee = Math.round((baseManufacturingPrice * 0.015 + 0.25) * 100) / 100;
+      const computedPrice = parseFloat((baseManufacturingPrice + stripeEscrowFee).toFixed(2));
 
       if (cBbox) cBbox.innerText = `${Math.round(x)} × ${Math.round(y)} × ${Math.round(z)} mm`;
       if (cWeight) cWeight.innerText = `${Math.round(effectiveVolCm3)} cm³ • ${totalGrams} g`;
       if (cHours) cHours.innerText = `~${totalHours} ${hourUnit}`;
-      if (cQuote) cQuote.innerText = `€ ${computedPrice},00`;
+      if (cQuote) cQuote.innerText = `€ ${computedPrice.toFixed(2).replace('.', ',')}`;
       
-      window.__lastComputedQuotePrice = computedPrice;
+      const bMfg = document.getElementById('breakdownMfgPrice');
+      if (bMfg) bMfg.innerText = `€ ${baseManufacturingPrice.toFixed(2).replace('.', ',')}`;
+      const bStripe = document.getElementById('breakdownStripeFee');
+      if (bStripe) bStripe.innerText = `+ € ${stripeEscrowFee.toFixed(2).replace('.', ',')}`;
+      const bTotal = document.getElementById('breakdownTotalPrice');
+      if (bTotal) bTotal.innerText = `€ ${computedPrice.toFixed(2).replace('.', ',')}`;
+      const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+      if (noticeBadge) noticeBadge.innerText = `+ € ${stripeEscrowFee.toFixed(2).replace('.', ',')} (1,5% + € 0,25)`;
+window.__lastComputedQuotePrice = computedPrice;
+      window.__lastComputedBaseMfg = baseManufacturingPrice;
+      window.__lastComputedStripeFee = stripeEscrowFee;
       const minPrice = Math.max(10, Math.round(computedPrice * 0.88));
       const maxPrice = Math.round(computedPrice * 1.15);
 
       if (bApply) bApply.innerText = `€ ${computedPrice},00`;
       if (bRange) bRange.innerText = `€ ${minPrice} – € ${maxPrice}`;
 
-      // Calcola e aggiorna SEMPRE la stima in tempo reale su ogni modifica (misure, materiale, quantità, consegna flash)
+      // Libero arbitrio ai clienti: mostra SEMPRE ZERO finché il cliente non digita il suo budget
       if (reqBudget) {
-        reqBudget.value = computedPrice;
-        reqBudget.classList.add('border-emerald-400', 'text-emerald-300');
-        setTimeout(() => reqBudget.classList.remove('border-emerald-400', 'text-emerald-300'), 400);
+        reqBudget.placeholder = "0.00";
       }
       handleReqBudgetChange();
 
       const hasExplicitBudget = reqBudget && reqBudget.value && parseFloat(reqBudget.value) > 0;
-      const budgetDisplayStr = hasExplicitBudget ? `€ ${parseFloat(reqBudget.value).toFixed(2).replace('.', ',')}` : '€ 0,00';
+      const budgetDisplayStr = hasExplicitBudget ? ('€ ' + parseFloat(reqBudget.value).toFixed(2).replace('.', ',')) : '€ 0,00';
       ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
@@ -20863,6 +21699,139 @@ END-ISO-10303-21;`;
       updateLiveRequestSummary();
       calculateVolumetricShipping();
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // TRADUZIONE ISTANTANEA COMPLETA IN TEMPO REALE SENZA CAMBIARE PAGINA
+    // ═════════════════════════════════════════════════════════════════════════
+    function applyFullPageTranslation() {
+      const lang = currentLang || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      // ── 1. Riquadro Stripe Escrow sotto al colore ──
+      const stTitle = document.getElementById('i18n-stripeNoticeTitle');
+      if (stTitle) stTitle.innerText = isEn ? 'Purchase Protection & Stripe Escrow Guarantee' : isEs ? 'Protección de Compras & Garantía Stripe Escrow' : 'Protezione Acquisti & Garanzia Stripe Escrow';
+
+      const stSub = document.getElementById('i18n-stripeNoticeSubtitle');
+      if (stSub) stSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'OPCIÓN 2: 1,5% + € 0,25 con cálculo dinámico al céntimo' : 'OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo';
+
+      const colMfg = document.getElementById('i18n-stripeColMfg');
+      if (colMfg) colMfg.innerText = isEn ? 'Manufacturing' : isEs ? 'Fabricación' : 'Manifattura';
+
+      const colFee = document.getElementById('i18n-stripeColFee');
+      if (colFee) colFee.innerText = isEn ? '+ Stripe Fee' : isEs ? '+ Tasa Stripe' : '+ Tassa Stripe';
+
+      const colTot = document.getElementById('i18n-stripeColTotal');
+      if (colTot) colTot.innerText = isEn ? 'Protected Total' : isEs ? 'Total Protegido' : 'Totale Protetto';
+
+      const stText = document.getElementById('i18n-stripeNoticeText');
+      if (stText) {
+        stText.innerHTML = isEn
+          ? 'The official Stripe fee (<b>1.5% + € 0.25</b>) is automatically added for <b>Total Buyer Protection</b> and escrow custody. <span class="text-zinc-400 block mt-1">🔒 The Maker only receives payout after you approve 3 inspection photos with caliper. In case of defects or delay you get an immediate 100% refund.</span>'
+          : isEs
+          ? 'Al presupuesto se aplica automáticamente la tarifa oficial de Stripe al céntimo (<b>1,5% + € 0,25</b>) para la <b>Protección Total del Comprador</b> y custodia en garantía. <span class="text-zinc-400 block mt-1">🔒 El Maker solo recibe el pago después de que apruebes las 3 fotos de inspección con calibre. En caso de defectos o retraso tienes reembolso inmediato al 100%.</span>'
+          : 'Al preventivo viene applicata automaticamente la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. <span class="text-zinc-400 block mt-1">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>';
+      }
+
+      // ── 2. Riquadro di sintesi preventivo colonna destra ──
+      const bMfgLbl = document.getElementById('i18n-breakdownMfgLabel');
+      if (bMfgLbl) bMfgLbl.innerText = isEn ? '3D Manufacturing & Material:' : isEs ? 'Fabricación 3D & Material:' : 'Manifattura 3D & Materiale:';
+
+      const bStripeLbl = document.getElementById('i18n-breakdownStripeLabel');
+      if (bStripeLbl) bStripeLbl.innerText = isEn ? '🛡️ Stripe Escrow Protection (1.5% + € 0.25 to the cent):' : isEs ? '🛡️ Protección Stripe Escrow (1,5% + € 0,25 al céntimo):' : '🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):';
+
+      const bTotalLbl = document.getElementById('i18n-breakdownTotalLabel');
+      if (bTotalLbl) bTotalLbl.innerText = isEn ? 'Total at Checkout:' : isEs ? 'Total al Checkout:' : 'Totale al Checkout:';
+
+      // ── 3. Etichette e sezioni del form di richiesta ──
+      const budgetLbl = document.getElementById('i18n-reqBudgetLabel');
+      if (budgetLbl) budgetLbl.innerText = isEn ? 'Print Budget (€)' : isEs ? 'Presupuesto Impresión (€)' : 'Budget Stampa (€)';
+
+      const partNameLbl = document.getElementById('i18n-reqPartNameLabel');
+      if (partNameLbl) partNameLbl.innerHTML = isEn ? 'Component Name / Project Title <span class="text-white">*</span>' : isEs ? 'Nombre Componente / Título Proyecto <span class="text-white">*</span>' : 'Nome Componente / Titolo Progetto <span class="text-white">*</span>';
+
+      const usageLbl = document.getElementById('i18n-reqUsageLabel');
+      if (usageLbl) usageLbl.innerHTML = isEn ? 'Intended Use <span class="text-white">*</span>' : isEs ? 'Destino de Uso <span class="text-white">*</span>' : 'Destinazione d\'Uso <span class="text-white">*</span>';
+
+      const matLbl = document.getElementById('i18n-reqMaterialLabel');
+      if (matLbl) matLbl.innerHTML = isEn ? 'Technical Material Required <span class="text-white">*</span>' : isEs ? 'Material Técnico Requerido <span class="text-white">*</span>' : 'Materiale Tecnico Richiesto <span class="text-white">*</span>';
+
+      const dimTitle = document.getElementById('i18n-reqDimensionsTitle');
+      if (dimTitle) dimTitle.innerText = isEn ? 'Part Dimensions (XYZ Bounding Box)' : isEs ? 'Dimensiones Pieza (Caja XYZ)' : 'Dimensioni Pezzo (Ingombro XYZ)';
+
+      const dimSource = document.getElementById('dimensionSourceBadge');
+      if (dimSource) dimSource.innerText = isEn ? 'CAD DETECTION OR MANUAL' : isEs ? 'DETECCIÓN CAD O MANUAL' : 'RILEVAMENTO DA CAD O MANUALE';
+
+      const dimX = document.getElementById('i18n-dimLengthLabel');
+      if (dimX) dimX.innerText = isEn ? 'Length (X)' : isEs ? 'Long. (X)' : 'Lung. (X)';
+
+      const dimY = document.getElementById('i18n-dimWidthLabel');
+      if (dimY) dimY.innerText = isEn ? 'Width (Y)' : isEs ? 'Anch. (Y)' : 'Larg. (Y)';
+
+      const dimZ = document.getElementById('i18n-dimHeightLabel');
+      if (dimZ) dimZ.innerText = isEn ? 'Height (Z)' : isEs ? 'Alt. (Z)' : 'Alt. (Z)';
+
+      const qScale = document.getElementById('i18n-quickScaleLabel');
+      if (qScale) qScale.innerText = isEn ? 'QUICK SCALE:' : isEs ? 'ESCALA RÁPIDA:' : 'SCALA RAPIDA:';
+
+      const colorHead = document.getElementById('i18n-colorSectionHeading');
+      if (colorHead) colorHead.innerText = isEn ? 'Color / Surface Finish *' : isEs ? 'Color / Acabado Cromático *' : 'Colore & Finitura Cromatica';
+
+      const colorWheel = document.getElementById('i18n-colorWheelBtnText');
+      if (colorWheel) colorWheel.innerText = isEn ? '🎨 Color Wheel' : isEs ? '🎨 Rueda Colores' : '🎨 Ruota Colori';
+
+      const colorScegli = document.getElementById('i18n-spectrumBadgeText');
+      if (colorScegli) colorScegli.innerText = isEn ? '▾ Select' : isEs ? '▾ Elegir' : '▾ Scegli';
+
+      const qColor = document.getElementById('i18n-quickColorLabel');
+      if (qColor) qColor.innerText = isEn ? 'Quick:' : isEs ? 'Rápidos:' : 'Rapidi:';
+
+      const step3 = document.getElementById('i18n-reqStep3Title');
+      if (step3) step3.innerText = isEn ? '3. QUANTITY & STRENGTH' : isEs ? '3. CANTIDAD & RESISTENCIA' : '3. QUANTITÀ & ROBUSTEZZA';
+
+      const qtyLbl = document.getElementById('i18n-reqQuantityLabel');
+      if (qtyLbl) qtyLbl.innerText = isEn ? 'Quantity / Batch' : isEs ? 'Cantidad / Lote' : 'Quantità / Batch';
+
+      const bStatus = document.getElementById('budgetStatusHint');
+      if (bStatus) bStatus.innerText = isEn ? 'Free entry' : isEs ? 'Libre elección' : 'Libero arbitrio';
+
+      const bPrefix = document.getElementById('budgetRangePrefix');
+      if (bPrefix) bPrefix.innerText = isEn ? '💡 Rec.: ' : isEs ? '💡 Rec.: ' : '💡 Cons.: ';
+
+      const zeroFees = document.getElementById('i18n-zeroHiddenFees');
+      if (zeroFees) zeroFees.innerText = isEn ? 'Zero hidden fees' : isEs ? 'Sin costos ocultos' : 'Zero costi nascosti';
+
+      const infL = document.getElementById('i18n-infillLight');
+      if (infL) infL.innerText = isEn ? 'Light 20%' : isEs ? 'Ligero 20%' : 'Leggero 20%';
+
+      const infM = document.getElementById('i18n-infillMech');
+      if (infM) infM.innerText = isEn ? 'Mech. 50%' : isEs ? 'Mecánico 50%' : 'Meccanico 50%';
+
+      const infS = document.getElementById('i18n-infillSolid');
+      if (infS) infS.innerText = isEn ? 'Solid 100%' : isEs ? 'Sólido 100%' : 'Massivo 100%';
+
+      const ddlLbl = document.getElementById('i18n-reqDeadlineLabel');
+      if (ddlLbl) ddlLbl.innerText = isEn ? 'Desired Deadline' : isEs ? 'Plazo Deseado' : 'Tempistica Desiderata';
+
+      // ── 4. Placeholder campi input ──
+      const reqTitle = document.getElementById('reqTitle');
+      if (reqTitle) reqTitle.placeholder = isEn ? 'e.g. Motor flange...' : isEs ? 'ej. Brida de motor...' : 'Es. Flangia motore...';
+
+      const customColorTxt = document.getElementById('customColorTextInput');
+      if (customColorTxt) customColorTxt.placeholder = isEn ? 'Finish (e.g. Matte, Satin, Glossy...)' : isEs ? 'Acabado (ej. Mate, Satinado, Brillante...)' : 'Finitura (es. Opaco, Satinato, Lucido...)';
+
+      const reqNotes = document.getElementById('reqNotes');
+      if (reqNotes) reqNotes.placeholder = isEn ? 'Specific instructions, tolerances or delivery notes...' : isEs ? 'Instrucciones específicas, tolerancias o notas de entrega...' : 'Istruzioni specifiche, tolleranze o note per la spedizione...';
+
+      // ── 5. Bottone di invio preventivo ──
+      const btnRfp = document.getElementById('i18n-btnSubmitRfp');
+      if (btnRfp) btnRfp.innerText = isEn ? '🔍 Find Maker & Start Escrow' : isEs ? '🔍 Encontrar Maker e Iniciar Escrow' : '🔍 Trova il Maker & Avvia Escrow';
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        try { lucide.createIcons(); } catch(e) {}
+      }
+    }
+    window.applyFullPageTranslation = applyFullPageTranslation;
 
     function applyRecommendedBudget() {
       const rec = window.__lastComputedQuotePrice || 0;
@@ -20896,29 +21865,100 @@ END-ISO-10303-21;`;
       }
     }
 
-    function handleReqBudgetChange() {
+        function handleReqBudgetChange() {
       const bInput = document.getElementById('reqBudget');
       const val = parseFloat(bInput?.value) || 0;
       const rec = window.__lastComputedQuotePrice || 0;
+      const minThreshold = (rec > 0) ? Math.max(12, Math.round(rec * 0.75)) : 12;
+
       const warnBox = document.getElementById('budgetWarningBox');
       const warnText = document.getElementById('budgetWarningText');
+      const sumWarnBox = document.getElementById('summaryBudgetWarningBox');
+      const sumWarnText = document.getElementById('summaryBudgetWarningText');
 
-      if (rec > 0 && val > 0 && val < Math.max(12, Math.round(rec * 0.65))) {
-        if (warnBox) warnBox.classList.remove('hidden');
-        if (warnText) {
-          const minAcceptable = Math.max(15, Math.round(rec * 0.75));
-          warnText.innerText = currentLang === 'en'
-            ? `With an offer under € ${minAcceptable}, verified Makers may decline the job. Recommended: at least € ${rec},00.`
-            : `Con un budget inferiore a € ${minAcceptable} i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € ${rec},00.`;
+      const noticeBase = document.getElementById('liveNoticeBasePrice');
+      const noticeFee = document.getElementById('liveNoticeStripeFee');
+      const noticeTotal = document.getElementById('liveNoticeTotalPrice');
+      const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+
+      const bMfg = document.getElementById('breakdownMfgPrice');
+      const bStripe = document.getElementById('breakdownStripeFee');
+      const bTotal = document.getElementById('breakdownTotalPrice');
+
+      // Se il cliente ha inserito un prezzo di suo pugno (Libero Arbitrio):
+      if (val > 0) {
+        // Calcolo automatico al centesimo della tassa Stripe Opzione 2 (1,5% + € 0,25) aggiunta automaticamente
+        const stripeFee = Math.round((val * 0.015 + 0.25) * 100) / 100;
+        const totalWithStripe = parseFloat((val + stripeFee).toFixed(2));
+
+        // Aggiorna riquadro di sintesi ordine nella colonna destra
+        if (bMfg) bMfg.innerText = '€ ' + val.toFixed(2).replace('.', ',');
+        if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+        if (bTotal) bTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
+
+        // Aggiorna riquadro sotto al colore (Opzione 2 con calcolo dinamico al centesimo)
+        if (noticeBase) noticeBase.innerText = '€ ' + val.toFixed(2).replace('.', ',');
+        if (noticeFee) noticeFee.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+        if (noticeTotal) noticeTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
+        if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+
+        // MOSTRA L'AVVISO SIA SOTTO (warningBox) SIA NEL RIQUADRO DI SINTESI (sumWarnBox) SE IL BUDGET È TROPPO BASSO
+        if (rec > 0 && val < rec) {
+          const warnMsg = currentLang === 'en'
+            ? `With a budget below € ${minThreshold} qualified Makers might not accept the order. At least € ${rec.toFixed(2).replace('.', ',')} is recommended.`
+            : currentLang === 'es'
+            ? `Con un presupuesto inferior a € ${minThreshold} los Creadores cualificados podrían no aceptar el pedido. Se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
+            : `Con un budget inferiore a € ${minThreshold} i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
+
+          if (warnBox) {
+            warnBox.classList.remove('hidden');
+            warnBox.style.display = 'flex';
+          }
+          if (warnText) warnText.innerText = warnMsg;
+
+          if (sumWarnBox) {
+            sumWarnBox.classList.remove('hidden');
+            sumWarnBox.style.display = 'flex';
+          }
+          if (sumWarnText) {
+            sumWarnText.innerText = currentLang === 'en'
+              ? `Low budget (€ ${val.toFixed(2).replace('.', ',')}): at least € ${rec.toFixed(2).replace('.', ',')} recommended.`
+              : currentLang === 'es'
+              ? `Presupuesto bajo (€ ${val.toFixed(2).replace('.', ',')}): se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
+              : `Budget basso (€ ${val.toFixed(2).replace('.', ',')}): si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
+          }
+        } else {
+          // Offerta congrua: nascondi avvisi
+          if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
+          if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
         }
       } else {
-        if (warnBox) warnBox.classList.add('hidden');
+        // Nessun budget manuale inserito dal cliente: MOSTRA SEMPRE ZERO ("€ 0,00")
+        if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
+        if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
+
+        if (bMfg) bMfg.innerText = '€ 0,00';
+        if (bStripe) bStripe.innerText = '+ € 0,00';
+        if (bTotal) bTotal.innerText = '€ 0,00';
+
+        if (noticeBase) noticeBase.innerText = '€ 0,00';
+        if (noticeFee) noticeFee.innerText = '+ € 0,00';
+        if (noticeTotal) noticeTotal.innerText = '€ 0,00';
+        if (noticeBadge) noticeBadge.innerText = 'OPZIONE 2: 1,5% + € 0,25';
       }
-      const budgetDisplayStr = (val > 0) ? `€ ${val.toFixed(2).replace('.', ',')}` : '--';
-      ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice'].forEach(id => {
+
+      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
+      ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay', 'liveDossierPrice'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
       });
+
+      const checkoutPart = document.getElementById('checkoutPartCost');
+      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + Math.max(0, (val - 0.25)/1.015).toFixed(2).replace('.', ',')) : '€ 0,00';
+      const checkoutTotal = document.getElementById('checkoutTotalEscrow');
+      if (checkoutTotal) checkoutTotal.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
+
+      updateLiveRequestSummary();
     }
 
     /* ========================================================================= */
@@ -22361,6 +23401,25 @@ END-ISO-10303-21;`;
         : '✓ Pacco affidato al corriere! Fase 3 completata: spedizione in transito.';
       showToast(toastShip, 'success');
 
+      // 1. Invia email di conferma spedizione con tracking al cliente
+      try {
+        if (typeof sendParcelShippedEmailToClient === 'function') {
+          sendParcelShippedEmailToClient(activeReq || AppState.activeEscrowOrder);
+        }
+      } catch(e) {
+        console.warn('Errore invio email spedizione cliente:', e);
+      }
+
+      // 2. Notifica Realtime a tutti i dispositivi (sincronizzazione Fase 3)
+      try {
+        broadcastRealtimeEvent('parcel_shipped', {
+          rfpId: (activeReq && activeReq.id) || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id),
+          trackingNumber: trackingCode,
+          carrier: (activeReq && activeReq.shippingCarrier) || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.carrier) || 'UPS Standard',
+          shippedAt: new Date().toISOString()
+        });
+      } catch(e) {}
+
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
       }
@@ -22557,6 +23616,27 @@ END-ISO-10303-21;`;
         ? '✓ ¡Escáner verificado! Fase 4 completada: fondos liberados (€ 0,00).' 
         : '✓ Scansione corriere verificata! Fase 4 completata: pacco consegnato e fondi Escrow svincolati (€ 0,00)!';
       showToast(toastDelivery, 'success');
+
+      // Notifica Realtime di completamento Fase 4 e rilascio Escrow tra dispositivi
+      try {
+        broadcastRealtimeEvent('order_completed_stage4', {
+          rfpId: completedReqId,
+          amount: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 48,00',
+          makerId: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.makerUserId || AppState.activeEscrowOrder.maker)) || 'maker_certified',
+          makerName: (AppState.activeEscrowOrder && AppState.activeEscrowOrder.maker) || 'Maker Certificato PrintForge',
+          completedAt: new Date().toISOString()
+        });
+      } catch(e) {}
+
+      // DIFFERENZIAZIONE SUL DISPOSITIVO LOCALE:
+      if (AppState.user && AppState.user.role === 'creator') {
+        if (typeof showStage4CompletionModal === 'function') {
+          showStage4CompletionModal({
+            rfpId: completedReqId,
+            amount: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 48,00'
+          });
+        }
+      }
 
       try {
         localStorage.setItem('printforge_stage4_completed', 'true');
@@ -25727,10 +26807,31 @@ END-ISO-10303-21;`;
       const infill = document.getElementById('reqInfill')?.value || '50% Meccanico Strutturale';
       const postProcess = document.getElementById('reqPostProcess')?.value || 'Grezzo (Rimozione supporti standard)';
 
-      // SE VUOTO NON MOSTRARE PIÙ 45 EURO MA TUTTO AZZERATO (€ 0,00)
+      // Calcolo automatico della tassa Stripe Escrow Opzione 2 (1,5% + € 0,25) aggiunta automaticamente
       const rawBudgetVal = document.getElementById('reqBudget')?.value;
       const parsedBudget = parseFloat(rawBudgetVal);
-      const budgetNum = (!isNaN(parsedBudget) && parsedBudget > 0) ? parsedBudget : 0.00;
+      const recPrice = window.__lastComputedQuotePrice || 0;
+      const minThreshold = (recPrice > 0) ? Math.max(12, Math.round(recPrice * 0.75)) : 12;
+
+      let mfgNetto = 0;
+      let stripeFee = 0;
+      let budgetNum = 0;
+      let isCustomLowBudget = false;
+
+      if (!isNaN(parsedBudget) && parsedBudget > 0) {
+        // Il cliente ha digitato un proprio budget (Libero Arbitrio)
+        mfgNetto = parsedBudget;
+        // Calcola da sola la tassa Stripe Opzione 2 (1,5% + € 0,25) e aggiungila automaticamente al totale
+        stripeFee = Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
+        budgetNum = parseFloat((mfgNetto + stripeFee).toFixed(2));
+        isCustomLowBudget = (recPrice > 0 && mfgNetto < minThreshold);
+      } else if (recPrice > 0) {
+        // Cliente non ha scritto nulla: usa la stima calcolata di mercato
+        mfgNetto = window.__lastComputedBaseMfg || Math.max(12, Math.round(((recPrice - 0.25) / 1.015) * 100) / 100);
+        stripeFee = window.__lastComputedStripeFee || Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
+        budgetNum = parseFloat((mfgNetto + stripeFee).toFixed(2));
+      }
+
       const budgetStr = formatEuroClean(budgetNum);
       const shippingNum = 0;
       const escrowTotalStr = budgetStr;
@@ -25784,6 +26885,11 @@ END-ISO-10303-21;`;
         quantity: quantity,
         budgetNum: budgetNum,
         budgetStr: budgetStr,
+        mfgNetto: mfgNetto,
+        stripeFee: stripeFee,
+        isCustomLowBudget: isCustomLowBudget,
+        recPrice: recPrice,
+        minThreshold: minThreshold,
         shippingNum: shippingNum,
         escrowTotalStr: escrowTotalStr,
         deadline: deadline,
@@ -25890,7 +26996,37 @@ END-ISO-10303-21;`;
       }
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
+      // Calcolo trasparente Opzione 2 nel Riepilogo Commessa (1,5% + € 0,25 al centesimo aggiunto automaticamente)
+      const reviewMfgVal = draft.mfgNetto || (draft.budgetNum > 0 ? Math.max(0, Math.round(((draft.budgetNum - 0.25) / 1.015) * 100) / 100) : 0);
+      const reviewStripeVal = draft.stripeFee || (draft.budgetNum > 0 ? Math.max(0, Math.round((reviewMfgVal * 0.015 + 0.25) * 100) / 100) : 0);
+      const mfgNettoEl = document.getElementById('reviewMfgNetto');
+      if (mfgNettoEl) mfgNettoEl.innerText = '€ ' + reviewMfgVal.toFixed(2).replace('.', ',');
+      const stripeFeeEl = document.getElementById('reviewStripeFee');
+      if (stripeFeeEl) stripeFeeEl.innerText = '+ € ' + reviewStripeVal.toFixed(2).replace('.', ',') + ' (Opzione 2: 1,5% + € 0,25)';
+
       if (totalEscrowEl) totalEscrowEl.innerText = draft.budgetStr;
+
+      // Gestione Avviso Budget Basso nel Messaggio di Sintesi Ordine (Modal)
+      const reviewWarnBox = document.getElementById('reviewBudgetLowWarning');
+      const reviewWarnText = document.getElementById('reviewBudgetLowWarningText');
+      if (draft.isCustomLowBudget && draft.recPrice > 0) {
+        if (reviewWarnBox) {
+          reviewWarnBox.classList.remove('hidden');
+          reviewWarnBox.style.display = 'flex';
+        }
+        if (reviewWarnText) {
+          reviewWarnText.innerText = currentLang === 'en'
+            ? 'Notice: With a budget of € ' + reviewMfgVal.toFixed(2).replace('.', ',') + ', verified Makers might not accept the job. Recommended market price: € ' + draft.recPrice.toFixed(2).replace('.', ',') + '.'
+            : currentLang === 'es'
+            ? 'Atención: Con un presupuesto de € ' + reviewMfgVal.toFixed(2).replace('.', ',') + ', los Creadores cualificados podrían no aceptar el pedido. Precio recomendado: € ' + draft.recPrice.toFixed(2).replace('.', ',') + '.'
+            : 'Attenzione: Il budget di € ' + reviewMfgVal.toFixed(2).replace('.', ',') + ' è inferiore alla stima consigliata dei Maker (€ ' + draft.recPrice.toFixed(2).replace('.', ',') + '). I Maker qualificati potrebbero non accettare la commessa.';
+        }
+      } else {
+        if (reviewWarnBox) {
+          reviewWarnBox.classList.add('hidden');
+          reviewWarnBox.style.display = 'none';
+        }
+      }
 
       // Calcolo rate Klarna reali
       const budgetNum = draft.budgetNum || 0;
@@ -26156,6 +27292,17 @@ END-ISO-10303-21;`;
       // Sync insert to Supabase Cloud
       saveRequestToSupabase(newRequest);
       broadcastRealtimeEvent('request_created', { request: newRequest, isFlash: isFlashOrder });
+
+      // Invia email notifica ai Creator: distinta tra offerta globale e richiesta diretta sul profilo/vetrina
+      try {
+        if (newRequest.isShowcaseOrder || newRequest.isDirectShowcase || newRequest.targetCreatorEmail) {
+          sendDirectOfferEmailToCreator(newRequest, newRequest.targetCreatorEmail || newRequest.makerEmail);
+        } else {
+          sendGlobalBroadcastRequestEmailToCreator(newRequest);
+        }
+      } catch(e) {
+        console.warn('Errore invio email notifica creator:', e);
+      }
       if (isFlashOrder) {
         // Notifica permanente broadcast per tutti i Creator del network
         const flashNotif = {
@@ -27054,6 +28201,7 @@ END-ISO-10303-21;`;
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.color || 'Nero')}</span>
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.quantity || '1 pezzo')}</span>
                   <span class="text-emerald-400 font-bold">${escapeHtml(activeCreatorJob.budget || '€ 35,00')}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">OPZIONE 2 (1,5% + €0,25)</span>
                 </div>
               </div>
               <div class="flex sm:flex-col items-center justify-center gap-2 pt-2 sm:pt-0 sm:border-l sm:border-white/10 sm:pl-4 shrink-0">
@@ -27144,9 +28292,10 @@ END-ISO-10303-21;`;
           <div class="p-4 sm:p-5 rounded-2xl bg-[#0D0D12] border border-white/10 hover:border-white/20 transition space-y-4 flex flex-col justify-between">
             <div class="space-y-3">
               <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                   <span class="px-2 py-0.5 rounded-md bg-white/5 text-[10px] font-mono text-zinc-400">#${safeId}</span>
                   <span class="text-xs font-mono text-emerald-400 font-bold">${escapeHtml(displayBudget)}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">OPZIONE 2 (1,5% + €0,25)</span>
                 </div>
                 <span class="text-[10px] font-mono text-zinc-400">${escapeHtml(r.clientCity || 'Milano')}</span>
               </div>
@@ -28119,7 +29268,11 @@ function renderDealChat(rfpId) {
       });
 
       // 4. Send confirmation email & webhook to client in current/specified language
-      sendProjectAcceptedEmailToClient(req);
+      if (req.isShowcaseOrder || req.isDirectShowcase) {
+        sendShowcaseBookingConfirmedEmailToClient(req);
+      } else {
+        sendProjectAcceptedEmailToClient(req);
+      }
 
       // Render full specifications HUD dossier in Studio CAD
       renderStudioSpecs();
@@ -30996,6 +32149,19 @@ function renderDealChat(rfpId) {
 
     async function handleCreatorWorkUpload(e) {
       if (e && e.preventDefault) e.preventDefault();
+
+      // REQUISITO BLOCCANTE: Il creator DEVE aver collegato Stripe o IBAN prima di poter pubblicare opere in vetrina
+      const isConfigured = typeof isPayoutConfigured === 'function' ? isPayoutConfigured() : false;
+      if (!isConfigured) {
+        const blockMsg = currentLang === 'it' 
+          ? 'Per pubblicare opere nella Vetrina Globale (/esplora) e ricevere ordini, devi prima collegare il tuo conto Stripe o IBAN!'
+          : currentLang === 'es'
+          ? '¡Para publicar obras en la vitrina global y recibir pedidos, primero debes conectar tu cuenta Stripe o IBAN!'
+          : 'To publish works to the global showcase and receive orders, please connect your Stripe or IBAN payout account first!';
+        showToast(blockMsg, 'warning');
+        openPayoutConfigModal();
+        return;
+      }
       const title = (document.getElementById('portfolioTitle')?.value || '').trim();
       const desc = (document.getElementById('portfolioDesc')?.value || '').trim();
       const material = document.getElementById('portfolioMaterial')?.value || 'PETG Tecnico';
@@ -31294,6 +32460,8 @@ function renderDealChat(rfpId) {
       const stripeBtn = document.getElementById('btnCreatorConnectStripe');
       const ibanBadge = document.getElementById('badgeCreatorIbanConfigured');
       const isConfigured = typeof isPayoutConfigured === 'function' ? isPayoutConfigured() : false;
+      const lockedBanner = document.getElementById('creatorUploadLockedBanner');
+      const submitBtn = document.getElementById('btnPublishPortfolioSubmit');
       if (isConfigured) {
         if (stripeBtn) { stripeBtn.style.display = 'none'; stripeBtn.classList.add('hidden'); }
         if (ibanBadge) {
@@ -31303,9 +32471,21 @@ function renderDealChat(rfpId) {
             ibanText.innerText = `IBAN COLLEGATO (${getPayoutMaskedIban()}) ✓`;
           }
         }
+        if (lockedBanner) lockedBanner.classList.add('hidden');
+        if (submitBtn) {
+          submitBtn.classList.remove('opacity-60');
+          const txtSpan = document.getElementById('i18n-btnPublishPortfolioText');
+          if (txtSpan) txtSpan.innerText = 'Aggiungi al Portfolio & Vetrina';
+        }
       } else {
         if (stripeBtn) { stripeBtn.style.display = 'inline-flex'; stripeBtn.classList.remove('hidden'); }
         if (ibanBadge) { ibanBadge.classList.add('hidden'); }
+        if (lockedBanner) lockedBanner.classList.remove('hidden');
+        if (submitBtn) {
+          submitBtn.classList.add('opacity-60');
+          const txtSpan = document.getElementById('i18n-btnPublishPortfolioText');
+          if (txtSpan) txtSpan.innerText = '🔒 Collega IBAN / Stripe per Pubblicare';
+        }
       }
       if (stripeBtn) {
         const isStripeConnected = Boolean(
@@ -32420,24 +33600,16 @@ function renderDealChat(rfpId) {
 
       // Azzeramento forzato commessa demo RFP-3555 cross-device
       try {
-        recordDeletedRequestIds(['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044']);
-        if (AppState.activeEscrowOrder && ['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044'].includes(AppState.activeEscrowOrder.id)) {
-          AppState.activeEscrowOrder = null;
-          AppState.loadedRequestInStudio = null;
-          AppState.activeDealRfpId = null;
-          localStorage.removeItem('printforge_escrow_order');
-        }
-      } catch(e) {}
-
-      // Ripristino e allineamento sessione: priorità accesso Cliente
-      try {
         const storedAuth = localStorage.getItem('printforge_auth_session');
         if (storedAuth) {
           const u = JSON.parse(storedAuth);
-          if (u && (u.email === 'maggimatteo22@gmail.com' || window.location.hash === '#client' || urlParams.get('role') === 'client')) {
-            u.role = 'client';
-            AppState.user = u;
-            localStorage.setItem('printforge_auth_session', JSON.stringify(u));
+          if (u && (u.isLoggedIn || u.email)) {
+            u.isLoggedIn = true;
+            AppState.user = Object.assign(AppState.user || {}, u);
+            if (u.email === 'maggimatteo22@gmail.com' && (!u.role || window.location.hash === '#client' || urlParams.get('role') === 'client')) {
+              AppState.user.role = 'client';
+            }
+            localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
           }
         }
       } catch(e) {}
@@ -32508,6 +33680,13 @@ function renderDealChat(rfpId) {
         initHero3DLogo();
       } catch (e) {
         console.warn('Hero 3D logo:', e);
+      }
+
+      // Assicura che all'avvio il campo budget sia rigorosamente vuoto (libero arbitrio cliente)
+      const initBudgetEl = document.getElementById('reqBudget');
+      if (initBudgetEl) {
+        initBudgetEl.value = '';
+        initBudgetEl.placeholder = '0.00';
       }
 
       // Live reactive updates for request form text/number inputs
