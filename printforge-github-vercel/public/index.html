@@ -6562,6 +6562,21 @@
 
       </form>
 
+      <!-- BARRA MOBILE FISSA IN BASSO (STICKY BOTTOM ACTION BAR PER SMARTPHONE) -->
+      <div id="mobileRequestStickyBar" class="sm:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#08090E]/95 backdrop-blur-xl border-t border-white/10 px-4 py-2.5 flex items-center justify-between shadow-[0_-10px_25px_rgba(0,0,0,0.8)] transition-all">
+        <div class="space-y-0.5">
+          <span class="text-[9px] font-mono text-zinc-400 uppercase tracking-wider block font-bold" id="i18n-stickyTotalLabel">TOTALE CUSTODIA ESCROW</span>
+          <div class="flex items-baseline gap-1.5">
+            <span id="mobileStickyTotalDisplay" class="text-lg font-display font-black text-emerald-400">€ 0,00</span>
+            <span class="text-[9px] font-mono text-zinc-400" id="mobileStickyStripeNotice">+ Tassa Stripe</span>
+          </div>
+        </div>
+        <button type="button" onclick="document.getElementById('btnSubmitRfpForm').click()" class="btn-kowalski-primary px-4 py-2.5 rounded-xl font-cyber font-extrabold text-xs uppercase tracking-wider flex items-center gap-1.5 shadow-lg active:scale-95 transition cursor-pointer">
+          <i data-lucide="send" class="w-3.5 h-3.5"></i>
+          <span id="i18n-stickyBtnSubmit">TROVA IL MAKER</span>
+        </button>
+      </div>
+
       <!-- Tabella Storico Richieste Broadcast Inviate -->
       <div class="space-y-4 pt-4">
         <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -9957,7 +9972,6 @@
             if (r.isCompleted || r.isDelivered || r.isClosed) return false;
             if (typeof r.status === 'string' && (r.status.toUpperCase().includes('COMPLETAT') || r.status.toUpperCase().includes('CONSEGNAT') || r.status.toUpperCase().includes('SVINCOLAT'))) return false;
             if (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true') return false;
-            if (isAdmin) return true;
             if (isClient) {
               const reqEmail = (r.clientEmail || '').toLowerCase().trim();
               const reqUid = (r.userId || '').toLowerCase().trim();
@@ -10390,6 +10404,23 @@
           });
         } catch(e) {}
 
+        // Canale DB dedicato Postgres Changes per ricezione istantanea di qualsiasi modifica
+        try {
+          if (!window._supabaseDbChangesChannel && supabaseClient) {
+            window._supabaseDbChangesChannel = supabaseClient.channel('db_changes_broadcast_requests');
+            window._supabaseDbChangesChannel
+              .on('postgres_changes', { event: '*', schema: 'public', table: 'broadcast_requests' }, (payload) => {
+                console.log('⚡ [DB Postgres Change Event]:', payload.eventType, payload.new?.id || payload.old?.id);
+                if (typeof loadRequestsFromSupabase === 'function') {
+                  loadRequestsFromSupabase();
+                }
+              })
+              .subscribe((st) => console.log('📡 [DB Changes Channel Status]:', st));
+          }
+        } catch(err) {
+          console.warn('Realtime postgres_changes fallback:', err);
+        }
+
         supabaseRealtimeChannel.subscribe((status) => {
           console.log('📡 [Supabase Channel Status]:', status);
           if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT' || status === 'CLOSED') {
@@ -10765,7 +10796,7 @@
       // Eleva o imposta il ruolo a creator per visualizzare istantaneamente la bacheca creator live
       AppState.user.isLoggedIn = true;
       AppState.user.role = 'creator';
-      AppState.user.isAdmin = true;
+      AppState.user.isAdmin = false;
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch (e) {}
@@ -22377,6 +22408,10 @@ window.__lastComputedQuotePrice = computedPrice;
 
       const totalEscrowEl = document.getElementById('checkoutTotalEscrow');
       if (totalEscrowEl) totalEscrowEl.innerText = hasBudget ? formatEuroClean(reqBudget + currentShippingQuote) : '--';
+      const mobileStickyTotal = document.getElementById('mobileStickyTotalDisplay');
+      if (mobileStickyTotal) {
+        mobileStickyTotal.innerText = hasBudget ? formatEuroClean(reqBudget + currentShippingQuote) : '€ 0,00';
+      }
     }
 
     function selectShippingCarrier(serviceId) {
@@ -26237,9 +26272,23 @@ window.__lastComputedQuotePrice = computedPrice;
         stripeConnected: false,
         creatorData: null
       };
+      // MULTI-TENANT PURGE: Nessun dato rimane in memoria tra un logout e il successivo login
+      AppState.portfolioWorks = [];
+      AppState.broadcastRequests = [];
+      AppState.activeEscrowOrder = null;
+      AppState.activeDealRfpId = null;
+      AppState.loadedRequestInStudio = null;
+      AppState.cadQcFiles = [];
       try {
         localStorage.removeItem('printforge_auth_session');
         localStorage.removeItem('printforge_pending_auth_role');
+        localStorage.removeItem('printforge_portfolio_works');
+        localStorage.removeItem('printforge_broadcast_requests');
+        localStorage.removeItem('printforge_escrow_order');
+        localStorage.removeItem('printforge_payout_config');
+        localStorage.removeItem('printforge_payout_iban');
+        localStorage.removeItem('printforge_stripe_connected');
+        localStorage.removeItem('printforge_stage4_completed');
         sessionStorage.clear();
       } catch (e) {}
 
@@ -30688,7 +30737,7 @@ function renderDealChat(rfpId) {
       const isCreator = targetRole === 'creator';
       AppState.user.isLoggedIn = true;
       AppState.user.role = isCreator ? 'creator' : 'client';
-      AppState.user.isAdmin = true;
+      AppState.user.isAdmin = false;
       AppState.user.name = AppState.user.name || (isCreator ? 'PrintForge Creator Hub' : 'Cliente PrintForge');
       try { localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user)); } catch (e) {}
       renderNavUserArea();
@@ -32184,8 +32233,8 @@ function renderDealChat(rfpId) {
       const photoUrl = window._currentPortfolioPhotoDataUrl || '/images/cube.jpg';
       const workId = 'WORK-' + Math.floor(1000 + Math.random() * 9000);
       const creatorName = AppState.user?.name || 'Maker Certificato';
-      const creatorUid = AppState.user?.userId || AppState.user?.id || 'maker_milano_hub';
-      const creatorEmail = AppState.user?.email || '';
+      const creatorEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const creatorUid = (AppState.user && (AppState.user.userId || AppState.user.id)) || (creatorEmail ? ('usr_' + creatorEmail.replace(/[^a-zA-Z0-9]/g, '_')) : 'maker_hub');
 
       const workObj = {
         id: workId,
@@ -32552,10 +32601,14 @@ function renderDealChat(rfpId) {
         // Se l'opera è marcata come completata ma non è in vetrina, non mostrare
         if (w.isCompleted && !w.inShowcase) return false;
 
-        if (myUid && w.creatorId === myUid) return true;
-        if (myName && (w.creatorName || '').toLowerCase().trim() === myName) return true;
-        if (myEmail && (w.creatorEmail || '').toLowerCase().trim() === myEmail) return true;
-        if (isAdmin && !wClient && !wClientId) return true;
+        // PRIVACY RIGOROSA MULTI-TENANT: Ogni Creator vede SOLO ed ESCLUSIVAMENTE le proprie opere personali!
+        const wEmail = (w.creatorEmail || w.client_email || '').toLowerCase().trim();
+        const wId = (w.creatorId || '').toLowerCase().trim();
+        const wName = (w.creatorName || w.client_name || '').toLowerCase().trim();
+
+        if (myEmail && wEmail && wEmail === myEmail) return true;
+        if (myUid && wId && wId === myUid) return true;
+        if (myName && wName && wName === myName) return true;
         return false;
       });
 
