@@ -5896,7 +5896,7 @@
                 </div>
 
                 <!-- PROMEMORIA UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (OPZIONE 2 - INSERITO NELLA ZONA INDICATA) -->
-                <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] to-[#0A0D14] border border-blue-500/35 shadow-xl space-y-2.5 mt-2">
+                <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] via-[#0A0D16] to-[#07090F] border border-blue-500/40 shadow-xl space-y-2.5 mt-2 transition-all">
                   <div class="flex items-center justify-between gap-2 flex-wrap">
                     <div class="flex items-center gap-2.5">
                       <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0 shadow-sm">
@@ -5904,13 +5904,30 @@
                       </div>
                       <div>
                         <span class="text-xs sm:text-xs font-cyber font-bold text-white tracking-wide block">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
-                        <span class="text-[10px] text-blue-300/80 font-mono">Commissione Trasparente Ufficiale 1,5% + € 0,25</span>
+                        <span class="text-[10px] text-blue-300/90 font-mono">OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo</span>
                       </div>
                     </div>
                     <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">OPZIONE 2: 1,5% + € 0,25</span>
                   </div>
+
+                  <!-- Griglia Calcolo Dinamico al Centesimo in Tempo Reale -->
+                  <div class="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-blue-500/30 grid grid-cols-3 gap-2 text-center font-mono text-[10.5px] shadow-inner">
+                    <div class="space-y-0.5">
+                      <span class="text-zinc-400 block text-[9px] uppercase tracking-wider">Manifattura</span>
+                      <span id="liveNoticeBasePrice" class="text-white font-bold block">€ --</span>
+                    </div>
+                    <div class="space-y-0.5 border-x border-white/10 px-1">
+                      <span class="text-blue-400 block text-[9px] uppercase font-bold tracking-wider">+ Tassa Stripe</span>
+                      <span id="liveNoticeStripeFee" class="text-blue-300 font-bold block">+ € --</span>
+                    </div>
+                    <div class="space-y-0.5">
+                      <span class="text-emerald-400 block text-[9px] uppercase font-bold tracking-wider">Totale Protetto</span>
+                      <span id="liveNoticeTotalPrice" class="text-emerald-400 font-bold block">€ --</span>
+                    </div>
+                  </div>
+
                   <p class="text-[11px] text-zinc-300 leading-relaxed font-sans">
-                    Al preventivo viene applicata la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
+                    Al preventivo viene applicata automaticamente la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
                     <span class="text-zinc-400 block mt-1">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
                   </p>
                 </div>
@@ -5993,6 +6010,12 @@
                       <div class="flex items-center justify-between text-zinc-300 pt-1 border-t border-white/10 font-bold">
                         <span>Totale al Checkout:</span>
                         <span id="breakdownTotalPrice" class="text-emerald-400 text-xs font-mono">€ --</span>
+                      </div>
+                      
+                      <!-- Alert di Avviso se Prezzo Troppo Basso nel Riquadro di Sintesi Ordine -->
+                      <div id="summaryBudgetWarningBox" class="hidden p-2 rounded-lg bg-amber-500/15 border border-amber-500/40 text-amber-300 text-[10px] font-mono flex items-center gap-1.5 mt-1.5 shadow-sm transition-all">
+                        <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                        <span id="summaryBudgetWarningText">Budget basso: si consiglia almeno la stima dei Maker.</span>
                       </div>
                     </div>
                   </div>
@@ -8795,6 +8818,12 @@
               <span class="text-zinc-200 font-bold truncate block" id="reviewQuantityTolerance">—</span>
             </div>
           </div>
+        </div>
+
+        <!-- Avviso se Prezzo Troppo Basso nel Messaggio di Sintesi Ordine (Modal) -->
+        <div id="reviewBudgetLowWarning" class="hidden p-3 rounded-xl bg-amber-500/15 border border-amber-500/40 text-amber-300 text-xs font-mono flex items-start gap-2 shadow-sm transition-all">
+          <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-400 shrink-0 mt-0.5"></i>
+          <span id="reviewBudgetLowWarningText">Attenzione: Con un budget inferiore alla stima consigliata i Maker qualificati potrebbero non accettare la commessa.</span>
         </div>
 
         <!-- 2. Breakdown Trasparente Costi & Escrow -->
@@ -21641,6 +21670,8 @@ const warnBox = document.getElementById('budgetWarningBox');
       const noticeBadge = document.getElementById('liveNoticeStripeBadge');
       if (noticeBadge) noticeBadge.innerText = `+ € ${stripeEscrowFee.toFixed(2).replace('.', ',')} (1,5% + € 0,25)`;
 window.__lastComputedQuotePrice = computedPrice;
+      window.__lastComputedBaseMfg = baseManufacturingPrice;
+      window.__lastComputedStripeFee = stripeEscrowFee;
       const minPrice = Math.max(10, Math.round(computedPrice * 0.88));
       const maxPrice = Math.round(computedPrice * 1.15);
 
@@ -21697,72 +21728,98 @@ window.__lastComputedQuotePrice = computedPrice;
       }
     }
 
-    function handleReqBudgetChange() {
+        function handleReqBudgetChange() {
       const bInput = document.getElementById('reqBudget');
       const val = parseFloat(bInput?.value) || 0;
       const rec = window.__lastComputedQuotePrice || 0;
+      const minThreshold = (rec > 0) ? Math.max(12, Math.round(rec * 0.75)) : 12;
+
       const warnBox = document.getElementById('budgetWarningBox');
       const warnText = document.getElementById('budgetWarningText');
+      const sumWarnBox = document.getElementById('summaryBudgetWarningBox');
+      const sumWarnText = document.getElementById('summaryBudgetWarningText');
 
-      // Se il cliente ha inserito un prezzo di suo pugno:
+      const noticeBase = document.getElementById('liveNoticeBasePrice');
+      const noticeFee = document.getElementById('liveNoticeStripeFee');
+      const noticeTotal = document.getElementById('liveNoticeTotalPrice');
+      const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+
+      const bMfg = document.getElementById('breakdownMfgPrice');
+      const bStripe = document.getElementById('breakdownStripeFee');
+      const bTotal = document.getElementById('breakdownTotalPrice');
+
+      // Se il cliente ha inserito un prezzo di suo pugno (Libero Arbitrio):
       if (val > 0) {
-        // Scorporo matematico trasparente Opzione 2 (1,5% + € 0,25)
-        const mfgVal = Math.max(0, Math.round(((val - 0.25) / 1.015) * 100) / 100);
-        const stripeFee = Math.max(0, Math.round((val - mfgVal) * 100) / 100);
-        const bMfg = document.getElementById('breakdownMfgPrice');
-        if (bMfg) bMfg.innerText = '€ ' + mfgVal.toFixed(2).replace('.', ',');
-        const bStripe = document.getElementById('breakdownStripeFee');
-        if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',');
-        const bTotal = document.getElementById('breakdownTotalPrice');
-        if (bTotal) bTotal.innerText = '€ ' + val.toFixed(2).replace('.', ',');
-        const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+        // Calcolo automatico al centesimo della tassa Stripe Opzione 2 (1,5% + € 0,25) aggiunta automaticamente
+        const stripeFee = Math.round((val * 0.015 + 0.25) * 100) / 100;
+        const totalWithStripe = parseFloat((val + stripeFee).toFixed(2));
+
+        // Aggiorna riquadro di sintesi ordine nella colonna destra
+        if (bMfg) bMfg.innerText = '€ ' + val.toFixed(2).replace('.', ',');
+        if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+        if (bTotal) bTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
+
+        // Aggiorna riquadro sotto al colore (Opzione 2 con calcolo dinamico al centesimo)
+        if (noticeBase) noticeBase.innerText = '€ ' + val.toFixed(2).replace('.', ',');
+        if (noticeFee) noticeFee.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+        if (noticeTotal) noticeTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
         if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
 
-        // MOSTRA IL MESSAGGIO DI ATTENZIONE SE L'OFFERTA È SOTTO LA SOGLIA CONSIGLIATA
-        const minThreshold = (rec > 0) ? Math.max(12, Math.round(rec * 0.75)) : 12;
+        // MOSTRA L'AVVISO SIA SOTTO (warningBox) SIA NEL RIQUADRO DI SINTESI (sumWarnBox) SE IL BUDGET È TROPPO BASSO
         if (rec > 0 && val < rec) {
+          const warnMsg = currentLang === 'en'
+            ? `With a budget below € ${minThreshold} qualified Makers might not accept the order. At least € ${rec.toFixed(2).replace('.', ',')} is recommended.`
+            : currentLang === 'es'
+            ? `Con un presupuesto inferior a € ${minThreshold} los Creadores cualificados podrían no aceptar el pedido. Se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
+            : `Con un budget inferiore a € ${minThreshold} i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
+
           if (warnBox) {
             warnBox.classList.remove('hidden');
             warnBox.style.display = 'flex';
           }
-          if (warnText) {
-            warnText.innerText = currentLang === 'en'
-              ? `With a budget below € ${minThreshold} qualified Makers might not accept the order. At least € ${rec.toFixed(2).replace('.', ',')} is recommended.`
+          if (warnText) warnText.innerText = warnMsg;
+
+          if (sumWarnBox) {
+            sumWarnBox.classList.remove('hidden');
+            sumWarnBox.style.display = 'flex';
+          }
+          if (sumWarnText) {
+            sumWarnText.innerText = currentLang === 'en'
+              ? `Low budget (€ ${val.toFixed(2).replace('.', ',')}): at least € ${rec.toFixed(2).replace('.', ',')} recommended.`
               : currentLang === 'es'
-              ? `Con un presupuesto inferior a € ${minThreshold} los Creadores cualificados podrían no aceptar el pedido. Se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
-              : `Con un budget inferiore a € ${minThreshold} i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
+              ? `Presupuesto bajo (€ ${val.toFixed(2).replace('.', ',')}): se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
+              : `Budget basso (€ ${val.toFixed(2).replace('.', ',')}): si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
           }
         } else {
-          // Offerta congrua o sopra soglia consigliata: nascondi avviso
-          if (warnBox) {
-            warnBox.classList.add('hidden');
-            warnBox.style.display = 'none';
-          }
+          // Offerta congrua: nascondi avvisi
+          if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
+          if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
         }
       } else {
-        // Nessun prezzo manuale digitato: mostra nel breakdown la stima Opzione 2 calcolata in tempo reale!
-        if (warnBox) {
-          warnBox.classList.add('hidden');
-          warnBox.style.display = 'none';
-        }
+        // Nessun prezzo manuale digitato: lascia libero arbitrio, mostra la stima nel breakdown
+        if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
+        if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
+
         if (rec > 0) {
-          const mfgVal = Math.max(0, Math.round(((rec - 0.25) / 1.015) * 100) / 100);
-          const stripeFee = Math.max(0, Math.round((rec - mfgVal) * 100) / 100);
-          const bMfg = document.getElementById('breakdownMfgPrice');
-          if (bMfg) bMfg.innerText = '€ ' + mfgVal.toFixed(2).replace('.', ',');
-          const bStripe = document.getElementById('breakdownStripeFee');
+          const baseMfg = window.__lastComputedBaseMfg || Math.max(12, Math.round(((rec - 0.25) / 1.015) * 100) / 100);
+          const stripeFee = window.__lastComputedStripeFee || Math.round((baseMfg * 0.015 + 0.25) * 100) / 100;
+
+          if (bMfg) bMfg.innerText = '€ ' + baseMfg.toFixed(2).replace('.', ',');
           if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
-          const bTotal = document.getElementById('breakdownTotalPrice');
           if (bTotal) bTotal.innerText = '€ ' + rec.toFixed(2).replace('.', ',') + ' (Stima)';
-          const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+
+          if (noticeBase) noticeBase.innerText = '€ ' + baseMfg.toFixed(2).replace('.', ',');
+          if (noticeFee) noticeFee.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+          if (noticeTotal) noticeTotal.innerText = '€ ' + rec.toFixed(2).replace('.', ',') + ' (Stima)';
           if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
         } else {
-          const bMfg = document.getElementById('breakdownMfgPrice');
           if (bMfg) bMfg.innerText = '€ --';
-          const bStripe = document.getElementById('breakdownStripeFee');
           if (bStripe) bStripe.innerText = '+ € --';
-          const bTotal = document.getElementById('breakdownTotalPrice');
           if (bTotal) bTotal.innerText = '€ --';
+
+          if (noticeBase) noticeBase.innerText = '€ --';
+          if (noticeFee) noticeFee.innerText = '+ € --';
+          if (noticeTotal) noticeTotal.innerText = '€ --';
         }
       }
 
@@ -26626,10 +26683,31 @@ window.__lastComputedQuotePrice = computedPrice;
       const infill = document.getElementById('reqInfill')?.value || '50% Meccanico Strutturale';
       const postProcess = document.getElementById('reqPostProcess')?.value || 'Grezzo (Rimozione supporti standard)';
 
-      // SE VUOTO NON MOSTRARE PIÙ 45 EURO MA TUTTO AZZERATO (€ 0,00)
+      // Calcolo automatico della tassa Stripe Escrow Opzione 2 (1,5% + € 0,25) aggiunta automaticamente
       const rawBudgetVal = document.getElementById('reqBudget')?.value;
       const parsedBudget = parseFloat(rawBudgetVal);
-      const budgetNum = (!isNaN(parsedBudget) && parsedBudget > 0) ? parsedBudget : 0.00;
+      const recPrice = window.__lastComputedQuotePrice || 0;
+      const minThreshold = (recPrice > 0) ? Math.max(12, Math.round(recPrice * 0.75)) : 12;
+
+      let mfgNetto = 0;
+      let stripeFee = 0;
+      let budgetNum = 0;
+      let isCustomLowBudget = false;
+
+      if (!isNaN(parsedBudget) && parsedBudget > 0) {
+        // Il cliente ha digitato un proprio budget (Libero Arbitrio)
+        mfgNetto = parsedBudget;
+        // Calcola da sola la tassa Stripe Opzione 2 (1,5% + € 0,25) e aggiungila automaticamente al totale
+        stripeFee = Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
+        budgetNum = parseFloat((mfgNetto + stripeFee).toFixed(2));
+        isCustomLowBudget = (recPrice > 0 && mfgNetto < minThreshold);
+      } else if (recPrice > 0) {
+        // Cliente non ha scritto nulla: usa la stima calcolata di mercato
+        mfgNetto = window.__lastComputedBaseMfg || Math.max(12, Math.round(((recPrice - 0.25) / 1.015) * 100) / 100);
+        stripeFee = window.__lastComputedStripeFee || Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
+        budgetNum = parseFloat((mfgNetto + stripeFee).toFixed(2));
+      }
+
       const budgetStr = formatEuroClean(budgetNum);
       const shippingNum = 0;
       const escrowTotalStr = budgetStr;
@@ -26683,6 +26761,11 @@ window.__lastComputedQuotePrice = computedPrice;
         quantity: quantity,
         budgetNum: budgetNum,
         budgetStr: budgetStr,
+        mfgNetto: mfgNetto,
+        stripeFee: stripeFee,
+        isCustomLowBudget: isCustomLowBudget,
+        recPrice: recPrice,
+        minThreshold: minThreshold,
         shippingNum: shippingNum,
         escrowTotalStr: escrowTotalStr,
         deadline: deadline,
@@ -26789,16 +26872,37 @@ window.__lastComputedQuotePrice = computedPrice;
       }
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
-      // Calcolo trasparente Opzione 2 nel Riepilogo Commessa (1,5% + € 0,25 al centesimo)
-      const reviewBudgetTotal = draft.budgetNum || 0;
-      const reviewMfgVal = reviewBudgetTotal > 0 ? Math.max(0, Math.round(((reviewBudgetTotal - 0.25) / 1.015) * 100) / 100) : 0;
-      const reviewStripeVal = reviewBudgetTotal > 0 ? Math.max(0, Math.round((reviewBudgetTotal - reviewMfgVal) * 100) / 100) : 0;
+      // Calcolo trasparente Opzione 2 nel Riepilogo Commessa (1,5% + € 0,25 al centesimo aggiunto automaticamente)
+      const reviewMfgVal = draft.mfgNetto || (draft.budgetNum > 0 ? Math.max(0, Math.round(((draft.budgetNum - 0.25) / 1.015) * 100) / 100) : 0);
+      const reviewStripeVal = draft.stripeFee || (draft.budgetNum > 0 ? Math.max(0, Math.round((reviewMfgVal * 0.015 + 0.25) * 100) / 100) : 0);
       const mfgNettoEl = document.getElementById('reviewMfgNetto');
-      if (mfgNettoEl) mfgNettoEl.innerText = `€ ${reviewMfgVal.toFixed(2).replace('.', ',')}`;
+      if (mfgNettoEl) mfgNettoEl.innerText = '€ ' + reviewMfgVal.toFixed(2).replace('.', ',');
       const stripeFeeEl = document.getElementById('reviewStripeFee');
-      if (stripeFeeEl) stripeFeeEl.innerText = `+ € ${reviewStripeVal.toFixed(2).replace('.', ',')} (Opzione 2: 1,5% + €0,25)`;
+      if (stripeFeeEl) stripeFeeEl.innerText = '+ € ' + reviewStripeVal.toFixed(2).replace('.', ',') + ' (Opzione 2: 1,5% + € 0,25)';
 
       if (totalEscrowEl) totalEscrowEl.innerText = draft.budgetStr;
+
+      // Gestione Avviso Budget Basso nel Messaggio di Sintesi Ordine (Modal)
+      const reviewWarnBox = document.getElementById('reviewBudgetLowWarning');
+      const reviewWarnText = document.getElementById('reviewBudgetLowWarningText');
+      if (draft.isCustomLowBudget && draft.recPrice > 0) {
+        if (reviewWarnBox) {
+          reviewWarnBox.classList.remove('hidden');
+          reviewWarnBox.style.display = 'flex';
+        }
+        if (reviewWarnText) {
+          reviewWarnText.innerText = currentLang === 'en'
+            ? 'Notice: With a budget of € ' + reviewMfgVal.toFixed(2).replace('.', ',') + ', verified Makers might not accept the job. Recommended market price: € ' + draft.recPrice.toFixed(2).replace('.', ',') + '.'
+            : currentLang === 'es'
+            ? 'Atención: Con un presupuesto de € ' + reviewMfgVal.toFixed(2).replace('.', ',') + ', los Creadores cualificados podrían no aceptar el pedido. Precio recomendado: € ' + draft.recPrice.toFixed(2).replace('.', ',') + '.'
+            : 'Attenzione: Il budget di € ' + reviewMfgVal.toFixed(2).replace('.', ',') + ' è inferiore alla stima consigliata dei Maker (€ ' + draft.recPrice.toFixed(2).replace('.', ',') + '). I Maker qualificati potrebbero non accettare la commessa.';
+        }
+      } else {
+        if (reviewWarnBox) {
+          reviewWarnBox.classList.add('hidden');
+          reviewWarnBox.style.display = 'none';
+        }
+      }
 
       // Calcolo rate Klarna reali
       const budgetNum = draft.budgetNum || 0;
