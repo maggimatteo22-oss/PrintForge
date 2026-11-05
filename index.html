@@ -5887,50 +5887,50 @@
                   <option value="Trasparente / Ambra Naturale">🔲 Trasparente / Ambra Naturale</option>
                   <option value="Naturale Grezzo da Macchina">⚙️ Naturale Grezzo da Macchina</option>
                 </select>
-              </div>
 
-                <!-- AVVISO SOGLIA MINIMA BUDGET MAKER (IMMAGINE 1 - ZONA CIRCONDATA IN ROSSO SOTTO I COLORI) -->
-                <div id="budgetWarningBox" class="hidden p-3.5 sm:p-4 rounded-2xl bg-[#141008] border border-amber-500/40 text-amber-400 font-mono text-xs sm:text-[13px] items-center gap-3 shadow-lg my-2.5 transition-all">
+                <!-- AVVISO SOGLIA MINIMA BUDGET MAKER (INSERITO ESATTAMENTE SOTTO IL COLORE) -->
+                <div id="budgetWarningBox" class="hidden p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#141008] border border-amber-500/50 text-amber-400 font-mono text-xs sm:text-[13px] items-center gap-3 shadow-lg my-2 transition-all">
                   <div class="w-5 h-5 rounded-full border border-amber-500/80 flex items-center justify-center shrink-0 text-amber-400 font-mono text-xs font-bold leading-none select-none">i</div>
                   <span id="budgetWarningText" class="leading-relaxed text-[#FBBF24]">Con un budget inferiore a € 77 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € 102,00.</span>
                 </div>
 
-                <!-- PROMEMORIA UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (OPZIONE 2 - INSERITO NELLA ZONA INDICATA) -->
-                <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] via-[#0A0D16] to-[#07090F] border border-blue-500/40 shadow-xl space-y-2.5 mt-2 transition-all">
+                <!-- RIQUADRO UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (OPZIONE 2 - INSERITO ESATTAMENTE NELLA ZONA ROSSA INDICATA) -->
+                <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] via-[#0A0D16] to-[#07090F] border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)] space-y-2.5 mt-2 transition-all block">
                   <div class="flex items-center justify-between gap-2 flex-wrap">
                     <div class="flex items-center gap-2.5">
                       <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0 shadow-sm">
                         <i data-lucide="shield-check" class="w-4 h-4"></i>
                       </div>
                       <div>
-                        <span class="text-xs sm:text-xs font-cyber font-bold text-white tracking-wide block">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
-                        <span class="text-[10px] text-blue-300/90 font-mono">OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo</span>
+                        <span class="text-xs sm:text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-stripeNoticeTitle">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
+                        <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-stripeNoticeSubtitle">OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo</span>
                       </div>
                     </div>
                     <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">OPZIONE 2: 1,5% + € 0,25</span>
                   </div>
 
-                  <!-- Griglia Calcolo Dinamico al Centesimo in Tempo Reale -->
+                  <!-- Griglia Calcolo Dinamico al Centesimo in Tempo Reale: Manifattura | + Tassa Stripe | Totale Protetto -->
                   <div class="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-blue-500/30 grid grid-cols-3 gap-2 text-center font-mono text-[10.5px] shadow-inner">
                     <div class="space-y-0.5">
-                      <span class="text-zinc-400 block text-[9px] uppercase tracking-wider">Manifattura</span>
-                      <span id="liveNoticeBasePrice" class="text-white font-bold block">€ --</span>
+                      <span class="text-zinc-400 block text-[9px] uppercase tracking-wider" id="i18n-stripeColMfg">Manifattura</span>
+                      <span id="liveNoticeBasePrice" class="text-white font-bold block">€ 0,00</span>
                     </div>
                     <div class="space-y-0.5 border-x border-white/10 px-1">
-                      <span class="text-blue-400 block text-[9px] uppercase font-bold tracking-wider">+ Tassa Stripe</span>
-                      <span id="liveNoticeStripeFee" class="text-blue-300 font-bold block">+ € --</span>
+                      <span class="text-blue-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColFee">+ Tassa Stripe</span>
+                      <span id="liveNoticeStripeFee" class="text-blue-300 font-bold block">+ € 0,00</span>
                     </div>
                     <div class="space-y-0.5">
-                      <span class="text-emerald-400 block text-[9px] uppercase font-bold tracking-wider">Totale Protetto</span>
-                      <span id="liveNoticeTotalPrice" class="text-emerald-400 font-bold block">€ --</span>
+                      <span class="text-emerald-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColTotal">Totale Protetto</span>
+                      <span id="liveNoticeTotalPrice" class="text-emerald-400 font-bold block">€ 0,00</span>
                     </div>
                   </div>
 
-                  <p class="text-[11px] text-zinc-300 leading-relaxed font-sans">
+                  <p class="text-[11px] text-zinc-300 leading-relaxed font-sans" id="i18n-stripeNoticeText">
                     Al preventivo viene applicata automaticamente la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
-                    <span class="text-zinc-400 block mt-1">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
+                    <span class="text-zinc-400 block mt-1" id="i18n-stripeNoticeSubtext">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
                   </p>
                 </div>
+              </div>
             </div>
 
             <!-- Colonna Destra (5 Colonne): Quantità, Robustezza, Budget & Consegna -->
@@ -5980,7 +5980,7 @@
                     </div>
                     <div class="relative flex items-center">
                       <span class="absolute left-3 top-2.5 text-sm font-mono text-zinc-400 select-none">€</span>
-                      <input type="number" id="reqBudget" min="1" step="0.01" value="" placeholder="0.00" oninput="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" onchange="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" class="w-full bg-[#14151B] border border-white/10 rounded-lg sm:rounded-xl pl-8 pr-3 py-2 text-sm text-white font-mono focus:border-white transition min-h-[40px]" />
+                      <input type="number" id="reqBudget" min="1" step="0.01" value="" placeholder="0.00" autocomplete="off" autocorrect="off" autocapitalize="off" oninput="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" onchange="handleReqBudgetChange(); updateLiveRequestSummary(); calculateVolumetricShipping();" class="w-full bg-[#14151B] border border-white/10 rounded-lg sm:rounded-xl pl-8 pr-3 py-2 text-sm text-white font-mono focus:border-white transition min-h-[40px]" />
                       <button type="button" id="btnApplyInstantBudget" onclick="applyRecommendedBudget()" class="hidden" style="display: none !important;" title="Stima di mercato calcolata">
                         <span>✨ Stima: <b id="budgetApplyPriceBadge">--</b></span>
                       </button>
@@ -5998,18 +5998,18 @@
                     <!-- Dettaglio Trasparente Quote: Manifattura + Protezione Stripe Escrow -->
                     <div id="priceEscrowBreakdownBox" class="p-2 sm:p-2.5 rounded-lg bg-[#0F1015] border border-white/10 space-y-1 text-[10px] font-mono mt-1.5">
                       <div class="flex items-center justify-between text-zinc-400">
-                        <span>Manifattura 3D &amp; Materiale:</span>
-                        <span id="breakdownMfgPrice" class="text-zinc-200 font-bold">€ --</span>
+                        <span id="i18n-breakdownMfgLabel">Manifattura 3D &amp; Materiale:</span>
+                        <span id="breakdownMfgPrice" class="text-zinc-200 font-bold">€ 0,00</span>
                       </div>
                       <div class="flex items-center justify-between text-zinc-400">
                         <span class="flex items-center gap-1">
-                          <span class="text-blue-400">🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):</span>
+                          <span class="text-blue-400" id="i18n-breakdownStripeLabel">🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):</span>
                         </span>
-                        <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 0,60 (1,5% + € 0,25)</span>
+                        <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 0,00</span>
                       </div>
                       <div class="flex items-center justify-between text-zinc-300 pt-1 border-t border-white/10 font-bold">
-                        <span>Totale al Checkout:</span>
-                        <span id="breakdownTotalPrice" class="text-emerald-400 text-xs font-mono">€ --</span>
+                        <span id="i18n-breakdownTotalLabel">Totale al Checkout:</span>
+                        <span id="breakdownTotalPrice" class="text-emerald-400 text-xs font-mono">€ 0,00</span>
                       </div>
                       
                       <!-- Alert di Avviso se Prezzo Troppo Basso nel Riquadro di Sintesi Ordine -->
@@ -12671,7 +12671,7 @@
         reqInfillLabel: 'Opzione Infill (Riempimento)',
         reqPostProcessLabel: 'Post-Processing',
         reqCadFileLabel: 'File CAD (.STEP, .STL, .3MF) *',
-        reqBudgetLabel: 'Budget Totale Calcolato (\u20AC)',
+        reqBudgetLabel: 'Budget Stampa (\u20AC)',
         reqDeadlineLabel: 'Tempistica Desiderata',
         shippingOptionLabel: 'Opzione di Spedizione & Tempistiche',
         shippingParamHint: 'Parametri di costo calcolati in tempo reale',
@@ -13544,7 +13544,7 @@
         reqInfillLabel: 'Infill Option (Density)',
         reqPostProcessLabel: 'Post-Processing',
         reqCadFileLabel: 'CAD File (.STEP, .STL, .3MF) *',
-        reqBudgetLabel: 'Calculated Budget Total (\u20AC)',
+        reqBudgetLabel: 'Print Budget (\u20AC)',
         reqDeadlineLabel: 'Required Lead Time',
         shippingOptionLabel: 'Shipping & Turnaround Options',
         shippingParamHint: 'Real-time dynamic pricing parameters',
@@ -14417,7 +14417,7 @@
         reqInfillLabel: 'Opción Infill (Relleno)',
         reqPostProcessLabel: 'Post-Procesado',
         reqCadFileLabel: 'Archivo CAD (.STEP, .STL, .3MF) *',
-        reqBudgetLabel: 'Presupuesto Total Calculado (€)',
+        reqBudgetLabel: 'Presupuesto Impresión (€)',
         reqDeadlineLabel: 'Plazo Deseado',
         shippingOptionLabel: 'Opción de Envío y Plazos',
         shippingParamHint: 'Parámetros de coste calculados en tiempo real',
@@ -15208,7 +15208,9 @@
       }
       updateEscrowRoom();
       updateEscrowCountdownDisplay();
+      if (typeof applyFullPageTranslation === 'function') applyFullPageTranslation();
       recalculateInstantQuote();
+      if (typeof handleReqBudgetChange === 'function') handleReqBudgetChange();
       
       if (userTriggered) {
         const toastMsg = lang === 'it' 
@@ -16462,6 +16464,9 @@ END-ISO-10303-21;`;
 
       if (typeof switchCreatorProfileType === 'function') {
         switchCreatorProfileType(window.currentCreatorProfileType || 'private');
+      }
+      if (typeof applyFullPageTranslation === 'function') {
+        applyFullPageTranslation();
       }
     }
 
@@ -21678,15 +21683,14 @@ window.__lastComputedQuotePrice = computedPrice;
       if (bApply) bApply.innerText = `€ ${computedPrice},00`;
       if (bRange) bRange.innerText = `€ ${minPrice} – € ${maxPrice}`;
 
-      // Libero arbitrio ai clienti: non scrivere nulla automaticamente nel campo budget, lasciare che lo inseriscano liberamente
+      // Libero arbitrio ai clienti: mostra SEMPRE ZERO finché il cliente non digita il suo budget
       if (reqBudget) {
-        // Aggiorna solo il placeholder come suggerimento discreto senza imporre il valore
-        reqBudget.placeholder = `Es. ${computedPrice.toFixed(2)}`;
+        reqBudget.placeholder = "0.00";
       }
       handleReqBudgetChange();
 
       const hasExplicitBudget = reqBudget && reqBudget.value && parseFloat(reqBudget.value) > 0;
-      const budgetDisplayStr = hasExplicitBudget ? `€ ${parseFloat(reqBudget.value).toFixed(2).replace('.', ',')}` : '€ 0,00';
+      const budgetDisplayStr = hasExplicitBudget ? ('€ ' + parseFloat(reqBudget.value).toFixed(2).replace('.', ',')) : '€ 0,00';
       ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
@@ -21695,6 +21699,139 @@ window.__lastComputedQuotePrice = computedPrice;
       updateLiveRequestSummary();
       calculateVolumetricShipping();
     }
+
+    // ═════════════════════════════════════════════════════════════════════════
+    // TRADUZIONE ISTANTANEA COMPLETA IN TEMPO REALE SENZA CAMBIARE PAGINA
+    // ═════════════════════════════════════════════════════════════════════════
+    function applyFullPageTranslation() {
+      const lang = currentLang || 'it';
+      const isEn = lang === 'en';
+      const isEs = lang === 'es';
+
+      // ── 1. Riquadro Stripe Escrow sotto al colore ──
+      const stTitle = document.getElementById('i18n-stripeNoticeTitle');
+      if (stTitle) stTitle.innerText = isEn ? 'Purchase Protection & Stripe Escrow Guarantee' : isEs ? 'Protección de Compras & Garantía Stripe Escrow' : 'Protezione Acquisti & Garanzia Stripe Escrow';
+
+      const stSub = document.getElementById('i18n-stripeNoticeSubtitle');
+      if (stSub) stSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'OPCIÓN 2: 1,5% + € 0,25 con cálculo dinámico al céntimo' : 'OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo';
+
+      const colMfg = document.getElementById('i18n-stripeColMfg');
+      if (colMfg) colMfg.innerText = isEn ? 'Manufacturing' : isEs ? 'Fabricación' : 'Manifattura';
+
+      const colFee = document.getElementById('i18n-stripeColFee');
+      if (colFee) colFee.innerText = isEn ? '+ Stripe Fee' : isEs ? '+ Tasa Stripe' : '+ Tassa Stripe';
+
+      const colTot = document.getElementById('i18n-stripeColTotal');
+      if (colTot) colTot.innerText = isEn ? 'Protected Total' : isEs ? 'Total Protegido' : 'Totale Protetto';
+
+      const stText = document.getElementById('i18n-stripeNoticeText');
+      if (stText) {
+        stText.innerHTML = isEn
+          ? 'The official Stripe fee (<b>1.5% + € 0.25</b>) is automatically added for <b>Total Buyer Protection</b> and escrow custody. <span class="text-zinc-400 block mt-1">🔒 The Maker only receives payout after you approve 3 inspection photos with caliper. In case of defects or delay you get an immediate 100% refund.</span>'
+          : isEs
+          ? 'Al presupuesto se aplica automáticamente la tarifa oficial de Stripe al céntimo (<b>1,5% + € 0,25</b>) para la <b>Protección Total del Comprador</b> y custodia en garantía. <span class="text-zinc-400 block mt-1">🔒 El Maker solo recibe el pago después de que apruebes las 3 fotos de inspección con calibre. En caso de defectos o retraso tienes reembolso inmediato al 100%.</span>'
+          : 'Al preventivo viene applicata automaticamente la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. <span class="text-zinc-400 block mt-1">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>';
+      }
+
+      // ── 2. Riquadro di sintesi preventivo colonna destra ──
+      const bMfgLbl = document.getElementById('i18n-breakdownMfgLabel');
+      if (bMfgLbl) bMfgLbl.innerText = isEn ? '3D Manufacturing & Material:' : isEs ? 'Fabricación 3D & Material:' : 'Manifattura 3D & Materiale:';
+
+      const bStripeLbl = document.getElementById('i18n-breakdownStripeLabel');
+      if (bStripeLbl) bStripeLbl.innerText = isEn ? '🛡️ Stripe Escrow Protection (1.5% + € 0.25 to the cent):' : isEs ? '🛡️ Protección Stripe Escrow (1,5% + € 0,25 al céntimo):' : '🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):';
+
+      const bTotalLbl = document.getElementById('i18n-breakdownTotalLabel');
+      if (bTotalLbl) bTotalLbl.innerText = isEn ? 'Total at Checkout:' : isEs ? 'Total al Checkout:' : 'Totale al Checkout:';
+
+      // ── 3. Etichette e sezioni del form di richiesta ──
+      const budgetLbl = document.getElementById('i18n-reqBudgetLabel');
+      if (budgetLbl) budgetLbl.innerText = isEn ? 'Print Budget (€)' : isEs ? 'Presupuesto Impresión (€)' : 'Budget Stampa (€)';
+
+      const partNameLbl = document.getElementById('i18n-reqPartNameLabel');
+      if (partNameLbl) partNameLbl.innerHTML = isEn ? 'Component Name / Project Title <span class="text-white">*</span>' : isEs ? 'Nombre Componente / Título Proyecto <span class="text-white">*</span>' : 'Nome Componente / Titolo Progetto <span class="text-white">*</span>';
+
+      const usageLbl = document.getElementById('i18n-reqUsageLabel');
+      if (usageLbl) usageLbl.innerHTML = isEn ? 'Intended Use <span class="text-white">*</span>' : isEs ? 'Destino de Uso <span class="text-white">*</span>' : 'Destinazione d\'Uso <span class="text-white">*</span>';
+
+      const matLbl = document.getElementById('i18n-reqMaterialLabel');
+      if (matLbl) matLbl.innerHTML = isEn ? 'Technical Material Required <span class="text-white">*</span>' : isEs ? 'Material Técnico Requerido <span class="text-white">*</span>' : 'Materiale Tecnico Richiesto <span class="text-white">*</span>';
+
+      const dimTitle = document.getElementById('i18n-reqDimensionsTitle');
+      if (dimTitle) dimTitle.innerText = isEn ? 'Part Dimensions (XYZ Bounding Box)' : isEs ? 'Dimensiones Pieza (Caja XYZ)' : 'Dimensioni Pezzo (Ingombro XYZ)';
+
+      const dimSource = document.getElementById('dimensionSourceBadge');
+      if (dimSource) dimSource.innerText = isEn ? 'CAD DETECTION OR MANUAL' : isEs ? 'DETECCIÓN CAD O MANUAL' : 'RILEVAMENTO DA CAD O MANUALE';
+
+      const dimX = document.getElementById('i18n-dimLengthLabel');
+      if (dimX) dimX.innerText = isEn ? 'Length (X)' : isEs ? 'Long. (X)' : 'Lung. (X)';
+
+      const dimY = document.getElementById('i18n-dimWidthLabel');
+      if (dimY) dimY.innerText = isEn ? 'Width (Y)' : isEs ? 'Anch. (Y)' : 'Larg. (Y)';
+
+      const dimZ = document.getElementById('i18n-dimHeightLabel');
+      if (dimZ) dimZ.innerText = isEn ? 'Height (Z)' : isEs ? 'Alt. (Z)' : 'Alt. (Z)';
+
+      const qScale = document.getElementById('i18n-quickScaleLabel');
+      if (qScale) qScale.innerText = isEn ? 'QUICK SCALE:' : isEs ? 'ESCALA RÁPIDA:' : 'SCALA RAPIDA:';
+
+      const colorHead = document.getElementById('i18n-colorSectionHeading');
+      if (colorHead) colorHead.innerText = isEn ? 'Color / Surface Finish *' : isEs ? 'Color / Acabado Cromático *' : 'Colore & Finitura Cromatica';
+
+      const colorWheel = document.getElementById('i18n-colorWheelBtnText');
+      if (colorWheel) colorWheel.innerText = isEn ? '🎨 Color Wheel' : isEs ? '🎨 Rueda Colores' : '🎨 Ruota Colori';
+
+      const colorScegli = document.getElementById('i18n-spectrumBadgeText');
+      if (colorScegli) colorScegli.innerText = isEn ? '▾ Select' : isEs ? '▾ Elegir' : '▾ Scegli';
+
+      const qColor = document.getElementById('i18n-quickColorLabel');
+      if (qColor) qColor.innerText = isEn ? 'Quick:' : isEs ? 'Rápidos:' : 'Rapidi:';
+
+      const step3 = document.getElementById('i18n-reqStep3Title');
+      if (step3) step3.innerText = isEn ? '3. QUANTITY & STRENGTH' : isEs ? '3. CANTIDAD & RESISTENCIA' : '3. QUANTITÀ & ROBUSTEZZA';
+
+      const qtyLbl = document.getElementById('i18n-reqQuantityLabel');
+      if (qtyLbl) qtyLbl.innerText = isEn ? 'Quantity / Batch' : isEs ? 'Cantidad / Lote' : 'Quantità / Batch';
+
+      const bStatus = document.getElementById('budgetStatusHint');
+      if (bStatus) bStatus.innerText = isEn ? 'Free entry' : isEs ? 'Libre elección' : 'Libero arbitrio';
+
+      const bPrefix = document.getElementById('budgetRangePrefix');
+      if (bPrefix) bPrefix.innerText = isEn ? '💡 Rec.: ' : isEs ? '💡 Rec.: ' : '💡 Cons.: ';
+
+      const zeroFees = document.getElementById('i18n-zeroHiddenFees');
+      if (zeroFees) zeroFees.innerText = isEn ? 'Zero hidden fees' : isEs ? 'Sin costos ocultos' : 'Zero costi nascosti';
+
+      const infL = document.getElementById('i18n-infillLight');
+      if (infL) infL.innerText = isEn ? 'Light 20%' : isEs ? 'Ligero 20%' : 'Leggero 20%';
+
+      const infM = document.getElementById('i18n-infillMech');
+      if (infM) infM.innerText = isEn ? 'Mech. 50%' : isEs ? 'Mecánico 50%' : 'Meccanico 50%';
+
+      const infS = document.getElementById('i18n-infillSolid');
+      if (infS) infS.innerText = isEn ? 'Solid 100%' : isEs ? 'Sólido 100%' : 'Massivo 100%';
+
+      const ddlLbl = document.getElementById('i18n-reqDeadlineLabel');
+      if (ddlLbl) ddlLbl.innerText = isEn ? 'Desired Deadline' : isEs ? 'Plazo Deseado' : 'Tempistica Desiderata';
+
+      // ── 4. Placeholder campi input ──
+      const reqTitle = document.getElementById('reqTitle');
+      if (reqTitle) reqTitle.placeholder = isEn ? 'e.g. Motor flange...' : isEs ? 'ej. Brida de motor...' : 'Es. Flangia motore...';
+
+      const customColorTxt = document.getElementById('customColorTextInput');
+      if (customColorTxt) customColorTxt.placeholder = isEn ? 'Finish (e.g. Matte, Satin, Glossy...)' : isEs ? 'Acabado (ej. Mate, Satinado, Brillante...)' : 'Finitura (es. Opaco, Satinato, Lucido...)';
+
+      const reqNotes = document.getElementById('reqNotes');
+      if (reqNotes) reqNotes.placeholder = isEn ? 'Specific instructions, tolerances or delivery notes...' : isEs ? 'Instrucciones específicas, tolerancias o notas de entrega...' : 'Istruzioni specifiche, tolleranze o note per la spedizione...';
+
+      // ── 5. Bottone di invio preventivo ──
+      const btnRfp = document.getElementById('i18n-btnSubmitRfp');
+      if (btnRfp) btnRfp.innerText = isEn ? '🔍 Find Maker & Start Escrow' : isEs ? '🔍 Encontrar Maker e Iniciar Escrow' : '🔍 Trova il Maker & Avvia Escrow';
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        try { lucide.createIcons(); } catch(e) {}
+      }
+    }
+    window.applyFullPageTranslation = applyFullPageTranslation;
 
     function applyRecommendedBudget() {
       const rec = window.__lastComputedQuotePrice || 0;
@@ -21796,43 +21933,30 @@ window.__lastComputedQuotePrice = computedPrice;
           if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
         }
       } else {
-        // Nessun prezzo manuale digitato: lascia libero arbitrio, mostra la stima nel breakdown
+        // Nessun budget manuale inserito dal cliente: MOSTRA SEMPRE ZERO ("€ 0,00")
         if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
         if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
 
-        if (rec > 0) {
-          const baseMfg = window.__lastComputedBaseMfg || Math.max(12, Math.round(((rec - 0.25) / 1.015) * 100) / 100);
-          const stripeFee = window.__lastComputedStripeFee || Math.round((baseMfg * 0.015 + 0.25) * 100) / 100;
+        if (bMfg) bMfg.innerText = '€ 0,00';
+        if (bStripe) bStripe.innerText = '+ € 0,00';
+        if (bTotal) bTotal.innerText = '€ 0,00';
 
-          if (bMfg) bMfg.innerText = '€ ' + baseMfg.toFixed(2).replace('.', ',');
-          if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
-          if (bTotal) bTotal.innerText = '€ ' + rec.toFixed(2).replace('.', ',') + ' (Stima)';
-
-          if (noticeBase) noticeBase.innerText = '€ ' + baseMfg.toFixed(2).replace('.', ',');
-          if (noticeFee) noticeFee.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
-          if (noticeTotal) noticeTotal.innerText = '€ ' + rec.toFixed(2).replace('.', ',') + ' (Stima)';
-          if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
-        } else {
-          if (bMfg) bMfg.innerText = '€ --';
-          if (bStripe) bStripe.innerText = '+ € --';
-          if (bTotal) bTotal.innerText = '€ --';
-
-          if (noticeBase) noticeBase.innerText = '€ --';
-          if (noticeFee) noticeFee.innerText = '+ € --';
-          if (noticeTotal) noticeTotal.innerText = '€ --';
-        }
+        if (noticeBase) noticeBase.innerText = '€ 0,00';
+        if (noticeFee) noticeFee.innerText = '+ € 0,00';
+        if (noticeTotal) noticeTotal.innerText = '€ 0,00';
+        if (noticeBadge) noticeBadge.innerText = 'OPZIONE 2: 1,5% + € 0,25';
       }
 
-      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '--';
+      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
       ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay', 'liveDossierPrice'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
       });
 
       const checkoutPart = document.getElementById('checkoutPartCost');
-      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + Math.max(0, (val - 0.25)/1.015).toFixed(2).replace('.', ',')) : '--';
+      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + Math.max(0, (val - 0.25)/1.015).toFixed(2).replace('.', ',')) : '€ 0,00';
       const checkoutTotal = document.getElementById('checkoutTotalEscrow');
-      if (checkoutTotal) checkoutTotal.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '--';
+      if (checkoutTotal) checkoutTotal.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
 
       updateLiveRequestSummary();
     }
@@ -33556,6 +33680,13 @@ function renderDealChat(rfpId) {
         initHero3DLogo();
       } catch (e) {
         console.warn('Hero 3D logo:', e);
+      }
+
+      // Assicura che all'avvio il campo budget sia rigorosamente vuoto (libero arbitrio cliente)
+      const initBudgetEl = document.getElementById('reqBudget');
+      if (initBudgetEl) {
+        initBudgetEl.value = '';
+        initBudgetEl.placeholder = '0.00';
       }
 
       // Live reactive updates for request form text/number inputs
