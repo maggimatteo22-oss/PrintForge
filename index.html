@@ -9513,6 +9513,7 @@
             avatar: (userObj.name ? userObj.name.charAt(0) : 'U').toUpperCase(),
             stripeConnected: true,
             creatorData: userObj.creatorData || null,
+            payoutConfig: userObj.payoutConfig || null,
             password: pass || '',
             syncedAt: new Date().toISOString()
           })
@@ -26287,6 +26288,8 @@ window.__lastComputedQuotePrice = computedPrice;
         localStorage.removeItem('printforge_escrow_order');
         localStorage.removeItem('printforge_payout_config');
         localStorage.removeItem('printforge_payout_iban');
+        localStorage.removeItem('printforge_payout_configured');
+        localStorage.removeItem('printforge_payout_details');
         localStorage.removeItem('printforge_stripe_connected');
         localStorage.removeItem('printforge_stage4_completed');
         sessionStorage.clear();
@@ -33441,8 +33444,17 @@ function renderDealChat(rfpId) {
 
     function isPayoutConfigured() {
       try {
-        if (localStorage.getItem('printforge_payout_configured') === 'true') return true;
-        if (AppState.user && (AppState.user.payoutConfig || AppState.user.stripeConnected)) return true;
+        if (!AppState.user || !AppState.user.isLoggedIn) return false;
+        if (AppState.user.payoutConfig && AppState.user.payoutConfig.iban) return true;
+        const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+        if (myEmail) {
+          const userKey = 'printforge_payout_details_' + myEmail.replace(/[^a-z0-9]/g, '_');
+          const stored = localStorage.getItem(userKey);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            if (parsed && parsed.iban) return true;
+          }
+        }
       } catch(e) {}
       return false;
     }
@@ -33450,19 +33462,26 @@ function renderDealChat(rfpId) {
 
     function getPayoutMaskedIban() {
       try {
-        const storedDetails = localStorage.getItem('printforge_payout_details');
-        if (storedDetails) {
-          const parsed = JSON.parse(storedDetails);
-          if (parsed && parsed.iban) {
-            const raw = parsed.iban.replace(/\s+/g, '');
-            if (raw.length > 8) {
-              return raw.substring(0, 4) + '•• ••' + raw.substring(raw.length - 4);
-            }
-            return raw;
+        if (!AppState.user || !AppState.user.isLoggedIn) return '';
+        let iban = AppState.user.payoutConfig?.iban;
+        const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+        if (!iban && myEmail) {
+          const userKey = 'printforge_payout_details_' + myEmail.replace(/[^a-z0-9]/g, '_');
+          const stored = localStorage.getItem(userKey);
+          if (stored) {
+            const parsed = JSON.parse(stored);
+            iban = parsed?.iban;
           }
         }
+        if (iban) {
+          const raw = iban.replace(/\s+/g, '');
+          if (raw.length > 8) {
+            return raw.substring(0, 4) + '•• ••' + raw.substring(raw.length - 4);
+          }
+          return raw;
+        }
       } catch(e) {}
-      return 'IT•• ••34';
+      return '';
     }
     window.getPayoutMaskedIban = getPayoutMaskedIban;
 
@@ -33472,18 +33491,27 @@ function renderDealChat(rfpId) {
       const topHeader = document.getElementById('mainAppHeader');
       if (topHeader) topHeader.style.display = 'none';
       try {
-        const stored = localStorage.getItem('printforge_payout_details');
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          const holderInput = document.getElementById('payoutAccountHolder');
-          const ibanInput = document.getElementById('payoutIban');
-          const taxIdInput = document.getElementById('payoutTaxId');
-          if (holderInput && parsed.accountHolder) holderInput.value = parsed.accountHolder;
-          if (ibanInput && parsed.iban) ibanInput.value = parsed.iban;
-          if (taxIdInput && parsed.taxId) taxIdInput.value = parsed.taxId;
+        const holderInput = document.getElementById('payoutAccountHolder');
+        const ibanInput = document.getElementById('payoutIban');
+        const taxIdInput = document.getElementById('payoutTaxId');
+        if (holderInput) holderInput.value = '';
+        if (ibanInput) ibanInput.value = '';
+        if (taxIdInput) taxIdInput.value = '';
+
+        const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+        const userKey = myEmail ? ('printforge_payout_details_' + myEmail.replace(/[^a-z0-9]/g, '_')) : null;
+        const stored = userKey ? localStorage.getItem(userKey) : null;
+        let config = AppState.user?.payoutConfig;
+        if (!config && stored) {
+          try { config = JSON.parse(stored); } catch(e) {}
+        }
+
+        if (config) {
+          if (holderInput && config.accountHolder) holderInput.value = config.accountHolder;
+          if (ibanInput && config.iban) ibanInput.value = config.iban;
+          if (taxIdInput && config.taxId) taxIdInput.value = config.taxId;
         } else if (AppState.user && AppState.user.name) {
-          const holderInput = document.getElementById('payoutAccountHolder');
-          if (holderInput && !holderInput.value) holderInput.value = AppState.user.name;
+          if (holderInput) holderInput.value = AppState.user.name;
         }
       } catch(e) {}
       modal.classList.remove('hidden');
@@ -33528,6 +33556,11 @@ function renderDealChat(rfpId) {
       };
 
       try {
+        const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+        if (myEmail) {
+          const userKey = 'printforge_payout_details_' + myEmail.replace(/[^a-z0-9]/g, '_');
+          localStorage.setItem(userKey, JSON.stringify(payoutData));
+        }
         localStorage.setItem('printforge_payout_configured', 'true');
         localStorage.setItem('printforge_payout_details', JSON.stringify(payoutData));
         localStorage.setItem('printforge_stripe_connected', 'true');
