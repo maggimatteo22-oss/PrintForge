@@ -4101,18 +4101,21 @@
           </div>
 
           <!-- Filtri Rapidi Materiale -->
-          <div class="flex flex-wrap items-center gap-2">
-            <button type="button" onclick="filterExploreCategory('ALL')" id="filterBtnAll" class="px-3 py-1.5 rounded-full bg-white text-black font-cyber font-bold text-xs shadow-sm transition">
+          <div class="flex overflow-x-auto whitespace-nowrap no-scrollbar gap-2 pb-2">
+            <button type="button" onclick="filterExploreCategory('all')" id="filterBtnAll" class="px-4 py-1.5 rounded-full bg-white text-black font-cyber font-bold text-xs shadow-sm transition shrink-0 cursor-pointer">
               TUTTI
             </button>
-            <button type="button" onclick="filterExploreCategory('PETG')" id="filterBtnPetg" class="px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition">
-              PETG
+            <button type="button" onclick="filterExploreCategory('mechanics')" id="filterBtnMechanics" class="px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white font-mono text-xs transition shrink-0 cursor-pointer">
+              Meccanica &amp; Ricambi
             </button>
-            <button type="button" onclick="filterExploreCategory('PLA+')" id="filterBtnPla" class="px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition">
-              PLA+
+            <button type="button" onclick="filterExploreCategory('prototypes')" id="filterBtnPrototypes" class="px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white font-mono text-xs transition shrink-0 cursor-pointer">
+              Prototipi &amp; Case
             </button>
-            <button type="button" onclick="filterExploreCategory('CARBON')" id="filterBtnCarbon" class="px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition">
-              PA12-CF
+            <button type="button" onclick="filterExploreCategory('design')" id="filterBtnDesign" class="px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white font-mono text-xs transition shrink-0 cursor-pointer">
+              Design &amp; Arredo
+            </button>
+            <button type="button" onclick="filterExploreCategory('cosplay')" id="filterBtnCosplay" class="px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white font-mono text-xs transition shrink-0 cursor-pointer">
+              Cosplay &amp; Miniature
             </button>
           </div>
         </div>
@@ -4285,6 +4288,17 @@
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
               
               <!-- 1. MATERIALE (TUTTI I MATERIALI DELLA RETE MAKER IN OPTGROUPS) -->
+              <!-- CATEGORIA D'USO VETRINA (Richiesta Specifica) -->
+              <div class="space-y-1">
+                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioCategoryLabel">Categoria d'Uso *</label>
+                <select id="portfolioCategory" class="w-full bg-[#121217] border border-white/10 rounded-xl px-2.5 sm:px-3 py-2 text-white font-mono text-xs focus:border-white outline-none">
+                  <option value="mechanics" selected id="i18n-catOptMech">Meccanica &amp; Ricambi</option>
+                  <option value="prototypes" id="i18n-catOptProto">Prototipi &amp; Case</option>
+                  <option value="design" id="i18n-catOptDesign">Design &amp; Arredo</option>
+                  <option value="cosplay" id="i18n-catOptCosplay">Cosplay &amp; Miniature</option>
+                </select>
+              </div>
+
               <div class="space-y-1">
                 <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioMaterialLabel">Materiale *</label>
                 <select id="portfolioMaterial" class="w-full bg-[#121217] border border-white/10 rounded-xl px-2.5 sm:px-3 py-2 text-white font-mono text-xs focus:border-white outline-none">
@@ -12489,9 +12503,17 @@
         showcaseHeading: 'Esplora i Lavori dei Creator',
         showcaseSubtitle: 'Sfoglia i componenti reali realizzati con manifattura additiva dai laboratori certificati. Ordina direttamente con specifiche pre-compilate e custodia protetta Escrow.',
         filterAll: 'TUTTI',
-        filterPetg: 'PETG',
-        filterPla: 'PLA+',
-        filterCarbon: 'PA12-CF',
+        filterMechanics: 'Meccanica & Ricambi',
+        filterPrototypes: 'Prototipi & Case',
+        filterDesign: 'Design & Arredo',
+        filterCosplay: 'Cosplay & Miniature',
+        emptyWorksTitle: 'Nessun progetto in questa categoria',
+        emptyWorksSubtitle: 'I laboratori certificati non hanno ancora caricato lavori per questo filtro. Riprova selezionando TUTTI.',
+        portfolioCategoryHeading: "Categoria d'Uso *",
+        catOptMech: 'Meccanica & Ricambi',
+        catOptProto: 'Prototipi & Case',
+        catOptDesign: 'Design & Arredo',
+        catOptCosplay: 'Cosplay & Miniature',
         orderNowBtn: 'ORDINA ADESSO',
         measuresPrefix: 'Misure:',
         makerPrefix: 'Maker:',
@@ -13362,9 +13384,17 @@
         showcaseHeading: 'Explore Creator Works',
         showcaseSubtitle: 'Browse real components manufactured by certified 3D printing workshops. Order directly with pre-filled specs and Stripe Escrow buyer protection.',
         filterAll: 'ALL',
-        filterPetg: 'PETG',
-        filterPla: 'PLA+',
-        filterCarbon: 'PA12-CF',
+        filterMechanics: 'Mechanics & Parts',
+        filterPrototypes: 'Prototypes & Enclosures',
+        filterDesign: 'Design & Decor',
+        filterCosplay: 'Cosplay & Miniatures',
+        emptyWorksTitle: 'No projects in this category',
+        emptyWorksSubtitle: "Certified labs haven't uploaded works for this filter yet. Try selecting ALL.",
+        portfolioCategoryHeading: 'Use Category *',
+        catOptMech: 'Mechanics & Parts',
+        catOptProto: 'Prototypes & Enclosures',
+        catOptDesign: 'Design & Decor',
+        catOptCosplay: 'Cosplay & Miniatures',
         orderNowBtn: 'ORDER NOW',
         measuresPrefix: 'Dimensions:',
         makerPrefix: 'Maker:',
@@ -14235,9 +14265,17 @@
         showcaseHeading: 'Explora los Trabajos de Creadores',
         showcaseSubtitle: 'Explora piezas reales fabricadas con impresión 3D por talleres certificados. Pide directamente con especificaciones listas y custodia Escrow.',
         filterAll: 'TODOS',
-        filterPetg: 'PETG',
-        filterPla: 'PLA+',
-        filterCarbon: 'PA12-CF',
+        filterMechanics: 'Mecánica & Repuestos',
+        filterPrototypes: 'Prototipos & Carcasas',
+        filterDesign: 'Diseño & Decoración',
+        filterCosplay: 'Cosplay & Miniaturas',
+        emptyWorksTitle: 'Ningún proyecto en esta categoría',
+        emptyWorksSubtitle: 'Los laboratorios certificados no han subido trabajos para este filtro aún. Prueba seleccionando TODOS.',
+        portfolioCategoryHeading: 'Categoría de Uso *',
+        catOptMech: 'Mecánica & Repuestos',
+        catOptProto: 'Prototipos & Carcasas',
+        catOptDesign: 'Diseño & Decoración',
+        catOptCosplay: 'Cosplay & Miniaturas',
         orderNowBtn: 'ORDENAR AHORA',
         measuresPrefix: 'Medidas:',
         makerPrefix: 'Creador:',
@@ -15637,9 +15675,17 @@ END-ISO-10303-21;`;
         'i18n-showcaseHeading': t.showcaseHeading,
         'i18n-showcaseSubtitle': t.showcaseSubtitle,
         'filterBtnAll': t.filterAll,
-        'filterBtnPetg': t.filterPetg,
-        'filterBtnPla': t.filterPla,
-        'filterBtnCarbon': t.filterCarbon,
+        'filterBtnMechanics': t.filterMechanics,
+        'filterBtnPrototypes': t.filterPrototypes,
+        'filterBtnDesign': t.filterDesign,
+        'filterBtnCosplay': t.filterCosplay,
+        'exploreEmptyTitle': t.emptyWorksTitle,
+        'exploreEmptySubtitle': t.emptyWorksSubtitle,
+        'i18n-portfolioCategoryLabel': t.portfolioCategoryHeading,
+        'i18n-catOptMech': t.catOptMech,
+        'i18n-catOptProto': t.catOptProto,
+        'i18n-catOptDesign': t.catOptDesign,
+        'i18n-catOptCosplay': t.catOptCosplay,
         'i18n-portfolioPublishTitle': t.portfolioPublishHeading,
         'i18n-portfolioPublishSub': t.portfolioPublishBadge,
         'i18n-portfolioPhotoLabel': t.portfolioPhotoHeading,
@@ -21562,15 +21608,16 @@ END-ISO-10303-21;`;
       const inpY = document.getElementById('dimY');
       const inpZ = document.getElementById('dimZ');
 
-      const rawX = inpX?.value?.trim() || inpX?.placeholder || '80';
-      const rawY = inpY?.value?.trim() || inpY?.placeholder || '60';
-      const rawZ = inpZ?.value?.trim() || inpZ?.placeholder || '25';
+      const rawX = inpX?.value?.trim();
+      const rawY = inpY?.value?.trim();
+      const rawZ = inpZ?.value?.trim();
 
-      const valX = Math.max(5, Math.round(parseFloat(rawX)) || 80);
-      const valY = Math.max(5, Math.round(parseFloat(rawY)) || 60);
-      const valZ = Math.max(2, Math.round(parseFloat(rawZ)) || 25);
+      const valX = Math.max(5, Math.round(parseFloat(rawX || inpX?.placeholder || '80')) || 80);
+      const valY = Math.max(5, Math.round(parseFloat(rawY || inpY?.placeholder || '60')) || 60);
+      const valZ = Math.max(2, Math.round(parseFloat(rawZ || inpZ?.placeholder || '25')) || 25);
 
-      const hasDims = true;
+      // Mostra ZERO finché il cliente non inserisce le dimensioni reali
+      const hasDims = Boolean(rawX && rawY && rawZ && parseFloat(rawX) > 0 && parseFloat(rawY) > 0 && parseFloat(rawZ) > 0);
 
       const bApply = document.getElementById('budgetApplyPriceBadge');
       const bRange = document.getElementById('budgetRangeVal');
@@ -32162,18 +32209,23 @@ function renderDealChat(rfpId) {
     }
 
     function filterExploreCategory(cat) {
-      currentExploreFilter = cat || 'ALL';
-      ['All', 'Petg', 'Pla', 'Carbon'].forEach(c => {
-        const btn = document.getElementById('filterBtn' + c);
+      currentExploreFilter = (cat || 'all').toLowerCase();
+      const filterDefs = [
+        { id: 'filterBtnAll', val: 'all' },
+        { id: 'filterBtnMechanics', val: 'mechanics' },
+        { id: 'filterBtnPrototypes', val: 'prototypes' },
+        { id: 'filterBtnDesign', val: 'design' },
+        { id: 'filterBtnCosplay', val: 'cosplay' }
+      ];
+      filterDefs.forEach(item => {
+        const btn = document.getElementById(item.id);
         if (btn) {
-          const match = (cat === 'ALL' && c === 'All') ||
-                        (cat === 'PETG' && c === 'Petg') ||
-                        (cat === 'PLA+' && c === 'Pla') ||
-                        (cat === 'CARBON' && c === 'Carbon');
+          const match = (item.val === currentExploreFilter) || 
+                        (item.val === 'all' && (currentExploreFilter === 'all' || currentExploreFilter === 'ALL'));
           if (match) {
-            btn.className = "px-3 py-1.5 rounded-full bg-white text-black font-cyber font-bold text-xs shadow-sm transition";
+            btn.className = "px-4 py-1.5 rounded-full bg-white text-black font-cyber font-bold text-xs shadow-sm transition shrink-0 cursor-pointer";
           } else {
-            btn.className = "px-3 py-1.5 rounded-full bg-[#121217] hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 text-xs font-mono transition";
+            btn.className = "px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-white/70 hover:bg-white/10 hover:text-white font-mono text-xs transition shrink-0 cursor-pointer";
           }
         }
       });
@@ -32216,6 +32268,7 @@ function renderDealChat(rfpId) {
       }
       const title = (document.getElementById('portfolioTitle')?.value || '').trim();
       const desc = (document.getElementById('portfolioDesc')?.value || '').trim();
+      const category = document.getElementById('portfolioCategory')?.value || 'mechanics';
       const material = document.getElementById('portfolioMaterial')?.value || 'PETG Tecnico';
       const color = document.getElementById('portfolioColor')?.value || 'Nero Cyber';
       let colorHex = document.getElementById('portfolioColorHexDisplay')?.innerText?.trim();
@@ -32243,6 +32296,7 @@ function renderDealChat(rfpId) {
         id: workId,
         title: title,
         description: desc,
+        category: category,
         material: material,
         color: color,
         colorHex: colorHex,
@@ -32358,7 +32412,7 @@ function renderDealChat(rfpId) {
       if (!container) return;
 
       const works = AppState.portfolioWorks || [];
-      const filter = currentExploreFilter || 'ALL';
+      const filter = (currentExploreFilter || 'all').toLowerCase();
 
       // Recupera gli ID e i titoli delle opere accettate/commissionate/vendute salvate in localStorage
       let hiddenWorkIds = [];
@@ -32397,8 +32451,7 @@ function renderDealChat(rfpId) {
       const filtered = works.filter(w => {
         if (!w || !w.id) return false;
 
-        // REGOLA ASSOLUTA: NON MOSTRARE MAI AI CLIENTI OPERE GIA' COMMISSIONATE / ACCETTATE / VENDUTE,
-        // ANCHE SE IL CLIENTE ELIMINA LA RICHIESTA DAL PROPRIO SCHERMO!
+        // REGOLA ASSOLUTA: NON MOSTRARE MAI AI CLIENTI OPERE GIA' COMMISSIONATE / ACCETTATE / VENDUTE
         if (w.isAccepted || w.isCommissioned || w.isTaken || w.isSold || w.isCompleted) return false;
         if (hiddenWorkIds.includes(w.id)) return false;
         if (takenWorkIds.has(w.id)) return false;
@@ -32410,47 +32463,78 @@ function renderDealChat(rfpId) {
           localStorage.getItem('printforge_completed_work_' + w.id) === 'true'
         )) return false;
 
-        if (filter === 'ALL') return true;
-        const mat = (w.material || '').toUpperCase();
-        if (filter === 'PETG') return mat.includes('PETG');
-        if (filter === 'PLA+') return mat.includes('PLA');
-        if (filter === 'CARBON') return mat.includes('CF') || mat.includes('CARBON') || mat.includes('PA12');
-        return true;
+        // FILTRO PER CATEGORIA D'USO (all, mechanics, prototypes, design, cosplay)
+        if (filter === 'all' || filter === 'ALL') return true;
+
+        const workCat = (w.category || '').toLowerCase();
+        const mat = (w.material || '').toLowerCase();
+        const title = (w.title || '').toLowerCase();
+        const desc = (w.description || '').toLowerCase();
+
+        if (filter === 'mechanics') {
+          return workCat === 'mechanics' || workCat.includes('meccan') || workCat.includes('ricamb') ||
+                 mat.includes('petg') || mat.includes('nylon') || mat.includes('pa12') || mat.includes('cf') || mat.includes('carbon') || mat.includes('inox') || mat.includes('alluminio') || mat.includes('metallo') || mat.includes('abs') || mat.includes('peek') ||
+                 title.includes('meccan') || title.includes('ricamb') || title.includes('ingranagg') || title.includes('flangia') || desc.includes('meccan') || desc.includes('ricamb');
+        }
+        if (filter === 'prototypes') {
+          return workCat === 'prototypes' || workCat.includes('prototip') || workCat.includes('case') ||
+                 mat.includes('pla') || mat.includes('resina tough') ||
+                 title.includes('prototip') || title.includes('case') || title.includes('box') || title.includes('scocca') || desc.includes('prototip') || desc.includes('case');
+        }
+        if (filter === 'design') {
+          return workCat === 'design' || workCat.includes('design') || workCat.includes('arredo') ||
+                 mat.includes('asa') || mat.includes('pla') || mat.includes('legno') ||
+                 title.includes('design') || title.includes('arredo') || title.includes('lampada') || title.includes('vaso') || desc.includes('design') || desc.includes('arredo');
+        }
+        if (filter === 'cosplay') {
+          return workCat === 'cosplay' || workCat.includes('cosplay') || workCat.includes('miniatur') ||
+                 mat.includes('resina') || mat.includes('tpu') ||
+                 title.includes('cosplay') || title.includes('miniatur') || title.includes('maschera') || title.includes('elmo') || desc.includes('cosplay') || desc.includes('miniatur');
+        }
+        return workCat === filter;
       });
 
+      // GESTIONE STATO VUOTO (EMPTY STATE SENZA UNDEFINED)
       if (filtered.length === 0) {
+        const langObj = (typeof i18n !== 'undefined' && (i18n[currentLang] || i18n.it)) || {};
+        const emptyTitle = langObj.emptyWorksTitle || (currentLang === 'en' ? 'No projects in this category' : currentLang === 'es' ? 'Ningún proyecto en esta categoría' : 'Nessun progetto in questa categoria');
+        const emptySubtitle = langObj.emptyWorksSubtitle || (currentLang === 'en' ? "Certified labs haven't uploaded works for this filter yet. Try selecting ALL." : currentLang === 'es' ? 'Los laboratorios certificados no han subido trabajos para este filtro aún. Prueba seleccionando TODOS.' : 'I laboratori certificati non hanno ancora caricato lavori per questo filtro. Riprova selezionando TUTTI.');
+
         container.innerHTML = `
           <div class="col-span-full p-12 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
             <i data-lucide="layers" class="w-8 h-8 text-zinc-500 mx-auto"></i>
-            <h4 id="exploreEmptyTitle" class="font-cyber font-bold text-white text-sm">${(i18n[currentLang] || i18n.it).emptyWorksTitle}</h4>
-            <p id="exploreEmptySubtitle" class="text-xs font-mono text-zinc-400">${(i18n[currentLang] || i18n.it).emptyWorksSubtitle}</p>
+            <h4 id="exploreEmptyTitle" class="font-cyber font-bold text-white text-sm">${emptyTitle}</h4>
+            <p id="exploreEmptySubtitle" class="text-xs font-mono text-zinc-400 max-w-md mx-auto">${emptySubtitle}</p>
           </div>
         `;
         if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
         return;
       }
 
+      // RENDERING DELLE CARD (CON BADGE TECNICO MATERIALE E DATI PROTETTI DA FALLBACK)
       container.innerHTML = filtered.map(w => {
-        const safeId = escapeHtml(w.id);
-        const safeTitle = escapeHtml(w.title);
-        const safePrice = escapeHtml(w.price || '€ 0,00');
-        const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
-        const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
-        const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
-        const photo = w.photoUrl || '/images/cube.jpg';
+        const safeId = escapeHtml(w?.id || '');
+        const safeTitle = escapeHtml(w?.title || (currentLang === 'en' ? 'Custom Component' : 'Componente Personalizzato'));
+        const safePrice = escapeHtml(w?.price || '€ 0,00');
+        const safeMaterial = escapeHtml(w?.material || 'PETG Tecnico');
+        const safeDims = escapeHtml(w?.dimensions || '80 × 60 × 25 mm');
+        const safeCreator = escapeHtml(w?.creatorName || 'Maker Certificato');
+        const safeDesc = escapeHtml(w?.description || '');
+        const photo = (w && w.photoUrl) ? w.photoUrl : '/images/cube.jpg';
 
         return `
           <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/25 transition overflow-hidden shadow-xl flex flex-col justify-between group">
             <div>
-              <!-- Immagine 2D Cliccabile -->
+              <!-- Immagine 2D Cliccabile con Badge Tecnico Materiale In Alto a Destra -->
               <div onclick="openItemDetailModal('${safeId}')" class="relative w-full h-48 bg-black/60 overflow-hidden cursor-pointer flex items-center justify-center border-b border-white/10">
                 <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
-                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[10px] font-mono text-white font-bold">
+                <span class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/85 backdrop-blur-md border border-white/20 text-[10px] font-mono text-emerald-400 font-bold shadow-md flex items-center gap-1.5">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
                   ${safeMaterial}
                 </span>
               </div>
 
-              <!-- Dettagli -->
+              <!-- Dettagli Dell'Opera -->
               <div class="p-4 space-y-2">
                 <div class="flex items-center justify-between">
                   <span class="text-[10px] font-mono text-zinc-400">${(i18n[currentLang] || i18n.it).makerPrefix || "Maker:"} <strong class="text-white">${safeCreator}</strong></span>
@@ -32459,9 +32543,10 @@ function renderDealChat(rfpId) {
                 <h3 onclick="openItemDetailModal('${safeId}')" class="text-sm font-cyber font-bold text-white hover:text-emerald-400 transition cursor-pointer line-clamp-1">
                   ${safeTitle}
                 </h3>
-                <p class="text-xs text-zinc-400 line-clamp-2 font-sans">${escapeHtml(w.description || '')}</p>
-                <div class="text-[10px] font-mono text-zinc-500 pt-1">
+                <p class="text-xs text-zinc-400 line-clamp-2 font-sans">${safeDesc}</p>
+                <div class="flex items-center justify-between text-[10px] font-mono text-zinc-500 pt-1 border-t border-white/5">
                   <span>${(i18n[currentLang] || i18n.it).measuresPrefix || "Misure:"} ${safeDims}</span>
+                  <span class="text-zinc-400 font-semibold">${safeMaterial}</span>
                 </div>
               </div>
             </div>
@@ -32718,133 +32803,9 @@ function renderDealChat(rfpId) {
     }
     window.deletePortfolioWork = deletePortfolioWork;
 
-    function renderExploreShowcase() {
-      const container = document.getElementById('exploreCardsContainer');
-      if (!container) return;
+    
+    // (Duplicate renderExploreShowcase removed - unified above)
 
-      const works = AppState.portfolioWorks || [];
-      const filter = currentExploreFilter || 'ALL';
-
-      // Recupera gli ID e i titoli delle opere accettate/commissionate/vendute salvate in localStorage
-      let hiddenWorkIds = [];
-      let soldTitles = [];
-      try {
-        hiddenWorkIds = JSON.parse(localStorage.getItem('printforge_hidden_showcase_works') || '[]');
-        soldTitles = JSON.parse(localStorage.getItem('printforge_sold_showcase_titles') || '[]');
-      } catch(e) {}
-
-      // Identifica qualsiasi opera associata a una commessa già accettata, in lavorazione, completata o archiviata
-      const takenWorkIds = new Set(hiddenWorkIds);
-      const takenWorkTitles = new Set(soldTitles.map(t => String(t).trim().toLowerCase()));
-
-      (AppState.broadcastRequests || []).forEach(r => {
-        if (!r || !r.id || r.isRejected) return;
-        const isTakenOrDone = Boolean(
-          r.isAccepted === true ||
-          r.isCompleted === true ||
-          r.isDelivered === true ||
-          r.deletedByClient === true ||
-          r.hiddenForClient === true ||
-          (typeof r.status === 'string' && (
-            r.status.toUpperCase().includes('LAVORAZION') ||
-            r.status.toUpperCase().includes('COMPLETAT') ||
-            r.status.toUpperCase().includes('CONSEGNAT') ||
-            r.status.toUpperCase().includes('SVINCOLAT')
-          )) ||
-          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
-        );
-        if (isTakenOrDone) {
-          if (r.showcaseWorkId) takenWorkIds.add(r.showcaseWorkId);
-          if (r.title) takenWorkTitles.add(r.title.trim().toLowerCase());
-        }
-      });
-
-      const filtered = works.filter(w => {
-        if (!w || !w.id) return false;
-
-        // REGOLA ASSOLUTA: NON MOSTRARE MAI AI CLIENTI OPERE GIA' COMMISSIONATE / ACCETTATE / VENDUTE,
-        // ANCHE SE IL CLIENTE ELIMINA LA RICHIESTA DAL PROPRIO SCHERMO!
-        if (w.isAccepted || w.isCommissioned || w.isTaken || w.isSold || w.isCompleted) return false;
-        if (hiddenWorkIds.includes(w.id)) return false;
-        if (takenWorkIds.has(w.id)) return false;
-        if (w.title && takenWorkTitles.has(w.title.trim().toLowerCase())) return false;
-        if (w.title && soldTitles.includes(w.title.trim().toLowerCase())) return false;
-        if (typeof localStorage !== 'undefined' && (
-          localStorage.getItem('printforge_work_accepted_' + w.id) === 'true' ||
-          localStorage.getItem('printforge_work_sold_' + w.id) === 'true' ||
-          localStorage.getItem('printforge_completed_work_' + w.id) === 'true'
-        )) return false;
-
-        if (filter === 'ALL') return true;
-        const mat = (w.material || '').toUpperCase();
-        if (filter === 'PETG') return mat.includes('PETG');
-        if (filter === 'PLA+') return mat.includes('PLA');
-        if (filter === 'CARBON') return mat.includes('CF') || mat.includes('CARBON') || mat.includes('PA12');
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `
-          <div class="col-span-full p-12 text-center rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
-            <i data-lucide="layers" class="w-8 h-8 text-zinc-500 mx-auto"></i>
-            <h4 id="exploreEmptyTitle" class="font-cyber font-bold text-white text-sm">${(i18n[currentLang] || i18n.it).emptyWorksTitle}</h4>
-            <p id="exploreEmptySubtitle" class="text-xs font-mono text-zinc-400">${(i18n[currentLang] || i18n.it).emptyWorksSubtitle}</p>
-          </div>
-        `;
-        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-        return;
-      }
-
-      container.innerHTML = filtered.map(w => {
-        const safeId = escapeHtml(w.id);
-        const safeTitle = escapeHtml(w.title);
-        const safePrice = escapeHtml(w.price || '€ 0,00');
-        const safeMaterial = escapeHtml(w.material || 'PETG Tecnico');
-        const safeDims = escapeHtml(w.dimensions || '80 × 60 × 25 mm');
-        const safeCreator = escapeHtml(w.creatorName || 'Maker Certificato');
-        const photo = w.photoUrl || '/images/cube.jpg';
-
-        return `
-          <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/25 transition overflow-hidden shadow-xl flex flex-col justify-between group">
-            <div>
-              <!-- Immagine 2D Cliccabile -->
-              <div onclick="openItemDetailModal('${safeId}')" class="relative w-full h-48 bg-black/60 overflow-hidden cursor-pointer flex items-center justify-center border-b border-white/10">
-                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
-                <span class="absolute top-2.5 right-2.5 px-2 py-0.5 rounded-full bg-black/80 backdrop-blur-md border border-white/15 text-[10px] font-mono text-white font-bold">
-                  ${safeMaterial}
-                </span>
-              </div>
-
-              <!-- Dettagli -->
-              <div class="p-4 space-y-2">
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-mono text-zinc-400">${(i18n[currentLang] || i18n.it).makerPrefix || "Maker:"} <strong class="text-white">${safeCreator}</strong></span>
-                  <span class="text-sm font-mono font-bold text-emerald-400">${safePrice}</span>
-                </div>
-                <h3 onclick="openItemDetailModal('${safeId}')" class="text-sm font-cyber font-bold text-white hover:text-emerald-400 transition cursor-pointer line-clamp-1">
-                  ${safeTitle}
-                </h3>
-                <p class="text-xs text-zinc-400 line-clamp-2 font-sans">${escapeHtml(w.description || '')}</p>
-                <div class="text-[10px] font-mono text-zinc-500 pt-1">
-                  <span>${(i18n[currentLang] || i18n.it).measuresPrefix || "Misure:"} ${safeDims}</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Pulsante Alto Contrasto Ordina Adesso -->
-            <div class="p-4 pt-0">
-              <button type="button" onclick="orderFromShowcase('${safeId}')" class="w-full py-2.5 rounded-xl bg-white text-black hover:bg-zinc-200 font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
-                <i data-lucide="zap" class="w-3.5 h-3.5 text-black"></i>
-                <span>${(i18n[currentLang] || i18n.it).orderNowBtn || "ORDINA ADESSO"}</span>
-              </button>
-            </div>
-          </div>
-        `;
-      }).join('');
-
-      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-    }
-    window.renderExploreShowcase = renderExploreShowcase;
 
         function openEscrowRoomForOrder(orderId) {
       const order = (AppState.broadcastRequests || []).find(r => r && r.id === orderId);
@@ -32862,19 +32823,36 @@ function renderDealChat(rfpId) {
     window.openEscrowRoomForOrder = openEscrowRoomForOrder;
 
     function openItemDetailModal(workId) {
-      const work = (AppState.portfolioWorks || []).find(w => w.id === workId);
+      const work = (AppState.portfolioWorks || []).find(w => w && w.id === workId);
       if (!work) return;
 
       const modal = document.getElementById('modalItemDetail');
       if (!modal) return;
 
-      document.getElementById('itemDetailId').innerText = '#' + work.id;
-      document.getElementById('itemDetailTitle').innerText = work.title;
-      document.getElementById('itemDetailDesc').innerText = work.description;
-      document.getElementById('itemDetailPhoto').src = work.photoUrl || '/images/cube.jpg';
+      const catMap = {
+        'mechanics': 'Meccanica & Ricambi',
+        'prototypes': 'Prototipi & Case',
+        'design': 'Design & Arredo',
+        'cosplay': 'Cosplay & Miniature'
+      };
+
+      const titleEl = document.getElementById('itemDetailTitle');
+      if (titleEl) titleEl.innerText = work.title || 'Componente 3D';
+
+      const idEl = document.getElementById('itemDetailId');
+      if (idEl) idEl.innerText = '#' + (work.id || 'SHOWCASE');
+
+      const descEl = document.getElementById('itemDetailDesc');
+      if (descEl) descEl.innerText = work.description || 'Nessuna descrizione specificata.';
+
+      const photoEl = document.getElementById('itemDetailPhoto');
+      if (photoEl) photoEl.src = work.photoUrl || '/images/cube.jpg';
 
       const catBadge = document.getElementById('itemDetailCategoryBadge');
-      if (catBadge) catBadge.innerText = work.material || 'SCHEDA TECNICA';
+      if (catBadge) {
+        const cKey = (work.category || '').toLowerCase();
+        catBadge.innerText = catMap[cKey] || work.category || work.material || 'SCHEDA TECNICA';
+      }
       if (document.getElementById('itemDetailMaterial')) document.getElementById('itemDetailMaterial').innerText = work.material || 'PETG Tecnico';
       if (document.getElementById('itemDetailColor')) document.getElementById('itemDetailColor').innerText = work.color || 'Nero Cyber';
       if (document.getElementById('itemDetailDimensions')) document.getElementById('itemDetailDimensions').innerText = work.dimensions || '80 × 60 × 25 mm';
