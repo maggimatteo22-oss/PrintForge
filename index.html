@@ -597,8 +597,8 @@
       border: 1px solid rgba(0, 0, 0, 0.15) !important;
     }
 
-    /* FOOTER E BANNER COOKIE TOTALMENTE NASCOSTI: NON DEVONO MAI SOPRAFFARE LO SCHERMO */
-    footer, #mainAppFooter, #cookieConsentBanner {
+    /* BANNER COOKIE NASCOSTO */
+    #cookieConsentBanner {
       display: none !important;
       visibility: hidden !important;
       height: 0 !important;
@@ -4381,8 +4381,54 @@
 
               <!-- 6. PREZZO INDICATIVO -->
               <div class="space-y-1">
-                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioPriceLabel">Prezzo Indicativo *</label>
-                <input type="text" id="portfolioPrice" value="" placeholder="es. € 45,00" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none font-bold" />
+                <div class="flex items-center justify-between">
+                  <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioPriceLabel">Tuo Compenso Netto Maker *</label>
+                  <span class="text-[9px] font-mono text-zinc-500 font-bold" id="i18n-portfolioPriceSub">Escluso Tassa Stripe</span>
+                </div>
+                <div class="relative flex items-center">
+                  <span class="absolute left-3 top-2.5 text-xs font-mono text-zinc-400 select-none font-bold">€</span>
+                  <input type="number" id="portfolioPrice" min="1" step="0.5" value="" placeholder="es. 35.00" required oninput="updateCreatorPriceWithStripe()" onchange="updateCreatorPriceWithStripe()" class="w-full bg-[#121217] border border-white/10 rounded-xl pl-7 pr-3 py-2 text-white font-mono text-xs focus:border-white outline-none font-bold" />
+                </div>
+              </div>
+            </div>
+
+            <!-- RIQUADRO OPZIONE 2: TASSA STRIPE ESCROW & CALCOLO AUTOMATICO PREZZO IN VETRINA -->
+            <div id="creatorStripeNoticeBox" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0c1424] via-[#09101c] to-[#070b14] border border-blue-500/40 text-blue-200 font-sans text-xs space-y-2.5 shadow-xl mt-3">
+              <div class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                  <div class="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
+                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                  </div>
+                  <div>
+                    <span class="text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-creatorStripeTitle">Garanzia Stripe Escrow // Prezzo Finale Vetrina</span>
+                    <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-creatorStripeSubtitle">OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo</span>
+                  </div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0">OPZIONE 2: 1,5% + € 0,25</span>
+              </div>
+
+              <!-- Griglia Calcolo Dinamico al Centesimo: Tuo Compenso Maker | + Tassa Stripe (1,5% + 0,25€) | Prezzo Pubblicato in Vetrina -->
+              <div class="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-blue-500/30 grid grid-cols-3 gap-2 text-center font-mono text-[10.5px] shadow-inner">
+                <div class="space-y-0.5">
+                  <span class="text-zinc-400 block text-[9px] uppercase tracking-wider" id="i18n-creatorColNet">Tuo Compenso</span>
+                  <span id="creatorNoticeNetPrice" class="text-white font-bold block">€ 0,00</span>
+                </div>
+                <div class="space-y-0.5 border-x border-white/10 px-1">
+                  <span class="text-blue-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-creatorColFee">+ Tassa Stripe</span>
+                  <span id="creatorNoticeStripeFee" class="text-blue-300 font-bold block">+ € 0,00</span>
+                </div>
+                <div class="space-y-0.5">
+                  <span class="text-emerald-400 block text-[9px] uppercase tracking-wider font-bold" id="i18n-creatorColTotal">Prezzo in Vetrina</span>
+                  <span id="creatorNoticePublicPrice" class="text-emerald-400 font-bold block">€ 0,00</span>
+                </div>
+              </div>
+
+              <div class="text-[10.5px] text-zinc-300 font-sans leading-relaxed flex items-start gap-2 pt-1 border-t border-white/10" id="i18n-creatorStripeNoticeText">
+                <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
+                <div>
+                  La tariffa ufficiale di Stripe Escrow (<b>1,5% + € 0,25</b>) viene sommata automaticamente: l'opera verrà pubblicata in Vetrina al prezzo calcolato di <strong class="text-emerald-400 font-mono" id="creatorStripeNoticeTotalInline">€ 0,00</strong>.
+                  <span class="text-zinc-400 block mt-1">🔒 Il compenso netto (<strong class="text-white font-mono" id="creatorStripeNoticeNetInline">€ 0,00</strong>) ti verrà versato al 100% sul conto IBAN/Stripe collegato subito dopo l'approvazione del collaudo centesimale con calibro.</span>
+                </div>
               </div>
             </div>
 
@@ -5404,32 +5450,237 @@
       </div>
 
 
-      <!-- Telemetria Rete P2P Live (Spostata dalla Navbar in Fondo alla Pagina Home) -->
-      <div class="flex items-center justify-center pt-3 pb-1">
-        <div class="inline-flex items-center gap-2.5 sm:gap-3 py-1.5 px-4 rounded-full bg-[#111216] border border-white/15 text-xs font-mono shadow-lg hover:border-white/30 transition">
-          <div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition" onclick="navigateTo('creator-requests')" title="Richieste di Stampa Live nel Network">
-            <span class="relative flex h-2 w-2 shrink-0">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-white"></span>
-            </span>
-            <span class="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider whitespace-nowrap text-zinc-300">
-              <span id="i18n-navLiveReqLabel">RICHIESTE LIVE:</span>
-            </span>
-            <span class="text-xs sm:text-sm font-display font-black text-white nav-live-req-count" id="navLiveRequestsCount">0</span>
+      
+      <!-- Burocrazia Ufficiale (Top Trust Badges, Legal & Regulatory Grid) - Visibile SOLO nella Pagina Home -->
+<footer id="mainAppFooter" class="mt-20 border-t border-white/[0.08] bg-[#060608]/90 backdrop-blur-xl relative z-10 text-xs font-sans">
+    
+    <!-- Top Trust & Security Badges Bar -->
+    <div class="border-b border-white/[0.06] py-5 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
+          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
+            <i data-lucide="shield-check" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
+            <span id="footerTrustEscrow">Custodia Escrow Crittografica Stripe Connect</span>
           </div>
-
-          <span class="w-[1px] h-3.5 bg-white/20 inline-block"></span>
-
-          <div class="flex items-center gap-1.5 cursor-pointer hover:opacity-80 transition" onclick="navigateTo('creator-hub')" title="Creator e Stampatori Attivi">
-            <span class="relative flex h-2 w-2 shrink-0">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2 w-2 bg-cyan-500"></span>
-            </span>
-            <span class="text-[10px] sm:text-[11px] uppercase font-bold tracking-wider whitespace-nowrap nav-live-creators-label text-zinc-400" id="i18n-navLiveCreatorsLabel">CREATOR ATTIVI:</span>
-            <span class="text-xs sm:text-sm font-display font-black text-cyan-400 nav-live-creators-count" id="navLiveCreatorsCount">0</span>
+          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
+            <i data-lucide="lock" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
+            <span id="footerTrustNda">Protezione NDA &amp; Segreto Industriale File CAD</span>
+          </div>
+          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
+            <i data-lucide="award" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
+            <span id="footerTrustIso">Tolleranze Meccaniche ISO 2768-mK / DIN 16742</span>
+          </div>
+          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
+            <i data-lucide="badge-check" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
+            <span id="footerTrustQc">Collaudo Centesimale a 3 Foto Verificato</span>
           </div>
         </div>
+        <div class="flex items-center gap-2 text-[9px] sm:text-[10px] font-mono text-zinc-400 bg-white/5 px-2.5 sm:px-3 py-1.5 rounded-full border border-white/10 max-w-full footer-network-pill">
+          <span class="w-2 h-2 rounded-full bg-white footer-status-dot animate-pulse shrink-0"></span>
+          <span id="footerNetworkStatus" class="truncate">NETWORK STATUS: OPERATIVO // BETA TESTER NETWORK (NODI MAKER VERIFICATI)</span>
+        </div>
       </div>
+    </div>
+
+    <!-- Main Multi-Column Legal, Bureaucracy & Resource Grid -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
+        
+        <!-- Column 1: Company Profile, Logo & Regulatory Entity (Spans 2 cols on lg) -->
+        <div class="lg:col-span-2 space-y-4">
+          <div class="flex items-center gap-3">
+            <!-- Option 03: Monogramma Meccanico PF a Incastro -->
+            <div class="brand-logo-tile w-9 h-9 rounded-xl bg-gradient-to-b from-[#18191E] via-[#101014] to-[#08080A] border border-white/20 flex items-center justify-center text-white shadow-sm shrink-0 p-1.5">
+              <svg class="w-full h-full" viewBox="0 0 140 140" fill="none">
+                <path d="M 38 26 L 76 26 C 90 26 98 34 98 46 C 98 58 90 66 76 66 L 56 66 L 56 114 L 38 114 Z M 56 42 L 56 50 L 74 50 C 80 50 82 48 82 46 C 82 44 80 42 74 42 Z" fill="#FFFFFF" />
+                <path d="M 64 68 L 102 68 L 102 84 L 64 84 Z" fill="#E4E4E7" />
+                <path d="M 64 92 L 92 92 L 92 106 L 64 106 Z" fill="#A1A1AA" />
+              </svg>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="font-display font-extrabold text-lg tracking-tight text-white">Print<span class="text-zinc-400 font-bold">Forge</span></span>
+                <span class="text-[9px] font-mono tracking-widest text-zinc-300 font-bold uppercase bg-white/10 border border-white/15 px-1.5 py-0.2 rounded-full">P2P PROTOCOL</span>
+              </div>
+              <span class="text-[10px] font-mono text-zinc-400 block">Decentralized Manufacturing &amp; Escrow Network</span>
+            </div>
+          </div>
+
+          <p id="footerDesc" class="text-xs text-zinc-400 leading-relaxed font-sans max-w-sm">
+            Piattaforma peer-to-peer di intermediazione tecnologica per la manifattura additiva. Pagamenti protetti da custodia fiduciaria Stripe Escrow con svincolo automatico alla consegna certificata del corriere previa verifica delle 3 foto di collaudo e logistica integrata API Packlink PRO con calcolo del peso volumetrico.
+          </p>
+
+          <!-- Company Registry Data (Dati Societari Completi & Burocrazia Ufficiale MVP) -->
+          <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] space-y-2 font-mono text-[11px] text-zinc-400">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
+              <span id="footerFrameworkLabel" class="text-zinc-500 uppercase">Inquadramento:</span>
+              <span id="footerFrameworkVal" class="text-zinc-200 font-bold">Piattaforma P2P // MVP Launch</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
+              <span id="footerTaxModelLabel" class="text-zinc-500 uppercase">Modello Fiscale:</span>
+              <span id="footerTaxModelVal" class="text-zinc-200 font-semibold">Regime Forfettario &amp; Prest. Occasionale (Art. 2222 C.C.)</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
+              <span id="footerCustodyLabel" class="text-zinc-500 uppercase">Custodia Fondi:</span>
+              <span id="footerCustodyVal" class="text-zinc-200">Stripe Connect Escrow (Nessun fondo trattenuto)</span>
+            </div>
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
+              <span id="footerLogisticsLabel" class="text-zinc-500 uppercase">Logistica B2B:</span>
+              <span id="footerLogisticsVal" class="text-zinc-200">Packlink PRO (Pay-per-shipment integrata)</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span id="footerSupportLabel" class="text-zinc-500 uppercase">Supporto &amp; Privacy:</span>
+              <span class="text-zinc-300 truncate">legal@printforge.dev // privacy@printforge.dev</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Column 2: Contratti, Escrow & Dispute -->
+        <div class="space-y-3">
+          <h4 id="footerColContracts" class="font-cyber font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5">
+            <span class="text-emerald-400">//</span> CONTRATTI &amp; ESCROW
+          </h4>
+          <ul class="space-y-2 text-zinc-400 font-sans text-xs">
+            <li>
+              <button type="button" onclick="openLegalModal('terms')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="file-text" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
+                <span id="footerLinkTerms" class="group-hover:translate-x-0.5 transition-transform">Termini &amp; Condizioni d'Uso (P2P)</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('escrow')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="shield" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
+                <span id="footerLinkEscrow" class="group-hover:translate-x-0.5 transition-transform">Protocollo Escrow &amp; Svincolo alla Consegna</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('dispute')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="scale" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
+                <span id="footerLinkDispute" class="group-hover:translate-x-0.5 transition-transform">Risoluzione Dispute &amp; Rilievi Calibro</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('refund')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
+                <span id="footerLinkRefund" class="group-hover:translate-x-0.5 transition-transform">Ristampa Gratuita o Rimborso 100%</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('maker-tax')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="receipt" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
+                <span id="footerLinkMakerTax" class="group-hover:translate-x-0.5 transition-transform">Fisco Maker: Prestazione Occasionale &amp; P.IVA</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 3: Privacy, Cookie & Segreto Industriale (GDPR) -->
+        <div class="space-y-3">
+          <h4 id="footerColPrivacy" class="font-cyber font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5">
+            <span class="text-cyan-400">//</span> PRIVACY &amp; COOKIE (GDPR)
+          </h4>
+          <ul class="space-y-2 text-zinc-400 font-sans text-xs">
+            <li>
+              <button type="button" onclick="openLegalModal('privacy')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="lock" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
+                <span id="footerLinkPrivacy" class="group-hover:translate-x-0.5 transition-transform">Informativa Privacy (Reg. UE 2016/679)</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('cookies')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="cookie" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
+                <span id="footerLinkCookies" class="group-hover:translate-x-0.5 transition-transform">Cookie Policy &amp; Registro Tecnico</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openCookieBanner(true)" class="text-cyan-400 hover:text-cyan-300 font-mono font-semibold transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="sliders" class="w-3.5 h-3.5 shrink-0"></i>
+                <span id="footerLinkManageCookies" class="group-hover:translate-x-0.5 transition-transform">Gestisci Preferenze Cookie</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('nda')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="file-key" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
+                <span id="footerLinkNda" class="group-hover:translate-x-0.5 transition-transform">Tutela Proprietà Intellettuale CAD</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('gdpr-rights')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="user-check" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
+                <span id="footerLinkGdpr" class="group-hover:translate-x-0.5 transition-transform">Diritti GDPR &amp; Cancellazione Dati</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Column 4: Standard Tecnici, Sicurezza & Certificazioni -->
+        <div class="space-y-3">
+          <h4 id="footerColLogistics" class="font-cyber font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5">
+            <span class="text-amber-400">//</span> LOGISTICA &amp; STANDARD
+          </h4>
+          <ul class="space-y-2 text-zinc-400 font-sans text-xs">
+            <li>
+              <button type="button" onclick="openLegalModal('packlink-shipping')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="truck" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 shrink-0"></i>
+                <span id="footerLinkPacklink" class="group-hover:translate-x-0.5 transition-transform">Spedizioni Packlink PRO &amp; Peso Volumetrico</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('tolerances')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="compass" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 shrink-0"></i>
+                <span id="footerLinkTolerances" class="group-hover:translate-x-0.5 transition-transform">Standard Tolleranze ISO 2768-mK</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('materials')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 shrink-0"></i>
+                <span id="footerLinkMaterials" class="group-hover:translate-x-0.5 transition-transform">Conformità Materiali RoHS / REACH</span>
+              </button>
+            </li>
+            <li>
+              <button type="button" onclick="openLegalModal('weapons-ban')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-rose-400 shrink-0"></i>
+                <span id="footerLinkWeapons" class="group-hover:translate-x-0.5 transition-transform">Divieto Armi (Zero Weapons Policy)</span>
+              </button>
+            </li>
+            <li>
+              <a href="mailto:support@printforge.dev" class="hover:text-white transition flex items-center gap-2 group w-full">
+                <i data-lucide="help-circle" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
+                <span id="footerLinkSupport" class="group-hover:translate-x-0.5 transition-transform">Assistenza Utenti &amp; Segnalazioni</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Bottom Regulatory Bar & Copyright -->
+    <div class="border-t border-white/[0.06] py-6 px-4 sm:px-6 lg:px-8">
+      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+        <div class="space-y-1">
+          <p id="footerCopyright" class="text-[11px] text-zinc-400 font-mono">
+            &copy; 2026 PrintForge P2P Platform // Intermediazione Tecnologica Manifatturiera. Piattaforma per maker e clienti privati / P.IVA.
+          </p>
+          <p id="footerStripeLegal" class="text-[10px] text-zinc-500 leading-normal max-w-2xl">
+            I servizi di pagamento e la custodia fiduciaria escrow sono erogati tramite Stripe Payments Europe, Ltd., istituto di moneta elettronica vigilato dalla Central Bank of Ireland (rif. C187865). Nessun dato sensibile di pagamento è trattato o memorizzato su server PrintForge.
+          </p>
+        </div>
+
+        <div class="flex items-center gap-3 shrink-0 flex-wrap justify-center sm:justify-end">
+          <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-400">
+            <i data-lucide="server" class="w-3 h-3 text-emerald-400 shrink-0"></i>
+            <span id="footerDatacenter">Datacenter UE (Francoforte) // 100% GDPR</span>
+          </div>
+          <button type="button" onclick="openLegalModal('cookies')" id="footerExtendedCookies" class="text-[10px] font-mono text-zinc-400 hover:text-white underline transition">
+            Informativa Estesa Cookie
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </footer>
+
 
     </section>
 
@@ -7935,234 +8186,9 @@
     </div>
   </div>
 
-  <footer id="mainAppFooter" class="hidden" style="display: none !important;">
-    
-    <!-- Top Trust & Security Badges Bar -->
-    <div class="border-b border-white/[0.06] py-5 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
-        <div class="flex items-center gap-4 sm:gap-6 flex-wrap">
-          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
-            <i data-lucide="shield-check" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
-            <span id="footerTrustEscrow">Custodia Escrow Crittografica Stripe Connect</span>
-          </div>
-          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
-            <i data-lucide="lock" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
-            <span id="footerTrustNda">Protezione NDA &amp; Segreto Industriale File CAD</span>
-          </div>
-          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
-            <i data-lucide="award" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
-            <span id="footerTrustIso">Tolleranze Meccaniche ISO 2768-mK / DIN 16742</span>
-          </div>
-          <div class="flex items-center gap-2 text-zinc-300 font-mono text-[11px]">
-            <i data-lucide="badge-check" class="w-4 h-4 text-white footer-trust-icon shrink-0"></i>
-            <span id="footerTrustQc">Collaudo Centesimale a 3 Foto Verificato</span>
-          </div>
-        </div>
-        <div class="flex items-center gap-2 text-[9px] sm:text-[10px] font-mono text-zinc-400 bg-white/5 px-2.5 sm:px-3 py-1.5 rounded-full border border-white/10 max-w-full footer-network-pill">
-          <span class="w-2 h-2 rounded-full bg-white footer-status-dot animate-pulse shrink-0"></span>
-          <span id="footerNetworkStatus" class="truncate">NETWORK STATUS: OPERATIVO // BETA TESTER NETWORK (NODI MAKER VERIFICATI)</span>
-        </div>
-      </div>
-    </div>
+  
+  <!-- (Footer Burocrazia spostato all'interno di view-client-home per essere visibile SOLO nella pagina Home) -->
 
-    <!-- Main Multi-Column Legal, Bureaucracy & Resource Grid -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-        
-        <!-- Column 1: Company Profile, Logo & Regulatory Entity (Spans 2 cols on lg) -->
-        <div class="lg:col-span-2 space-y-4">
-          <div class="flex items-center gap-3">
-            <!-- Option 03: Monogramma Meccanico PF a Incastro -->
-            <div class="brand-logo-tile w-9 h-9 rounded-xl bg-gradient-to-b from-[#18191E] via-[#101014] to-[#08080A] border border-white/20 flex items-center justify-center text-white shadow-sm shrink-0 p-1.5">
-              <svg class="w-full h-full" viewBox="0 0 140 140" fill="none">
-                <path d="M 38 26 L 76 26 C 90 26 98 34 98 46 C 98 58 90 66 76 66 L 56 66 L 56 114 L 38 114 Z M 56 42 L 56 50 L 74 50 C 80 50 82 48 82 46 C 82 44 80 42 74 42 Z" fill="#FFFFFF" />
-                <path d="M 64 68 L 102 68 L 102 84 L 64 84 Z" fill="#E4E4E7" />
-                <path d="M 64 92 L 92 92 L 92 106 L 64 106 Z" fill="#A1A1AA" />
-              </svg>
-            </div>
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="font-display font-extrabold text-lg tracking-tight text-white">Print<span class="text-zinc-400 font-bold">Forge</span></span>
-                <span class="text-[9px] font-mono tracking-widest text-zinc-300 font-bold uppercase bg-white/10 border border-white/15 px-1.5 py-0.2 rounded-full">P2P PROTOCOL</span>
-              </div>
-              <span class="text-[10px] font-mono text-zinc-400 block">Decentralized Manufacturing &amp; Escrow Network</span>
-            </div>
-          </div>
-
-          <p id="footerDesc" class="text-xs text-zinc-400 leading-relaxed font-sans max-w-sm">
-            Piattaforma peer-to-peer di intermediazione tecnologica per la manifattura additiva. Pagamenti protetti da custodia fiduciaria Stripe Escrow con svincolo automatico alla consegna certificata del corriere previa verifica delle 3 foto di collaudo e logistica integrata API Packlink PRO con calcolo del peso volumetrico.
-          </p>
-
-          <!-- Company Registry Data (Dati Societari Completi & Burocrazia Ufficiale MVP) -->
-          <div class="p-3.5 rounded-xl bg-white/[0.03] border border-white/[0.08] space-y-2 font-mono text-[11px] text-zinc-400">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
-              <span id="footerFrameworkLabel" class="text-zinc-500 uppercase">Inquadramento:</span>
-              <span id="footerFrameworkVal" class="text-zinc-200 font-bold">Piattaforma P2P // MVP Launch</span>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
-              <span id="footerTaxModelLabel" class="text-zinc-500 uppercase">Modello Fiscale:</span>
-              <span id="footerTaxModelVal" class="text-zinc-200 font-semibold">Regime Forfettario &amp; Prest. Occasionale (Art. 2222 C.C.)</span>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
-              <span id="footerCustodyLabel" class="text-zinc-500 uppercase">Custodia Fondi:</span>
-              <span id="footerCustodyVal" class="text-zinc-200">Stripe Connect Escrow (Nessun fondo trattenuto)</span>
-            </div>
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
-              <span id="footerLogisticsLabel" class="text-zinc-500 uppercase">Logistica B2B:</span>
-              <span id="footerLogisticsVal" class="text-zinc-200">Packlink PRO (Pay-per-shipment integrata)</span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span id="footerSupportLabel" class="text-zinc-500 uppercase">Supporto &amp; Privacy:</span>
-              <span class="text-zinc-300 truncate">legal@printforge.dev // privacy@printforge.dev</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Column 2: Contratti, Escrow & Dispute -->
-        <div class="space-y-3">
-          <h4 id="footerColContracts" class="font-cyber font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5">
-            <span class="text-emerald-400">//</span> CONTRATTI &amp; ESCROW
-          </h4>
-          <ul class="space-y-2 text-zinc-400 font-sans text-xs">
-            <li>
-              <button type="button" onclick="openLegalModal('terms')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="file-text" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
-                <span id="footerLinkTerms" class="group-hover:translate-x-0.5 transition-transform">Termini &amp; Condizioni d'Uso (P2P)</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('escrow')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="shield" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
-                <span id="footerLinkEscrow" class="group-hover:translate-x-0.5 transition-transform">Protocollo Escrow &amp; Svincolo alla Consegna</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('dispute')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="scale" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
-                <span id="footerLinkDispute" class="group-hover:translate-x-0.5 transition-transform">Risoluzione Dispute &amp; Rilievi Calibro</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('refund')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
-                <span id="footerLinkRefund" class="group-hover:translate-x-0.5 transition-transform">Ristampa Gratuita o Rimborso 100%</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('maker-tax')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="receipt" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
-                <span id="footerLinkMakerTax" class="group-hover:translate-x-0.5 transition-transform">Fisco Maker: Prestazione Occasionale &amp; P.IVA</span>
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Column 3: Privacy, Cookie & Segreto Industriale (GDPR) -->
-        <div class="space-y-3">
-          <h4 id="footerColPrivacy" class="font-cyber font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5">
-            <span class="text-cyan-400">//</span> PRIVACY &amp; COOKIE (GDPR)
-          </h4>
-          <ul class="space-y-2 text-zinc-400 font-sans text-xs">
-            <li>
-              <button type="button" onclick="openLegalModal('privacy')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="lock" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
-                <span id="footerLinkPrivacy" class="group-hover:translate-x-0.5 transition-transform">Informativa Privacy (Reg. UE 2016/679)</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('cookies')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="cookie" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
-                <span id="footerLinkCookies" class="group-hover:translate-x-0.5 transition-transform">Cookie Policy &amp; Registro Tecnico</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openCookieBanner(true)" class="text-cyan-400 hover:text-cyan-300 font-mono font-semibold transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="sliders" class="w-3.5 h-3.5 shrink-0"></i>
-                <span id="footerLinkManageCookies" class="group-hover:translate-x-0.5 transition-transform">Gestisci Preferenze Cookie</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('nda')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="file-key" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
-                <span id="footerLinkNda" class="group-hover:translate-x-0.5 transition-transform">Tutela Proprietà Intellettuale CAD</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('gdpr-rights')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="user-check" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-cyan-400 shrink-0"></i>
-                <span id="footerLinkGdpr" class="group-hover:translate-x-0.5 transition-transform">Diritti GDPR &amp; Cancellazione Dati</span>
-              </button>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Column 4: Standard Tecnici, Sicurezza & Certificazioni -->
-        <div class="space-y-3">
-          <h4 id="footerColLogistics" class="font-cyber font-bold text-xs uppercase tracking-wider text-white flex items-center gap-1.5">
-            <span class="text-amber-400">//</span> LOGISTICA &amp; STANDARD
-          </h4>
-          <ul class="space-y-2 text-zinc-400 font-sans text-xs">
-            <li>
-              <button type="button" onclick="openLegalModal('packlink-shipping')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="truck" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 shrink-0"></i>
-                <span id="footerLinkPacklink" class="group-hover:translate-x-0.5 transition-transform">Spedizioni Packlink PRO &amp; Peso Volumetrico</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('tolerances')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="compass" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 shrink-0"></i>
-                <span id="footerLinkTolerances" class="group-hover:translate-x-0.5 transition-transform">Standard Tolleranze ISO 2768-mK</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('materials')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-amber-400 shrink-0"></i>
-                <span id="footerLinkMaterials" class="group-hover:translate-x-0.5 transition-transform">Conformità Materiali RoHS / REACH</span>
-              </button>
-            </li>
-            <li>
-              <button type="button" onclick="openLegalModal('weapons-ban')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="shield-alert" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-rose-400 shrink-0"></i>
-                <span id="footerLinkWeapons" class="group-hover:translate-x-0.5 transition-transform">Divieto Armi (Zero Weapons Policy)</span>
-              </button>
-            </li>
-            <li>
-              <a href="mailto:support@printforge.dev" class="hover:text-white transition flex items-center gap-2 group w-full">
-                <i data-lucide="help-circle" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
-                <span id="footerLinkSupport" class="group-hover:translate-x-0.5 transition-transform">Assistenza Utenti &amp; Segnalazioni</span>
-              </a>
-            </li>
-          </ul>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- Bottom Regulatory Bar & Copyright -->
-    <div class="border-t border-white/[0.06] py-6 px-4 sm:px-6 lg:px-8">
-      <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-        <div class="space-y-1">
-          <p id="footerCopyright" class="text-[11px] text-zinc-400 font-mono">
-            &copy; 2026 PrintForge P2P Platform // Intermediazione Tecnologica Manifatturiera. Piattaforma per maker e clienti privati / P.IVA.
-          </p>
-          <p id="footerStripeLegal" class="text-[10px] text-zinc-500 leading-normal max-w-2xl">
-            I servizi di pagamento e la custodia fiduciaria escrow sono erogati tramite Stripe Payments Europe, Ltd., istituto di moneta elettronica vigilato dalla Central Bank of Ireland (rif. C187865). Nessun dato sensibile di pagamento è trattato o memorizzato su server PrintForge.
-          </p>
-        </div>
-
-        <div class="flex items-center gap-3 shrink-0 flex-wrap justify-center sm:justify-end">
-          <div class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-mono text-zinc-400">
-            <i data-lucide="server" class="w-3 h-3 text-emerald-400 shrink-0"></i>
-            <span id="footerDatacenter">Datacenter UE (Francoforte) // 100% GDPR</span>
-          </div>
-          <button type="button" onclick="openLegalModal('cookies')" id="footerExtendedCookies" class="text-[10px] font-mono text-zinc-400 hover:text-white underline transition">
-            Informativa Estesa Cookie
-          </button>
-        </div>
-      </div>
-    </div>
-
-  </footer>
 
   <!-- ========================================================================= -->
   <!-- MODALE: LIGHTBOX FOTO CHAT INGRANDITA (ALTA RISOLUZIONE)                 -->
@@ -21788,6 +21814,28 @@ window.__lastComputedQuotePrice = computedPrice;
       const isEs = lang === 'es';
 
       // ── 1. Riquadro Stripe Escrow sotto al colore ──
+      // ── Riquadro Opzione 2 Creator (Aggiungi Opera in Vetrina) ──
+      const crTitle = document.getElementById('i18n-creatorStripeTitle');
+      if (crTitle) crTitle.innerText = isEn ? 'Stripe Escrow Guarantee // Final Showcase Price' : isEs ? 'Garantía Stripe Escrow // Precio Final Escaparate' : 'Garanzia Stripe Escrow // Prezzo Finale Vetrina';
+
+      const crSub = document.getElementById('i18n-creatorStripeSubtitle');
+      if (crSub) crSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'OPCIÓN 2: 1,5% + € 0,25 con cálculo dinámico al céntimo' : 'OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo';
+
+      const crColNet = document.getElementById('i18n-creatorColNet');
+      if (crColNet) crColNet.innerText = isEn ? 'Your Net Payout' : isEs ? 'Tu Pago Neto' : 'Tuo Compenso';
+
+      const crColFee = document.getElementById('i18n-creatorColFee');
+      if (crColFee) crColFee.innerText = isEn ? '+ Stripe Fee' : isEs ? '+ Tasa Stripe' : '+ Tassa Stripe';
+
+      const crColTot = document.getElementById('i18n-creatorColTotal');
+      if (crColTot) crColTot.innerText = isEn ? 'Showcase Price' : isEs ? 'Precio en Escaparate' : 'Prezzo in Vetrina';
+
+      const crPriceLabel = document.getElementById('i18n-portfolioPriceLabel');
+      if (crPriceLabel) crPriceLabel.innerText = isEn ? 'Your Desired Net Maker Payout *' : isEs ? 'Tu Pago Neto Deseado de Maker *' : 'Tuo Compenso Netto Maker *';
+
+      const crPriceSub = document.getElementById('i18n-portfolioPriceSub');
+      if (crPriceSub) crPriceSub.innerText = isEn ? 'Excluding Stripe Fee' : isEs ? 'Excluida Tasa Stripe' : 'Escluso Tassa Stripe';
+
       const stTitle = document.getElementById('i18n-stripeNoticeTitle');
       if (stTitle) stTitle.innerText = isEn ? 'Purchase Protection & Stripe Escrow Guarantee' : isEs ? 'Protección de Compras & Garantía Stripe Escrow' : 'Protezione Acquisti & Garanzia Stripe Escrow';
 
@@ -32251,6 +32299,48 @@ function renderDealChat(rfpId) {
     }
     window.previewPortfolioPhoto = previewPortfolioPhoto;
 
+    function updateCreatorPriceWithStripe() {
+      const pInput = document.getElementById('portfolioPrice');
+      if (!pInput) return;
+      const raw = String(pInput.value || '').replace(/[^0-9,.]/g, '').replace(',', '.');
+      const basePrice = parseFloat(raw) || 0;
+
+      const netEl = document.getElementById('creatorNoticeNetPrice');
+      const feeEl = document.getElementById('creatorNoticeStripeFee');
+      const pubEl = document.getElementById('creatorNoticePublicPrice');
+      const inlineTotal = document.getElementById('creatorStripeNoticeTotalInline');
+      const inlineNet = document.getElementById('creatorStripeNoticeNetInline');
+
+      if (basePrice <= 0) {
+        if (netEl) netEl.innerText = '€ 0,00';
+        if (feeEl) feeEl.innerText = '+ € 0,00';
+        if (pubEl) pubEl.innerText = '€ 0,00';
+        if (inlineTotal) inlineTotal.innerText = '€ 0,00';
+        if (inlineNet) inlineNet.innerText = '€ 0,00';
+        window.__lastCreatorCalculatedPrice = 0;
+        return;
+      }
+
+      // OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo
+      const stripeFee = Math.round((basePrice * 0.015 + 0.25) * 100) / 100;
+      const publicPrice = parseFloat((basePrice + stripeFee).toFixed(2));
+
+      const netStr = '€ ' + basePrice.toFixed(2).replace('.', ',');
+      const feeStr = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+      const pubStr = '€ ' + publicPrice.toFixed(2).replace('.', ',');
+
+      if (netEl) netEl.innerText = netStr;
+      if (feeEl) feeEl.innerText = feeStr;
+      if (pubEl) pubEl.innerText = pubStr;
+      if (inlineTotal) inlineTotal.innerText = pubStr;
+      if (inlineNet) inlineNet.innerText = netStr;
+
+      window.__lastCreatorCalculatedPrice = publicPrice;
+      window.__lastCreatorBasePrice = basePrice;
+      window.__lastCreatorStripeFee = stripeFee;
+    }
+    window.updateCreatorPriceWithStripe = updateCreatorPriceWithStripe;
+
     async function handleCreatorWorkUpload(e) {
       if (e && e.preventDefault) e.preventDefault();
 
@@ -32278,9 +32368,17 @@ function renderDealChat(rfpId) {
       const dimensions = (document.getElementById('portfolioDimensions')?.value || '').trim();
       const quantity = (document.getElementById('portfolioQuantity')?.value || '1 pezzo (Opera Unica)').trim();
       const infill = (document.getElementById('portfolioInfill')?.value || '50% Meccanico Strutturale').trim();
-      let price = (document.getElementById('portfolioPrice')?.value || '').trim();
-      if (price && !price.startsWith('€')) price = '€ ' + price;
+      const rawPriceVal = String(document.getElementById('portfolioPrice')?.value || '').replace(/[^0-9,.]/g, '').replace(',', '.');
+      const baseMakerPrice = parseFloat(rawPriceVal) || 0;
+      if (baseMakerPrice <= 0) {
+        showToast('Inserisci il compenso netto desiderato per l\'opera.', 'warning');
+        return;
+      }
 
+      // OPZIONE 2: Calcola la tassa (1,5% + € 0,25) e pubblica l'opera in Vetrina con la tassa già calcolata!
+      const stripeFee = Math.round((baseMakerPrice * 0.015 + 0.25) * 100) / 100;
+      const finalPriceWithTax = parseFloat((baseMakerPrice + stripeFee).toFixed(2));
+      const price = '€ ' + finalPriceWithTax.toFixed(2).replace('.', ',');
       if (!title || !desc || !dimensions || !price) {
         showToast('Compila tutti i campi obbligatori (titolo, descrizione, dimensioni, prezzo).', 'warning');
         return;
@@ -32304,6 +32402,8 @@ function renderDealChat(rfpId) {
         quantity: quantity,
         infill: infill,
         price: price,
+        baseMakerPrice: baseMakerPrice,
+        stripeFee: stripeFee,
         photoUrl: photoUrl,
         creatorId: creatorUid,
         creatorName: creatorName,
@@ -32345,6 +32445,7 @@ function renderDealChat(rfpId) {
       broadcastRealtimeEvent('portfolio_work_created', workObj);
 
       // Reset form
+      updateCreatorPriceWithStripe();
       document.getElementById('portfolioTitle').value = '';
       document.getElementById('portfolioDesc').value = '';
       document.getElementById('portfolioDimensions').value = '';
