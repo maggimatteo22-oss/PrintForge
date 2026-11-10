@@ -4425,21 +4425,22 @@
             </div>
 
             <!-- RIQUADRO TARIFFA: TASSA STRIPE ESCROW & CALCOLO AUTOMATICO PREZZO IN VETRINA -->
-            <div id="creatorStripeNoticeBox" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0c1424] via-[#09101c] to-[#070b14] border border-blue-500/40 text-blue-200 font-sans text-xs space-y-2.5 shadow-xl mt-3">
+            <div id="creatorStripeNoticeBox" class="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0c1424] via-[#09101c] to-[#070b14] border border-blue-500/40 text-blue-200 font-sans text-xs space-y-2.5 shadow-xl mt-3">
+              <!-- Header sintetico anti-schiacciamento -->
               <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2">
-                  <div class="w-7 h-7 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
-                    <i data-lucide="shield-check" class="w-4 h-4"></i>
+                <div class="flex items-center gap-2 min-w-0">
+                  <div class="w-6 h-6 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
+                    <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
                   </div>
-                  <div>
-                    <span class="text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-creatorStripeTitle">Garanzia Stripe Escrow // Prezzo Finale Vetrina</span>
-                    <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-creatorStripeSubtitle">Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo</span>
+                  <div class="min-w-0">
+                    <span class="text-xs font-cyber font-bold text-white tracking-wide truncate block" id="i18n-creatorStripeTitle">Garanzia Stripe Escrow</span>
+                    <span class="text-[9.5px] text-blue-300/80 font-mono block truncate" id="i18n-creatorStripeSubtitle">Tariffa ufficiale: 1,5% + € 0,25</span>
                   </div>
                 </div>
-                <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0">Stripe Escrow: 1,5% + € 0,25</span>
+                <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[9.5px] sm:text-[10px] font-bold border border-blue-500/30 shrink-0 whitespace-nowrap">1,5% + € 0,25</span>
               </div>
 
-              <!-- Griglia Calcolo Dinamico al Centesimo: Tuo Compenso Maker | + Tassa Stripe (1,5% + 0,25€) | Prezzo Pubblicato in Vetrina -->
+              <!-- Griglia Calcolo Dinamico al Centesimo -->
               <div class="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-blue-500/30 grid grid-cols-3 gap-2 text-center font-mono text-[10.5px] shadow-inner">
                 <div class="space-y-0.5">
                   <span class="text-zinc-400 block text-[9px] uppercase tracking-wider" id="i18n-creatorColNet">Tuo Compenso</span>
@@ -4450,24 +4451,29 @@
                   <span id="creatorNoticeStripeFee" class="text-blue-300 font-bold block">+ € 0,00</span>
                 </div>
                 <div class="space-y-0.5">
-                  <span class="text-emerald-400 block text-[9px] uppercase tracking-wider font-bold" id="i18n-creatorColTotal">Prezzo in Vetrina</span>
+                  <span class="text-emerald-400 block text-[9px] uppercase tracking-wider font-bold" id="i18n-creatorColTotal">Prezzo Vetrina</span>
                   <span id="creatorNoticePublicPrice" class="text-emerald-400 font-bold block">€ 0,00</span>
                 </div>
               </div>
 
-              <div class="text-[10.5px] text-zinc-300 font-sans leading-relaxed flex items-start gap-2 pt-1 border-t border-white/10" id="i18n-creatorStripeNoticeText">
-                <i data-lucide="info" class="w-4 h-4 text-blue-400 shrink-0 mt-0.5"></i>
-                <div>
-                  La tariffa ufficiale di Stripe Escrow (<b>1,5% + € 0,25</b>) viene sommata automaticamente: l'opera verrà pubblicata in Vetrina al prezzo calcolato di <strong class="text-emerald-400 font-mono" id="creatorStripeNoticeTotalInline">€ 0,00</strong>.
-                  <span class="text-zinc-400 block mt-1">🔒 Il compenso netto (<strong class="text-white font-mono" id="creatorStripeNoticeNetInline">€ 0,00</strong>) ti verrà versato al 100% sul conto IBAN/Stripe collegato subito dopo l'approvazione del collaudo centesimale con calibro.</span>
-                </div>
+              <!-- Reassurance Sintetica (1 riga compatta, zero papiri) -->
+              <div class="text-[10px] text-zinc-300 font-mono flex items-center justify-between gap-2 pt-1 border-t border-white/10" id="i18n-creatorStripeNoticeText">
+                <span class="flex items-center gap-1.5 min-w-0 truncate">
+                  <i data-lucide="lock" class="w-3 h-3 text-emerald-400 shrink-0"></i>
+                  <span class="truncate">Ricevi il <b>100%</b> del compenso netto all'approvazione del pezzo.</span>
+                </span>
+                <span class="hidden">
+                  <strong id="creatorStripeNoticeTotalInline">€ 0,00</strong>
+                  <strong id="creatorStripeNoticeNetInline">€ 0,00</strong>
+                </span>
               </div>
             </div>
 
-            <div class="flex justify-end pt-3">
-              <button type="submit" id="btnPublishPortfolioSubmit" class="btn-kowalski-primary px-6 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg active:scale-95">
+            <!-- Tasto Aggiungi alla Vetrina (full-width per mobile ergonomico) -->
+            <div class="pt-3">
+              <button type="submit" id="btnPublishPortfolioSubmit" class="w-full sm:w-auto btn-kowalski-primary px-6 py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg active:scale-95 cursor-pointer">
                 <i data-lucide="plus" class="w-4 h-4 text-black"></i>
-                <span id="i18n-btnPublishPortfolioText">Aggiungi al Portfolio & Vetrina</span>
+                <span id="i18n-btnPublishPortfolioText">Aggiungi alla Vetrina</span>
               </button>
             </div>
           </form>
@@ -21589,11 +21595,10 @@ window.__lastComputedQuotePrice = computedPrice;
       // ── 1. Riquadro Stripe Escrow sotto al colore ──
       // ── Riquadro Stripe Escrow Creator (Aggiungi Opera in Vetrina) ──
       const crTitle = document.getElementById('i18n-creatorStripeTitle');
-      if (crTitle) crTitle.innerText = isEn ? 'Stripe Escrow Guarantee // Final Showcase Price' : isEs ? 'Garantía Stripe Escrow // Precio Final Escaparate' : 'Garanzia Stripe Escrow // Prezzo Finale Vetrina';
+      if (crTitle) crTitle.innerText = isEn ? 'Stripe Escrow Guarantee' : isEs ? 'Garantía Stripe Escrow' : 'Garanzia Stripe Escrow';
 
       const crSub = document.getElementById('i18n-creatorStripeSubtitle');
-      if (crSub) crSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'Stripe Escrow: 1.5% + €0.25 dynamically calculated' : 'Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo';
-
+      if (crSub) crSub.innerText = isEn ? 'Official fee: 1.5% + € 0.25' : isEs ? 'Tarifa oficial: 1,5% + € 0,25' : 'Tariffa ufficiale: 1,5% + € 0,25';
       const crColNet = document.getElementById('i18n-creatorColNet');
       if (crColNet) crColNet.innerText = isEn ? 'Your Net Payout' : isEs ? 'Tu Pago Neto' : 'Tuo Compenso';
 
@@ -21613,7 +21618,7 @@ window.__lastComputedQuotePrice = computedPrice;
       if (stTitle) stTitle.innerText = isEn ? 'Purchase Protection & Stripe Escrow Guarantee' : isEs ? 'Protección de Compras & Garantía Stripe Escrow' : 'Protezione Acquisti & Garanzia Stripe Escrow';
 
       const stSub = document.getElementById('i18n-stripeNoticeSubtitle');
-      if (stSub) stSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'Stripe Escrow: 1.5% + €0.25 dynamically calculated' : 'Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo';
+      if (stSub) stSub.innerText = isEn ? 'Stripe Escrow: 1.5% + € 0.25 dynamic calculation' : isEs ? 'Stripe Escrow: 1.5% + €0.25 dynamically calculated' : 'Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo';
 
       const colMfg = document.getElementById('i18n-stripeColMfg');
       if (colMfg) colMfg.innerText = isEn ? 'Manufacturing' : isEs ? 'Fabricación' : 'Manifattura';
@@ -32243,7 +32248,7 @@ function renderDealChat(rfpId) {
       const publicPrice = parseFloat((basePrice + stripeFee).toFixed(2));
 
       const netStr = '€ ' + basePrice.toFixed(2).replace('.', ',');
-      const feeStr = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
+      const feeStr = '+ € ' + stripeFee.toFixed(2).replace('.', ',');
       const pubStr = '€ ' + publicPrice.toFixed(2).replace('.', ',');
 
       if (netEl) netEl.innerText = netStr;
