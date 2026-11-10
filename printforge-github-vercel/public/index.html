@@ -2863,16 +2863,17 @@
     }
     html.role-creator #clientShippingInfoCard,
     body.role-creator #clientShippingInfoCard,
-    html:not(.role-client) #clientShippingInfoCard {
+    html:not(.role-client) #clientShippingInfoCard,
+    #clientShippingInfoCard.hidden {
       display: none !important;
       visibility: hidden !important;
       pointer-events: none !important;
     }
-    html.role-client #clientShippingInfoCard,
-    body.role-client #clientShippingInfoCard {
-      display: block !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+    html.role-client #clientShippingInfoCard:not(.hidden),
+    body.role-client #clientShippingInfoCard:not(.hidden) {
+      display: block;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     /* ESCROW EMPTY STATE ROLE GATING: CREATOR NEVER SEES "INVIA UNA RICHIESTA" */
@@ -7984,8 +7985,8 @@
                 </button>
               </div>
 
-              <!-- Azione Cliente: Segnala Non Conforme / Ristampa (Al posto di Traccia Pacco) -->
-              <div id="clientShippingInfoCard">
+              <!-- Azione Cliente: Segnala Non Conforme / Ristampa (Visibile esclusivamente dopo il collaudo delle 3 foto) -->
+              <div id="clientShippingInfoCard" class="hidden" style="display: none !important;">
                 <button type="button" onclick="openDisputeModal()" id="btnEscrowDispute" class="btn-kowalski-secondary w-full py-3 px-4 rounded-xl text-zinc-200 hover:text-white font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 active:scale-95 transition border border-white/15 hover:border-amber-400/60 shadow-lg">
                   <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 text-amber-400"></i>
                   <span id="i18n-escrowDispute">NON CONFORME // RISTAMPA</span>
@@ -23041,9 +23042,35 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         if (clientDecisionCard) clientDecisionCard.classList.remove('hidden');
         if (creatorStatusCard) creatorStatusCard.classList.add('hidden');
 
-        // Nascondi completamente card operativa venditore e mostra card rassicurante cliente
+        // Nascondi completamente card operativa venditore
         if (sellerShippingCard) sellerShippingCard.classList.add('hidden');
-        if (clientShippingInfoCard) clientShippingInfoCard.classList.remove('hidden');
+
+        // Mostra NON CONFORME // RISTAMPA al cliente ESCLUSIVAMENTE dopo il collaudo delle 3 foto
+        const activeEscrow = AppState.activeEscrowOrder;
+        const activeReq = AppState.loadedRequestInStudio 
+          || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+          || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+        const orderPhotos = (activeReq && activeReq.qcPhotos && activeReq.qcPhotos.length) 
+          ? activeReq.qcPhotos 
+          : (activeEscrow && activeEscrow.qcPhotos && activeEscrow.qcPhotos.length ? activeEscrow.qcPhotos : (AppState.cadQcFiles || []));
+        const hasQcCollaudo = Boolean(
+          (activeEscrow || activeReq) &&
+          ((orderPhotos && orderPhotos.length >= 3) ||
+           AppState.stage2Completed ||
+           (activeEscrow && (activeEscrow.qcPhotosDelivered || activeEscrow.hasQcPhotos || activeEscrow.isShipped || activeEscrow.isDelivered || activeEscrow.qcApproved)) ||
+           (activeReq && (activeReq.hasQcPhotos || activeReq.clientApprovedQc || activeReq.isShipped || activeReq.isDelivered || activeReq.isShowcaseOrder)))
+        );
+
+        if (clientShippingInfoCard) {
+          if (hasQcCollaudo && isClient) {
+            clientShippingInfoCard.classList.remove('hidden');
+            clientShippingInfoCard.style.removeProperty('display');
+            clientShippingInfoCard.style.display = 'block';
+          } else {
+            clientShippingInfoCard.classList.add('hidden');
+            clientShippingInfoCard.style.setProperty('display', 'none', 'important');
+          }
+        }
 
         if (downloadContainer) {
           downloadContainer.classList.add('hidden');
@@ -23596,6 +23623,27 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const isEs = currentLang === 'es';
 
       const isStage2Done = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed;
+
+      // Sincronizza visibilità pulsante NON CONFORME // RISTAMPA (visibile al cliente solo dopo il collaudo 3 foto)
+      const clientShippingCardSync = document.getElementById('clientShippingInfoCard');
+      if (clientShippingCardSync) {
+        const isUserLoggedIn = !!(AppState.user && AppState.user.isLoggedIn);
+        const isCreatorRole = isUserLoggedIn && AppState.user.role === 'creator';
+        const hasQcCollaudoDone = Boolean(
+          isStage2Done ||
+          (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) ||
+          AppState.stage2Completed ||
+          (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.qcPhotosDelivered || AppState.activeEscrowOrder.hasQcPhotos || AppState.activeEscrowOrder.isShipped || AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.qcApproved))
+        );
+        if (!isCreatorRole && hasQcCollaudoDone && AppState.activeEscrowOrder) {
+          clientShippingCardSync.classList.remove('hidden');
+          clientShippingCardSync.style.removeProperty('display');
+          clientShippingCardSync.style.display = 'block';
+        } else {
+          clientShippingCardSync.classList.add('hidden');
+          clientShippingCardSync.style.setProperty('display', 'none', 'important');
+        }
+      }
       const isStage3Done = AppState.isShipped || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isShipped);
       const isStage4Done = AppState.isDelivered || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isDelivered);
 
@@ -24441,6 +24489,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // Se non ci sono ancora 3 foto caricate per questo ordine
       if (!hasPhotos) {
+        const clientDisputeCard = document.getElementById('clientShippingInfoCard');
+        if (clientDisputeCard) {
+          clientDisputeCard.classList.add('hidden');
+          clientDisputeCard.style.setProperty('display', 'none', 'important');
+        }
         container.innerHTML = 
           '<div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2 text-zinc-400 text-[10.5px] font-mono">' +
             '<i data-lucide="clock" class="w-4 h-4 text-zinc-500 shrink-0"></i>' +
@@ -29804,6 +29857,11 @@ function renderDealChat(rfpId) {
       if (!AppState.activeEscrowOrder) {
         emptyState.classList.remove('hidden');
         activeCard.classList.add('hidden');
+        const clientDisputeCard = document.getElementById('clientShippingInfoCard');
+        if (clientDisputeCard) {
+          clientDisputeCard.classList.add('hidden');
+          clientDisputeCard.style.setProperty('display', 'none', 'important');
+        }
         const emptyTitle = document.getElementById('i18n-escrowEmptyTitle');
         const emptyDesc = document.getElementById('i18n-escrowEmptyDesc');
         const emptyCta = document.getElementById('i18n-escrowEmptyCta');
