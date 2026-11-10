@@ -4205,8 +4205,27 @@
           </div>
         </div>
 
-        <!-- GUIDA SPEDIZIONI LOCKER & PAGAMENTI CREATOR -->
-        <div class="p-4 sm:p-5 rounded-2xl bg-[#0B0C11] border border-white/10 shadow-lg space-y-3">
+        <!-- Mobile Switcher Tabs: Elimina lo scroll / loop infinito verticale da telefono -->
+        <div class="sm:hidden flex items-center p-1 rounded-xl bg-white/[0.04] border border-white/10 gap-1 text-xs font-mono font-bold mb-3" id="creatorMobileViewSwitcher">
+          <button type="button" onclick="setCreatorMobileTab('publish')" id="tabBtnCreatorPublish" class="flex-1 py-2 px-3 rounded-lg bg-white text-black text-center transition flex items-center justify-center gap-1.5 shadow font-bold">
+            <i data-lucide="plus-circle" class="w-3.5 h-3.5 text-black"></i>
+            <span>+ Pubblica Opera</span>
+          </button>
+          <button type="button" onclick="setCreatorMobileTab('works')" id="tabBtnCreatorWorks" class="flex-1 py-2 px-3 rounded-lg text-zinc-400 hover:text-white text-center transition flex items-center justify-center gap-1.5 font-bold">
+            <i data-lucide="layers" class="w-3.5 h-3.5"></i>
+            <span>Le Mie Opere (<span id="creatorMobileWorksCount">0</span>)</span>
+          </button>
+        </div>
+
+        <!-- GUIDA SPEDIZIONI LOCKER & PAGAMENTI CREATOR (Compatta ed espandibile su mobile) -->
+        <details class="group sm:block rounded-2xl bg-[#0B0C11] border border-white/10 shadow-lg space-y-3 p-4 sm:p-5" id="creatorShippingGuideContainer">
+          <summary class="sm:hidden flex items-center justify-between cursor-pointer list-none select-none text-xs font-mono font-bold text-white pb-1">
+            <span class="flex items-center gap-2">
+              <i data-lucide="truck" class="w-4 h-4 text-emerald-400"></i>
+              <span>Come funzionano spedizioni e compensi</span>
+            </span>
+            <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 group-open:rotate-180 transition-transform"></i>
+          </summary>
           <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-white/[0.08] pb-3">
             <div class="flex items-center gap-2.5">
               <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
@@ -4254,7 +4273,7 @@
               </p>
             </div>
           </div>
-        </div>
+        </details>
 
         <!-- FORM RAPIDO UPLOAD VETRINA CREATOR -->
         <div id="creatorUploadFormContainer" class="cyber-card p-5 sm:p-7 bg-[#0A0A0E] border border-white/10 rounded-2xl shadow-xl space-y-5 !overflow-visible">
@@ -4477,7 +4496,7 @@
         </div>
 
         <!-- I tuoi Lavori Pubblicati -->
-        <div class="space-y-4">
+        <div id="creatorPublishedWorksSection" class="space-y-4">
           <h3 class="font-cyber font-bold text-sm text-white flex items-center gap-2 border-b border-white/[0.08] pb-2">
             <i data-lucide="layers" class="w-4 h-4 text-zinc-400"></i>
             <span id="i18n-creatorPublishedCardsTitle">LE TUE PUBBLICAZIONI IN VETRINA</span>
@@ -6696,10 +6715,10 @@
             </div>
 
             <!-- 4 Carte Visuali di Imballaggio -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="flex overflow-x-auto no-scrollbar gap-2.5 pb-2 snap-x sm:grid sm:grid-cols-2 lg:grid-cols-4">
               
               <!-- Card Preset 1: Busta Minima Imbottita -->
-              <div id="box-preset-envelope" onclick="selectPackagingPreset('envelope', 5, 5, 2, 20)" class="box-preset-card active-preset p-3.5 rounded-xl bg-[#121317] border-2 border-white cursor-pointer relative space-y-2 flex flex-col justify-between">
+              <div id="box-preset-envelope" onclick="selectPackagingPreset('envelope', 5, 5, 2, 20)" class="box-preset-card min-w-[190px] sm:min-w-0 shrink-0 snap-start active-preset p-3.5 rounded-xl bg-[#121317] border-2 border-white cursor-pointer relative space-y-2 flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between gap-1 mb-1.5">
                     <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-white/10 text-zinc-300 font-bold border border-white/20">MINIMO</span>
@@ -6719,7 +6738,7 @@
               </div>
 
               <!-- Card Preset 2: Scatola S (Piccola) -->
-              <div id="box-preset-s" onclick="selectPackagingPreset('s', 15, 15, 10, 150)" class="box-preset-card p-3.5 rounded-xl bg-[#121317] border border-white/10 cursor-pointer relative space-y-2 flex flex-col justify-between">
+              <div id="box-preset-s" onclick="selectPackagingPreset('s', 15, 15, 10, 150)" class="box-preset-card min-w-[190px] sm:min-w-0 shrink-0 snap-start p-3.5 rounded-xl bg-[#121317] border border-white/10 cursor-pointer relative space-y-2 flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between gap-1 mb-1.5">
                     <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30">CONSIGLIATO</span>
@@ -6739,7 +6758,7 @@
               </div>
 
               <!-- Card Preset 3: Scatola M (Media) -->
-              <div id="box-preset-m" onclick="selectPackagingPreset('m', 20, 20, 15, 350)" class="box-preset-card p-3.5 rounded-xl bg-[#121317] border border-white/10 cursor-pointer relative space-y-2 flex flex-col justify-between">
+              <div id="box-preset-m" onclick="selectPackagingPreset('m', 20, 20, 15, 350)" class="box-preset-card min-w-[190px] sm:min-w-0 shrink-0 snap-start p-3.5 rounded-xl bg-[#121317] border border-white/10 cursor-pointer relative space-y-2 flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between gap-1 mb-1.5">
                     <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-cyan-500/15 text-cyan-300 font-bold border border-cyan-500/30">STANDARD</span>
@@ -6759,7 +6778,7 @@
               </div>
 
               <!-- Card Preset 4: Scatola L (Grande) -->
-              <div id="box-preset-l" onclick="selectPackagingPreset('l', 30, 25, 20, 800)" class="box-preset-card p-3.5 rounded-xl bg-[#121317] border border-white/10 cursor-pointer relative space-y-2 flex flex-col justify-between">
+              <div id="box-preset-l" onclick="selectPackagingPreset('l', 30, 25, 20, 800)" class="box-preset-card min-w-[190px] sm:min-w-0 shrink-0 snap-start p-3.5 rounded-xl bg-[#121317] border border-white/10 cursor-pointer relative space-y-2 flex flex-col justify-between">
                 <div>
                   <div class="flex items-center justify-between gap-1 mb-1.5">
                     <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-300 font-bold border border-purple-500/30">MAXI</span>
@@ -32490,6 +32509,13 @@ function renderDealChat(rfpId) {
       if (!container) return;
 
       const works = AppState.portfolioWorks || [];
+      const mobileWorksBadge = document.getElementById('creatorMobileWorksCount');
+      if (mobileWorksBadge) {
+        mobileWorksBadge.innerText = (AppState.portfolioWorks || []).length;
+      }
+      if (window.innerWidth < 640 && typeof setCreatorMobileTab === 'function') {
+        setCreatorMobileTab(window._creatorMobileActiveTab || 'publish');
+      }
       const filter = (currentExploreFilter || 'all').toLowerCase();
 
       // Recupera gli ID e i titoli delle opere accettate/commissionate/vendute salvate in localStorage
@@ -32863,6 +32889,42 @@ function renderDealChat(rfpId) {
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
     window.renderCreatorPortfolioView = renderCreatorPortfolioView;
+    function setCreatorMobileTab(tab) {
+      window._creatorMobileActiveTab = tab;
+      const worksSec = document.getElementById('creatorPublishedWorksSection');
+      const uploadSec = document.getElementById('creatorUploadFormContainer');
+      const btnWorks = document.getElementById('tabBtnCreatorWorks');
+      const btnPublish = document.getElementById('tabBtnCreatorPublish');
+
+      if (window.innerWidth >= 640) {
+        if (uploadSec) { uploadSec.classList.remove('hidden'); uploadSec.style.display = ''; }
+        if (worksSec) { worksSec.classList.remove('hidden'); worksSec.style.display = ''; }
+        return;
+      }
+
+      if (tab === 'works') {
+        if (uploadSec) { uploadSec.classList.add('hidden'); uploadSec.style.display = 'none'; }
+        if (worksSec) { worksSec.classList.remove('hidden'); worksSec.style.display = 'block'; }
+        if (btnWorks) {
+          btnWorks.className = 'flex-1 py-2 px-3 rounded-lg bg-white text-black text-center transition flex items-center justify-center gap-1.5 shadow font-bold';
+        }
+        if (btnPublish) {
+          btnPublish.className = 'flex-1 py-2 px-3 rounded-lg text-zinc-400 hover:text-white text-center transition flex items-center justify-center gap-1.5 font-bold';
+        }
+      } else {
+        // tab === 'publish'
+        if (uploadSec) { uploadSec.classList.remove('hidden'); uploadSec.style.display = 'block'; }
+        if (worksSec) { worksSec.classList.add('hidden'); worksSec.style.display = 'none'; }
+        if (btnPublish) {
+          btnPublish.className = 'flex-1 py-2 px-3 rounded-lg bg-white text-black text-center transition flex items-center justify-center gap-1.5 shadow font-bold';
+        }
+        if (btnWorks) {
+          btnWorks.className = 'flex-1 py-2 px-3 rounded-lg text-zinc-400 hover:text-white text-center transition flex items-center justify-center gap-1.5 font-bold';
+        }
+      }
+    }
+    window.setCreatorMobileTab = setCreatorMobileTab;
+
 
     async function deletePortfolioWork(workId, event) {
       if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
