@@ -4325,10 +4325,122 @@
                 <input type="hidden" id="portfolioColor" value="Arancione Meccanico" />
               </div>
 
-              <!-- 3. DIMENSIONI (MM) -->
-              <div class="space-y-1">
-                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioDimsLabel">Dimensioni (mm) *</label>
-                <input type="text" id="portfolioDimensions" name="portfolioDimensions" value="" placeholder="es. 80 × 60 × 25 mm" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none" />
+              <!-- 3. DIMENSIONI (MM) CON IDENTICHE TAGLIE XS-S-M-L-XL DEL CLIENTE -->
+              <div class="space-y-1.5 sm:col-span-2 lg:col-span-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioDimsLabel">Dimensioni (mm) *</label>
+                  <span id="portfolioDimensionSourceBadge" class="text-[8px] sm:text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20 font-bold shrink-0">
+                    TAGLIA S // PICCOLO (~8 CM)
+                  </span>
+                </div>
+
+                <!-- 5 CARD TAGLIA IDENTICHE AL CLIENTE (XS, S, M, L, XL) -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="portfolioSizeCardsGrid">
+                  
+                  <!-- XS: Tascabile -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('XS', 40, 40, 15, this)"
+                          id="portfolioSizeCard_XS"
+                          class="portfolio-size-preset-card p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XS</span>
+                      <span class="text-base select-none">🪙</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_XS">Tascabile</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_XS">Come moneta, anello o tappo</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 5 cm</span>
+                      <span class="text-zinc-500">~4×4 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- S: Piccolo (DEFAULT ATTIVO) -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('S', 80, 60, 25, this)"
+                          id="portfolioSizeCard_S"
+                          class="portfolio-size-preset-card active-portfolio-size-card p-2 sm:p-2.5 rounded-xl border border-white/50 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)] ring-1 ring-white/40 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white text-black font-cyber font-black text-xs transition-colors">S</span>
+                      <span class="text-base select-none">🖱️</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_S">Piccolo</span>
+                      <span class="text-[9px] text-zinc-300 block leading-tight mt-0.5" id="portfolioSizeCardDesc_S">Come mouse, chiave auto o mela</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-300">
+                      <span>Fino a 10 cm</span>
+                      <span class="text-white font-bold">~8×6 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- M: Medio -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('M', 150, 80, 40, this)"
+                          id="portfolioSizeCard_M"
+                          class="portfolio-size-preset-card p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">M</span>
+                      <span class="text-base select-none">📱</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_M">Medio</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_M">Come smartphone o tazza</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 18 cm</span>
+                      <span class="text-zinc-500">~15×8 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- L: Grande -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('L', 220, 150, 80, this)"
+                          id="portfolioSizeCard_L"
+                          class="portfolio-size-preset-card p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">L</span>
+                      <span class="text-base select-none">🎧</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_L">Grande</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_L">Come cuffie over-ear o scarpa</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 25 cm</span>
+                      <span class="text-zinc-500">~22×15 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- XL: Molto Grande -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('XL', 320, 240, 140, this)"
+                          id="portfolioSizeCard_XL"
+                          class="portfolio-size-preset-card col-span-2 sm:col-span-1 p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XL</span>
+                      <span class="text-base select-none">🪖</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_XL">Molto Grande</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_XL">Come casco moto o scatola</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 40 cm</span>
+                      <span class="text-zinc-500">~32×24 cm</span>
+                    </div>
+                  </button>
+
+                </div>
+
+                <!-- Campo Input MM con possibilità di rifinitura manuale calibro -->
+                <div class="pt-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="relative flex-1">
+                    <input type="text" id="portfolioDimensions" name="portfolioDimensions" value="80 × 60 × 25 mm" placeholder="es. 80 × 60 × 25 mm" required oninput="onManualPortfolioDimensionsInput()" onchange="onManualPortfolioDimensionsInput()" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none transition" />
+                  </div>
+                  <span class="text-[10px] text-zinc-400 font-mono shrink-0">Millimetri (X × Y × Z) • Modificabile con calibro</span>
+                </div>
               </div>
 
               <!-- 4. QUANTITA' PEZZI -->
@@ -18013,6 +18125,83 @@ END-ISO-10303-21;`;
       updateCalculatedDimensionMetrics(newX, newY, newZ);
     }
     window.applyDimensionScale = applyDimensionScale;
+
+    /* ========================================================================= */
+    /* TAGLIE PRESET PORTFOLIO CREATOR (XS - S - M - L - XL)                     */
+    /* ========================================================================= */
+    function selectPortfolioSizePreset(sizeKey, x, y, z, btnEl) {
+      const pfDims = document.getElementById('portfolioDimensions');
+      if (pfDims) {
+        pfDims.value = `${x} × ${y} × ${z} mm`;
+      }
+      syncPortfolioSizeCards(sizeKey);
+    }
+    window.selectPortfolioSizePreset = selectPortfolioSizePreset;
+
+    function syncPortfolioSizeCards(matchedKey) {
+      const keys = ['XS', 'S', 'M', 'L', 'XL'];
+      keys.forEach(k => {
+        const card = document.getElementById('portfolioSizeCard_' + k);
+        if (!card) return;
+        const pill = card.querySelector('.portfolio-size-card-pill');
+        if (k === matchedKey) {
+          card.classList.add('active-portfolio-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+          card.classList.remove('border-white/10', 'bg-[#16171F]');
+          if (pill) {
+            pill.classList.remove('bg-white/10', 'text-white');
+            pill.classList.add('bg-white', 'text-black');
+          }
+        } else {
+          card.classList.remove('active-portfolio-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+          card.classList.add('border-white/10', 'bg-[#16171F]');
+          if (pill) {
+            pill.classList.remove('bg-white', 'text-black');
+            pill.classList.add('bg-white/10', 'text-white');
+          }
+        }
+      });
+
+      const badge = document.getElementById('portfolioDimensionSourceBadge');
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+      const sizeNames = {
+        'XS': isEn ? 'TAGLIA XS // TASCABILE (~4 CM)' : isEs ? 'TALLA XS // BOLSILLO (~4 CM)' : 'TAGLIA XS // TASCABILE (~4 CM)',
+        'S': isEn ? 'TAGLIA S // PICCOLO (~8 CM)' : isEs ? 'TALLA S // PEQUEÑO (~8 CM)' : 'TAGLIA S // PICCOLO (~8 CM)',
+        'M': isEn ? 'TAGLIA M // MEDIO (~15 CM)' : isEs ? 'TALLA M // MEDIANO (~15 CM)' : 'TAGLIA M // MEDIO (~15 CM)',
+        'L': isEn ? 'TAGLIA L // GRANDE (~22 CM)' : isEs ? 'TALLA L // GRANDE (~22 CM)' : 'TAGLIA L // GRANDE (~22 CM)',
+        'XL': isEn ? 'TAGLIA XL // MOLTO GRANDE (~32 CM)' : isEs ? 'TALLA XL // EXTRA GRANDE (~32 CM)' : 'TAGLIA XL // MOLTO GRANDE (~32 CM)'
+      };
+      if (badge && matchedKey) {
+        badge.innerText = sizeNames[matchedKey] || `TAGLIA ${matchedKey}`;
+      }
+    }
+    window.syncPortfolioSizeCards = syncPortfolioSizeCards;
+
+    function onManualPortfolioDimensionsInput() {
+      const pfDims = document.getElementById('portfolioDimensions');
+      const val = pfDims?.value?.trim() || '';
+      if (!val) {
+        syncPortfolioSizeCards('S');
+        return;
+      }
+
+      // Estrae le dimensioni numeriche inserite (es. 45x50x30 o 80 × 60 × 25 mm)
+      const nums = val.match(/\d+(\.\d+)?/g);
+      if (nums && nums.length >= 1) {
+        const dx = parseFloat(nums[0]) || 0;
+        const dy = parseFloat(nums[1]) || dx;
+        const dz = parseFloat(nums[2]) || (dx * 0.3);
+        const maxDim = Math.max(dx, dy, dz);
+        let matchedKey = 'S';
+        if (maxDim <= 55) matchedKey = 'XS';
+        else if (maxDim <= 115) matchedKey = 'S';
+        else if (maxDim <= 185) matchedKey = 'M';
+        else if (maxDim <= 260) matchedKey = 'L';
+        else matchedKey = 'XL';
+        syncPortfolioSizeCards(matchedKey);
+      }
+    }
+    window.onManualPortfolioDimensionsInput = onManualPortfolioDimensionsInput;
 
     function autoSelectIdealPackaging(x, y, z) {
       const dx = Math.max(0, parseFloat(x) || 0);
