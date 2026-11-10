@@ -22536,6 +22536,50 @@ window.__lastComputedQuotePrice = computedPrice;
       calculateVolumetricShipping();
     }
 
+    
+    function hasClientReceivedQcPhotosAndEmail() {
+      const order = AppState.activeEscrowOrder;
+      const activeReq = AppState.loadedRequestInStudio 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+        || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+
+      // 1. Verifica arrivo effettivo delle 3 foto di collaudo
+      const orderPhotos = (activeReq && activeReq.qcPhotos && activeReq.qcPhotos.length) 
+        ? activeReq.qcPhotos 
+        : (order && order.qcPhotos && order.qcPhotos.length ? order.qcPhotos : (AppState.cadQcFiles || []));
+      
+      const has3Photos = Boolean(
+        (orderPhotos.length >= 3) ||
+        AppState.stage2Completed ||
+        (order && (order.qcPhotosDelivered || order.hasQcPhotos || order.isShipped || order.isDelivered)) ||
+        (activeReq && (activeReq.hasQcPhotos || activeReq.clientApprovedQc || activeReq.isShipped || activeReq.isDelivered))
+      );
+
+      // 2. Verifica invio/ricezione dell'email di notifica 3 foto al cliente
+      const orderId = (order && order.id) || (activeReq && activeReq.id) || 'default';
+      let hasEmail = Boolean(
+        AppState.clientQcEmailSent ||
+        (order && order.qcEmailSent) ||
+        (activeReq && activeReq.qcEmailSent) ||
+        (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_qc_email_sent_' + orderId) === 'true')
+      );
+
+      if (!hasEmail && typeof getSentEmails === 'function') {
+        try {
+          const sent = getSentEmails() || [];
+          hasEmail = sent.some(e => e.type === 'qc_photos_ready' || (e.subject && (e.subject.includes('3 QC Photos') || e.subject.includes('3 Foto Collaudo'))));
+        } catch(e) {}
+      }
+
+      // Se l'ordine è già nelle fasi successive (spedito/consegnato), le foto e la mail sono già arrivate
+      if (order && (order.isShipped || order.isDelivered || AppState.stage3Completed || AppState.stage4Completed)) {
+        return true;
+      }
+
+      return Boolean(has3Photos && hasEmail);
+    }
+    window.hasClientReceivedQcPhotosAndEmail = hasClientReceivedQcPhotosAndEmail;
+
     function applyRoleGatingForLabelDownload() {
       const isUserLoggedIn = !!(AppState.user && AppState.user.isLoggedIn);
       const isCreator = isUserLoggedIn && AppState.user.role === 'creator';
