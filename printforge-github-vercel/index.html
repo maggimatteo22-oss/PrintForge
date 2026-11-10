@@ -6445,9 +6445,12 @@
 
               <!-- Dettaglio Trasparente Quote: Manifattura + Protezione Stripe Escrow -->
               <div id="priceEscrowBreakdownBox" class="p-2.5 sm:p-3 rounded-xl bg-[#0F1015] border border-white/10 space-y-1.5 text-[10px] font-mono mt-1.5 shadow-md">
-                <div class="flex items-center justify-between text-zinc-400">
-                  <span id="i18n-breakdownMfgLabel">Manifattura 3D &amp; Materiale:</span>
-                  <span id="breakdownMfgPrice" class="text-zinc-200 font-bold">€ 0,00</span>
+                <div>
+                  <div class="flex items-center justify-between text-zinc-400">
+                    <span id="i18n-breakdownMfgLabel">Manifattura 3D &amp; Materiale:</span>
+                    <span id="breakdownMfgPrice" class="text-zinc-200 font-bold">€ 28,00</span>
+                  </div>
+                  <div id="breakdownSpecsSubtext" class="text-[9px] text-zinc-400 font-mono truncate mt-0.5">80 × 60 × 25 mm • 1 pz • 50% Infill • PETG Tecnico</div>
                 </div>
                 <div class="flex items-center justify-between text-zinc-400">
                   <span class="flex items-center gap-1" id="i18n-breakdownShipLabel">
@@ -17675,22 +17678,58 @@ END-ISO-10303-21;`;
     /* CALCOLO COMPLETO PREZZO FINALE (MANIFATTURA + SPEDIZIONE + FLASH + ESCROW) */
     /* ========================================================================= */
     function updateOrderBreakdownQuote() {
-      // 1. Manifattura 3D (Budget digitato dal cliente, oppure 0 se non ha ancora scritto nulla)
-      let val = 0;
-      const budgetInput = document.getElementById('reqBudget');
-      const hasTypedBudget = budgetInput && budgetInput.value && !isNaN(parseFloat(budgetInput.value)) && parseFloat(budgetInput.value) > 0;
-      if (hasTypedBudget) {
-        val = parseFloat(budgetInput.value);
-      } else {
-        val = 0; // Se il cliente non ha ancora digitato il budget, manifattura è 0 e il prezzo parte già dalla spedizione e dal pacco!
+      // 1. Parametri Chiave: Grandezza (XYZ), Pezzi (Qty), Riempimento (Infill), Materiale
+      const x = Math.round(parseFloat(document.getElementById('dimX')?.value) || 80);
+      const y = Math.round(parseFloat(document.getElementById('dimY')?.value) || 60);
+      const z = Math.round(parseFloat(document.getElementById('dimZ')?.value) || 25);
+      
+      const customQtyVal = parseInt(document.getElementById('reqCustomQtyInput')?.value, 10);
+      const qtyStr = document.getElementById('reqQuantity')?.value || '1 pezzo';
+      let qty = (!isNaN(customQtyVal) && customQtyVal >= 1) ? customQtyVal : 1;
+      if (!customQtyVal && qtyStr) {
+        if (qtyStr.includes('2 - 5')) qty = 3;
+        else if (qtyStr.includes('6 - 20')) qty = 10;
+        else if (qtyStr.includes('21 - 50')) qty = 30;
+        else if (qtyStr.includes('50+')) qty = 60;
       }
 
-      // 2. Spedizione Base (in base alla scatola auto-calcolata: da 5.72, 6.05, 7.20, 8.90)
+      const infillVal = document.getElementById('reqInfill')?.value || '50% Meccanico';
+      const infillShort = infillVal.split('/')[0].replace('Strutturale', '').trim();
+
+      const matSelect = document.getElementById('reqMaterial');
+      const rawMat = matSelect ? (matSelect.value || '').trim() : '';
+      const matClean = (rawMat && !rawMat.toLowerCase().includes('seleziona')) ? rawMat.split('(')[0].trim() : 'PETG Tecnico';
+
+      // Aggiorna la riga di sintesi delle 4 specifiche
+      const subtextEl = document.getElementById('breakdownSpecsSubtext');
+      if (subtextEl) {
+        subtextEl.innerText = `${x} × ${y} × ${z} mm • ${qty} pz • ${infillShort} • ${matClean}`;
+      }
+
+      // 2. Manifattura 3D (Calcolata in base a Grandezza, Pezzi, Riempimento e Materiale)
+      const computedMfg = (typeof window.__lastComputedBaseMfg === 'number' && window.__lastComputedBaseMfg > 0)
+        ? window.__lastComputedBaseMfg
+        : 28.00;
+
+      const budgetInput = document.getElementById('reqBudget');
+      const hasTypedBudget = budgetInput && budgetInput.value && !isNaN(parseFloat(budgetInput.value)) && parseFloat(budgetInput.value) > 0;
+      
+      let val = 0;
+      if (hasTypedBudget) {
+        val = parseFloat(budgetInput.value); // Il cliente ha scelto un budget personalizzato
+      } else {
+        val = computedMfg; // Budget di sintesi auto-calcolato dalle 4 variabili!
+        if (budgetInput) {
+          budgetInput.placeholder = val.toFixed(2);
+        }
+      }
+
+      // 3. Spedizione Base (in base alla scatola auto-calcolata: da 5.72, 6.05, 7.20, 8.90)
       let shipCost = typeof window.currentBaseShippingPrice === 'number' && window.currentBaseShippingPrice > 0
         ? window.currentBaseShippingPrice
         : 6.05;
 
-      // 3. Tempistica / Spedizione Flash / Flessibile
+      // 4. Tempistica / Spedizione Flash / Flessibile
       const dSel = document.getElementById('reqDeadline');
       const deadlineVal = (dSel ? dSel.value : '') || (AppState.pendingOrderDraft?.deadline || 'Standard 3-5 giorni');
       
@@ -17700,11 +17739,9 @@ END-ISO-10303-21;`;
       const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
 
       if (deadlineVal.includes('Urgente') || deadlineVal.includes('Flash') || deadlineVal.includes('24-48h') || deadlineVal.includes('Prioritaria')) {
-        // Tassa sulla spedizione flash: priorità macchina + corriere express (+30% o min € 6,50)
         speedFee = val > 0 ? Math.max(6.50, Math.round(val * 0.30 * 100) / 100) : 6.50;
         speedLabel = '+ € ' + speedFee.toFixed(2).replace('.', ',') + (isEn ? ' (Priority + 24h Delivery)' : isEs ? ' (Prioridad + Entrega 24h)' : ' (Coda Prioritaria + 24h)');
       } else if (deadlineVal.includes('Flessibile') || deadlineVal.includes('7-10')) {
-        // Sconto flessibile -10% su manifattura
         speedFee = val > 0 ? -Math.round(val * 0.10 * 100) / 100 : 0;
         speedLabel = speedFee < 0 ? ('- € ' + Math.abs(speedFee).toFixed(2).replace('.', ',') + ' (-10% Flex)') : 'Flessibile (Inclusa)';
       } else {
@@ -17712,12 +17749,10 @@ END-ISO-10303-21;`;
         speedLabel = isEn ? 'Standard (Included)' : isEs ? 'Estándar (Incluido)' : 'Standard (Inclusa)';
       }
 
-      // 4. Subtotale Protetto (Manifattura + Spedizione + Flash fee)
-      // Se l'utente scrive 400: subtotal = 400 + 6.05 + 120 = 526.05
-      // Se non ha ancora scritto il budget: subtotal = 0 + 6.05 + 0 = 6.05 (parte già da 6€ o 8€!)
+      // 5. Subtotale Protetto (Manifattura calcolata + Spedizione + Tempistica Flash)
       const subtotalProtected = Math.max(0, val + shipCost + speedFee);
 
-      // 5. Tassa Stripe Escrow (1,5% + € 0,25 con calcolo al centesimo)
+      // 6. Tassa Stripe Escrow (1,5% + € 0,25 con calcolo al centesimo)
       let stripeFee = 0;
       if (subtotalProtected > 0) {
         stripeFee = Math.round((subtotalProtected * 0.015 + 0.25) * 100) / 100;
@@ -17763,7 +17798,6 @@ END-ISO-10303-21;`;
       window.__lastShipCost = shipCost;
       window.__lastSpeedFee = speedFee;
 
-      // Aggiorna anche eventuale sticky display mobile
       const mobileSticky = document.getElementById('mobileStickyTotalDisplay');
       if (mobileSticky) {
         mobileSticky.innerText = '€ ' + totalCheckout.toFixed(2).replace('.', ',');
@@ -21979,7 +22013,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const bInput = document.getElementById('reqBudget');
       const val = parseFloat(bInput?.value) || 0;
       const recPrice = window.__lastComputedQuotePrice || 0;
-      const recMfg = window.__lastComputedBaseMfg || recPrice;
+      const recMfg = window.__lastComputedBaseMfg || recPrice || 28;
       const shipCost = window.currentBaseShippingPrice || 6.05;
       const recTotalWithShip = (recMfg + shipCost).toFixed(2).replace('.', ',');
 
@@ -21988,27 +22022,36 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const sumWarnBox = document.getElementById('summaryBudgetWarningBox');
       const sumWarnText = document.getElementById('summaryBudgetWarningText');
 
-      // Calcola e aggiorna il breakdown completo con tutti i 4 pagamenti (floor price attivo!)
+      // Calcola e aggiorna il breakdown completo con le 4 variabili (grandezza, pezzi, infill, materiale)
       if (typeof updateOrderBreakdownQuote === 'function') {
         updateOrderBreakdownQuote();
       }
 
       // Se il cliente ha inserito un prezzo di suo pugno (Libero Arbitrio):
       if (val > 0) {
-        // Se il budget è inferiore al prezzo ideale calcolato in base a dimensioni, infill e ore:
         if (recMfg > 0 && val < recMfg) {
           const dx = Math.round(parseFloat(document.getElementById('dimX')?.value) || 80);
           const dy = Math.round(parseFloat(document.getElementById('dimY')?.value) || 60);
           const dz = Math.round(parseFloat(document.getElementById('dimZ')?.value) || 25);
-          const infill = document.getElementById('reqInfill')?.value || '50%';
+          
+          const customQtyVal = parseInt(document.getElementById('reqCustomQtyInput')?.value, 10);
+          const qty = (!isNaN(customQtyVal) && customQtyVal >= 1) ? customQtyVal : 1;
+          
+          const infillVal = document.getElementById('reqInfill')?.value || '50%';
+          const infillShort = infillVal.split('/')[0].trim();
+          
+          const matSelect = document.getElementById('reqMaterial');
+          const rawMat = matSelect ? (matSelect.value || '').trim() : '';
+          const matClean = (rawMat && !rawMat.toLowerCase().includes('seleziona')) ? rawMat.split('(')[0].trim() : 'PETG Tecnico';
+
           const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
           const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
 
           const warnMsg = isEn
-            ? `⚠️ The budget (€ ${val.toFixed(2).replace('.', ',')}) is too low for this part: given its size (${dx} × ${dy} × ${dz} mm), ${infill} infill and print time, the ideal manufacturing budget is at least € ${recMfg.toFixed(2).replace('.', ',')} (ideal total with packaging: € ${recTotalWithShip}). Click to apply.`
+            ? `⚠️ The budget (€ ${val.toFixed(2).replace('.', ',')}) is too low for this part: given its size (${dx} × ${dy} × ${dz} mm), ${qty} pcs, ${infillShort} infill and ${matClean}, the ideal manufacturing budget is at least € ${recMfg.toFixed(2).replace('.', ',')} (ideal total with packaging: € ${recTotalWithShip}). Click to apply.`
             : isEs
-            ? `⚠️ El presupuesto (€ ${val.toFixed(2).replace('.', ',')}) es demasiado bajo para esta pieza: por sus dimensiones (${dx} × ${dy} × ${dz} mm), relleno ${infill} y tiempo de impresión, el presupuesto ideal es de al menos € ${recMfg.toFixed(2).replace('.', ',')} (total ideal con embalaje: € ${recTotalWithShip}). Haz clic para aplicar.`
-            : `⚠️ Il budget inserito (€ ${val.toFixed(2).replace('.', ',')}) è troppo piccolo per quest'opera: date le dimensioni (${dx} × ${dy} × ${dz} mm), il riempimento ${infill} e le ore macchina, il prezzo consigliato ideale è di almeno € ${recMfg.toFixed(2).replace('.', ',')} (totale ideale con pacco e spedizione: € ${recTotalWithShip}). Clicca per applicare.`;
+            ? `⚠️ El presupuesto (€ ${val.toFixed(2).replace('.', ',')}) es demasiado bajo para esta pieza: por sus dimensiones (${dx} × ${dy} × ${dz} mm), ${qty} uds, relleno ${infillShort} y ${matClean}, el presupuesto ideal es de al menos € ${recMfg.toFixed(2).replace('.', ',')} (total ideal con embalaje: € ${recTotalWithShip}). Haz clic para aplicar.`
+            : `⚠️ Il budget inserito (€ ${val.toFixed(2).replace('.', ',')}) è troppo piccolo per quest'opera: date le dimensioni (${dx} × ${dy} × ${dz} mm), ${qty} pezz${qty > 1 ? 'i' : 'o'}, il riempimento ${infillShort} e il materiale ${matClean}, il prezzo consigliato ideale è di almeno € ${recMfg.toFixed(2).replace('.', ',')} (totale ideale con pacco e spedizione: € ${recTotalWithShip}). Clicca per applicare.`;
 
           if (warnBox) {
             warnBox.classList.remove('hidden');
@@ -22026,26 +22069,34 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           }
           if (sumWarnText) sumWarnText.innerText = warnMsg;
         } else {
-          // Offerta congrua: nascondi avvisi
           if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
           if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
         }
       } else {
-        // Nessun budget manuale inserito dal cliente: nascondi avvisi di budget basso
         if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
         if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
       }
 
-      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : (typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0 ? ('€ ' + window.__lastTotalCheckout.toFixed(2).replace('.', ',')) : '€ 0,00');
+      const budgetDisplayStr = (val > 0) 
+        ? ('€ ' + val.toFixed(2).replace('.', ',')) 
+        : (typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0 
+            ? ('€ ' + window.__lastTotalCheckout.toFixed(2).replace('.', ',')) 
+            : ('€ ' + (recMfg + shipCost).toFixed(2).replace('.', ',')));
+
       ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay', 'liveDossierPrice'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
       });
 
       const checkoutPart = document.getElementById('checkoutPartCost');
-      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
+      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : ('€ ' + recMfg.toFixed(2).replace('.', ','));
+      
       const checkoutTotal = document.getElementById('checkoutTotalEscrow');
-      if (checkoutTotal) checkoutTotal.innerText = typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0 ? ('€ ' + window.__lastTotalCheckout.toFixed(2).replace('.', ',')) : (val > 0 ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00');
+      if (checkoutTotal) {
+        checkoutTotal.innerText = typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0 
+          ? ('€ ' + window.__lastTotalCheckout.toFixed(2).replace('.', ',')) 
+          : ('€ ' + (recMfg + shipCost).toFixed(2).replace('.', ','));
+      }
 
       if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
     }
