@@ -609,14 +609,37 @@
       border: 1px solid rgba(0, 0, 0, 0.15) !important;
     }
 
-    /* BANNER COOKIE NASCOSTO */
+    /* BANNER COOKIE GDPR RESPONSIVE & MOBILE-FRIENDLY */
     #cookieConsentBanner {
-      display: none !important;
-      visibility: hidden !important;
-      height: 0 !important;
-      max-height: 0 !important;
-      overflow: hidden !important;
-      pointer-events: none !important;
+      position: fixed !important;
+      bottom: 1rem !important;
+      left: 1rem !important;
+      right: 1rem !important;
+      z-index: 999999 !important;
+      max-width: 460px !important;
+      margin-left: auto !important;
+      margin-right: auto !important;
+      background: rgba(14, 15, 22, 0.96) !important;
+      backdrop-filter: blur(20px) !important;
+      -webkit-backdrop-filter: blur(20px) !important;
+      border: 1px solid rgba(255, 255, 255, 0.18) !important;
+      border-radius: 1.25rem !important;
+      padding: 1rem 1.15rem !important;
+      box-shadow: 0 25px 60px -10px rgba(0, 0, 0, 0.95), 0 0 0 1px rgba(255, 255, 255, 0.08) !important;
+      animation: cookieSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    }
+    @keyframes cookieSlideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @media (min-width: 640px) {
+      #cookieConsentBanner {
+        left: auto !important;
+        right: 1.5rem !important;
+        bottom: 1.5rem !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
     }
     #modalCreatorReviews, #modalLeaveReview, #modalOrderReviewEscrow {
       z-index: 999999 !important;
@@ -5399,7 +5422,7 @@
               <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform duration-200 shrink-0" id="faqChevron2"></i>
             </button>
             <div class="hidden px-3.5 pb-3.5 sm:px-4 sm:pb-4 text-zinc-300 font-sans text-xs sm:text-[12.5px] leading-relaxed border-t border-white/[0.04] pt-2.5" id="faqAnswer2">
-              <span id="i18n-faqA2">Tutte le lavorazioni sono coperte dalle tolleranze concordate (ISO 2768-mK). Se la parte ricevuta è difettosa o danneggiata dal trasporto, puoi premere il pulsante <strong>"Non Conforme // Ristampa"</strong> nell'Escrow Room entro 72 ore: i fondi rimangono congelati e il Maker effettua la ristampa a proprie spese o viene emesso il rimborso integrale.</span>
+              <span id="i18n-faqA2">Tutte le lavorazioni sono coperte dalle tolleranze concordate (ISO 2768-mK). Se la parte ricevuta è difettosa o danneggiata dal trasporto, puoi premere direttamente il pulsante <strong>"Non Conforme // Ristampa"</strong> nell'Escrow Room: i fondi rimangono bloccati in sicurezza su Stripe Escrow e il Maker effettua la ristampa a proprie spese oppure ricevi il rimborso integrale al 100%.</span>
             </div>
           </div>
 
@@ -5450,12 +5473,12 @@
             <button type="button" onclick="toggleFaqAccordion(6)" class="w-full p-3.5 sm:p-4 text-left flex items-center justify-between gap-3 hover:bg-white/[0.03] transition">
               <span class="font-cyber font-bold text-white text-xs sm:text-[13px] tracking-wide flex items-center gap-2">
                 <span class="text-emerald-400 font-mono text-[11px]">06.</span>
-                <span id="i18n-faqQ6">Come posso candidare la mia stampante 3D o officina per ricevere ordini?</span>
+                <span id="i18n-faqQ6">Non ho un file 3D CAD: posso ordinare comunque un pezzo su PrintForge?</span>
               </span>
               <i data-lucide="chevron-down" class="w-4 h-4 text-zinc-400 transition-transform duration-200 shrink-0" id="faqChevron6"></i>
             </button>
             <div class="hidden px-3.5 pb-3.5 sm:px-4 sm:pb-4 text-zinc-300 font-sans text-xs sm:text-[12.5px] leading-relaxed border-t border-white/[0.04] pt-2.5" id="faqAnswer6">
-              <span id="i18n-faqA6">Clicca su "Accedi" e seleziona "Creator / Hub". Dopo aver inserito la tua strumentazione tecnica e collegato il conto Stripe Connect per i pagamenti diretti su IBAN, avrai accesso immediato alla bacheca delle richieste aperte nella tua zona e potrai iniziare a produrre componenti con compenso sicuro garantito.</span>
+              <span id="i18n-faqA6">Certamente! Puoi esplorare la Vetrina 2D e ordinare con specifiche pre-impostate con un solo clic, oppure inserire una descrizione tecnica del componente o pezzo di ricambio nella richiesta: i Creator certificati della nostra rete possono occuparsi anche della modellazione 3D CAD prima di avviare la stampa.</span>
             </div>
           </div>
         </div>
@@ -8710,7 +8733,7 @@
   <!-- ========================================================================= -->
   <!-- COOKIE CONSENT BANNER (GDPR & ePRIVACY COMPLIANT)                         -->
   <!-- ========================================================================= -->
-  <div id="cookieConsentBanner" class="hidden" style="display: none !important;">
+  <div id="cookieConsentBanner" class="hidden">
     <div class="flex items-start gap-3">
       <div class="cookie-icon-box w-9 h-9 rounded-xl bg-cyan-500/10 border border-cyan-500/25 flex items-center justify-center text-cyan-400 shrink-0 mt-0.5">
         <i data-lucide="cookie" class="w-5 h-5"></i>
@@ -10297,7 +10320,8 @@
             liveCarrierBadge.innerText = (payload.carrier || 'UPS Standard').toUpperCase();
           }
 
-          if (typeof syncPipelineUI === 'function') syncPipelineUI();
+          if (typeof loadCreatorSenderAddress === 'function') loadCreatorSenderAddress();
+        if (typeof syncPipelineUI === 'function') syncPipelineUI();
           if (typeof updateEscrowRoom === 'function') updateEscrowRoom();
 
           if (AppState.user && AppState.user.role === 'client') {
@@ -22985,6 +23009,8 @@ window.__lastComputedQuotePrice = computedPrice;
 
       <div class="address-block" style="font-size: 10px;">
         <div class="section-title">MITTENTE (SHIPPER / ORIGIN):</div>
+        ${senderHtmlBlock}
+      </div>
         <strong>${escapeHtml(makerName)}</strong><br>
         PrintForge Certified Maker Hub // Officina Additiva<br>
         Piattaforma P2P Manifattura 3D - Italia
