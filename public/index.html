@@ -8700,7 +8700,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE: RIEPILOGO COMMESSA & DEPOSITO IN ESCROW (APPLE GLASS MINIMAL)     -->
   <!-- ========================================================================= -->
-  <div id="modalOrderReviewEscrow" class="fixed inset-0 z-50 bg-[#0A0B0E]/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+  <div id="modalOrderReviewEscrow" class="fixed inset-0 z-[999999] bg-[#0A0B0E]/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important;">
     <div class="w-full max-w-lg cyber-card p-4 sm:p-5 space-y-3.5 modal-spring-enter max-h-[92vh] flex flex-col text-xs font-sans rounded-2xl shadow-2xl border border-white/20">
       
       <!-- Modal Header Minimal -->
@@ -27389,7 +27389,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const stripeFeeEl = document.getElementById('reviewStripeFee');
       if (stripeFeeEl) stripeFeeEl.innerText = '+ € ' + reviewStripeVal.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
 
-      incInfoEl = document.getElementById('i18n-reviewIncludedInfo');
+      // incInfoEl già acquisito sopra
       if (incInfoEl) {
         let speedText = 'Standard inclusa';
         if (draft.speedFee > 0) speedText = 'Flash Prioritaria (+€ ' + draft.speedFee.toFixed(2).replace('.', ',') + ')';
@@ -27451,6 +27451,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const modal = document.getElementById('modalOrderReviewEscrow');
       if (modal) {
         modal.classList.add('hidden');
+        modal.style.display = 'none';
       }
     }
 
