@@ -6027,80 +6027,196 @@
               </div>
 
               <!-- Dimensioni del Pezzo (X × Y × Z mm) & Scala Rapida -->
-              <div class="space-y-1.5 sm:space-y-2.5 p-2.5 sm:p-3.5 rounded-xl bg-[#121318] border border-white/10 shadow-sm" id="partDimensionsContainer">
-                <div class="flex items-center justify-between flex-wrap gap-1">
-                  <span class="text-[10px] sm:text-[11px] font-cyber font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <i data-lucide="ruler" class="w-3.5 h-3.5 text-cyan-400"></i>
-                    <span id="i18n-reqDimensionsTitle">Dimensioni Pezzo (Ingombro XYZ)</span>
+              <div class="space-y-2.5 sm:space-y-3.5 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#121318] border border-white/10 shadow-sm transition-all" id="partDimensionsContainer">
+                <div class="flex items-center justify-between flex-wrap gap-1 border-b border-white/[0.06] pb-2">
+                  <div class="min-w-0">
+                    <span class="text-[10px] sm:text-[11px] font-cyber font-bold text-zinc-200 uppercase tracking-wider flex items-center gap-1.5">
+                      <i data-lucide="ruler" class="w-3.5 h-3.5 text-white"></i>
+                      <span id="i18n-reqDimensionsTitle">Dimensioni Approssimative del Pezzo</span>
+                    </span>
+                    <span class="text-[9px] text-zinc-400 block font-sans mt-0.5" id="i18n-reqDimensionsHint">
+                      Scegli la grandezza prendendo come riferimento un oggetto comune:
+                    </span>
+                  </div>
+                  <span id="dimensionSourceBadge" class="text-[8px] sm:text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20 font-bold shrink-0">
+                    TAGLIA S // PICCOLO (~8 CM)
                   </span>
-                  <span id="dimensionSourceBadge" class="text-[8px] sm:text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 sm:px-2 py-0.5 rounded border border-cyan-500/20">RILEVAMENTO DA CAD O MANUALE</span>
                 </div>
 
-                <!-- 3 Campi Compatti XYZ -->
-                <div class="grid grid-cols-3 gap-1.5 sm:gap-2 text-xs font-mono">
-                  <div class="space-y-0.5 sm:space-y-1">
-                    <div class="flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-400 font-bold">
-                      <span id="i18n-dimLengthLabel">Lung. (X)</span>
-                      <span class="text-zinc-500 text-[8px] sm:text-[10px]">mm</span>
+                <!-- 5 CARD TAGLIA VISIVA CON OGGETTI QUOTIDIANI -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="sizeCardsGrid">
+                  
+                  <!-- XS: Tascabile -->
+                  <button type="button" 
+                          onclick="selectPartSizePreset('XS', 40, 40, 15, this)"
+                          id="sizeCard_XS"
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XS</span>
+                      <span class="text-base select-none">🪙</span>
                     </div>
-                    <div class="relative">
-                      <input type="number" id="dimX" min="1" max="1500" step="1" inputmode="numeric" pattern="[0-9]*" placeholder="80" onkeydown="if(event.key==='.'||event.key===',')event.preventDefault();" oninput="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" onchange="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" class="w-full bg-[#181920] border border-white/10 rounded-lg px-2 py-1 sm:py-1.5 text-xs text-white font-mono focus:border-white focus:outline-none transition" />
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="sizeCardTitle_XS">Tascabile</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="sizeCardDesc_XS">Come una moneta, anello o tappo</span>
                     </div>
-                  </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 5 cm</span>
+                      <span class="text-zinc-500">~4×4 cm</span>
+                    </div>
+                  </button>
 
-                  <div class="space-y-0.5 sm:space-y-1">
-                    <div class="flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-400 font-bold">
-                      <span id="i18n-dimWidthLabel">Larg. (Y)</span>
-                      <span class="text-zinc-500 text-[8px] sm:text-[10px]">mm</span>
+                  <!-- S: Piccolo (DEFAULT ATTIVO) -->
+                  <button type="button" 
+                          onclick="selectPartSizePreset('S', 80, 60, 25, this)"
+                          id="sizeCard_S"
+                          class="size-preset-card active-size-card p-2.5 rounded-xl border border-white/50 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)] ring-1 ring-white/40 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="size-card-pill px-2 py-0.5 rounded-md bg-white text-black font-cyber font-black text-xs transition-colors">S</span>
+                      <span class="text-base select-none">🖱️</span>
                     </div>
-                    <div class="relative">
-                      <input type="number" id="dimY" min="1" max="1500" step="1" inputmode="numeric" pattern="[0-9]*" placeholder="60" onkeydown="if(event.key==='.'||event.key===',')event.preventDefault();" oninput="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" onchange="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" class="w-full bg-[#181920] border border-white/10 rounded-lg px-2 py-1 sm:py-1.5 text-xs text-white font-mono focus:border-white focus:outline-none transition" />
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="sizeCardTitle_S">Piccolo</span>
+                      <span class="text-[9px] text-zinc-300 block leading-tight mt-0.5" id="sizeCardDesc_S">Come un mouse, chiave auto o mela</span>
                     </div>
-                  </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-300">
+                      <span>Fino a 10 cm</span>
+                      <span class="text-white font-bold">~8×6 cm</span>
+                    </div>
+                  </button>
 
-                  <div class="space-y-0.5 sm:space-y-1">
-                    <div class="flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-400 font-bold">
-                      <span id="i18n-dimHeightLabel">Alt. (Z)</span>
-                      <span class="text-zinc-500 text-[8px] sm:text-[10px]">mm</span>
+                  <!-- M: Medio -->
+                  <button type="button" 
+                          onclick="selectPartSizePreset('M', 150, 80, 40, this)"
+                          id="sizeCard_M"
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">M</span>
+                      <span class="text-base select-none">📱</span>
                     </div>
-                    <div class="relative">
-                      <input type="number" id="dimZ" min="1" max="1500" step="1" inputmode="numeric" pattern="[0-9]*" placeholder="25" onkeydown="if(event.key==='.'||event.key===',')event.preventDefault();" oninput="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" onchange="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" class="w-full bg-[#181920] border border-white/10 rounded-lg px-2 py-1 sm:py-1.5 text-xs text-white font-mono focus:border-white focus:outline-none transition" />
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="sizeCardTitle_M">Medio</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="sizeCardDesc_M">Come uno smartphone o tazza</span>
                     </div>
-                  </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 18 cm</span>
+                      <span class="text-zinc-500">~15×8 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- L: Grande -->
+                  <button type="button" 
+                          onclick="selectPartSizePreset('L', 220, 150, 80, this)"
+                          id="sizeCard_L"
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">L</span>
+                      <span class="text-base select-none">🎧</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="sizeCardTitle_L">Grande</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="sizeCardDesc_L">Come cuffie over-ear o scarpa</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 25 cm</span>
+                      <span class="text-zinc-500">~22×15 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- XL: Molto Grande -->
+                  <button type="button" 
+                          onclick="selectPartSizePreset('XL', 320, 240, 140, this)"
+                          id="sizeCard_XL"
+                          class="size-preset-card col-span-2 sm:col-span-1 p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XL</span>
+                      <span class="text-base select-none">🪖</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="sizeCardTitle_XL">Molto Grande</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="sizeCardDesc_XL">Come un casco moto o scatola</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 40 cm</span>
+                      <span class="text-zinc-500">~32×24 cm</span>
+                    </div>
+                  </button>
+
                 </div>
 
-                <!-- Pillole di Scala Rapida -->
-                <div class="pt-1.5 sm:pt-2 border-t border-white/[0.05] flex items-center justify-between gap-1 sm:gap-2 flex-wrap">
-                  <span class="text-[9px] sm:text-[10px] font-cyber text-zinc-400 uppercase tracking-wider flex items-center gap-1">
-                    <i data-lucide="scaling" class="w-3 h-3 text-amber-400"></i>
-                    <span id="i18n-quickScaleLabel">Scala:</span>
-                  </span>
-                  <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap" id="scalePillsContainer">
-                    <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(0.5, this)">
-                      50%
-                    </button>
-                    <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(0.75, this)">
-                      75%
-                    </button>
-                    <button type="button" class="scale-pill active-scale-pill px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg bg-white/15 border border-white/30 text-[9px] sm:text-[10px] font-mono text-white font-bold transition" onclick="applyDimensionScale(1.0, this)">
-                      100%
-                    </button>
-                    <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(1.25, this)">
-                      125%
-                    </button>
-                    <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(1.5, this)">
-                      150%
-                    </button>
-                    <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(2.0, this)">
-                      200%
-                    </button>
+                <!-- Barra di Riepilogo e Link Personalizzazione Avanzata -->
+                <div class="pt-2 border-t border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-[10px] font-mono">
+                  <div class="flex items-center gap-2 text-zinc-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span id="calculatedVolumeBadge">
+                      Ingombro stimato: <strong class="text-white font-bold" id="sizeSelectedDimensionsText">80 × 60 × 25 mm</strong> (~120 cm³)
+                    </span>
                   </div>
+
+                  <!-- Toggle per tecnici che hanno il calibro e vogliono inserire i mm precisi -->
+                  <button type="button" 
+                          onclick="toggleExactDimensions()" 
+                          id="btnToggleExactDimensions" 
+                          class="text-zinc-400 hover:text-white flex items-center gap-1.5 font-sans text-[11px] underline transition self-start sm:self-auto cursor-pointer">
+                    <i data-lucide="sliders-horizontal" class="w-3.5 h-3.5 text-zinc-400"></i>
+                    <span id="toggleExactDimensionsLabel">Hai un calibro? Inserisci le misure esatte in mm</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 text-zinc-400 transition-transform duration-200" id="exactDimsChevron"></i>
+                  </button>
                 </div>
 
-                <!-- Helper compatto volume & ingombro -->
-                <div class="flex items-center justify-between text-[8px] sm:text-[9px] font-mono text-zinc-400 pt-0.5">
-                  <span id="calculatedVolumeBadge">Volume ingombro: <strong class="text-zinc-200">-- cm³</strong></span>
-                  <span class="text-zinc-500" id="i18n-packlinkSyncNotice">Packlink sync</span>
+                <!-- SEZIONE COLLASSATA: 3 CAMPI XYZ E SCALA (Per tecnici / calibro / CAD) -->
+                <div id="exactDimensionsCollapse" class="hidden pt-2.5 border-t border-white/[0.08] space-y-2 transition-all">
+                  <div class="flex items-center justify-between text-[10px] font-mono text-zinc-400">
+                    <span class="text-zinc-300 font-bold">MISURE CENTESIMALI // MILLIMETRI (mm)</span>
+                    <span class="text-zinc-500 text-[9px]">X = Lunghezza • Y = Larghezza • Z = Altezza</span>
+                  </div>
+
+                  <div class="grid grid-cols-3 gap-1.5 sm:gap-2 text-xs font-mono">
+                    <div class="space-y-0.5 sm:space-y-1">
+                      <div class="flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-400 font-bold">
+                        <span id="i18n-dimLengthLabel">Lung. (X)</span>
+                        <span class="text-zinc-500 text-[8px] sm:text-[10px]">mm</span>
+                      </div>
+                      <div class="relative">
+                        <input type="number" id="dimX" min="1" max="1500" step="1" inputmode="numeric" pattern="[0-9]*" value="80" placeholder="80" onkeydown="if(event.key==='.'||event.key===',')event.preventDefault();" oninput="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" onchange="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" class="w-full bg-[#181920] border border-white/15 rounded-lg px-2 py-1 sm:py-1.5 text-xs text-white font-mono focus:border-white focus:outline-none transition" />
+                      </div>
+                    </div>
+
+                    <div class="space-y-0.5 sm:space-y-1">
+                      <div class="flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-400 font-bold">
+                        <span id="i18n-dimWidthLabel">Larg. (Y)</span>
+                        <span class="text-zinc-500 text-[8px] sm:text-[10px]">mm</span>
+                      </div>
+                      <div class="relative">
+                        <input type="number" id="dimY" min="1" max="1500" step="1" inputmode="numeric" pattern="[0-9]*" value="60" placeholder="60" onkeydown="if(event.key==='.'||event.key===',')event.preventDefault();" oninput="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" onchange="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" class="w-full bg-[#181920] border border-white/15 rounded-lg px-2 py-1 sm:py-1.5 text-xs text-white font-mono focus:border-white focus:outline-none transition" />
+                      </div>
+                    </div>
+
+                    <div class="space-y-0.5 sm:space-y-1">
+                      <div class="flex items-center justify-between text-[9px] sm:text-[10px] text-zinc-400 font-bold">
+                        <span id="i18n-dimHeightLabel">Alt. (Z)</span>
+                        <span class="text-zinc-500 text-[8px] sm:text-[10px]">mm</span>
+                      </div>
+                      <div class="relative">
+                        <input type="number" id="dimZ" min="1" max="1500" step="1" inputmode="numeric" pattern="[0-9]*" value="25" placeholder="25" onkeydown="if(event.key==='.'||event.key===',')event.preventDefault();" oninput="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" onchange="onManualDimensionInput(); recalculateInstantQuote(); updateLiveRequestSummary();" class="w-full bg-[#181920] border border-white/15 rounded-lg px-2 py-1 sm:py-1.5 text-xs text-white font-mono focus:border-white focus:outline-none transition" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Pillole di Scala Rapida -->
+                  <div class="pt-1.5 border-t border-white/[0.05] flex items-center justify-between gap-1 sm:gap-2 flex-wrap">
+                    <span class="text-[9px] sm:text-[10px] font-cyber text-zinc-400 uppercase tracking-wider flex items-center gap-1">
+                      <i data-lucide="scaling" class="w-3 h-3 text-amber-400"></i>
+                      <span id="i18n-quickScaleLabel">Scala rapida:</span>
+                    </span>
+                    <div class="flex items-center gap-1 sm:gap-1.5 flex-wrap" id="scalePillsContainer">
+                      <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(0.5, this)">50%</button>
+                      <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(0.75, this)">75%</button>
+                      <button type="button" class="scale-pill active-scale-pill px-1.5 sm:px-2 py-0.5 rounded-md bg-white/15 border border-white/30 text-[9px] sm:text-[10px] font-mono text-white font-bold transition" onclick="applyDimensionScale(1.0, this)">100%</button>
+                      <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(1.25, this)">125%</button>
+                      <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(1.5, this)">150%</button>
+                      <button type="button" class="scale-pill px-1.5 sm:px-2 py-0.5 rounded-md bg-[#181920] hover:bg-white/10 border border-white/10 text-[9px] sm:text-[10px] font-mono text-zinc-300 transition" onclick="applyDimensionScale(2.0, this)">200%</button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -17972,6 +18088,117 @@ END-ISO-10303-21;`;
     /* GESTIONE DIMENSIONI PERSONALIZZATE E SCALA RAPIDA DEL PEZZO */
     let originalDimensions = { x: 80, y: 60, z: 25 };
     let currentDimensionScale = 1.0;
+
+    function selectPartSizePreset(sizeKey, x, y, z, btnEl) {
+      const dimXEl = document.getElementById('dimX');
+      const dimYEl = document.getElementById('dimY');
+      const dimZEl = document.getElementById('dimZ');
+
+      if (dimXEl) dimXEl.value = x;
+      if (dimYEl) dimYEl.value = y;
+      if (dimZEl) dimZEl.value = z;
+
+      originalDimensions = { x, y, z };
+      currentDimensionScale = 1.0;
+
+      // Reset scale pills to 100%
+      const scalePills = document.querySelectorAll('.scale-pill');
+      scalePills.forEach(p => {
+        if (p.innerText.includes('100%')) {
+          p.classList.add('active-scale-pill', 'bg-white/15', 'border-white/30', 'text-white', 'font-bold');
+          p.classList.remove('bg-[#181920]', 'border-white/10', 'text-zinc-300');
+        } else {
+          p.classList.remove('active-scale-pill', 'bg-white/15', 'border-white/30', 'text-white', 'font-bold');
+          p.classList.add('bg-[#181920]', 'border-white/10', 'text-zinc-300');
+        }
+      });
+
+      // Update card styling
+      const cards = document.querySelectorAll('.size-preset-card');
+      cards.forEach(c => {
+        c.classList.remove('active-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+        c.classList.add('border-white/10', 'bg-[#16171F]');
+        const pill = c.querySelector('.size-card-pill');
+        if (pill) {
+          pill.classList.remove('bg-white', 'text-black');
+          pill.classList.add('bg-white/10', 'text-white');
+        }
+      });
+
+      if (btnEl) {
+        btnEl.classList.add('active-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+        btnEl.classList.remove('border-white/10', 'bg-[#16171F]');
+        const pill = btnEl.querySelector('.size-card-pill');
+        if (pill) {
+          pill.classList.remove('bg-white/10', 'text-white');
+          pill.classList.add('bg-white', 'text-black');
+        }
+      }
+
+      // Update badge
+      const badge = document.getElementById('dimensionSourceBadge');
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+      const sizeNames = {
+        'XS': isEn ? 'SIZE XS // POCKET (~4 CM)' : isEs ? 'TALLA XS // BOLSILLO (~4 CM)' : 'TAGLIA XS // TASCABILE (~4 CM)',
+        'S': isEn ? 'SIZE S // SMALL (~8 CM)' : isEs ? 'TALLA S // PEQUEÑO (~8 CM)' : 'TAGLIA S // PICCOLO (~8 CM)',
+        'M': isEn ? 'SIZE M // MEDIUM (~15 CM)' : isEs ? 'TALLA M // MEDIANO (~15 CM)' : 'TAGLIA M // MEDIO (~15 CM)',
+        'L': isEn ? 'SIZE L // LARGE (~22 CM)' : isEs ? 'TALLA L // GRANDE (~22 CM)' : 'TAGLIA L // GRANDE (~22 CM)',
+        'XL': isEn ? 'SIZE XL // EXTRA LARGE (~32 CM)' : isEs ? 'TALLA XL // MUY GRANDE (~32 CM)' : 'TAGLIA XL // MOLTO GRANDE (~32 CM)'
+      };
+      if (badge) {
+        badge.innerText = sizeNames[sizeKey] || `TAGLIA ${sizeKey}`;
+        badge.className = 'text-[8px] sm:text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20 font-bold shrink-0';
+      }
+
+      const dimText = document.getElementById('sizeSelectedDimensionsText');
+      if (dimText) {
+        dimText.innerText = `${x} × ${y} × ${z} mm`;
+      }
+
+      if (typeof updateCalculatedDimensionMetrics === 'function') {
+        const dimText = document.getElementById('sizeSelectedDimensionsText');
+      if (dimText && x > 0 && y > 0 && z > 0) {
+        dimText.innerText = `${x} × ${y} × ${z} mm`;
+      }
+      updateCalculatedDimensionMetrics(x, y, z);
+      }
+      if (typeof recalculateInstantQuote === 'function') {
+        recalculateInstantQuote();
+      }
+      if (typeof calculateVolumetricShipping === 'function') {
+        calculateVolumetricShipping();
+      }
+      if (typeof updateLiveRequestSummary === 'function') {
+        updateLiveRequestSummary();
+      }
+    }
+    window.selectPartSizePreset = selectPartSizePreset;
+
+    function toggleExactDimensions() {
+      const collapse = document.getElementById('exactDimensionsCollapse');
+      const chevron = document.getElementById('exactDimsChevron');
+      const label = document.getElementById('toggleExactDimensionsLabel');
+      if (!collapse) return;
+
+      const isHidden = collapse.classList.contains('hidden');
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+
+      if (isHidden) {
+        collapse.classList.remove('hidden');
+        if (chevron) chevron.classList.add('rotate-180');
+        if (label) label.innerText = isEn ? 'Hide exact mm dimensions' : isEs ? 'Ocultar medidas exactas en mm' : 'Nascondi misure esatte in mm';
+      } else {
+        collapse.classList.add('hidden');
+        if (chevron) chevron.classList.remove('rotate-180');
+        if (label) label.innerText = isEn ? 'Have calipers? Enter exact mm dimensions' : isEs ? '¿Tienes calibre? Introduce medidas exactas en mm' : 'Hai un calibro? Inserisci le misure esatte in mm';
+      }
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+    window.toggleExactDimensions = toggleExactDimensions;
 
     function onManualDimensionInput() {
       const dimXEl = document.getElementById('dimX');
