@@ -6240,7 +6240,7 @@
 
           <!-- Pulsante Avanzamento a Passo 2 -->
           <div class="pt-2 border-t border-white/10 flex justify-end">
-            <button type="button" onclick="goToClientWizardStep(2)" class="w-full sm:w-auto btn-kowalski-primary px-6 py-3 rounded-xl font-cyber font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 transition">
+            <button type="button" id="btnWizardStep1Next" onclick="window.goToClientWizardStep(2)" class="w-full sm:w-auto btn-kowalski-primary px-6 py-3 rounded-xl font-cyber font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 transition relative z-20 select-none">
               <span>PROSEGUI A COLORE &amp; RIEMPIMENTO</span>
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </button>
@@ -26939,6 +26939,87 @@ window.__lastComputedQuotePrice = computedPrice;
         authorized: '¡Fondos retenidos en Escrow con éxito!'
       }
     };
+
+    
+    function goToClientWizardStep(step) {
+      const s1 = document.getElementById('clientWizardStep1');
+      const s2 = document.getElementById('clientWizardStep2');
+      const s3 = document.getElementById('clientWizardStep3');
+      if (!s1 || !s2 || !s3) {
+        console.warn('Wizard steps not found');
+        return;
+      }
+
+      // Se il titolo non è ancora stato compilato, assegna un default per non bloccare l'utente
+      if (step === 2) {
+        const titleInput = document.getElementById('reqTitle');
+        if (titleInput && !titleInput.value.trim()) {
+          const matVal = document.getElementById('reqMaterial')?.value || '3D';
+          titleInput.value = 'Componente ' + (matVal.includes(' ') ? matVal.split(' ')[0] : matVal);
+        }
+      }
+
+      s1.classList.add('hidden');
+      s2.classList.add('hidden');
+      s3.classList.add('hidden');
+
+      const badge = document.getElementById('clientWizardStepBadge');
+      const titleEl = document.getElementById('clientWizardStepTitle');
+      const pct = document.getElementById('clientWizardStepPercent');
+      const bar1 = document.getElementById('wizardBarStep1');
+      const bar2 = document.getElementById('wizardBarStep2');
+      const bar3 = document.getElementById('wizardBarStep3');
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+
+      if (step === 1) {
+        s1.classList.remove('hidden');
+        if (badge) badge.innerText = isEn ? 'STEP 1 OF 3' : 'PASSO 1 DI 3';
+        if (titleEl) titleEl.innerText = isEn ? 'COMPONENT & DIMENSIONS' : 'COMPONENTE & DIMENSIONI';
+        if (pct) pct.innerText = isEn ? '33% COMPLETED' : '33% COMPLETATO';
+        if (bar1) bar1.className = 'h-1.5 rounded-full bg-white transition-all duration-300';
+        if (bar2) bar2.className = 'h-1.5 rounded-full bg-white/20 transition-all duration-300';
+        if (bar3) bar3.className = 'h-1.5 rounded-full bg-white/20 transition-all duration-300';
+      } else if (step === 2) {
+        s2.classList.remove('hidden');
+        if (badge) badge.innerText = isEn ? 'STEP 2 OF 3' : 'PASSO 2 DI 3';
+        if (titleEl) titleEl.innerText = isEn ? 'COLOR, QUANTITY & INFILL' : 'COLORE, QUANTITÀ & RIEMPIMENTO';
+        if (pct) pct.innerText = isEn ? '66% COMPLETED' : '66% COMPLETATO';
+        if (bar1) bar1.className = 'h-1.5 rounded-full bg-white transition-all duration-300';
+        if (bar2) bar2.className = 'h-1.5 rounded-full bg-white/20 transition-all duration-300';
+        if (bar3) bar3.className = 'h-1.5 rounded-full bg-white/20 transition-all duration-300';
+      } else if (step === 3) {
+        s3.classList.remove('hidden');
+        if (badge) badge.innerText = isEn ? 'STEP 3 OF 3' : 'PASSO 3 DI 3';
+        if (titleEl) titleEl.innerText = isEn ? 'BUDGET, SHIPPING & ESCROW' : 'BUDGET, SPEDIZIONE & ESCROW';
+        if (pct) pct.innerText = isEn ? '100% READY' : '100% PRONTO';
+        if (bar1) bar1.className = 'h-1.5 rounded-full bg-white transition-all duration-300';
+        if (bar2) bar2.className = 'h-1.5 rounded-full bg-white/20 transition-all duration-300';
+        if (bar3) bar3.className = 'h-1.5 rounded-full bg-emerald-400 transition-all duration-300';
+        
+        if (typeof recalculateInstantQuote === 'function') recalculateInstantQuote();
+        if (typeof calculateVolumetricShipping === 'function') calculateVolumetricShipping();
+        if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
+      }
+
+      const formEl = document.getElementById('formBroadcastRequest');
+      if (formEl) {
+        formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+    window.goToClientWizardStep = goToClientWizardStep;
+
+    // Delegazione click universale per massima reattività su mobile e desktop
+    document.addEventListener('click', function(e) {
+      const btn1 = e.target && e.target.closest && e.target.closest('#btnWizardStep1Next');
+      if (btn1) {
+        e.preventDefault();
+        window.goToClientWizardStep(2);
+      }
+    }, true);
+
 
     function handleBroadcastSubmit(e) {
       if (e && typeof e.preventDefault === 'function') {
