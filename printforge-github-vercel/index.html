@@ -5552,8 +5552,8 @@
               <span id="footerFrameworkVal" class="text-zinc-200 font-bold">Piattaforma P2P // MVP Launch</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
-              <span id="footerTaxModelLabel" class="text-zinc-500 uppercase">Modello Fiscale:</span>
-              <span id="footerTaxModelVal" class="text-zinc-200 font-semibold">Regime Forfettario &amp; Prest. Occasionale (Art. 2222 C.C.)</span>
+              <span id="footerTaxModelLabel" class="text-zinc-500 uppercase">Conformità:</span>
+              <span id="footerTaxModelVal" class="text-zinc-200 font-semibold">Intermediazione P2P &amp; Stripe Escrow</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-0.5 sm:gap-2">
               <span id="footerCustodyLabel" class="text-zinc-500 uppercase">Custodia Fondi:</span>
@@ -5600,12 +5600,7 @@
                 <span id="footerLinkRefund" class="group-hover:translate-x-0.5 transition-transform">Ristampa Gratuita o Rimborso 100%</span>
               </button>
             </li>
-            <li>
-              <button type="button" onclick="openLegalModal('maker-tax')" class="hover:text-white transition text-left flex items-center gap-2 group w-full">
-                <i data-lucide="receipt" class="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 shrink-0"></i>
-                <span id="footerLinkMakerTax" class="group-hover:translate-x-0.5 transition-transform">Fisco Maker: Prestazione Occasionale &amp; P.IVA</span>
-              </button>
-            </li>
+            
           </ul>
         </div>
 
@@ -9158,7 +9153,7 @@
   <!-- MODALE: VISUALIZZATORE DOCUMENTI LEGALI & BUROCRAZIE UFFICIALI            -->
   <!-- ========================================================================= -->
   <div id="modalLegalDoc" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
-    <div class="w-full max-w-4xl cyber-card p-6 sm:p-8 space-y-6 modal-spring-enter max-h-[92vh] flex flex-col text-xs font-sans">
+    <div class="w-full max-w-4xl cyber-card p-4 sm:p-8 space-y-4 sm:space-y-6 modal-spring-enter max-h-[92vh] flex flex-col text-xs font-sans">
       
       <!-- Modal Header -->
       <div class="flex items-start justify-between border-b border-white/[0.08] pb-4 shrink-0 gap-4">
@@ -9188,12 +9183,11 @@
       </div>
 
       <!-- Quick Document Switcher Tabs -->
-      <div class="flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono shrink-0 no-scrollbar">
+      <div class="hidden sm:flex items-center gap-1.5 overflow-x-auto pb-1 text-[11px] font-mono shrink-0 no-scrollbar">
         <button type="button" onclick="openLegalModal('terms')" id="tabDoc_terms" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Termini P2P</button>
         <button type="button" onclick="openLegalModal('escrow')" id="tabDoc_escrow" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Protocollo Escrow</button>
         <button type="button" onclick="openLegalModal('dispute')" id="tabDoc_dispute" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Dispute &amp; Risoluzione</button>
         <button type="button" onclick="openLegalModal('refund')" id="tabDoc_refund" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Rimborsi &amp; Ristampa</button>
-        <button type="button" onclick="openLegalModal('maker-tax')" id="tabDoc_maker-tax" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Fisco Maker (Art. 2222)</button>
         <button type="button" onclick="openLegalModal('packlink-shipping')" id="tabDoc_packlink-shipping" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Spedizioni Packlink PRO</button>
         <button type="button" onclick="openLegalModal('privacy')" id="tabDoc_privacy" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Privacy GDPR</button>
         <button type="button" onclick="openLegalModal('cookies')" id="tabDoc_cookies" class="px-3 py-1.5 rounded-lg border border-white/10 bg-white/5 text-zinc-300 hover:text-white shrink-0">Cookie Policy</button>
@@ -13237,8 +13231,8 @@
           footerDesc: "Piattaforma peer-to-peer di intermediazione tecnologica per la manifattura additiva. Pagamenti protetti da custodia fiduciaria Stripe Escrow con svincolo al ritiro corriere previa verifica 3 foto calibro e logistica integrata API Packlink PRO con calcolo del peso volumetrico.",
           footerFrameworkLabel: "Inquadramento:",
           footerFrameworkVal: "Piattaforma P2P // MVP Launch",
-          footerTaxModelLabel: "Modello Fiscale:",
-          footerTaxModelVal: "Regime Forfettario & Prest. Occasionale (Art. 2222 C.C.)",
+          footerTaxModelLabel: "Conformità:",
+          footerTaxModelVal: "Intermediazione P2P & Stripe Escrow",
           footerCustodyLabel: "Custodia Fondi:",
           footerCustodyVal: "Stripe Connect Escrow (Nessun fondo trattenuto)",
           footerLogisticsLabel: "Logistica B2B:",
@@ -14118,8 +14112,8 @@
           footerDesc: "Peer-to-peer technological intermediation platform for additive manufacturing. Payments secured by Stripe Escrow with carrier pickup release upon caliper QC verification, with integrated Packlink PRO API logistics.",
           footerFrameworkLabel: "Classification:",
           footerFrameworkVal: "P2P Platform // MVP Launch",
-          footerTaxModelLabel: "Tax Model:",
-          footerTaxModelVal: "Flat-rate VAT & Freelance Exemption (Occasional Service)",
+          footerTaxModelLabel: "Compliance:",
+          footerTaxModelVal: "P2P Technology Brokerage & Stripe Escrow",
           footerCustodyLabel: "Funds Custody:",
           footerCustodyVal: "Stripe Connect Escrow (Zero funds held directly)",
           footerLogisticsLabel: "B2B Logistics:",
@@ -14992,7 +14986,7 @@
           footerDesc: "Plataforma peer-to-peer de intermediación tecnológica para la fabricación aditiva. Pagos protegidos por custodia fiduciaria Stripe Escrow con liberación al recoger el transportista tras verificar 3 fotos con calibre y logística Packlink PRO.",
           footerFrameworkLabel: "Encuadre:",
           footerFrameworkVal: "Plataforma P2P // Lanzamiento MVP",
-          footerTaxModelLabel: "Modelo Fiscal:",
+          footerTaxModelLabel: "Conformidad:",
           footerTaxModelVal: "Régimen Simplificado y Prestación Ocasional",
           footerCustodyLabel: "Custodia de Fondos:",
           footerCustodyVal: "Escrow Stripe Connect (Sin retención directa de fondos)",
