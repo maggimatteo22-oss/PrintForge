@@ -9249,9 +9249,9 @@
       cadQcFiles: [],
       // Stato Pipeline Ordine & Custodia Fiduciaria
       stage2Completed: false,
-      stage4Completed: (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true'),
+      stage4Completed: false,
       isShipped: false,
-      isDelivered: (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')
+      isDelivered: false
     };
     window.AppState = AppState;
 
@@ -19655,21 +19655,16 @@ END-ISO-10303-21;`;
     let toastTimer = null;
     let notificationDrawerOpen = false;
 
-    /* Helper: Verifica se esiste una richiesta accettata per sbloccare l'area Attività */
+    /* Helper: Verifica se esiste una richiesta per l'area Attività */
     function hasAcceptedRequest() {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       if (AppState.user.role !== 'creator') return false;
 
-      // DOPO IL 4° PASSAGGIO: al creator NON mostrare mai più la pagina attività né escrow room
-      if (AppState.stage4Completed === true || AppState.isDelivered === true || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')) return false;
-      if (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)) return false;
-      if (AppState.loadedRequestInStudio && (AppState.loadedRequestInStudio.isDelivered || AppState.loadedRequestInStudio.isCompleted)) return false;
-
-      // Se in memoria vi è un ordine attivo non ancora completato/consegnato
-      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+      // Se in memoria vi è un ordine attivo non ancora consegnato
+      if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isDelivered) {
         return true;
       }
-      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered) {
+      if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isDelivered) {
         return true;
       }
 
@@ -19678,36 +19673,28 @@ END-ISO-10303-21;`;
       const myMakerUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
 
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
-        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
-        if (typeof r.status === 'string' && (r.status.includes('CONSEGNATO') || r.status.includes('SVINCOLATI') || r.status.includes('ARCHIVIATO') || r.status.includes('COMPLETATO'))) return false;
+        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
+        if (r.isCompleted || r.isClosed || r.isDelivered) return false;
         const isAcc = Boolean(
           r.isAccepted === true ||
-          (r.maker && r.maker.trim().length > 0) ||
-          (r.maker_name && r.maker_name.trim().length > 0) ||
-          (r.acceptedBy && r.acceptedBy.trim().length > 0) ||
           (typeof r.status === 'string' && (
             r.status.toUpperCase().includes('ACCETTAT') ||
+            r.status.toUpperCase().includes('TRATTATIVA') ||
             r.status.toUpperCase().includes('LAVORAZION') ||
             r.status.toUpperCase().includes('PRODUCTION') ||
             r.status.toUpperCase().includes('PRODUZION') ||
             r.status.toUpperCase().includes('SPEDIT')
           ))
         );
-        if (!isAcc) return false;
-        const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
-        const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
-        const assignedUid = (r.makerUserId || '').toLowerCase().trim();
-        return (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
-               (assignedEmail && assignedEmail === myMakerEmail) ||
-               (assignedUid && assignedUid === myMakerUid);
+        return isAcc;
       });
 
       if (myAcceptedJob) {
-        AppState.loadedRequestInStudio = myAcceptedJob;
-        AppState.activeDealRfpId = myAcceptedJob.id;
+        if (!AppState.loadedRequestInStudio) AppState.loadedRequestInStudio = myAcceptedJob;
+        if (!AppState.activeDealRfpId) AppState.activeDealRfpId = myAcceptedJob.id;
         return true;
       }
-      return false;
+      return true; // Per i creator l'area Attività/Studio 3D è sempre accessibile
     }
     window.hasAcceptedRequest = hasAcceptedRequest;
 
@@ -19837,7 +19824,7 @@ END-ISO-10303-21;`;
       const mCreatorProjectsLabel = isEn ? 'PROJECTS' : 'PROGETTI';
 
       if (isCreator) {
-        // --- NAVBAR CREATOR: HOME + VETRINA 2D + I MIEI PROGETTI + BACHECA RICHIESTE + ATTIVITÀ ---
+        // --- NAVBAR CREATOR: HOME + BACHECA RICHIESTE + ATTIVITÀ + I MIEI PROGETTI + (ESCROW ROOM) ---
         // 1. HOME (Fissa, non traducibile)
         html += `
           <button onclick="navigateTo('client-home')" id="navHomeBtn" class="${isHome ? activeClass : inactiveClass}">
@@ -19852,86 +19839,82 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // Vetrina 2D / Esplora nascosta per i Creator su richiesta utente (riservata ai Clienti)
+        // 2. BACHECA RICHIESTE DEI CLIENTI (Sempre visibile per i Creator!)
+        const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
+        const isReqs = (v === 'creator-requests');
+        html += `
+          <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
+            <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
+            <span>${creatorRequestsLabel}</span>
+            <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
+          </button>
+        `;
+        mobileHtml += `
+          <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
+            <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
+            <span>${mRequestsLabel}</span>
+            <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
+          </button>
+        `;
 
-        // 3. I MIEI PROGETTI
+        // 3. ATTIVITÀ (Area Studio 3D & Collaudo commessa - Sempre visibile e accessibile per i Creator!)
+        const isAct = (v === 'activity' || v === 'studio');
+        const actLabel = isEn ? 'ACTIVITY' : isEs ? 'ACTIVIDAD' : 'ATTIVITÀ';
+        const hasActiveWork = Boolean(
+          AppState.loadedRequestInStudio ||
+          (AppState.broadcastRequests && AppState.broadcastRequests.some(r => r.isAccepted && !r.isCompleted)) ||
+          AppState.activeEscrowOrder
+        );
+        html += `
+          <button onclick="navigateTo('activity')" id="navActivityBtn" class="${isAct ? activeClass : inactiveClass}">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
+            <span>${actLabel}</span>
+            ${hasActiveWork ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
+          </button>
+        `;
+        mobileHtml += `
+          <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
+            <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
+            <span>${actLabel}</span>
+            ${hasActiveWork ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
+          </button>
+        `;
+
+        // 4. I MIEI PROGETTI (Portfolio e gestione opere)
         const isPortfolio = (v === 'creator-portfolio');
         html += `
           <button onclick="navigateTo('creator-portfolio')" id="navCreatorPortfolioBtn" class="${isPortfolio ? activeClass : inactiveClass}">
-            <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
             <span>${creatorProjectsLabel}</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('creator-portfolio')" class="${isPortfolio ? mActive : mInactive}">
-            <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
             <span>${mCreatorProjectsLabel}</span>
           </button>
         `;
 
-        // 4. SCAMBIO TRA "RICHIESTE" E "ATTIVITÀ" (Sia da PC che da Mobile):
-        // Quando il creator accetta una richiesta, la pagina "Richieste" viene scambiata con "Attività".
-        // DOPO IL 4° PASSAGGIO: se il creator è ancora su order-room a visionare la schermata finale,
-        // mantieni visibile il tab ESCROW ROOM finché non cambia schermata con cursore o tocco.
-        const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
-        const shouldShowCreatorEscrowTab = (v === 'order-room' && AppState.activeEscrowOrder) || (!isPostStage4 && hasAcceptedRequest());
-        if (shouldShowCreatorEscrowTab) {
-          const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
-          const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
+        // 5. ESCROW ROOM (Visibile per il creator quando vi è un ordine escrow o dopo il collaudo)
+        const activeEscrow = AppState.activeEscrowOrder;
+        const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
+        const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
+        const shouldShowCreatorEscrow = (v === 'order-room' && activeEscrow) || Boolean(activeEscrow && hasQc);
 
-          const isAct = (v === 'activity' || v === 'studio');
+        if (shouldShowCreatorEscrow) {
           const isEscrow = (v === 'order-room' || v === 'escrow');
-          const actLabel = isEn ? 'ACTIVITY' : isEs ? 'ACTIVIDAD' : 'ATTIVITÀ';
-
-          // Tab 1: ATTIVITÀ (sempre accessibile per il creator per visionare 3D, specifiche e collaudo)
           html += `
-            <button onclick="navigateTo('activity')" id="navActivityBtn" class="${isAct ? activeClass : inactiveClass}">
-              <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>${actLabel}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <button onclick="navigateTo('order-room')" id="navEscrowRoomBtn" class="${isEscrow ? activeClass : inactiveClass}">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
+              <span class="notranslate" translate="no">ESCROW ROOM</span>
+              <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
             </button>
           `;
           mobileHtml += `
-            <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
-              <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>${actLabel}</span>
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            </button>
-          `;
-
-          // Tab 2: ESCROW ROOM (visibile per il creator una volta collaudate le foto fino al completamento)
-          if (hasQc) {
-            html += `
-              <button onclick="navigateTo('order-room')" id="navEscrowRoomBtn" class="${isEscrow ? activeClass : inactiveClass}">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
-                <span class="notranslate" translate="no">ESCROW ROOM</span>
-                <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
-              </button>
-            `;
-            mobileHtml += `
-              <button onclick="navigateTo('order-room')" class="${isEscrow ? mActive : mInactive}">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
-                <span class="notranslate" translate="no">ESCROW ROOM</span>
-                <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
-              </button>
-            `;
-          }
-        } else {
-          // Quando il creator non ha una commessa accettata, mostra la bacheca richieste aperta per prendere nuovi incarichi
-          const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
-          const isReqs = (v === 'creator-requests');
-          html += `
-            <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>${creatorRequestsLabel}</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
-            </button>
-          `;
-          mobileHtml += `
-            <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
-              <span>${mRequestsLabel}</span>
-              <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
+            <button onclick="navigateTo('order-room')" class="${isEscrow ? mActive : mInactive}">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
+              <span class="notranslate" translate="no">ESCROW ROOM</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
             </button>
           `;
         }
@@ -26152,12 +26135,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         navigateTo('client-home');
       } else {
         showToast(currentLang === 'it' ? 'Modalità CREATOR attiva.' : 'CREATOR Mode active.', 'success');
-        // Se ha commessa attiva -> ATTIVITÀ / STUDIO, altrimenti -> I MIEI PROGETTI. MAI la pagina bacheca richieste!
-        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
-          navigateTo('activity');
-        } else {
-          navigateTo('creator-portfolio');
-        }
+        // Porta il creator direttamente alla Bacheca Richieste
+        navigateTo('creator-requests');
       }
     }
     window.switchUserRole = switchUserRole;
@@ -27055,22 +27034,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         }
         return;
       }
-    // DOPO IL 4° PASSAGGIO: la pagina di affare concluso (order-room) resta visibile al creator
-    // finché non cambia pagina manualmente con il cursore o con il dito.
-    if (AppState.user && AppState.user.role === 'creator') {
-      const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
-      if (isPostStage4) {
-        // Se l'ordine è già stato chiuso/svuotato definitivamente (AppState.activeEscrowOrder === null),
-        // allora non permettere più l'accesso alla stanza Escrow o Attività
-        if (!AppState.activeEscrowOrder && (viewId === 'activity' || viewId === 'studio' || viewId === 'order-room')) {
-          navigateTo('creator-portfolio');
-          return;
-        }
-        // Se invece l'ordine è in fase di completamento ma l'utente tenta di aprire l'attività CAD, reindirizza
-        if (viewId === 'activity' || viewId === 'studio') {
-          navigateTo('creator-portfolio');
-          return;
-        }
+    // SEPARAZIONE RUOLI: Se un cliente tenta di accedere alle sezioni creator, reindirizza a client-home
+    if (AppState.user && AppState.user.role === 'client') {
+      if (viewId === 'creator-requests' || viewId === 'creator-portfolio' || viewId === 'activity' || viewId === 'studio') {
+        navigateTo('client-home');
+        return;
       }
     }
       // PROTEZIONE ESCLUSIVA PAGINA RICHIESTE CLIENTE
@@ -27096,15 +27064,26 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
       if (viewId === 'home') viewId = 'client-home';
       if (viewId === 'esplora') viewId = 'explore';
+      // Permetti al creator di navigare liberamente sia sulla bacheca che sulla pagina attività
       if (viewId === 'creator-requests') {
-        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
-          navigateTo('activity');
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
+          navigateTo('client-home');
           return;
         }
       }
-      if ((viewId === 'activity' || viewId === 'studio') && typeof hasAcceptedRequest === 'function' && !hasAcceptedRequest()) {
-        navigateTo('creator-requests');
-        return;
+      if (viewId === 'activity' || viewId === 'studio') {
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
+          navigateTo('client-home');
+          return;
+        }
+        // Assicura che una richiesta attiva sia caricata nello Studio CAD
+        if (!AppState.loadedRequestInStudio && AppState.broadcastRequests) {
+          const accReq = AppState.broadcastRequests.find(r => r.isAccepted) || AppState.broadcastRequests[0];
+          if (accReq) {
+            AppState.loadedRequestInStudio = accReq;
+            AppState.activeDealRfpId = accReq.id;
+          }
+        }
       }
       if (viewId === 'explore') {
         if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
@@ -27184,22 +27163,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       if (viewId === 'studio' || viewId === 'activity') {
-        // La finestra attività si apre solamente dopo l'accettazione di una richiesta
-        if (!hasAcceptedRequest()) {
-          const isEn = currentLang === 'en';
-          const isEs = currentLang === 'es';
-          const blockMsg = isEn 
-            ? 'The Activity window opens only after accepting a request from the board.' 
-            : isEs 
-            ? 'La ventana de Actividad se abre únicamente tras aceptar una solicitud del panel.' 
-            : 'La finestra attività si apre solamente dopo l\'accettazione di una richiesta.';
-          showToast(blockMsg, 'warning');
-          const redirectView = (AppState.user && AppState.user.role === 'creator') ? 'creator-requests' : 'client-home';
-          navigateTo(redirectView);
-          return;
-        }
-
-        if (!AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
           const isEn = currentLang === 'en';
           const isEs = currentLang === 'es';
           showToast(isEn ? 'Please sign in as Creator to access this area.' : isEs ? 'Inicia sesión como Creador para acceder a esta área.' : 'Accedi come Creator per accedere all\'area di lavorazione.', 'warning');
