@@ -6514,147 +6514,66 @@
 
           <!-- 2. SPEDIZIONE PACKLINK PRO // FORMATO SCATOLA A GRIGLIA COMPATTA COME SIZE DELL'OPERA -->
           <div class="w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-3 shadow-lg" id="packlinkShippingSection">
-            <!-- Header Bar Compatto con Auto-Adatta -->
+            <!-- Header Bar Compatto con Auto-Calcolo -->
             <div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
               <div class="flex items-center gap-2">
-                <div class="w-8 h-8 rounded-lg bg-white text-black flex items-center justify-center font-bold text-xs shadow-md shrink-0">
+                <div class="w-8 h-8 rounded-lg bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 flex items-center justify-center font-bold text-xs shadow-md shrink-0">
                   <i data-lucide="package-check" class="w-4 h-4"></i>
                 </div>
                 <div>
                   <div class="flex items-center gap-1.5 flex-wrap">
                     <span id="packlinkLogisticsBadge" class="text-[9px] font-mono font-bold bg-white/10 text-white px-1.5 py-0.5 rounded border border-white/20">PACKLINK PRO</span>
                     <span id="packlinkEscrowPill" class="text-[9px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> STRIPE ESCROW
+                      <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> AUTO-CALCOLATO
                     </span>
                   </div>
                   <h3 id="packlinkSectionTitle" class="font-cyber font-bold text-white text-xs sm:text-sm tracking-wide mt-0.5">
-                    2. FORMATO SCATOLA &amp; SPEDIZIONE
+                    2. SPEDIZIONE &amp; IMBALLO CORRIERE
                   </h3>
                 </div>
               </div>
-              <button type="button" onclick="applyBoxAutoFit()" class="px-2.5 py-1.5 rounded-lg bg-white text-black hover:bg-zinc-200 font-mono text-[10px] font-bold transition flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer shrink-0">
-                <i data-lucide="zap" class="w-3 h-3 text-amber-500 fill-amber-500"></i>
-                <span>Auto-Adatta</span>
-              </button>
+              <span id="autoPackagingPillBadge" class="text-[9.5px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30 shrink-0">Scatola S (15×15×10 cm)</span>
             </div>
 
-            <!-- Elementi Three.js e display nascosti per compatibilità -->
-            <div class="hidden">
+            <!-- Banner Rassicurazione & Sintesi Imballo Auto-Calcolato (Nessuna Azione Manuale Richiesta) -->
+            <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-2.5 text-xs font-mono" id="autoPackagingBanner">
+              <div class="flex items-center gap-2.5 min-w-0">
+                <span class="text-base select-none shrink-0">📦</span>
+                <div class="min-w-0">
+                  <span class="text-white font-bold block text-[11px] truncate" id="autoPackagingNameDisplay">Scatola S (15×15×10 cm)</span>
+                  <span class="text-[9.5px] text-zinc-400 font-mono block truncate" id="autoPackagingDimsDisplay">Calcolo automatico su misura pezzo &amp; peso IATA</span>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono text-emerald-400 font-bold shrink-0 whitespace-nowrap" id="autoPackagingPriceDisplay">da € 6,05</span>
+            </div>
+
+            <!-- Selettore Manuale Nascosto (Preservato per Three.js, calcoli e invio form) -->
+            <div class="hidden" style="display: none !important;">
+              <button type="button" id="btnAutoAdattaCompat" onclick="applyBoxAutoFit()"></button>
+              <div id="packlinkBoxesGrid">
+                <div id="box-preset-envelope" onclick="selectPackagingPreset('envelope', 5, 5, 2, 20)"></div>
+                <div id="box-preset-s" onclick="selectPackagingPreset('s', 15, 15, 10, 150)"></div>
+                <div id="box-preset-m" onclick="selectPackagingPreset('m', 24, 18, 12, 350)"></div>
+                <div id="box-preset-l" onclick="selectPackagingPreset('l', 35, 25, 15, 800)"></div>
+              </div>
+              <button type="button" id="btnToggleCustomPackagingSliders" onclick="toggleCustomPackagingSliders()"></button>
+              <div id="customBoxSlidersContainer">
+                <input type="number" id="boxLengthInput" min="1" max="150" value="15" oninput="handleManualBoxDimChange('l', this.value)" />
+                <input type="number" id="boxWidthInput" min="1" max="150" value="15" oninput="handleManualBoxDimChange('w', this.value)" />
+                <input type="number" id="boxHeightInput" min="1" max="150" value="10" oninput="handleManualBoxDimChange('h', this.value)" />
+                <input type="number" id="boxWeightInput" min="1" max="50000" value="150" oninput="handleManualBoxDimChange('weight', this.value)" />
+                <input type="range" id="boxLengthSlider" min="5" max="60" value="15" oninput="syncPackagingDim('l', this.value)" />
+                <input type="range" id="boxWidthSlider" min="5" max="60" value="15" oninput="syncPackagingDim('w', this.value)" />
+                <input type="range" id="boxHeightSlider" min="2" max="50" value="10" oninput="syncPackagingDim('h', this.value)" />
+                <input type="range" id="boxWeightSlider" min="20" max="5000" value="150" oninput="syncPackagingDim('weight', this.value)" />
+              </div>
               <div id="packlinkBox3dMount"></div>
               <span id="box3dHelpBadge">Tariffazione Standard IATA (÷5000)</span>
-              <span id="box3dDimDisplay">5.0 × 5.0 × 2.0 cm</span>
-              <span id="box3dVolDisplay">50 cm³ (0.05 L)</span>
-              <span id="box3dIataDisplay">IATA: 0.01 kg</span>
+              <span id="box3dDimDisplay">15.0 × 15.0 × 10.0 cm</span>
+              <span id="box3dVolDisplay">2250 cm³ (2.25 L)</span>
+              <span id="box3dIataDisplay">IATA: 0.45 kg</span>
               <span id="packlinkIataPill">DIVISORE IATA: 5000</span>
               <span id="packlinkLivePill">QUOTAZIONE LIVE</span>
-            </div>
-
-            <!-- 4 SCATOLE IMBALLAGGIO IN GRIGLIA COMPATTA 2x2 COME LA SIZE DELL'OPERA -->
-            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2" id="packlinkBoxesGrid">
-              
-              <!-- Card Preset 1: Busta Minima Imbottita -->
-              <div id="box-preset-envelope" onclick="selectPackagingPreset('envelope', 5, 5, 2, 20)" class="box-preset-card active-preset p-2.5 rounded-xl bg-[#121317] border-2 border-white cursor-pointer relative space-y-1.5 flex flex-col justify-between transition hover:border-white/50 active:scale-98">
-                <div class="flex items-center justify-between w-full">
-                  <span class="text-[8.5px] font-mono px-1.5 py-0.5 rounded-full bg-white/10 text-zinc-300 font-bold border border-white/20">MINIMO</span>
-                  <span class="text-base select-none">✉️</span>
-                </div>
-                <div>
-                  <h4 class="font-cyber font-bold text-xs text-white leading-tight">Busta Imbottita</h4>
-                  <p class="text-[9.5px] font-mono text-zinc-400 leading-snug mt-0.5">5 × 5 × 2 cm · 20g</p>
-                </div>
-                <div class="pt-1 border-t border-white/[0.08] flex items-center justify-between text-[9px] font-mono">
-                  <span class="text-zinc-500">Vol: 50 cm³</span>
-                  <span class="text-emerald-400 font-bold">da € 5,72</span>
-                </div>
-              </div>
-
-              <!-- Card Preset 2: Scatola S (Piccola) -->
-              <div id="box-preset-s" onclick="selectPackagingPreset('s', 15, 15, 10, 150)" class="box-preset-card p-2.5 rounded-xl bg-[#121317] border border-white/10 hover:border-white/30 cursor-pointer relative space-y-1.5 flex flex-col justify-between transition active:scale-98">
-                <div class="flex items-center justify-between w-full">
-                  <span class="text-[8.5px] font-mono px-1.5 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-500/30">CONSIGLIATO</span>
-                  <span class="text-base select-none">📦</span>
-                </div>
-                <div>
-                  <h4 class="font-cyber font-bold text-xs text-white leading-tight">Scatola S</h4>
-                  <p class="text-[9.5px] font-mono text-zinc-400 leading-snug mt-0.5">15 × 15 × 10 cm · 150g</p>
-                </div>
-                <div class="pt-1 border-t border-white/[0.08] flex items-center justify-between text-[9px] font-mono">
-                  <span class="text-zinc-500">Vol: 2250 cm³</span>
-                  <span class="text-emerald-400 font-bold">da € 6,05</span>
-                </div>
-              </div>
-
-              <!-- Card Preset 3: Scatola M (Media) -->
-              <div id="box-preset-m" onclick="selectPackagingPreset('m', 24, 18, 12, 350)" class="box-preset-card p-2.5 rounded-xl bg-[#121317] border border-white/10 hover:border-white/30 cursor-pointer relative space-y-1.5 flex flex-col justify-between transition active:scale-98">
-                <div class="flex items-center justify-between w-full">
-                  <span class="text-[8.5px] font-mono px-1.5 py-0.5 rounded-full bg-white/10 text-zinc-300 font-bold border border-white/20">MEDIO</span>
-                  <span class="text-base select-none">📦</span>
-                </div>
-                <div>
-                  <h4 class="font-cyber font-bold text-xs text-white leading-tight">Scatola M</h4>
-                  <p class="text-[9.5px] font-mono text-zinc-400 leading-snug mt-0.5">24 × 18 × 12 cm · 350g</p>
-                </div>
-                <div class="pt-1 border-t border-white/[0.08] flex items-center justify-between text-[9px] font-mono">
-                  <span class="text-zinc-500">Vol: 5184 cm³</span>
-                  <span class="text-emerald-400 font-bold">da € 7,20</span>
-                </div>
-              </div>
-
-              <!-- Card Preset 4: Scatola L (Grande) -->
-              <div id="box-preset-l" onclick="selectPackagingPreset('l', 35, 25, 15, 800)" class="box-preset-card p-2.5 rounded-xl bg-[#121317] border border-white/10 hover:border-white/30 cursor-pointer relative space-y-1.5 flex flex-col justify-between transition active:scale-98">
-                <div class="flex items-center justify-between w-full">
-                  <span class="text-[8.5px] font-mono px-1.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-bold border border-purple-500/30">GRANDE</span>
-                  <span class="text-base select-none">📦</span>
-                </div>
-                <div>
-                  <h4 class="font-cyber font-bold text-xs text-white leading-tight">Scatola L</h4>
-                  <p class="text-[9.5px] font-mono text-zinc-400 leading-snug mt-0.5">35 × 25 × 15 cm · 800g</p>
-                </div>
-                <div class="pt-1 border-t border-white/[0.08] flex items-center justify-between text-[9px] font-mono">
-                  <span class="text-zinc-500">Vol: 13125 cm³</span>
-                  <span class="text-emerald-400 font-bold">da € 8,90</span>
-                </div>
-              </div>
-
-            </div>
-
-            <!-- Toggle per personalizzare dimensioni al millimetro se necessario -->
-            <div class="pt-1">
-              <button type="button" id="btnToggleCustomPackagingSliders" onclick="toggleCustomPackagingSliders()" class="w-full py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-zinc-400 hover:text-white font-mono text-[10px] flex items-center justify-between transition cursor-pointer">
-                <span class="flex items-center gap-1.5">
-                  <i data-lucide="sliders" class="w-3 h-3"></i>
-                  <span>Personalizza Dimensioni Scatola</span>
-                </span>
-                <span id="customPackagingToggleArrow" class="text-xs transition-transform duration-200">▾</span>
-              </button>
-
-              <div id="customBoxSlidersContainer" class="hidden mt-2 p-3 rounded-xl bg-black/40 border border-white/10 space-y-2.5">
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] font-mono">
-                  <div class="space-y-1">
-                    <span class="text-zinc-400">Lunghezza (cm)</span>
-                    <input type="number" id="boxLengthInput" min="1" max="150" value="15" oninput="handleManualBoxDimChange('l', this.value)" class="w-full bg-[#16171F] border border-white/10 rounded px-2 py-1 text-white" />
-                  </div>
-                  <div class="space-y-1">
-                    <span class="text-zinc-400">Larghezza (cm)</span>
-                    <input type="number" id="boxWidthInput" min="1" max="150" value="15" oninput="handleManualBoxDimChange('w', this.value)" class="w-full bg-[#16171F] border border-white/10 rounded px-2 py-1 text-white" />
-                  </div>
-                  <div class="space-y-1">
-                    <span class="text-zinc-400">Altezza (cm)</span>
-                    <input type="number" id="boxHeightInput" min="1" max="150" value="10" oninput="handleManualBoxDimChange('h', this.value)" class="w-full bg-[#16171F] border border-white/10 rounded px-2 py-1 text-white" />
-                  </div>
-                  <div class="space-y-1">
-                    <span class="text-zinc-400">Peso Reale (g)</span>
-                    <input type="number" id="boxWeightInput" min="1" max="50000" value="150" oninput="handleManualBoxDimChange('weight', this.value)" class="w-full bg-[#16171F] border border-white/10 rounded px-2 py-1 text-white" />
-                  </div>
-                </div>
-                <!-- Range sliders nascosti per sincronizzazione JS -->
-                <div class="hidden">
-                  <input type="range" id="boxLengthSlider" min="5" max="60" value="15" oninput="syncPackagingDim('l', this.value)" />
-                  <input type="range" id="boxWidthSlider" min="5" max="60" value="15" oninput="syncPackagingDim('w', this.value)" />
-                  <input type="range" id="boxHeightSlider" min="2" max="50" value="10" oninput="syncPackagingDim('h', this.value)" />
-                  <input type="range" id="boxWeightSlider" min="20" max="5000" value="150" oninput="syncPackagingDim('weight', this.value)" />
-                </div>
-              </div>
             </div>
 
             <!-- Opzioni di Tempistica e Spedizione (Flessibile / Standard / Urgente) -->
@@ -17711,6 +17630,7 @@ END-ISO-10303-21;`;
       if (typeof recalculateInstantQuote === 'function') {
         recalculateInstantQuote();
       }
+      if (typeof autoCalculatePackagingFromPart === 'function') autoCalculatePackagingFromPart();
       if (typeof calculateVolumetricShipping === 'function') {
         calculateVolumetricShipping();
       }
@@ -22054,6 +21974,56 @@ window.__lastComputedQuotePrice = computedPrice;
       if (sl) sl.value = Math.min(numVal, 2500);
       calculateVolumetricShipping();
     }
+
+    function autoCalculatePackagingFromPart() {
+      const dx = parseFloat(document.getElementById('dimX')?.value) || 80;
+      const dy = parseFloat(document.getElementById('dimY')?.value) || 80;
+      const dz = parseFloat(document.getElementById('dimZ')?.value) || 40;
+
+      const maxDim = Math.max(dx, dy, dz);
+      const minDim = Math.min(dx, dy, dz);
+      
+      let presetKey = 's';
+      let l = 15, w = 15, h = 10, grams = 150;
+      let name = 'Scatola S (15×15×10 cm)';
+      let priceStr = 'da € 6,05';
+
+      if (maxDim <= 40 && minDim <= 20) {
+        presetKey = 'envelope';
+        l = 5; w = 5; h = 2; grams = 20;
+        name = 'Busta Imbottita (5×5×2 cm)';
+        priceStr = 'da € 5,72';
+      } else if (maxDim <= 130 && minDim <= 90) {
+        presetKey = 's';
+        l = 15; w = 15; h = 10; grams = 150;
+        name = 'Scatola S (15×15×10 cm)';
+        priceStr = 'da € 6,05';
+      } else if (maxDim <= 220 && minDim <= 110) {
+        presetKey = 'm';
+        l = 24; w = 18; h = 12; grams = 350;
+        name = 'Scatola M (24×18×12 cm)';
+        priceStr = 'da € 7,20';
+      } else {
+        presetKey = 'l';
+        l = 35; w = 25; h = 15; grams = 800;
+        name = 'Scatola L (35×25×15 cm)';
+        priceStr = 'da € 8,90';
+      }
+
+      if (typeof selectPackagingPreset === 'function') {
+        selectPackagingPreset(presetKey, l, w, h, grams);
+      }
+
+      const badge = document.getElementById('autoPackagingPillBadge');
+      if (badge) badge.innerText = name;
+      const nameEl = document.getElementById('autoPackagingNameDisplay');
+      if (nameEl) nameEl.innerText = name;
+      const dimEl = document.getElementById('autoPackagingDimsDisplay');
+      if (dimEl) dimEl.innerText = 'Pacco su misura per pezzo ' + Math.round(dx) + '×' + Math.round(dy) + '×' + Math.round(dz) + ' mm + imbottitura';
+      const priceEl = document.getElementById('autoPackagingPriceDisplay');
+      if (priceEl) priceEl.innerText = priceStr;
+    }
+    window.autoCalculatePackagingFromPart = autoCalculatePackagingFromPart;
 
     function selectPackagingPreset(presetKey, l, w, h, rwGrams) {
       handleBoxDimensionInput('length', l);
@@ -26768,6 +26738,7 @@ window.__lastComputedQuotePrice = computedPrice;
         if (bar3) bar3.className = 'h-1.5 rounded-full bg-emerald-400 transition-all duration-300';
         
         if (typeof recalculateInstantQuote === 'function') recalculateInstantQuote();
+        if (typeof autoCalculatePackagingFromPart === 'function') autoCalculatePackagingFromPart();
         if (typeof calculateVolumetricShipping === 'function') calculateVolumetricShipping();
         if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
       }
