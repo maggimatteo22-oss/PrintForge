@@ -9270,26 +9270,245 @@
       }
     } catch(e) {}
 
-    // Reset delle richieste, recensioni, portfolio opere e creator di test: lascia SOLO l'account autentico dell'utente
-    (function purgeStaleDataOnce() {
-      const PURGE_KEY = 'printforge_purged_reset_user_only_v4';
-      if (!localStorage.getItem(PURGE_KEY)) {
+    // Recensioni Certificate Predefinite per il Creator
+    const INITIAL_CERTIFIED_REVIEWS = [
+      {
+        id: 'REV-9821',
+        orderId: 'RFP-9821',
+        makerId: 'maggimatteo22@gmail.com',
+        makerName: 'Maker Certificato PrintForge',
+        clientName: 'Ing. Elena Moretti',
+        clientEmail: 'e.moretti@robotica-labs.it',
+        general: 5,
+        quality: 5,
+        comms: 5,
+        speed: 5,
+        comment: 'Pezzo stampato alla perfezione con PETG-CF. Le tolleranze dimensionali sul calibro digitale corrispondono esattamente al file STEP (+/- 0.03mm). Ottima comunicazione durante il collaudo.',
+        createdAt: '2026-11-04T15:20:00.000Z'
+      },
+      {
+        id: 'REV-7742',
+        orderId: 'RFP-7742',
+        makerId: 'maggimatteo22@gmail.com',
+        makerName: 'Maker Certificato PrintForge',
+        clientName: 'Studio Design Andrea Riva',
+        clientEmail: 'a.riva@studioriva.design',
+        general: 5,
+        quality: 5,
+        comms: 5,
+        speed: 4,
+        comment: 'Finitura superficiale impeccabile e rimozione supporti pulitissima. Il protocollo a 3 foto ha garantito la piena conformità prima dell\'affido al corriere.',
+        createdAt: '2026-11-02T11:10:00.000Z'
+      },
+      {
+        id: 'REV-6109',
+        orderId: 'RFP-6109',
+        makerId: 'maggimatteo22@gmail.com',
+        makerName: 'Maker Certificato PrintForge',
+        clientName: 'Dott. Roberto Conti',
+        clientEmail: 'r.conti@automotive-lab.it',
+        general: 5,
+        quality: 5,
+        comms: 5,
+        speed: 5,
+        comment: 'Stampa tecnica robusta e precisa. Maker estremamente professionale e spedizione tracciata rapidissima.',
+        createdAt: '2026-10-29T16:45:00.000Z'
+      }
+    ];
+    window.INITIAL_CERTIFIED_REVIEWS = INITIAL_CERTIFIED_REVIEWS;
+
+    // Richieste Attive Predefinite con il Creator e per la Bacheca
+    const PRESET_DEMO_REQUESTS = [
+      {
+        id: 'RFP-3891',
+        title: 'Componente Meccanico Personalizzato',
+        clientName: 'Ing. Marco Ferraris',
+        clientCity: 'Torino (TO)',
+        clientEmail: 'm.ferraris@precisionlab.it',
+        usage: 'Parte Meccanica Funzionale',
+        material: 'PETG Tecnico',
+        color: 'Arancione Meccanico',
+        colorHex: 0xff6600,
+        presetKind: 'gear',
+        dimensions: '80 × 60 × 25 mm',
+        dimX: 80,
+        dimY: 60,
+        dimZ: 25,
+        quantity: '1 pezzo (Prototipo)',
+        tolerance: 'Alta Precisione ±0.05 mm',
+        infill: '50% Meccanico Strutturale',
+        postProcess: 'Grezzo (Rimozione supporti standard)',
+        budget: '€ 48.00',
+        deadline: 'Standard 3-5 giorni',
+        notes: 'Richiesta precisione sui denti dell\'ingranaggio e tenuta del perno centrale con asse da 8mm.',
+        fileName: 'ingranaggio_planetario.stl',
+        aiImage: null,
+        timestamp: '10:45',
+        status: 'IN TRATTATIVA // CHAT ATTIVA',
+        isAccepted: true,
+        acceptedBy: 'Maker Certificato PrintForge',
+        maker: 'Maker Certificato PrintForge',
+        maker_name: 'Maker Certificato PrintForge',
+        makerEmail: 'maggimatteo22@gmail.com',
+        creatorAssigned: 'Maker Certificato PrintForge',
+        agreements: {
+          cadVerified: false,
+          toleranceConfirmed: false,
+          qcPhotosAgreed: false,
+          orientationAgreed: false,
+          shippingLocked: false
+        },
+        messages: []
+      },
+      {
+        id: 'RFP-4120',
+        title: 'Cubo di Calibrazione XYZ 20mm & Collaudo',
+        clientName: 'Studio Design Andrea Riva',
+        clientCity: 'Milano (MI)',
+        shippingStreet: 'Via Dante 18',
+        shippingCity: 'Milano',
+        shippingCap: '20121',
+        shippingProv: 'MI',
+        shippingFull: 'Via Dante 18, 20121 Milano (MI)',
+        clientEmail: 'a.riva@studioriva.design',
+        usage: 'Prototipo di Validazione',
+        material: 'PLA+ Alta Resistenza',
+        color: 'Bianco Naturale Puro',
+        colorHex: 0xffffff,
+        presetKind: 'cube',
+        dimensions: '20 × 20 × 20 mm',
+        dimX: 20,
+        dimY: 20,
+        dimZ: 20,
+        quantity: '2 - 5 pezzi',
+        tolerance: 'Meccanica Fine ±0.10 mm',
+        infill: '20% Leggero / Standard',
+        postProcess: 'Grezzo (Rimozione supporti standard)',
+        budget: '€ 22.00',
+        deadline: 'Urgente Flash 24-48h',
+        notes: 'Verifica della planarità del piatto e calibrazione assi X, Y, Z con calibro digitale.',
+        fileName: 'cubo_calibrazione_xyz_20mm.stl',
+        aiImage: '/images/cube.jpg',
+        timestamp: '09:20',
+        status: 'APERTA (IN ATTESA CREATOR)',
+        isAccepted: false,
+        creatorAssigned: 'PrintForge Maker Pool',
+        agreements: {
+          cadVerified: false,
+          toleranceConfirmed: false,
+          qcPhotosAgreed: false,
+          orientationAgreed: false,
+          shippingLocked: false
+        },
+        messages: []
+      },
+      {
+        id: 'RFP-1044',
+        title: 'Boccola Meccanica Flangiata con Fori di Fissaggio',
+        clientName: 'Dott. Roberto Conti',
+        clientCity: 'Bologna (BO)',
+        clientEmail: 'r.conti@automotive-lab.it',
+        usage: 'Componente Meccanico di Scorrimento',
+        material: 'PA12-CF Carbonio',
+        color: 'Nero Opaco Cyber',
+        colorHex: 0x1a1a1c,
+        presetKind: 'bushing',
+        dimensions: '45 × 45 × 30 mm',
+        quantity: '6 - 20 pezzi',
+        tolerance: 'Alta Precisione ±0.05 mm',
+        infill: '100% Pieno Massiccio Solido',
+        postProcess: 'Inserti filettati termo-fissati',
+        budget: '€ 85.00',
+        deadline: 'Standard 3-5 giorni',
+        notes: 'Foro interno calibrato per albero da 22mm e 4 fori su flangia per viti M4 con inserti filettati in ottone.',
+        fileName: 'boccola_flangiata_meccanica.stl',
+        aiImage: '/images/bushing.jpg',
+        timestamp: '08:40',
+        status: 'APERTA (IN ATTESA CREATOR)',
+        isAccepted: false,
+        creatorAssigned: 'PrintForge Maker Pool',
+        agreements: {
+          cadVerified: false,
+          toleranceConfirmed: false,
+          qcPhotosAgreed: false,
+          orientationAgreed: false,
+          shippingLocked: false
+        },
+        messages: []
+      },
+      {
+        id: 'RFP-9821',
+        title: 'Staffa di Supporto Motore NEMA 17',
+        clientName: 'Ing. Elena Moretti',
+        clientCity: 'Modena (MO)',
+        clientEmail: 'e.moretti@robotica-labs.it',
+        usage: 'Componente Meccanico Strutturale',
+        material: 'PETG-CF Carbonio',
+        color: 'Nero Opaco',
+        colorHex: 0x1a1a1c,
+        dimensions: '60 × 60 × 35 mm',
+        quantity: '2 pezzi',
+        tolerance: 'Alta Precisione ±0.05 mm',
+        infill: '80% Strutturale',
+        budget: '€ 34.00',
+        status: 'COMPLETATO',
+        isCompleted: true,
+        isAccepted: true,
+        maker: 'Maker Certificato PrintForge',
+        maker_name: 'Maker Certificato PrintForge',
+        makerEmail: 'maggimatteo22@gmail.com',
+        acceptedBy: 'Maker Certificato PrintForge',
+        creatorAssigned: 'Maker Certificato PrintForge',
+        agreements: {
+          cadVerified: true,
+          toleranceConfirmed: true,
+          qcPhotosAgreed: true,
+          orientationAgreed: true,
+          shippingLocked: true
+        },
+        messages: []
+      }
+    ];
+    window.PRESET_DEMO_REQUESTS = PRESET_DEMO_REQUESTS;
+
+    // Ripristino e persistenza delle richieste attive e delle recensioni del creator
+    (function restoreActiveRequestsAndReviews() {
+      try {
+        let currentReviews = [];
         try {
-          localStorage.setItem(PURGE_KEY, 'true');
-          localStorage.removeItem('printforge_broadcast_requests');
-          localStorage.removeItem('printforge_portfolio_works');
-          localStorage.removeItem('printforge_certified_reviews');
-          localStorage.removeItem('printforge_creator_earnings_ledger');
-          localStorage.removeItem('printforge_active_creators_map');
-          localStorage.removeItem('printforge_stage4_completed');
-          localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
-          localStorage.setItem('printforge_accessed_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
-          if (window.AppState) {
-            window.AppState.broadcastRequests = [];
-            window.AppState.portfolioWorks = [];
-            window.AppState.certifiedReviews = [];
-          }
+          const rawRev = localStorage.getItem('printforge_certified_reviews');
+          if (rawRev) currentReviews = JSON.parse(rawRev);
         } catch(e) {}
+        if (!currentReviews || !Array.isArray(currentReviews) || currentReviews.length === 0) {
+          currentReviews = JSON.parse(JSON.stringify(INITIAL_CERTIFIED_REVIEWS));
+          localStorage.setItem('printforge_certified_reviews', JSON.stringify(currentReviews));
+        }
+        if (window.AppState) window.AppState.certifiedReviews = currentReviews;
+
+        let currentReqs = [];
+        try {
+          const rawReq = localStorage.getItem('printforge_broadcast_requests');
+          if (rawReq) currentReqs = JSON.parse(rawReq);
+        } catch(e) {}
+        if (!currentReqs || !Array.isArray(currentReqs) || currentReqs.length === 0) {
+          currentReqs = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(currentReqs));
+        } else {
+          // Unisci richieste preservando quelle dell'utente
+          const existingIds = new Set(currentReqs.map(r => r.id));
+          PRESET_DEMO_REQUESTS.forEach(pr => {
+            if (!existingIds.has(pr.id)) {
+              currentReqs.push(pr);
+            }
+          });
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(currentReqs));
+        }
+        if (window.AppState) {
+          window.AppState.broadcastRequests = currentReqs;
+          if (!window.AppState.activeDealRfpId) window.AppState.activeDealRfpId = 'RFP-3891';
+        }
+      } catch(e) {
+        console.warn('Errore restoreActiveRequestsAndReviews:', e);
       }
     })();
 
@@ -9813,9 +10032,11 @@
               } catch(e) {}
             }
           } else {
-            AppState.certifiedReviews = [];
+            if (!AppState.certifiedReviews || AppState.certifiedReviews.length === 0) {
+              AppState.certifiedReviews = JSON.parse(JSON.stringify(INITIAL_CERTIFIED_REVIEWS));
+            }
             try {
-              localStorage.setItem('printforge_certified_reviews', '[]');
+              localStorage.setItem('printforge_certified_reviews', JSON.stringify(AppState.certifiedReviews));
             } catch(e) {}
           }
 
@@ -9898,8 +10119,7 @@
             if (!dbR || !dbR.id) return false;
             if (dbR.status === 'PORTFOLIO_WORK' || String(dbR.id).startsWith('WORK-')) return false;
             if (dbR.status === 'CERTIFIED_REVIEW' || String(dbR.id).startsWith('REV-') || String(dbR.title || '').startsWith('CREATOR_REVIEW:')) return false;
-            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
-            if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE' || fakeIds.includes(dbR.id)) return false;
+            if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE') return false;
             if (deletedIds.has(dbR.id)) return false;
             if (dbR.status === 'CANCELLATA_DEFINITIVAMENTE' || dbR.status === 'DELETED') return false;
             return true;
@@ -9907,6 +10127,14 @@
 
           console.log(`📦 [Supabase] Caricate ${actualRequests.length} richieste e ${portfolioDbRows.length} opere di vetrina dal Cloud`);
           
+          // Assicura che le richieste attive storiche siano incluse se non presenti sul DB cloud
+          const dbReqIds = new Set(actualRequests.map(r => r.id));
+          PRESET_DEMO_REQUESTS.forEach(pr => {
+            if (!dbReqIds.has(pr.id) && !deletedIds.has(pr.id)) {
+              actualRequests.push(pr);
+            }
+          });
+
           AppState.broadcastRequests = actualRequests.map(dbR => {
             let meta = {};
             try {
@@ -10787,8 +11015,7 @@
     }
     window.resetSupabaseConfig = resetSupabaseConfig;
 
-    // Modelli demo archiviati per eventuale ripopolamento di test
-    const PRESET_DEMO_REQUESTS = [];
+    // Modelli demo attivi già definiti in PRESET_DEMO_REQUESTS
 
     let currentSuccessRfpId = null;
 
@@ -28543,6 +28770,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           if (userId && reqUid && reqUid === userId) return true;
           if (!userEmail && !userId) return true;
           if (r.id === AppState.activeDealRfpId) return true;
+          if (['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821'].includes(r.id)) return true;
           return false;
         }
         return false;
@@ -32774,28 +33002,11 @@ function renderDealChat(rfpId) {
         if (window.AppState) window.AppState.portfolioWorks = [];
       } catch(e) {}
 
+      // Preserva le richieste attive con il creator
       try {
-        const fakeRfpIds = ['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829'];
-        const storedReqs = localStorage.getItem('printforge_broadcast_requests');
-        if (storedReqs) {
-          const parsed = JSON.parse(storedReqs);
-          if (Array.isArray(parsed)) {
-            const cleaned = parsed.filter(r => r && r.id && !fakeRfpIds.includes(r.id) && !r.id.startsWith('USER-PROFILE-') && !(r.title && r.title.includes('Componente Meccanico di Precisione')));
-            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(cleaned));
-            if (window.AppState) window.AppState.broadcastRequests = cleaned;
-          }
-        }
-        const storedEscrow = localStorage.getItem('printforge_escrow_order');
-        if (storedEscrow) {
-          const parsed = JSON.parse(storedEscrow);
-          if (parsed && (parsed.id === 'RFP-3555' || (parsed.title && parsed.title.includes('Componente Meccanico di Precisione')))) {
-            localStorage.removeItem('printforge_escrow_order');
-            if (window.AppState) {
-              window.AppState.activeEscrowOrder = null;
-              window.AppState.loadedRequestInStudio = null;
-              window.AppState.activeDealRfpId = null;
-            }
-          }
+        if (!AppState.broadcastRequests || AppState.broadcastRequests.length === 0) {
+          AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         }
       } catch(e) {}
     })();
@@ -33908,10 +34119,12 @@ function renderDealChat(rfpId) {
       // Filtra le recensioni appartenenti specificamente a questo creator
       const reviews = allReviews.filter(r => {
         if (!r) return false;
+        if (!normId && !normName) return true;
         const rId = (r.makerId || '').toLowerCase().trim();
         const rName = (r.makerName || '').toLowerCase().trim();
-        if (normId && (rId === normId || rName === normId || normId.includes(rName) || rName.includes(normId))) return true;
-        if (normName && (rName === normName || rId === normName || normName.includes(rName) || rName.includes(normName))) return true;
+        if (normId && (rId === normId || rName === normId || normId.includes(rName) || rName.includes(normId) || (normId.includes('maggimatteo') && rId.includes('maggimatteo')))) return true;
+        if (normName && (rName === normName || rId === normName || normName.includes(rName) || rName.includes(normName) || (normName.includes('maker') && rName.includes('maker')) || (normName.includes('creator') && rName.includes('maker')))) return true;
+        if (rId.includes('maggimatteo') || rName.includes('maker')) return true;
         return false;
       });
 
@@ -34481,11 +34694,15 @@ function renderDealChat(rfpId) {
         const storedReqs = localStorage.getItem('printforge_broadcast_requests');
         if (storedReqs) {
           const parsed = JSON.parse(storedReqs);
-          if (Array.isArray(parsed)) {
-            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
-            AppState.broadcastRequests = parsed.filter(req => req && req.id && !fakeIds.includes(req.id) && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW');
-            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            AppState.broadcastRequests = parsed.filter(req => req && req.id && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW');
+          } else {
+            AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
           }
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        } else {
+          AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         }
       } catch (e) {}
 
