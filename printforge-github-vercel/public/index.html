@@ -3962,7 +3962,7 @@
                   id="officialLangBtn"
                   onclick="cycleAppLanguage(event)"
                   class="h-8 px-2.5 sm:px-3 rounded-full bg-[#101014] border border-white/20 hover:border-white/50 text-white flex items-center gap-1.5 transition-all shadow-sm active:scale-95 cursor-pointer select-none group"
-                  title="Clicca per cambiare lingua / Click to switch language / Haz clic para cambiar de idioma">
+                  title="Cambia lingua: Italiano ⇄ English">
             <span id="currentLangFlag" class="flex items-center shrink-0">
               <div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0">
                 <div class="w-1/3 h-full bg-[#009246]"></div>
@@ -3975,29 +3975,7 @@
           </button>
         </div>
 
-        <!-- SELETTORE TEMA BIANCO / NERO (MINIMAL STYLIZED SUN / BLACK MOON ICON) -->
-        <button type="button" 
-                id="themeToggleBtn"
-                onclick="toggleThemeMode()" 
-                class="relative h-[32px] w-[32px] rounded-full bg-[#101014] border border-white/20 hover:border-white/50 text-white flex items-center justify-center transition-all duration-300 shadow-inner group active:scale-95 shrink-0" 
-                title="Cambia tema: Bianco / Nero (Light / Dark Mode)">
-          <!-- Sole stilizzato (Tema Scuro / Nero) -->
-          <svg id="themeToggleIconSun" class="w-4 h-4 text-white group-hover:rotate-90 transition-transform duration-500 block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="4"></circle>
-            <path d="M12 2v2"></path>
-            <path d="M12 20v2"></path>
-            <path d="m4.93 4.93 1.41 1.41"></path>
-            <path d="m17.66 17.66 1.41 1.41"></path>
-            <path d="M2 12h2"></path>
-            <path d="M20 12h2"></path>
-            <path d="m6.34 17.66-1.41 1.41"></path>
-            <path d="m19.07 4.93-1.41 1.41"></path>
-          </svg>
-          <!-- Luna nera stilizzata con lo stesso identico tratto geometrico minimale del sole (Tema Chiaro / Bianco) -->
-          <svg id="themeToggleIconMoon" class="w-4 h-4 text-black group-hover:-rotate-12 transition-transform duration-500 hidden" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-          </svg>
-        </button>
+        <!-- Selettore tema rimosso: sito permanentemente scuro/nero su richiesta utente -->
 
         <!-- User Area: Full Pill CTA (Fai una richiesta) -->
         <div id="navUserArea" class="shrink-0 relative">
@@ -4446,7 +4424,7 @@
               </div>
             </div>
 
-            <!-- RIQUADRO OPZIONE 2: TASSA STRIPE ESCROW & CALCOLO AUTOMATICO PREZZO IN VETRINA -->
+            <!-- RIQUADRO TARIFFA: TASSA STRIPE ESCROW & CALCOLO AUTOMATICO PREZZO IN VETRINA -->
             <div id="creatorStripeNoticeBox" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0c1424] via-[#09101c] to-[#070b14] border border-blue-500/40 text-blue-200 font-sans text-xs space-y-2.5 shadow-xl mt-3">
               <div class="flex items-center justify-between gap-2">
                 <div class="flex items-center gap-2">
@@ -4455,10 +4433,10 @@
                   </div>
                   <div>
                     <span class="text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-creatorStripeTitle">Garanzia Stripe Escrow // Prezzo Finale Vetrina</span>
-                    <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-creatorStripeSubtitle">OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo</span>
+                    <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-creatorStripeSubtitle">Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo</span>
                   </div>
                 </div>
-                <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0">OPZIONE 2: 1,5% + € 0,25</span>
+                <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0">Stripe Escrow: 1,5% + € 0,25</span>
               </div>
 
               <!-- Griglia Calcolo Dinamico al Centesimo: Tuo Compenso Maker | + Tassa Stripe (1,5% + 0,25€) | Prezzo Pubblicato in Vetrina -->
@@ -5156,7 +5134,7 @@
                   <span class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white text-black shadow-sm" id="vStage6Badge">FASE 5/5</span>
                   <span class="text-xs font-mono text-zinc-200 font-bold uppercase tracking-wider" id="vStage6Title">Collaudo Quote &amp; Svincolo alla Consegna</span>
                 </div>
-                <span class="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.15)]" id="vStage6Status">OPZIONE 2 // SCANSIONE CORRIERE</span>
+                <span class="text-[10px] font-mono text-emerald-400 font-bold bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full shadow-[0_0_10px_rgba(16,185,129,0.15)]" id="vStage6Status">SVINCOLO AUTOMATICO // SCANSIONE CORRIERE</span>
               </div>
 
               <!-- 3 Photo Caliper Inspection Gallery Simulation -->
@@ -5193,14 +5171,14 @@
                   </div>
                 </div>
 
-                <!-- Delivery Release Confirmation (Opzione 2) -->
+                <!-- Delivery Release Confirmation  -->
                 <div id="remotionPayoutBadge" class="p-2.5 sm:p-3 rounded-xl bg-gradient-to-r from-emerald-950/40 via-emerald-900/20 to-emerald-950/40 border border-emerald-500/35 text-center space-y-0.5 shadow-[0_0_30px_rgba(16,185,129,0.15),inset_0_1px_0_0_rgba(255,255,255,0.08)]" style="will-change: opacity, transform;">
                   <div class="text-[11px] sm:text-xs font-mono font-bold text-emerald-400 flex items-center justify-center gap-1.5">
                     <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
                     <span id="vPayoutTitle">CONSEGNA CERTIFICATA DAL CORRIERE // STRIPE ESCROW SVINCOLATO</span>
                   </div>
                   <p class="text-[10px] sm:text-[11px] text-zinc-300 font-sans leading-tight" id="vPayoutDesc">
-                    Scansione avvenuta: pacco consegnato con successo al cliente. I fondi di &euro; 48,00 vengono svincolati automaticamente all'IBAN del Maker (Opzione 2).
+                    Scansione avvenuta: pacco consegnato con successo al cliente. I fondi di &euro; 48,00 vengono svincolati automaticamente all'IBAN del Maker .
                   </p>
                 </div>
               </div>
@@ -6324,7 +6302,7 @@
                   <span id="budgetWarningText" class="leading-relaxed text-[#FBBF24]">Con un budget inferiore a € 77 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € 102,00.</span>
                 </div>
 
-                <!-- RIQUADRO UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (OPZIONE 2 - INSERITO ESATTAMENTE NELLA ZONA ROSSA INDICATA) -->
+                <!-- RIQUADRO UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (GARANZIA STRIPE ESCROW) -->
                 <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] via-[#0A0D16] to-[#07090F] border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)] space-y-2.5 mt-2 transition-all block">
                   <div class="flex items-center justify-between gap-2 flex-wrap">
                     <div class="flex items-center gap-2.5">
@@ -6333,10 +6311,10 @@
                       </div>
                       <div>
                         <span class="text-xs sm:text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-stripeNoticeTitle">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
-                        <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-stripeNoticeSubtitle">OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo</span>
+                        <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-stripeNoticeSubtitle">Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo</span>
                       </div>
                     </div>
-                    <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">OPZIONE 2: 1,5% + € 0,25</span>
+                    <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">Stripe Escrow: 1,5% + € 0,25</span>
                   </div>
 
                   <!-- Griglia Calcolo Dinamico al Centesimo in Tempo Reale: Manifattura | + Tassa Stripe | Totale Protetto -->
@@ -7885,7 +7863,7 @@
               <span class="text-xl sm:text-2xl md:text-3xl font-display font-black text-white tracking-tight tabular-nums" id="escrowOrderBudget">&euro; 0,00</span>
             </div>
 
-            <!-- Box Protocollo Svincolo Fondi alla Consegna (Opzione 2) -->
+            <!-- Box Protocollo Svincolo Fondi alla Consegna  -->
             <div class="p-2 sm:p-3 sm:px-4 rounded-lg sm:rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-left md:text-right shadow-inner">
               <div class="flex items-center gap-1.5 md:justify-end">
                 <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
@@ -8010,7 +7988,7 @@
             <!-- Compatibility Container per Decisione Cliente -->
             <div id="escrowClientDecisionCard" class="hidden"></div>
 
-            <!-- Scheda di Stato Riservata al Creator / Maker (Opzione 2: Svincolo Diretto alla Consegna) - Nascosta su richiesta utente -->
+            <!-- Scheda di Stato Riservata al Creator / Maker (Svincolo Diretto alla Consegna) - Nascosta su richiesta utente -->
             <div id="escrowCreatorStatusCard" class="hidden" style="display: none !important;">
               <div class="flex items-center justify-between border-b border-white/[0.08] pb-2">
                 <span class="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider" id="i18n-escrowCreatorStatusHead">
@@ -8023,7 +8001,7 @@
                 <div class="space-y-1">
                   <h4 class="text-xs font-cyber font-bold text-white tracking-wide" id="i18n-escrowCreatorStatusTitle">Fondi Protetti in Stripe Escrow (Svincolo Diretto alla Consegna)</h4>
                   <p class="text-[11px] text-zinc-300 font-sans leading-relaxed" id="i18n-escrowCreatorStatusDesc">
-                    Il cliente ha già versato il 100% dell'importo in garanzia fiduciaria Stripe. Con il protocollo <strong>Opzione 2</strong>, non appena completi il collaudo fotografico e il corriere registra la consegna del pacco a destinazione, i fondi vengono svincolati automaticamente sul tuo conto senza attendere conferme manuali!
+                    Il cliente ha già versato il 100% dell'importo in garanzia fiduciaria Stripe. Con il protocollo <strong>Stripe Escrow</strong>, non appena completi il collaudo fotografico e il corriere registra la consegna del pacco a destinazione, i fondi vengono svincolati automaticamente sul tuo conto senza attendere conferme manuali!
                   </p>
                 </div>
               </div>
@@ -9032,7 +9010,7 @@
               <span id="reviewMfgNetto" class="text-zinc-200 font-bold">€ 0,00</span>
             </div>
             <div class="flex items-center justify-between text-zinc-400">
-              <span class="text-blue-400">🛡️ Protezione Stripe Escrow (Opzione 2: 1,5% + € 0,25):</span>
+              <span class="text-blue-400">🛡️ Protezione Stripe Escrow (1,5% + € 0,25):</span>
               <span id="reviewStripeFee" class="text-blue-300 font-bold">+ € 0,00</span>
             </div>
           </div>
@@ -13151,7 +13129,7 @@
           escrowCreatorStatusHead: 'STATO CUSTODIA FIDUCIARIA // AREA MAKER',
           escrowCreatorStatusBadge: 'PAGAMENTO GARANTITO',
           escrowCreatorStatusTitle: 'Fondi Protetti in Stripe Escrow (Svincolo Diretto alla Consegna)',
-          escrowCreatorStatusDesc: "Il cliente ha già versato il 100% dell'importo in garanzia fiduciaria Stripe. Con il protocollo <strong>Opzione 2</strong>, non appena completi il collaudo fotografico e il corriere registra la consegna del pacco a destinazione, i fondi vengono svincolati automaticamente sul tuo conto senza attendere conferme manuali!",
+          escrowCreatorStatusDesc: "Il cliente ha già versato il 100% dell'importo in garanzia fiduciaria Stripe. Con il protocollo <strong>Stripe Escrow</strong>, non appena completi il collaudo fotografico e il corriere registra la consegna del pacco a destinazione, i fondi vengono svincolati automaticamente sul tuo conto senza attendere conferme manuali!",
           escrowCreatorStatusFoot: 'Svincolo automatico garantito alla scansione "Consegnato" del corriere tracciato.',
           escrowCarrierLabel: 'CORRIERE:',
           escrowTrackingLabel: 'TRACKING:',
@@ -13236,7 +13214,7 @@
           stage6: {
             badge: "FASE 5/5",
             title: "Collaudo Quote & Svincolo alla Consegna",
-            status: "OPZIONE 2 // SCANSIONE CORRIERE",
+            status: "SVINCOLO AUTOMATICO // SCANSIONE CORRIERE",
             qcLabel1: "FOTO 1: ESTERNO",
             qcBadge1: "+0.02 mm OK",
             qcSub1: "Nominale 80.00mm",
@@ -15039,7 +15017,7 @@
       }
     };
 
-    const langOrder = ['it', 'en', 'es'];
+    const langOrder = ['it', 'en'];
 
     
     function cycleAppLanguage(event) {
@@ -15072,24 +15050,20 @@
 
       const flagsHtml = {
         it: '<div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex shrink-0"><div class="w-1/3 h-full bg-[#009246]"></div><div class="w-1/3 h-full bg-[#ffffff]"></div><div class="w-1/3 h-full bg-[#ce2b37]"></div></div>',
-        en: '<svg class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0" viewBox="0 0 60 30"><clipPath id="uk_flg_sel"><path d="M0,0 v30 h60 v-30 z"/></clipPath><clipPath id="uk_dg_sel"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><g clip-path="url(#uk_flg_sel)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk_dg_sel)" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g></svg>',
-        es: '<div class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 flex flex-col shrink-0"><div class="h-1/4 bg-[#c60b1e]"></div><div class="h-2/4 bg-[#ffc400] flex items-center justify-center"><span class="w-0.5 h-0.5 rounded-full bg-[#c60b1e]/70"></span></div><div class="h-1/4 bg-[#c60b1e]"></div></div>'
+        en: '<svg class="w-4 h-3 rounded-xs overflow-hidden shadow-sm border border-white/30 shrink-0" viewBox="0 0 60 30"><clipPath id="uk_flg_sel"><path d="M0,0 v30 h60 v-30 z"/></clipPath><clipPath id="uk_dg_sel"><path d="M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z"/></clipPath><g clip-path="url(#uk_flg_sel)"><path d="M0,0 v30 h60 v-30 z" fill="#012169"/><path d="M0,0 L60,30 M60,0 L0,30" stroke="#fff" stroke-width="6"/><path d="M0,0 L60,30 M60,0 L0,30" clip-path="url(#uk_dg_sel)" stroke="#C8102E" stroke-width="4"/><path d="M30,0 v30 M0,15 h60" stroke="#fff" stroke-width="10"/><path d="M30,0 v30 M0,15 h60" stroke="#C8102E" stroke-width="6"/></g></svg>'
       };
 
       const names = {
         it: 'Italiano',
-        en: 'English',
-        es: 'Español'
+        en: 'English'
       };
 
-      if (flagEl) flagEl.innerHTML = flagsHtml[lang] || flagsHtml.it;
-      if (nameEl) nameEl.innerText = names[lang] || 'Italiano';
+      if (flagEl) flagEl.innerHTML = (lang === 'en') ? flagsHtml.en : flagsHtml.it;
+      if (nameEl) nameEl.innerText = (lang === 'en') ? 'English' : 'Italiano';
       if (btn) {
-        btn.title = lang === 'it' 
-          ? 'Clicca per cambiare lingua (Italiano -> English -> Español)' 
-          : lang === 'en' 
-          ? 'Click to switch language (English -> Español -> Italiano)' 
-          : 'Haz clic para cambiar idioma (Español -> Italiano -> English)';
+        btn.title = (lang === 'it')
+          ? 'Clicca per passare all\'Inglese / Click for English' 
+          : 'Click to switch to Italian / Clicca per Italiano';
       }
     }
     window.updateLanguageSelectorUI = updateLanguageSelectorUI;
@@ -19390,17 +19364,17 @@ END-ISO-10303-21;`;
       // - PrintForge, HOME e ESCROW ROOM non vanno tradotte (rimangono fisse e protette)
       // - VETRINA e RICHIESTE vanno tradotte nelle lingue appropriate (IT, EN, ES)
       const isEn = currentLang === 'en';
-      const isEs = currentLang === 'es';
 
-      const showcaseLabel = isEn ? '2D SHOWCASE' : isEs ? 'VITRINA 2D' : 'VETRINA 2D';
-      const mShowcaseLabel = isEn ? 'SHOWCASE' : isEs ? 'VITRINA' : 'VETRINA';
+      const showcaseLabel = isEn ? 'SHOWCASE' : 'VETRINA 2D';
+      const mShowcaseLabel = isEn ? 'SHOWCASE' : 'VETRINA';
 
-      const requestsLabel = isEn ? 'YOUR REQUESTS' : isEs ? 'TUS SOLICITUDES' : 'LE TUE RICHIESTE';
-      const mRequestsLabel = isEn ? 'REQUESTS' : isEs ? 'SOLICITUDES' : 'RICHIESTE';
+      // Esplicita richiesta utente: "se clicco la lingua anche la scritta richieste deve diventare subito request, sia da pc che da mobile"
+      const requestsLabel = isEn ? 'REQUESTS' : 'RICHIESTE';
+      const mRequestsLabel = isEn ? 'REQUESTS' : 'RICHIESTE';
 
-      const creatorRequestsLabel = isEn ? 'REQUESTS BOARD' : isEs ? 'PANEL SOLICITUDES' : 'BACHECA RICHIESTE';
-      const creatorProjectsLabel = isEn ? 'MY PROJECTS' : isEs ? 'MIS PROYECTOS' : 'I MIEI PROGETTI';
-      const mCreatorProjectsLabel = isEn ? 'PROJECTS' : isEs ? 'PROYECTOS' : 'PROGETTI';
+      const creatorRequestsLabel = isEn ? 'REQUESTS' : 'BACHECA RICHIESTE';
+      const creatorProjectsLabel = isEn ? 'MY PROJECTS' : 'I MIEI PROGETTI';
+      const mCreatorProjectsLabel = isEn ? 'PROJECTS' : 'PROGETTI';
 
       if (isCreator) {
         // --- NAVBAR CREATOR: HOME + VETRINA 2D + I MIEI PROGETTI + BACHECA RICHIESTE + ATTIVITÀ ---
@@ -21749,7 +21723,7 @@ const warnBox = document.getElementById('budgetWarningBox');
                                 (parseFloat(totalHours) * machineHourRate * batchDiscount);
 
       const baseManufacturingPrice = Math.max(12, Math.round(manufacturingCost * deadlineMult));
-      // OPZIONE 2: Tariffa Stripe calcolata al centesimo in tempo reale (1,5% + € 0,25)
+      // Stripe Escrow: Tariffa Stripe calcolata al centesimo in tempo reale (1,5% + € 0,25)
       const stripeEscrowFee = Math.round((baseManufacturingPrice * 0.015 + 0.25) * 100) / 100;
       const computedPrice = parseFloat((baseManufacturingPrice + stripeEscrowFee).toFixed(2));
 
@@ -21801,12 +21775,12 @@ window.__lastComputedQuotePrice = computedPrice;
       const isEs = lang === 'es';
 
       // ── 1. Riquadro Stripe Escrow sotto al colore ──
-      // ── Riquadro Opzione 2 Creator (Aggiungi Opera in Vetrina) ──
+      // ── Riquadro Stripe Escrow Creator (Aggiungi Opera in Vetrina) ──
       const crTitle = document.getElementById('i18n-creatorStripeTitle');
       if (crTitle) crTitle.innerText = isEn ? 'Stripe Escrow Guarantee // Final Showcase Price' : isEs ? 'Garantía Stripe Escrow // Precio Final Escaparate' : 'Garanzia Stripe Escrow // Prezzo Finale Vetrina';
 
       const crSub = document.getElementById('i18n-creatorStripeSubtitle');
-      if (crSub) crSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'OPCIÓN 2: 1,5% + € 0,25 con cálculo dinámico al céntimo' : 'OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo';
+      if (crSub) crSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'Stripe Escrow: 1.5% + €0.25 dynamically calculated' : 'Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo';
 
       const crColNet = document.getElementById('i18n-creatorColNet');
       if (crColNet) crColNet.innerText = isEn ? 'Your Net Payout' : isEs ? 'Tu Pago Neto' : 'Tuo Compenso';
@@ -21827,7 +21801,7 @@ window.__lastComputedQuotePrice = computedPrice;
       if (stTitle) stTitle.innerText = isEn ? 'Purchase Protection & Stripe Escrow Guarantee' : isEs ? 'Protección de Compras & Garantía Stripe Escrow' : 'Protezione Acquisti & Garanzia Stripe Escrow';
 
       const stSub = document.getElementById('i18n-stripeNoticeSubtitle');
-      if (stSub) stSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'OPCIÓN 2: 1,5% + € 0,25 con cálculo dinámico al céntimo' : 'OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo';
+      if (stSub) stSub.innerText = isEn ? 'OPTION 2: 1.5% + € 0.25 with dynamic per-cent calculation' : isEs ? 'Stripe Escrow: 1.5% + €0.25 dynamically calculated' : 'Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo';
 
       const colMfg = document.getElementById('i18n-stripeColMfg');
       if (colMfg) colMfg.innerText = isEn ? 'Manufacturing' : isEs ? 'Fabricación' : 'Manifattura';
@@ -22001,7 +21975,7 @@ window.__lastComputedQuotePrice = computedPrice;
 
       // Se il cliente ha inserito un prezzo di suo pugno (Libero Arbitrio):
       if (val > 0) {
-        // Calcolo automatico al centesimo della tassa Stripe Opzione 2 (1,5% + € 0,25) aggiunta automaticamente
+        // Calcolo automatico al centesimo della tassa Stripe Stripe Escrow (1,5% + € 0,25) aggiunta automaticamente
         const stripeFee = Math.round((val * 0.015 + 0.25) * 100) / 100;
         const totalWithStripe = parseFloat((val + stripeFee).toFixed(2));
 
@@ -22010,7 +21984,7 @@ window.__lastComputedQuotePrice = computedPrice;
         if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
         if (bTotal) bTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
 
-        // Aggiorna riquadro sotto al colore (Opzione 2 con calcolo dinamico al centesimo)
+        // Aggiorna riquadro sotto al colore (Stripe Escrow con calcolo dinamico al centesimo)
         if (noticeBase) noticeBase.innerText = '€ ' + val.toFixed(2).replace('.', ',');
         if (noticeFee) noticeFee.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
         if (noticeTotal) noticeTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
@@ -22058,7 +22032,7 @@ window.__lastComputedQuotePrice = computedPrice;
         if (noticeBase) noticeBase.innerText = '€ 0,00';
         if (noticeFee) noticeFee.innerText = '+ € 0,00';
         if (noticeTotal) noticeTotal.innerText = '€ 0,00';
-        if (noticeBadge) noticeBadge.innerText = 'OPZIONE 2: 1,5% + € 0,25';
+        if (noticeBadge) noticeBadge.innerText = 'Stripe Escrow: 1,5% + € 0,25';
       }
 
       const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
@@ -25187,7 +25161,7 @@ window.__lastComputedQuotePrice = computedPrice;
             <div class="flex items-center justify-between p-2 rounded-lg bg-[#0C0D11] border border-cyan-500/30">
               <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
-                <span class="text-cyan-300 text-[11px] font-bold">${isEn ? 'Carrier pickup verified — Funds held in Escrow until delivery (Option 2)' : isEs ? 'Recogida del transportista verificada — Fondos retenidos en Escrow hasta la entrega' : 'Pacco ritirato dal corriere tracciato — Fondi in custodia Escrow fino alla consegna (Opzione 2)'}</span>
+                <span class="text-cyan-300 text-[11px] font-bold">${isEn ? 'Carrier pickup verified — Funds held in Escrow until delivery (Option 2)' : isEs ? 'Recogida del transportista verificada — Fondos retenidos en Escrow hasta la entrega' : 'Pacco ritirato dal corriere tracciato — Fondi in custodia Escrow fino alla consegna '}</span>
               </div>
               <span class="text-[10px] text-zinc-500">${timeNow}</span>
             </div>
@@ -25234,7 +25208,7 @@ window.__lastComputedQuotePrice = computedPrice;
           countdownSub.innerText = isEn ? 'Funds secured in Escrow: automatic release upon carrier delivery scan' : isEs ? 'Fondos retenidos en Escrow: liberación automática tras entrega' : 'Fondi custoditi in Escrow: svincolo automatico alla consegna certificata';
         }
 
-        showToast(isEn ? 'Carrier pickup scanned! Funds held in Escrow until delivery (Option 2).' : isEs ? '¡Recogida escaneada! Fondos retenidos hasta entrega (Opción 2).' : 'Pacco ritirato dal corriere! Fondi custoditi in Escrow fino alla consegna (Opzione 2).');
+        showToast(isEn ? 'Carrier pickup scanned! Funds held in Escrow until delivery (Option 2).' : isEs ? '¡Recogida escaneada! Fondos retenidos hasta entrega (Opción 2).' : 'Pacco ritirato dal corriere! Fondi custoditi in Escrow fino alla consegna .');
         lucide.createIcons();
       } else if (status === 'OUT_FOR_DELIVERY') {
         if (pill) {
@@ -25263,7 +25237,7 @@ window.__lastComputedQuotePrice = computedPrice;
             <div class="flex items-center justify-between p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/25">
               <div class="flex items-center gap-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                <span class="text-white text-[11px] font-bold">${isEn ? 'Delivery confirmed with signature — Stripe Escrow funds automatically released to Creator (Option 2)' : isEs ? 'Entrega confirmada con firma — Fondos Stripe Escrow liberados al Creador (Opción 2)' : 'Consegna certificata con firma — Fondi Stripe Escrow svincolati automaticamente al Creator (Opzione 2)'}</span>
+                <span class="text-white text-[11px] font-bold">${isEn ? 'Delivery confirmed with signature — Stripe Escrow funds automatically released to Creator (Option 2)' : isEs ? 'Entrega confirmada con firma — Fondos Stripe Escrow liberados al Creador (Opción 2)' : 'Consegna certificata con firma — Fondi Stripe Escrow svincolati automaticamente al Creator '}</span>
               </div>
               <span class="text-[10px] text-zinc-300">${timeNow}</span>
             </div>
@@ -25366,7 +25340,7 @@ window.__lastComputedQuotePrice = computedPrice;
 
         // REGOLA RICHIESTA UTENTE: La pagina di completamento resta visibile finché il creator non cambia pagina con cursore o tocco
 
-        showToast(isEn ? 'Package delivered! Escrow funds automatically released to Creator (Option 2).' : isEs ? '¡Paquete entregado! Fondos liberados automáticamente al Creador.' : 'Pacco consegnato! Fondi svincolati automaticamente al Creator (Opzione 2).', 'success');
+        showToast(isEn ? 'Package delivered! Escrow funds automatically released to Creator (Option 2).' : isEs ? '¡Paquete entregado! Fondos liberados automáticamente al Creador.' : 'Pacco consegnato! Fondi svincolati automaticamente al Creator .', 'success');
         lucide.createIcons();
       }
 
@@ -26943,7 +26917,7 @@ window.__lastComputedQuotePrice = computedPrice;
       const infill = document.getElementById('reqInfill')?.value || '50% Meccanico Strutturale';
       const postProcess = document.getElementById('reqPostProcess')?.value || 'Grezzo (Rimozione supporti standard)';
 
-      // Calcolo automatico della tassa Stripe Escrow Opzione 2 (1,5% + € 0,25) aggiunta automaticamente
+      // Calcolo automatico della tassa Stripe Escrow Stripe Escrow (1,5% + € 0,25) aggiunta automaticamente
       const rawBudgetVal = document.getElementById('reqBudget')?.value;
       const parsedBudget = parseFloat(rawBudgetVal);
       const recPrice = window.__lastComputedQuotePrice || 0;
@@ -26957,7 +26931,7 @@ window.__lastComputedQuotePrice = computedPrice;
       if (!isNaN(parsedBudget) && parsedBudget > 0) {
         // Il cliente ha digitato un proprio budget (Libero Arbitrio)
         mfgNetto = parsedBudget;
-        // Calcola da sola la tassa Stripe Opzione 2 (1,5% + € 0,25) e aggiungila automaticamente al totale
+        // Calcola da sola la tassa Stripe Stripe Escrow (1,5% + € 0,25) e aggiungila automaticamente al totale
         stripeFee = Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
         budgetNum = parseFloat((mfgNetto + stripeFee).toFixed(2));
         isCustomLowBudget = (recPrice > 0 && mfgNetto < minThreshold);
@@ -27132,13 +27106,13 @@ window.__lastComputedQuotePrice = computedPrice;
       }
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
-      // Calcolo trasparente Opzione 2 nel Riepilogo Commessa (1,5% + € 0,25 al centesimo aggiunto automaticamente)
+      // Calcolo trasparente Stripe Escrow nel Riepilogo Commessa (1,5% + € 0,25 al centesimo aggiunto automaticamente)
       const reviewMfgVal = draft.mfgNetto || (draft.budgetNum > 0 ? Math.max(0, Math.round(((draft.budgetNum - 0.25) / 1.015) * 100) / 100) : 0);
       const reviewStripeVal = draft.stripeFee || (draft.budgetNum > 0 ? Math.max(0, Math.round((reviewMfgVal * 0.015 + 0.25) * 100) / 100) : 0);
       const mfgNettoEl = document.getElementById('reviewMfgNetto');
       if (mfgNettoEl) mfgNettoEl.innerText = '€ ' + reviewMfgVal.toFixed(2).replace('.', ',');
       const stripeFeeEl = document.getElementById('reviewStripeFee');
-      if (stripeFeeEl) stripeFeeEl.innerText = '+ € ' + reviewStripeVal.toFixed(2).replace('.', ',') + ' (Opzione 2: 1,5% + € 0,25)';
+      if (stripeFeeEl) stripeFeeEl.innerText = '+ € ' + reviewStripeVal.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
 
       if (totalEscrowEl) totalEscrowEl.innerText = draft.budgetStr;
 
@@ -28337,7 +28311,7 @@ window.__lastComputedQuotePrice = computedPrice;
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.color || 'Nero')}</span>
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.quantity || '1 pezzo')}</span>
                   <span class="text-emerald-400 font-bold">${escapeHtml(activeCreatorJob.budget || '€ 35,00')}</span>
-                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">OPZIONE 2 (1,5% + €0,25)</span>
+                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">STRIPE ESCROW (1,5% + €0,25)</span>
                 </div>
               </div>
               <div class="flex sm:flex-col items-center justify-center gap-2 pt-2 sm:pt-0 sm:border-l sm:border-white/10 sm:pl-4 shrink-0">
@@ -28431,7 +28405,7 @@ window.__lastComputedQuotePrice = computedPrice;
                 <div class="flex items-center gap-2 flex-wrap">
                   <span class="px-2 py-0.5 rounded-md bg-white/5 text-[10px] font-mono text-zinc-400">#${safeId}</span>
                   <span class="text-xs font-mono text-emerald-400 font-bold">${escapeHtml(displayBudget)}</span>
-                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">OPZIONE 2 (1,5% + €0,25)</span>
+                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">STRIPE ESCROW (1,5% + €0,25)</span>
                 </div>
                 <span class="text-[10px] font-mono text-zinc-400">${escapeHtml(r.clientCity || 'Milano')}</span>
               </div>
@@ -32310,7 +32284,7 @@ function renderDealChat(rfpId) {
         return;
       }
 
-      // OPZIONE 2: 1,5% + € 0,25 con calcolo dinamico al centesimo
+      // Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo
       const stripeFee = Math.round((basePrice * 0.015 + 0.25) * 100) / 100;
       const publicPrice = parseFloat((basePrice + stripeFee).toFixed(2));
 
@@ -32364,7 +32338,7 @@ function renderDealChat(rfpId) {
         return;
       }
 
-      // OPZIONE 2: Calcola la tassa (1,5% + € 0,25) e pubblica l'opera in Vetrina con la tassa già calcolata!
+      // Stripe Escrow: Calcola la tassa (1,5% + € 0,25) e pubblica l'opera in Vetrina con la tassa già calcolata!
       const stripeFee = Math.round((baseMakerPrice * 0.015 + 0.25) * 100) / 100;
       const finalPriceWithTax = parseFloat((baseMakerPrice + stripeFee).toFixed(2));
       const price = '€ ' + finalPriceWithTax.toFixed(2).replace('.', ',');
