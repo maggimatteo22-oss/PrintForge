@@ -25618,7 +25618,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         registerCreatorPresence();
 
       // Auto-Idratazione Profilo e IBAN da Supabase Cloud per sincronizzazione PC <-> Smartphone all'avvio
-      if (sessionRestored && AppState.user && AppState.user.email && typeof fetchUserProfileFromCloud === 'function') {
+      if (AppState.user && AppState.user.email && typeof fetchUserProfileFromCloud === 'function') {
         const uEmail = AppState.user.email.toLowerCase().trim();
         setTimeout(async () => {
           try {
