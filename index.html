@@ -6336,23 +6336,23 @@
                     <span class="text-[9px] font-mono text-emerald-400 font-bold" id="infillSelectedNameDisplay">50% Meccanico</span>
                   </div>
                   <div class="grid grid-cols-5 gap-1 sm:gap-1.5 relative z-20" id="infillPillsContainer">
-                    <button type="button" data-infill="20% Leggero / Standard" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('20% Leggero / Standard')">
+                    <button type="button" id="infillBtn_20" data-infill="20% Leggero / Standard" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('20% Leggero / Standard')">
                       <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">20%</span>
                       <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Leggero</span>
                     </button>
-                    <button type="button" data-infill="40% Robusto" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('40% Robusto')">
+                    <button type="button" id="infillBtn_40" data-infill="40% Robusto" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('40% Robusto')">
                       <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">40%</span>
                       <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Robusto</span>
                     </button>
-                    <button type="button" data-infill="50% Meccanico Strutturale" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/25 active-infill-pill transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('50% Meccanico Strutturale')">
+                    <button type="button" id="infillBtn_50" data-infill="50% Meccanico Strutturale" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 active-infill-pill transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('50% Meccanico Strutturale')">
                       <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">50%</span>
                       <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Meccanico</span>
                     </button>
-                    <button type="button" data-infill="75% Tecnico Resistente" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('75% Tecnico Resistente')">
+                    <button type="button" id="infillBtn_75" data-infill="75% Tecnico Resistente" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('75% Tecnico Resistente')">
                       <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">75%</span>
                       <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Tecnico</span>
                     </button>
-                    <button type="button" data-infill="100% Pieno / Massiccio" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('100% Pieno / Massiccio')">
+                    <button type="button" id="infillBtn_100" data-infill="100% Pieno / Massiccio" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('100% Pieno / Massiccio')">
                       <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">100%</span>
                       <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Massiccio</span>
                     </button>
@@ -17504,29 +17504,41 @@ END-ISO-10303-21;`;
     window.selectQuickQuantity = selectQuickQuantity;
 
     function selectQuickInfill(infillVal) {
+      if (!infillVal) infillVal = '50%';
+      const raw = String(infillVal);
+      let canonicalVal = '50% Meccanico Strutturale';
+      let key = '50';
+      if (raw.includes('20')) { canonicalVal = '20% Leggero / Standard'; key = '20'; }
+      else if (raw.includes('40')) { canonicalVal = '40% Robusto'; key = '40'; }
+      else if (raw.includes('50')) { canonicalVal = '50% Meccanico Strutturale'; key = '50'; }
+      else if (raw.includes('75')) { canonicalVal = '75% Tecnico Resistente'; key = '75'; }
+      else if (raw.includes('100')) { canonicalVal = '100% Pieno / Massiccio'; key = '100'; }
+
+      // 1. Sincronizza il select nascosto
       const iSel = document.getElementById('reqInfill');
       if (iSel) {
-        iSel.value = infillVal;
-        iSel.dispatchEvent(new Event('change'));
+        iSel.value = canonicalVal;
       }
-      if (typeof recalculateInstantQuote === 'function') {
-        recalculateInstantQuote();
-      }
+
+      // 2. Aggiorna etichetta descrittiva
       const display = document.getElementById('infillSelectedNameDisplay');
       if (display) {
         const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
         const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
         let label = '50% Meccanico';
-        if (infillVal.includes('20%')) label = isEn ? '20% Light' : isEs ? '20% Ligero' : '20% Leggero';
-        else if (infillVal.includes('40%')) label = isEn ? '40% Robust' : isEs ? '40% Robusto' : '40% Robusto';
-        else if (infillVal.includes('50%')) label = isEn ? '50% Mechanical' : isEs ? '50% Mecánico' : '50% Meccanico';
-        else if (infillVal.includes('75%')) label = isEn ? '75% Technical' : isEs ? '75% Técnico' : '75% Tecnico';
-        else if (infillVal.includes('100%')) label = isEn ? '100% Solid' : isEs ? '100% Macizo' : '100% Massiccio';
+        if (key === '20') label = isEn ? '20% Light' : isEs ? '20% Ligero' : '20% Leggero';
+        else if (key === '40') label = isEn ? '40% Robust' : isEs ? '40% Robusto' : '40% Robusto';
+        else if (key === '50') label = isEn ? '50% Mechanical' : isEs ? '50% Mecánico' : '50% Meccanico';
+        else if (key === '75') label = isEn ? '75% Technical' : isEs ? '75% Técnico' : '75% Tecnico';
+        else if (key === '100') label = isEn ? '100% Solid' : isEs ? '100% Macizo' : '100% Massiccio';
         display.innerText = label;
       }
+
+      // 3. Evidenzia la pillola attiva e disattiva tutte le altre
       const pills = document.querySelectorAll('.infill-pill');
       pills.forEach(pill => {
-        if (pill.getAttribute('onclick')?.includes(infillVal)) {
+        const pillData = pill.getAttribute('data-infill') || pill.getAttribute('onclick') || pill.id || '';
+        if (pillData.includes(key)) {
           pill.classList.add('active-infill-pill', 'border-white/30');
           pill.classList.remove('border-white/10');
         } else {
@@ -17534,8 +17546,10 @@ END-ISO-10303-21;`;
           pill.classList.add('border-white/10');
         }
       });
+
+      // 4. Ricalcolo immediato preventivo & sintesi
       if (typeof recalculateInstantQuote === 'function') recalculateInstantQuote();
-      updateLiveRequestSummary();
+      if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
     }
     window.selectQuickInfill = selectQuickInfill;
     function onPortfolioInfillChange(val) {
