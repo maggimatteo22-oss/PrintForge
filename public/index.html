@@ -9388,7 +9388,7 @@
         deadline: 'Urgente Flash 24-48h',
         notes: 'Verifica della planarità del piatto e calibrazione assi X, Y, Z con calibro digitale.',
         fileName: 'cubo_calibrazione_xyz_20mm.stl',
-        aiImage: '/images/cube.jpg',
+        aiImage: null,
         timestamp: '09:20',
         status: 'APERTA (IN ATTESA CREATOR)',
         isAccepted: false,
@@ -9422,7 +9422,7 @@
         deadline: 'Standard 3-5 giorni',
         notes: 'Foro interno calibrato per albero da 22mm e 4 fori su flangia per viti M4 con inserti filettati in ottone.',
         fileName: 'boccola_flangiata_meccanica.stl',
-        aiImage: '/images/bushing.jpg',
+        aiImage: null,
         timestamp: '08:40',
         status: 'APERTA (IN ATTESA CREATOR)',
         isAccepted: false,
@@ -11346,7 +11346,7 @@
               makerUserId: makerId,
               makerName: makerName,
               clientName: (targetReq && targetReq.clientName) || 'Cliente',
-              workPhotoUrl: (targetReq && (targetReq.workPhotoUrl || targetReq.aiImage)) || '/images/cube.jpg',
+              workPhotoUrl: isUserUploadedPhoto(targetReq && (targetReq.workPhotoUrl || targetReq.aiImage)) ? (targetReq.workPhotoUrl || targetReq.aiImage) : null,
               completedAt: new Date().toISOString()
             });
             localStorage.setItem('printforge_creator_earnings_ledger', JSON.stringify(creatorLedger));
@@ -27326,7 +27326,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'PLA+ Alta Resistenza',
         color: 'Bianco Naturale Puro',
-        img: '/images/benchy.jpg',
+        img: null,
         file: 'cubo_calibrazione_xyz_20mm.stl'
       },
       'bushing': {
@@ -27342,7 +27342,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'PETG Tecnico',
         color: 'Grigio Grafite Industriale',
-        img: '/images/vase.jpg',
+        img: null,
         file: 'boccola_flangiata_meccanica.stl'
       },
       'dice': {
@@ -27358,7 +27358,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'Resina Tough Standard',
         color: 'Arancione Meccanico',
-        img: '/images/dice.jpg',
+        img: null,
         file: 'dado_d20_cosplay.stl'
       },
       'stand': {
@@ -27374,7 +27374,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'PA12-CF Carbonio',
         color: 'Nero Opaco Cyber',
-        img: '/images/stand.jpg',
+        img: null,
         file: 'stand_headphone_ergonomic.stl'
       }
     };
@@ -29105,7 +29105,6 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
       let activeJobBannerHtml = '';
       if (activeCreatorJob) {
-        const photoSrc = activeCreatorJob.workPhotoUrl || activeCreatorJob.aiImage || '/images/cube.jpg';
         activeJobBannerHtml = `
           <div class="col-span-full p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#12131F] to-[#0B0C10] border border-emerald-500/40 shadow-xl space-y-3 mb-4">
             <div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
@@ -29115,8 +29114,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
               </div>
               <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">IN LAVORAZIONE</span>
             </div>
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <img src="${photoSrc}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-white/15 shadow-md shrink-0 mx-auto sm:mx-0" alt="Foto Opera Vetrina" />
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div class="min-w-0 flex-1 space-y-1 text-center sm:text-left">
                 <h4 class="font-cyber font-bold text-white text-sm sm:text-base truncate">${escapeHtml(activeCreatorJob.title)}</h4>
                 <p class="text-xs font-mono text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(activeCreatorJob.clientName || 'Cliente')}</strong></p>
@@ -29224,7 +29222,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                 <span class="text-[10px] font-mono text-zinc-400">${escapeHtml(r.clientCity || 'Milano')}</span>
               </div>
 
-              ${(r.workPhotoUrl || r.aiImage) ? `
+              ${((r.workPhotoUrl && isUserUploadedPhoto(r.workPhotoUrl)) || (r.aiImage && isUserUploadedPhoto(r.aiImage))) ? `
                 <div class="h-28 rounded-xl overflow-hidden border border-white/10 relative bg-[#12131A] mb-2 shadow-inner">
                   <img src="${r.workPhotoUrl || r.aiImage}" class="w-full h-full object-cover" alt="Foto Opera Vetrina" />
                   <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500/90 text-black font-mono text-[9px] font-black shadow">ORDINE DIRETTO VETRINA</span>
@@ -33489,12 +33487,21 @@ function renderDealChat(rfpId) {
       try {
         const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico', 'viagra'];
       
-      // Sanitizzazione foto stock: se un'opera ha photoUrl che punta a immagini stock (/images/dice.jpg, /images/cube.jpg), rimuovila del tutto!
+      // Sanitizzazione foto stock: rimuove stock images da portfolio E da tutte le richieste commesse
       (AppState.portfolioWorks || []).forEach(w => {
         if (w && !isUserUploadedPhoto(w.photoUrl)) {
           w.photoUrl = null;
         }
       });
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (r) {
+          if (r.aiImage && (r.aiImage.includes('/images/') || !isUserUploadedPhoto(r.aiImage))) r.aiImage = null;
+          if (r.workPhotoUrl && (r.workPhotoUrl.includes('/images/') || !isUserUploadedPhoto(r.workPhotoUrl))) r.workPhotoUrl = null;
+        }
+      });
+      try {
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+      } catch(e) {}
         if (typeof localStorage !== 'undefined') {
           let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
           pWorks.forEach(w => {
@@ -34055,7 +34062,7 @@ function renderDealChat(rfpId) {
         deadline: 'Standard 3-5 giorni',
         notes: extraNotes ? `Ordine Vetrina 2D per "${work.title}". Maker: ${work.creatorName}. Note: ${extraNotes}` : `Ordine diretto da Vetrina 2D per opera "${work.title}". Maker: ${work.creatorName}.`,
         customFileName: (work.title.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'opera') + '.stl',
-        aiImage: work.photoUrl || '/images/cube.jpg',
+        aiImage: isUserUploadedPhoto(work.photoUrl) ? work.photoUrl : null,
         presetKind: 'custom',
         clientEmail: (AppState.user && AppState.user.email) || 'cliente@printforge.dev',
         isDirectShowcase: true,
