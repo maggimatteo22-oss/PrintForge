@@ -19824,7 +19824,7 @@ END-ISO-10303-21;`;
       const mCreatorProjectsLabel = isEn ? 'PROJECTS' : 'PROGETTI';
 
       if (isCreator) {
-        // --- NAVBAR CREATOR: HOME + BACHECA RICHIESTE + ATTIVITÀ + I MIEI PROGETTI + (ESCROW ROOM) ---
+        // --- NAVBAR CREATOR: HOME + (RICHIESTA ATTIVA / BACHECA) + I MIEI PROGETTI + (ESCROW ROOM DOPO 3 FOTO) ---
         // 1. HOME (Fissa, non traducibile)
         html += `
           <button onclick="navigateTo('client-home')" id="navHomeBtn" class="${isHome ? activeClass : inactiveClass}">
@@ -19839,48 +19839,66 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // 2. BACHECA RICHIESTE DEI CLIENTI (Sempre visibile per i Creator!)
+        // 2. BACHECA RICHIESTE & RICHIESTA ATTIVA
+        // REQUISITO UTENTE: "appena il creator acceta la richiesta al suo posto si attiva la pagina rchiesta e dopo le 3 foto la pagina escroow room"
+        const activeCreatorReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
         const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
-        const isReqs = (v === 'creator-requests');
-        html += `
-          <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
-            <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
-            <span>${creatorRequestsLabel}</span>
-            <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
-          </button>
-        `;
-        mobileHtml += `
-          <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
-            <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
-            <span>${mRequestsLabel}</span>
-            <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
-          </button>
-        `;
 
-        // 3. ATTIVITÀ (Area Studio 3D & Collaudo commessa - Sempre visibile e accessibile per i Creator!)
-        const isAct = (v === 'activity' || v === 'studio');
-        const actLabel = isEn ? 'ACTIVITY' : isEs ? 'ACTIVIDAD' : 'ATTIVITÀ';
-        const hasActiveWork = Boolean(
-          AppState.loadedRequestInStudio ||
-          (AppState.broadcastRequests && AppState.broadcastRequests.some(r => r.isAccepted && !r.isCompleted)) ||
-          AppState.activeEscrowOrder
-        );
-        html += `
-          <button onclick="navigateTo('activity')" id="navActivityBtn" class="${isAct ? activeClass : inactiveClass}">
-            <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-            <span>${actLabel}</span>
-            ${hasActiveWork ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-          </button>
-        `;
-        mobileHtml += `
-          <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
-            <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-            <span>${actLabel}</span>
-            ${hasActiveWork ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>' : ''}
-          </button>
-        `;
+        if (activeCreatorReq) {
+          // Quando il creator ha accettato una richiesta, al suo posto si attiva la pagina richiesta (ATTIVITÀ / RICHIESTA #ID)
+          const isAct = (v === 'activity' || v === 'studio');
+          const reqTabLabel = isEn ? `REQUEST #${activeCreatorReq.id}` : isEs ? `PEDIDO #${activeCreatorReq.id}` : `RICHIESTA #${activeCreatorReq.id}`;
+          html += `
+            <button onclick="navigateTo('activity')" id="navActiveRequestBtn" class="${isAct ? activeClass : inactiveClass}">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
+              <span>${reqTabLabel}</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </button>
+          `;
+          mobileHtml += `
+            <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
+              <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
+              <span>${reqTabLabel}</span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            </button>
+          `;
 
-        // 4. I MIEI PROGETTI (Portfolio e gestione opere)
+          // Bacheca richieste consultabile
+          const isReqs = (v === 'creator-requests');
+          html += `
+            <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
+              <span>${creatorRequestsLabel}</span>
+              <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
+            </button>
+          `;
+          mobileHtml += `
+            <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
+              <span>${mRequestsLabel}</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
+            </button>
+          `;
+        } else {
+          // Nessuna commessa accettata: mostra Bacheca Richieste
+          const isReqs = (v === 'creator-requests');
+          html += `
+            <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
+              <span>${creatorRequestsLabel}</span>
+              <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
+            </button>
+          `;
+          mobileHtml += `
+            <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
+              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
+              <span>${mRequestsLabel}</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
+            </button>
+          `;
+        }
+
+        // 3. I MIEI PROGETTI (Portfolio e gestione opere)
         const isPortfolio = (v === 'creator-portfolio');
         html += `
           <button onclick="navigateTo('creator-portfolio')" id="navCreatorPortfolioBtn" class="${isPortfolio ? activeClass : inactiveClass}">
@@ -19895,13 +19913,19 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // 5. ESCROW ROOM (Visibile per il creator quando vi è un ordine escrow o dopo il collaudo)
-        const activeEscrow = AppState.activeEscrowOrder;
-        const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
-        const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
-        const shouldShowCreatorEscrow = (v === 'order-room' && activeEscrow) || Boolean(activeEscrow && hasQc);
+        // 4. ESCROW ROOM: ATTIVA ESCLUSIVAMENTE DOPO IL COLLAUDO DELLE 3 FOTO!
+        // REQUISITO UTENTE: "e dopo le 3 foto la pagina escroow room"
+        const has3QcPhotos = Boolean(
+          (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) ||
+          AppState.stage2Completed ||
+          Boolean(activeCreatorReq && (
+            activeCreatorReq.hasQcPhotos ||
+            (activeCreatorReq.qcPhotos && activeCreatorReq.qcPhotos.length >= 3) ||
+            activeCreatorReq.clientApprovedQc
+          ))
+        );
 
-        if (shouldShowCreatorEscrow) {
+        if (has3QcPhotos) {
           const isEscrow = (v === 'order-room' || v === 'escrow');
           html += `
             <button onclick="navigateTo('order-room')" id="navEscrowRoomBtn" class="${isEscrow ? activeClass : inactiveClass}">
@@ -27136,12 +27160,36 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       if (viewId === 'order-room') {
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+        const isCreator = AppState.user && AppState.user.role === 'creator';
+
+        // REQUISITO UTENTE: Per il creator la pagina Escrow Room si attiva SOLO dopo il collaudo delle 3 foto!
+        if (isCreator) {
+          const activeCreatorReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
+          const has3QcPhotos = Boolean(
+            (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) ||
+            AppState.stage2Completed ||
+            Boolean(activeCreatorReq && (
+              activeCreatorReq.hasQcPhotos ||
+              (activeCreatorReq.qcPhotos && activeCreatorReq.qcPhotos.length >= 3) ||
+              activeCreatorReq.clientApprovedQc
+            ))
+          );
+          if (!has3QcPhotos) {
+            const blockQcMsg = isEn 
+              ? 'Escrow Room unlocks only after attaching the 3 caliper inspection photos in CAD Studio.' 
+              : isEs 
+              ? 'La sala Escrow se activa únicamente después del collaudo de las 3 fotos con calibre en el Estudio CAD.' 
+              : 'La pagina Escrow Room si attiva solamente dopo il collaudo delle 3 foto con calibro nello Studio CAD.';
+            showToast(blockQcMsg, 'warning');
+            navigateTo('activity');
+            return;
+          }
+        }
+
         // La pagina escrow room si sblocca per il cliente dopo la presa in carica del creator.
-        // Anche per il creator la pagina escrow si deve aprire solo dopo quando accetta una determinata richiesta.
         if (!hasActiveEscrowOrder()) {
-          const isEn = currentLang === 'en';
-          const isEs = currentLang === 'es';
-          const isCreator = AppState.user && AppState.user.role === 'creator';
           const blockMsg = isCreator
             ? (isEn 
                 ? 'The Escrow Room opens only after accepting a specific request.' 
@@ -28806,12 +28854,14 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         const isPendingTakingCharge = !isCompleted && (!isAcc || r.isAccepted === false);
         const pendingBadgeText = isEn ? 'WAITING FOR CREATOR' : isEs ? 'EN ESPERA DEL CREADOR' : 'IN ATTESA DEL CREATOR';
 
+        // REQUISITO UTENTE: Badges conformi al ciclo di vita
+        // "con scritto in lavorazione se il creator ha accettato o in attesa del creator se ancora non lo ha fatto o ancora se lo ha completato scrivi completato con la possibilità di mettere recensioni all'aposito creator"
         if (isCompleted) {
           statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ' + (isEn ? 'COMPLETED' : isEs ? 'COMPLETADO' : 'COMPLETATO') + '</span>';
         } else if (isPendingTakingCharge) {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse flex items-center gap-1.5 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> ' + pendingBadgeText + '</span>';
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse flex items-center gap-1.5 border border-amber-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> ' + (isEn ? 'WAITING FOR CREATOR' : isEs ? 'EN ESPERA DEL CREADOR' : 'IN ATTESA DEL CREATOR') + '</span>';
         } else {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ' + (isEn ? 'IN PRODUCTION (TAKEN IN CHARGE)' : isEs ? 'EN PRODUCCIÓN (ASIGNADO)' : 'IN LAVORAZIONE (PRESA IN CARICO)') + '</span>';
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ' + (isEn ? 'IN PRODUCTION' : isEs ? 'EN PRODUCCIÓN' : 'IN LAVORAZIONE') + '</span>';
         }
 
         // Risoluzione prezzo reale garantito (mai mostrare € 0,00)
@@ -28850,45 +28900,37 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                 <span class="text-[9px] text-zinc-400 block">${isEn ? 'Material & Infill:' : isEs ? 'Material & Relleno:' : 'Materiale & Infill:'}</span>
                 <span class="text-zinc-200 truncate block font-bold">${(function() {
                   let mat = r.material || 'PETG Tecnico';
-                  let inf = r.infill || '50% Meccanico Strutturale';
-                  if (isEn) {
-                    if (mat.includes('PETG')) mat = 'Technical PETG';
-                    if (mat.includes('PLA')) mat = 'Reinforced PLA+';
-                    if (mat.includes('CF') || mat.includes('Carbon')) mat = 'PA12-CF Carbon';
-                    if (mat.includes('Inox') || mat.includes('Acciaio')) mat = 'Stainless Steel 316L';
-                    if (inf.includes('50%')) inf = '50% Mechanical Struct...';
-                    else if (inf.includes('20%')) inf = '20% Light...';
-                    else if (inf.includes('100%')) inf = '100% Solid Core';
-                  } else if (isEs) {
-                    if (mat.includes('PETG')) mat = 'PETG Técnico';
-                    if (mat.includes('PLA')) mat = 'PLA+ Reforzado';
-                    if (mat.includes('CF') || mat.includes('Carbon')) mat = 'PA12-CF Carbono';
-                    if (mat.includes('Inox') || mat.includes('Acciaio')) mat = 'Acero Inox 316L';
-                    if (inf.includes('50%')) inf = '50% Mecánico Estruct...';
-                    else if (inf.includes('20%')) inf = '20% Ligero...';
-                    else if (inf.includes('100%')) inf = '100% Núcleo Sólido';
-                  }
+                  let inf = r.infill || '50% Meccanico';
                   return escapeHtml(mat) + ' (' + escapeHtml(inf) + ')';
                 })()}</span>
               </div>
               <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
-                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Quantity:' : isEs ? 'Cantidad:' : 'Quantità:'}</span>
-                <span class="text-zinc-200 truncate block font-bold">${(function() {
+                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Dimensions (XYZ):' : isEs ? 'Dimensiones (XYZ):' : 'Dimensioni (XYZ):'}</span>
+                <span class="text-zinc-200 truncate block font-bold">${escapeHtml(r.dimensions || (r.dimX ? `${r.dimX} × ${r.dimY} × ${r.dimZ} mm` : '80 × 60 × 25 mm'))}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
+                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Quantity & Color:' : isEs ? 'Cantidad y Color:' : 'Quantità & Colore:'}</span>
+                <span class="text-zinc-200 truncate block font-bold flex items-center gap-1">${(function() {
                   const q = r.quantity || '1 pezzo';
-                  if (q.includes('1 pezzo') || q.includes('1 piece') || q.includes('1 pieza')) {
-                    return isEn ? '1 piece' : isEs ? '1 pieza' : '1 pezzo';
-                  }
-                  return escapeHtml(q);
+                  const col = r.color || 'Arancione Meccanico';
+                  const dot = r.colorHex ? `<span class="w-2 h-2 rounded-full inline-block shrink-0" style="background:${escapeHtml(r.colorHex)}"></span>` : '';
+                  return `${escapeHtml(q)} • ${dot}${escapeHtml(col)}`;
                 })()}</span>
               </div>
-              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5 col-span-2">
+              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
                 <span class="text-[9px] text-zinc-400 block flex items-center gap-1">
-                  <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i>
-                  ${isEn ? 'Delivery Label Address:' : isEs ? 'Dirección Entrega Etiqueta:' : 'Indirizzo Consegna Etichetta:'}
+                  <i data-lucide="map-pin" class="w-2.5 h-2.5 text-emerald-400"></i>
+                  ${isEn ? 'Delivery Address:' : isEs ? 'Dirección Entrega:' : 'Indirizzo Consegna:'}
                 </span>
                 <span class="text-zinc-200 truncate block font-bold">${escapeHtml(addressText)}</span>
               </div>
             </div>
+            ${r.notes ? `
+              <div class="px-3 py-2 rounded-xl bg-white/[0.015] border border-white/5 text-[11px] font-sans text-zinc-300">
+                <span class="text-zinc-500 font-mono text-[9px] uppercase font-bold block mb-0.5">${isEn ? 'Client Notes & Specifics:' : isEs ? 'Notas del Cliente:' : 'Note Commessa Cliente:'}</span>
+                <p class="italic font-mono text-zinc-400">"${escapeHtml(r.notes)}"</p>
+              </div>
+            ` : ''}
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
               <div class="text-[10px] font-mono text-zinc-400 flex items-center gap-1.5">
