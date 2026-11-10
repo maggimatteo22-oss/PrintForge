@@ -5740,8 +5740,35 @@
 
       <!-- Modulo di Richiesta Parametrico Completo -->
       <form id="formBroadcastRequest" novalidate onsubmit="handleBroadcastSubmit(event)" class="cyber-card p-3 sm:p-8 space-y-3 sm:space-y-6">
-        
-        <!-- SEZIONE SINTETICA: ALLEGATO TECNICO O CONCEPT GENERATO CON IA -->
+
+
+        <!-- STEPPER INDICATORE A 3 PASSI GUIDATI -->
+        <div id="clientWizardStepper" class="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#0B0C10] border border-white/10 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span id="clientWizardStepBadge" class="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-white text-black uppercase tracking-wider">
+                PASSO 1 DI 3
+              </span>
+              <h3 id="clientWizardStepTitle" class="text-xs sm:text-sm font-cyber font-bold text-white tracking-wide">
+                COMPONENTE &amp; DIMENSIONI
+              </h3>
+            </div>
+            <span id="clientWizardStepPercent" class="text-[10px] font-mono text-zinc-400">33% COMPLETATO</span>
+          </div>
+          <!-- 3 barre di progresso visive -->
+          <div class="grid grid-cols-3 gap-1.5 sm:gap-2">
+            <div id="wizardBarStep1" class="h-1.5 rounded-full bg-white transition-all duration-300"></div>
+            <div id="wizardBarStep2" class="h-1.5 rounded-full bg-white/20 transition-all duration-300"></div>
+            <div id="wizardBarStep3" class="h-1.5 rounded-full bg-white/20 transition-all duration-300"></div>
+          </div>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- PASSO 1: FILE (FACOLTATIVO) + DETTAGLI COMPONENTE + DIMENSIONI            -->
+        <!-- ========================================================================= -->
+        <div id="clientWizardStep1" class="space-y-4">
+          <!-- SEZIONE SINTETICA: ALLEGATO TECNICO O CONCEPT GENERATO CON IA -->
         <div class="p-2.5 sm:p-5 rounded-xl sm:rounded-2xl bg-[#08080C] border border-white/10 space-y-2 sm:space-y-4 relative overflow-hidden transition-all duration-300">
           <div class="flex items-center justify-between gap-2 border-b border-white/[0.08] pb-2 sm:pb-3">
             <div class="flex items-center gap-2 min-w-0 flex-1">
@@ -5944,15 +5971,10 @@
         </div>
 
         <!-- ========================================================================= -->
-        <!-- NUOVA SELEZIONE ORDINATA, SINTETICA & AD ALTA COMPRENSIONE CLIENTE       -->
-        <!-- ========================================================================= -->
-        <div class="space-y-4">
-          <!-- CONFIGURAZIONE PERSONALIZZATA PULITA (2 COLONNE CHIARE) -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4 w-full min-w-0">
-            
-            <!-- Colonna Sinistra (7 Colonne): Nome, Materiale, Colore Visivo -->
-            <div class="lg:col-span-7 w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-2.5 sm:space-y-4 shadow-lg">
-              <div class="flex items-center justify-between border-b border-white/[0.06] pb-2 sm:pb-2.5">
+        
+
+          <div class="w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-3 sm:space-y-4 shadow-lg">
+            <div class="flex items-center justify-between border-b border-white/[0.06] pb-2 sm:pb-2.5">
                 <span class="text-xs font-cyber font-bold text-white uppercase tracking-wider flex items-center gap-2">
                   <i data-lucide="layers" class="w-3.5 h-3.5 text-white"></i>
                   <span id="i18n-reqStep2Title">2. DETTAGLI DEL COMPONENTE</span>
@@ -6018,7 +6040,8 @@
                 </select>
               </div>
 
-              <!-- Dimensioni del Pezzo (X × Y × Z mm) & Scala Rapida -->
+              
+            <!-- Dimensioni del Pezzo (X × Y × Z mm) & Scala Rapida -->
               <div class="space-y-2.5 sm:space-y-3.5 p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-[#121318] border border-white/10 shadow-sm transition-all" id="partDimensionsContainer">
                 <div class="flex items-center justify-between flex-wrap gap-1 border-b border-white/[0.06] pb-2">
                   <div class="min-w-0">
@@ -6036,13 +6059,13 @@
                 </div>
 
                 <!-- 5 CARD TAGLIA VISIVA CON OGGETTI QUOTIDIANI -->
-                <div class="flex overflow-x-auto no-scrollbar gap-2 pb-1.5 snap-x sm:grid sm:grid-cols-5" id="sizeCardsGrid">
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="sizeCardsGrid">
                   
                   <!-- XS: Tascabile -->
                   <button type="button" 
                           onclick="selectPartSizePreset('XS', 40, 40, 15, this)"
                           id="sizeCard_XS"
-                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 ">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XS</span>
                       <span class="text-base select-none">🪙</span>
@@ -6061,7 +6084,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('S', 80, 60, 25, this)"
                           id="sizeCard_S"
-                          class="size-preset-card active-size-card p-2.5 rounded-xl border border-white/50 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)] ring-1 ring-white/40 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
+                          class="size-preset-card active-size-card p-2.5 rounded-xl border border-white/50 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)] ring-1 ring-white/40 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 ">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white text-black font-cyber font-black text-xs transition-colors">S</span>
                       <span class="text-base select-none">🖱️</span>
@@ -6080,7 +6103,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('M', 150, 80, 40, this)"
                           id="sizeCard_M"
-                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 ">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">M</span>
                       <span class="text-base select-none">📱</span>
@@ -6099,7 +6122,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('L', 220, 150, 80, this)"
                           id="sizeCard_L"
-                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 ">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">L</span>
                       <span class="text-base select-none">🎧</span>
@@ -6118,7 +6141,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('XL', 320, 240, 140, this)"
                           id="sizeCard_XL"
-                          class="size-preset-card col-span-2 sm:col-span-1 p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
+                          class="size-preset-card col-span-2 sm:col-span-1 p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 ">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XL</span>
                       <span class="text-base select-none">🪖</span>
@@ -6212,7 +6235,33 @@
                 </div>
               </div>
 
-              <!-- Selezione Colore / Finitura con Ruota dei Colori & Scrittura Libera -->
+              
+          </div>
+
+          <!-- Pulsante Avanzamento a Passo 2 -->
+          <div class="pt-2 border-t border-white/10 flex justify-end">
+            <button type="button" onclick="goToClientWizardStep(2)" class="w-full sm:w-auto btn-kowalski-primary px-6 py-3 rounded-xl font-cyber font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 transition">
+              <span>PROSEGUI A COLORE &amp; RIEMPIMENTO</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- PASSO 2: COLORE (SENZA ESCROW ANCORA!) + QUANTITÀ + RIEMPIMENTO (INFILL)  -->
+        <!-- ========================================================================= -->
+        <div id="clientWizardStep2" class="space-y-4 hidden">
+          <div class="flex items-center justify-between pb-2 border-b border-white/10">
+            <button type="button" onclick="goToClientWizardStep(1)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-mono flex items-center gap-1.5 transition cursor-pointer">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span>← Torna al Componente &amp; Dimensioni</span>
+            </button>
+            <span class="text-[10px] font-mono text-zinc-500">2 / 3</span>
+          </div>
+
+          <div class="w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-4 shadow-lg">
+            <!-- Selezione Colore / Finitura con Ruota dei Colori & Scrittura Libera -->
               <div class="space-y-2 p-2.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#13141B] to-[#0E0F14] border border-white/15 shadow-xl relative overflow-hidden" id="colorPickerContainer">
                 <div class="flex items-center justify-between">
                   <label class="text-[10px] sm:text-[11px] font-cyber font-bold text-white uppercase tracking-wider flex items-center gap-1.5 sm:gap-2" id="i18n-reqColorLabel">
@@ -6296,66 +6345,10 @@
                   <option value="Naturale Grezzo da Macchina">⚙️ Naturale Grezzo da Macchina</option>
                 </select>
 
-                <!-- AVVISO SOGLIA MINIMA BUDGET MAKER (INSERITO ESATTAMENTE SOTTO IL COLORE) -->
-                <div id="budgetWarningBox" class="hidden p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#141008] border border-amber-500/50 text-amber-400 font-mono text-xs sm:text-[13px] items-center gap-3 shadow-lg my-2 transition-all">
-                  <div class="w-5 h-5 rounded-full border border-amber-500/80 flex items-center justify-center shrink-0 text-amber-400 font-mono text-xs font-bold leading-none select-none">i</div>
-                  <span id="budgetWarningText" class="leading-relaxed text-[#FBBF24]">Con un budget inferiore a € 77 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € 102,00.</span>
-                </div>
-
-                <!-- RIQUADRO UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (GARANZIA STRIPE ESCROW) -->
-                <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] via-[#0A0D16] to-[#07090F] border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)] space-y-2.5 mt-2 transition-all block">
-                  <div class="flex items-center justify-between gap-2 flex-wrap">
-                    <div class="flex items-center gap-2.5">
-                      <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0 shadow-sm">
-                        <i data-lucide="shield-check" class="w-4 h-4"></i>
-                      </div>
-                      <div>
-                        <span class="text-xs sm:text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-stripeNoticeTitle">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
-                        <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-stripeNoticeSubtitle">Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo</span>
-                      </div>
-                    </div>
-                    <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">Stripe Escrow: 1,5% + € 0,25</span>
-                  </div>
-
-                  <!-- Griglia Calcolo Dinamico al Centesimo in Tempo Reale: Manifattura | + Tassa Stripe | Totale Protetto -->
-                  <div class="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-blue-500/30 grid grid-cols-3 gap-2 text-center font-mono text-[10.5px] shadow-inner">
-                    <div class="space-y-0.5">
-                      <span class="text-zinc-400 block text-[9px] uppercase tracking-wider" id="i18n-stripeColMfg">Manifattura</span>
-                      <span id="liveNoticeBasePrice" class="text-white font-bold block">€ 0,00</span>
-                    </div>
-                    <div class="space-y-0.5 border-x border-white/10 px-1">
-                      <span class="text-blue-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColFee">+ Tassa Stripe</span>
-                      <span id="liveNoticeStripeFee" class="text-blue-300 font-bold block">+ € 0,00</span>
-                    </div>
-                    <div class="space-y-0.5">
-                      <span class="text-emerald-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColTotal">Totale Protetto</span>
-                      <span id="liveNoticeTotalPrice" class="text-emerald-400 font-bold block">€ 0,00</span>
-                    </div>
-                  </div>
-
-                  <p class="text-[11px] text-zinc-300 leading-relaxed font-sans" id="i18n-stripeNoticeText">
-                    Al preventivo viene applicata automaticamente la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
-                    <span class="text-zinc-400 block mt-1" id="i18n-stripeNoticeSubtext">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <!-- Colonna Destra (5 Colonne): Quantità, Robustezza, Budget & Consegna -->
-            <div class="lg:col-span-5 w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-2.5 sm:space-y-4 shadow-lg flex flex-col justify-between">
-              
-              <div class="space-y-2.5 sm:space-y-4">
-                <div class="flex items-center justify-between border-b border-white/[0.06] pb-1.5 sm:pb-2">
-                  <span class="text-xs font-cyber font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                    <i data-lucide="gauge" class="w-3.5 h-3.5 text-white"></i>
-                    <span id="i18n-reqStep3Title">3. QUANTITÀ &amp; ROBUSTEZZA</span>
-                  </span>
-                  <span class="text-[9px] text-emerald-400 font-mono" id="i18n-budgetCalcBadge">✓ Calcolo Automatico</span>
-                </div>
-
-                <!-- GRIGLIA COMPATTA QUANTITÀ & BUDGET SULLO STESSO LIVELLO -->
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                  <!-- Quantità Personalizzata (Scrittura Libera con Stepper) -->
+                
+            
+            <div class="pt-3 border-t border-white/10 space-y-4">
+              <!-- Quantità Personalizzata (Scrittura Libera con Stepper) -->
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
                       <label class="text-xs sm:text-xs font-cyber font-bold text-zinc-300 uppercase block tracking-wider" id="i18n-reqQuantityLabel">Quantità / Batch</label>
@@ -6380,7 +6373,80 @@
                     </select>
                   </div>
 
-                  <!-- Budget Stampa con Guida Mercato e 1-Click Stima (Senza Caos) -->
+                  
+              <!-- Opzione Infill / Robustezza (Immediatamente Sotto a Quantità e Budget) -->
+                <div class="space-y-1 pt-0.5" id="clientInfillContainer">
+                  <div class="flex items-center justify-between">
+                    <label class="text-[10px] font-cyber font-bold text-zinc-300 uppercase block tracking-wider" id="i18n-reqInfillLabel">Opzione Infill (Robustezza)</label>
+                    <span class="text-[9px] font-mono text-emerald-400 font-bold" id="infillSelectedNameDisplay">50% Meccanico</span>
+                  </div>
+                  <div class="grid grid-cols-3 gap-1.5 sm:gap-2" id="infillPillsContainer">
+                    <button type="button" class="infill-pill py-1.5 sm:py-2 px-1 text-center rounded-lg sm:rounded-xl bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('20% Leggero / Standard')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider">20%</span>
+                      <span class="text-[8px] sm:text-[9px] text-zinc-400 font-sans" id="i18n-infillLight">Leggero</span>
+                    </button>
+                    <button type="button" class="infill-pill py-1.5 sm:py-2 px-1 text-center rounded-lg sm:rounded-xl bg-[#14151B] border border-white/25 active-infill-pill transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('50% Meccanico Strutturale')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider">50%</span>
+                      <span class="text-[8px] sm:text-[9px] text-zinc-400 font-sans" id="i18n-infillMech">Meccanico</span>
+                    </button>
+                    <button type="button" class="infill-pill py-1.5 sm:py-2 px-1 text-center rounded-lg sm:rounded-xl bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('100% Pieno Massiccio Solido')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider">100%</span>
+                      <span class="text-[8px] sm:text-[9px] text-zinc-400 font-sans" id="i18n-infillSolid">Pieno</span>
+                    </button>
+                  </div>
+                  <!-- Select nascosto reqInfill per retrocompatibilità test e form -->
+                  <select id="reqInfill" onchange="recalculateInstantQuote(); updateLiveRequestSummary();" class="hidden">
+                    <option value="" disabled>Seleziona riempimento...</option>
+                    <option value="20% Leggero / Standard">20% Leggero / Standard (Decorativo/Mockup)</option>
+                    <option value="50% Meccanico Strutturale" selected>50% Meccanico Strutturale (Resistente)</option>
+                    <option value="100% Pieno Massiccio Solido">100% Pieno Massiccio Solido (Uso gravoso)</option>
+                  </select>
+                  <!-- Campo reqNotes nascosto per preservare compatibilità script -->
+                  <textarea id="reqNotes" class="hidden" style="display: none !important;"></textarea>
+                </div>
+
+                <!-- 3 Micro-spunte Rassicuranti ad Alta Visibilità -->
+                
+              
+            </div>
+          </div>
+
+          <!-- Pulsanti Navigazione Passo 2 -->
+          <div class="pt-2 border-t border-white/10 flex flex-col sm:flex-row gap-2 justify-between">
+            <button type="button" onclick="goToClientWizardStep(1)" class="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white border border-white/10 font-mono text-xs transition cursor-pointer flex items-center justify-center gap-1.5">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span>Indietro</span>
+            </button>
+            <button type="button" onclick="goToClientWizardStep(3)" class="w-full sm:w-auto btn-kowalski-primary px-6 py-3 rounded-xl font-cyber font-bold text-xs sm:text-sm uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95 transition">
+              <span>PROSEGUI A BUDGET &amp; SPEDIZIONE</span>
+              <i data-lucide="arrow-right" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+
+        <!-- ========================================================================= -->
+        <!-- PASSO 3: BUDGET (SOPRA) + SPEDIZIONE + INDIRIZZO + CALCOLO ESCROW         -->
+        <!-- ========================================================================= -->
+        <div id="clientWizardStep3" class="space-y-4 hidden">
+          <div class="flex items-center justify-between pb-2 border-b border-white/10">
+            <button type="button" onclick="goToClientWizardStep(2)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-mono flex items-center gap-1.5 transition cursor-pointer">
+              <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+              <span>← Torna a Colore &amp; Quantità</span>
+            </button>
+            <span class="text-[10px] font-mono text-zinc-500">3 / 3</span>
+          </div>
+
+          <!-- 1. BUDGET DESIDERATO SUBITO SOPRA -->
+          <div class="w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-3 shadow-lg">
+            <div class="flex items-center justify-between border-b border-white/[0.06] pb-2">
+              <span class="text-xs font-cyber font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <i data-lucide="banknote" class="w-3.5 h-3.5 text-white"></i>
+                <span>1. BUDGET NETTO DESIDERATO</span>
+              </span>
+              <span class="text-[9px] font-mono text-emerald-400 font-bold">PREZZO INDICATIVO</span>
+            </div>
+            <!-- Budget Stampa con Guida Mercato e 1-Click Stima (Senza Caos) -->
                   <div class="space-y-1.5">
                     <div class="flex items-center justify-between">
                       <label class="text-xs sm:text-xs font-cyber font-bold text-zinc-300 uppercase block tracking-wider" id="i18n-reqBudgetLabel">Budget Stampa (€)</label>
@@ -6455,166 +6521,12 @@
                   </select>
                 </div>
 
-                <!-- Opzione Infill / Robustezza (Immediatamente Sotto a Quantità e Budget) -->
-                <div class="space-y-1 pt-0.5" id="clientInfillContainer">
-                  <div class="flex items-center justify-between">
-                    <label class="text-[10px] font-cyber font-bold text-zinc-300 uppercase block tracking-wider" id="i18n-reqInfillLabel">Opzione Infill (Robustezza)</label>
-                    <span class="text-[9px] font-mono text-emerald-400 font-bold" id="infillSelectedNameDisplay">50% Meccanico</span>
-                  </div>
-                  <div class="grid grid-cols-3 gap-1.5 sm:gap-2" id="infillPillsContainer">
-                    <button type="button" class="infill-pill py-1.5 sm:py-2 px-1 text-center rounded-lg sm:rounded-xl bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('20% Leggero / Standard')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">20%</span>
-                      <span class="text-[8px] sm:text-[9px] text-zinc-400 font-sans" id="i18n-infillLight">Leggero</span>
-                    </button>
-                    <button type="button" class="infill-pill py-1.5 sm:py-2 px-1 text-center rounded-lg sm:rounded-xl bg-[#14151B] border border-white/25 active-infill-pill transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('50% Meccanico Strutturale')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">50%</span>
-                      <span class="text-[8px] sm:text-[9px] text-zinc-400 font-sans" id="i18n-infillMech">Meccanico</span>
-                    </button>
-                    <button type="button" class="infill-pill py-1.5 sm:py-2 px-1 text-center rounded-lg sm:rounded-xl bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('100% Pieno Massiccio Solido')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">100%</span>
-                      <span class="text-[8px] sm:text-[9px] text-zinc-400 font-sans" id="i18n-infillSolid">Pieno</span>
-                    </button>
-                  </div>
-                  <!-- Select nascosto reqInfill per retrocompatibilità test e form -->
-                  <select id="reqInfill" onchange="recalculateInstantQuote(); updateLiveRequestSummary();" class="hidden">
-                    <option value="" disabled>Seleziona riempimento...</option>
-                    <option value="20% Leggero / Standard">20% Leggero / Standard (Decorativo/Mockup)</option>
-                    <option value="50% Meccanico Strutturale" selected>50% Meccanico Strutturale (Resistente)</option>
-                    <option value="100% Pieno Massiccio Solido">100% Pieno Massiccio Solido (Uso gravoso)</option>
-                  </select>
-                  <!-- Campo reqNotes nascosto per preservare compatibilità script -->
-                  <textarea id="reqNotes" class="hidden" style="display: none !important;"></textarea>
-                </div>
-
-                <!-- 3 Micro-spunte Rassicuranti ad Alta Visibilità -->
                 
-              <!-- Sezione Indirizzo di Consegna per Etichetta Spedizione Corriere -->
-              <div class="space-y-2 p-3.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs">
-                <label class="text-[11px] font-mono text-zinc-400 block font-bold flex items-center gap-1.5">
-                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400"></i>
-                  Indirizzo di Spedizione e Consegna (per Etichetta Corriere PDF) *
-                </label>
-                <div class="space-y-2 font-sans">
-                  <input type="text" id="reqShippingStreet" placeholder="Via / Piazza e N. Civico (es. Via Dante 18)" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
-                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <input type="text" id="reqShippingCity" placeholder="Città (es. Milano)" class="bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
-                    <input type="text" id="reqShippingCap" placeholder="CAP (es. 20121)" class="bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
-                    <input type="text" id="reqShippingProv" placeholder="Provincia (es. MI)" maxlength="2" class="uppercase bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
-                  </div>
-                </div>
-              </div>
-
-              <div id="budgetReassuranceSpunte" class="flex flex-wrap items-center gap-1 sm:gap-2 pt-1 text-[10px] sm:text-[11px] font-sans">
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[#12141A] border border-emerald-500/30 text-zinc-100 shadow-sm font-medium">
-                    <span class="text-emerald-400 font-bold text-xs">✓</span>
-                    <span id="i18n-spunta1Text">Manifattura e materiale</span>
-                  </span>
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[#12141A] border border-emerald-500/30 text-zinc-100 shadow-sm font-medium">
-                    <span class="text-emerald-400 font-bold text-xs">✓</span>
-                    <span id="i18n-spunta2Text">Imballo &amp; corriere</span>
-                  </span>
-                  <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[#12141A] border border-emerald-500/30 text-zinc-100 shadow-sm font-medium">
-                    <span class="text-emerald-400 font-bold text-xs">✓</span>
-                    <span id="i18n-spunta3Text">Escrow &amp; Collaudo</span>
-                  </span>
-                </div>
-
-                <!-- RASSICURAZIONE SPEDIZIONE INCLUSA & IMBALLO SU MISURA SOTTO ALL'INFILL -->
-                <div id="clientShippingReassuranceBar" class="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-[#0E0F14] border border-white/10 flex items-center justify-between gap-2.5 text-xs font-mono shadow-sm mt-2">
-                  <div class="flex items-center gap-2.5 min-w-0">
-                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xs sm:text-sm shrink-0">
-                      📦
-                    </div>
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-1.5 flex-wrap">
-                        <span class="font-bold text-white text-[11px] sm:text-xs" id="clientShippingMainTitle">Spedizione e imballo inclusi</span>
-                        <span id="clientAutoBoxPill" class="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30">✓ INCLUSA</span>
-                      </div>
-                      <span class="text-[10px] sm:text-[11px] text-zinc-400 block truncate" id="clientShippingReassuranceText">📦 Fabbricazione, imballo su misura e consegna tracciata inclusi in Escrow</span>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- EMAIL COLLEGATA PER RICEZIONE CONFERME (Nascosta: email già fornita obbligatoriamente all'accesso) -->
-                <div id="clientEmailReassuranceBar" class="hidden" style="display: none !important;">
-                  <input type="email" id="reqClientEmail" value="" />
-                </div>
-              </div>
-
-              <!-- SELETTORE OPZIONI DI SPEDIZIONE & TEMPISTICHE -->
-              <div class="pt-3 border-t border-white/[0.08] space-y-2.5">
-                <div class="flex items-center justify-between">
-                  <label class="text-[10px] font-cyber font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
-                    <i data-lucide="truck" class="w-3.5 h-3.5 text-cyan-400"></i>
-                    <span id="i18n-shippingOptionLabelText">Opzione di Spedizione &amp; Tempistiche</span>
-                  </label>
-                  <span class="text-[9px] font-mono text-zinc-400" id="i18n-shippingParamHint">Parametri di costo calcolati in tempo reale</span>
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                  <!-- Flessibile (-10% Sconto) -->
-                  <div id="shippingCardFlexible" onclick="selectShippingOption('Flessibile 7-10 giorni')" class="shipping-card p-3 rounded-xl bg-[#101218] border border-white/10 hover:border-emerald-500/50 cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
-                    <div class="flex items-center justify-between">
-                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/30" id="i18n-shipFlexBadge">-10% Sconto</span>
-                      <div class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
-                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-emerald-300 transition" id="i18n-shipFlexTitle">Flessibile</h4>
-                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipFlexDays">7 - 10 giorni lavorativi</p>
-                    </div>
-                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipFlexDesc">Ottimizzazione tempi morti stampante. Risparmi il 10% sul totale.</p>
-                  </div>
-
-                  <!-- Standard (1.0x Base - Consigliata) -->
-                  <div id="shippingCardStandard" onclick="selectShippingOption('Standard 3-5 giorni')" class="shipping-card p-3 rounded-xl bg-[#101218] border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.25)] cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
-                    <div class="flex items-center justify-between">
-                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/40" id="i18n-shipStdBadge">Consigliata</span>
-                      <div class="w-6 h-6 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
-                        <i data-lucide="package" class="w-3.5 h-3.5"></i>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-cyan-300 transition" id="i18n-shipStdTitle">Standard</h4>
-                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipStdDays">3 - 5 giorni lavorativi</p>
-                    </div>
-                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipStdDesc">Tariffa base bilanciata con spedizione tracciata e imballo protettivo.</p>
-                  </div>
-
-                  <!-- Urgente (+30% Priorità) -->
-                  <div id="shippingCardUrgent" onclick="selectShippingOption('Urgente Flash 24-48h')" class="shipping-card p-3 rounded-xl bg-[#101218] border border-white/10 hover:border-amber-500/50 cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
-                    <div class="flex items-center justify-between">
-                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30" id="i18n-shipUrgBadge">+30% Priorità</span>
-                      <div class="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
-                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-amber-300 transition" id="i18n-shipUrgTitle">Urgente Flash</h4>
-                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipUrgDays">24 - 48 ore</p>
-                    </div>
-                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipUrgDesc">Priorità assoluta in coda macchina e lavorazione immediata h24.</p>
-                  </div>
-                </div>
-
-                <!-- Input nascosti per preservare piena retrocompatibilità con form & DB -->
-                <input type="hidden" id="reqTolerance" value="Standard ±0.20 mm" />
-                <input type="hidden" id="reqPostProcess" value="Grezzo (Rimozione supporti standard)" />
-                <input type="file" id="reqFileInput" accept=".stl,.step,.stp,.obj,.3mf" class="hidden" onchange="handleFileSelected(event)" />
-                <span id="labelUploadedFile" class="hidden">Nessun file selezionato</span>
-              </div>
-
-            </div>
           </div>
 
-
-        </div>
-
-
-
-        <!-- ========================================================================= -->
-        <!-- PACKLINK PRO // CALCOLATORE IMBALLAGGIO E SPEDIZIONE TRASPARENTE          -->
+          <!-- 2. SPEDIZIONE PACKLINK PRO -->
+          <div class="w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-3 shadow-lg">
+            <!-- PACKLINK PRO // CALCOLATORE IMBALLAGGIO E SPEDIZIONE TRASPARENTE          -->
         <!-- (NASCOSTO DI DEFAULT PER IL CLIENTE COMUNE - ESPANDIBILE SU RICHIESTA)     -->
         <!-- ========================================================================= -->
         <div id="packlinkShippingSection" class="hidden p-5 sm:p-6 rounded-2xl bg-[#090A0D] border border-white/15 space-y-5 relative shadow-xl packlink-card">
@@ -6947,7 +6859,189 @@
 
         </div>
 
-        <!-- MANCANZA 4: Check di Manleva e Garanzia Tolleranza Zero -->
+        
+          </div>
+
+          <!-- 3. INDIRIZZO DI SPEDIZIONE DA COMPILARE -->
+          <div class="w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-3 shadow-lg">
+            <!-- Sezione Indirizzo di Consegna per Etichetta Spedizione Corriere -->
+              <div class="space-y-2 p-3.5 rounded-xl bg-white/[0.02] border border-white/10 text-xs">
+                <label class="text-[11px] font-mono text-zinc-400 block font-bold flex items-center gap-1.5">
+                  <i data-lucide="map-pin" class="w-3.5 h-3.5 text-emerald-400"></i>
+                  Indirizzo di Spedizione e Consegna (per Etichetta Corriere PDF) *
+                </label>
+                <div class="space-y-2 font-sans">
+                  <input type="text" id="reqShippingStreet" placeholder="Via / Piazza e N. Civico (es. Via Dante 18)" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
+                  <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                    <input type="text" id="reqShippingCity" placeholder="Città (es. Milano)" class="bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
+                    <input type="text" id="reqShippingCap" placeholder="CAP (es. 20121)" class="bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
+                    <input type="text" id="reqShippingProv" placeholder="Provincia (es. MI)" maxlength="2" class="uppercase bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white text-xs focus:border-white outline-none transition" />
+                  </div>
+                </div>
+              </div>
+
+              <div id="budgetReassuranceSpunte" class="flex flex-wrap items-center gap-1 sm:gap-2 pt-1 text-[10px] sm:text-[11px] font-sans">
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[#12141A] border border-emerald-500/30 text-zinc-100 shadow-sm font-medium">
+                    <span class="text-emerald-400 font-bold text-xs">✓</span>
+                    <span id="i18n-spunta1Text">Manifattura e materiale</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[#12141A] border border-emerald-500/30 text-zinc-100 shadow-sm font-medium">
+                    <span class="text-emerald-400 font-bold text-xs">✓</span>
+                    <span id="i18n-spunta2Text">Imballo &amp; corriere</span>
+                  </span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg bg-[#12141A] border border-emerald-500/30 text-zinc-100 shadow-sm font-medium">
+                    <span class="text-emerald-400 font-bold text-xs">✓</span>
+                    <span id="i18n-spunta3Text">Escrow &amp; Collaudo</span>
+                  </span>
+                </div>
+
+                <!-- RASSICURAZIONE SPEDIZIONE INCLUSA & IMBALLO SU MISURA SOTTO ALL'INFILL -->
+                <div id="clientShippingReassuranceBar" class="p-2 sm:p-3 rounded-lg sm:rounded-xl bg-[#0E0F14] border border-white/10 flex items-center justify-between gap-2.5 text-xs font-mono shadow-sm mt-2">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 flex items-center justify-center text-xs sm:text-sm shrink-0">
+                      📦
+                    </div>
+                    <div class="min-w-0">
+                      <div class="flex items-center gap-1.5 flex-wrap">
+                        <span class="font-bold text-white text-[11px] sm:text-xs" id="clientShippingMainTitle">Spedizione e imballo inclusi</span>
+                        <span id="clientAutoBoxPill" class="text-[8px] sm:text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-300 font-bold border border-emerald-500/30">✓ INCLUSA</span>
+                      </div>
+                      <span class="text-[10px] sm:text-[11px] text-zinc-400 block truncate" id="clientShippingReassuranceText">📦 Fabbricazione, imballo su misura e consegna tracciata inclusi in Escrow</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- EMAIL COLLEGATA PER RICEZIONE CONFERME (Nascosta: email già fornita obbligatoriamente all'accesso) -->
+                <div id="clientEmailReassuranceBar" class="hidden" style="display: none !important;">
+                  <input type="email" id="reqClientEmail" value="" />
+                </div>
+              </div>
+
+              <!-- SELETTORE OPZIONI DI SPEDIZIONE & TEMPISTICHE -->
+              <div class="pt-3 border-t border-white/[0.08] space-y-2.5">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10px] font-cyber font-bold text-zinc-300 uppercase tracking-wider flex items-center gap-1.5">
+                    <i data-lucide="truck" class="w-3.5 h-3.5 text-cyan-400"></i>
+                    <span id="i18n-shippingOptionLabelText">Opzione di Spedizione &amp; Tempistiche</span>
+                  </label>
+                  <span class="text-[9px] font-mono text-zinc-400" id="i18n-shippingParamHint">Parametri di costo calcolati in tempo reale</span>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                  <!-- Flessibile (-10% Sconto) -->
+                  <div id="shippingCardFlexible" onclick="selectShippingOption('Flessibile 7-10 giorni')" class="shipping-card p-3 rounded-xl bg-[#101218] border border-white/10 hover:border-emerald-500/50 cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-bold border border-emerald-500/30" id="i18n-shipFlexBadge">-10% Sconto</span>
+                      <div class="w-6 h-6 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+                        <i data-lucide="calendar" class="w-3.5 h-3.5"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-emerald-300 transition" id="i18n-shipFlexTitle">Flessibile</h4>
+                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipFlexDays">7 - 10 giorni lavorativi</p>
+                    </div>
+                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipFlexDesc">Ottimizzazione tempi morti stampante. Risparmi il 10% sul totale.</p>
+                  </div>
+
+                  <!-- Standard (1.0x Base - Consigliata) -->
+                  <div id="shippingCardStandard" onclick="selectShippingOption('Standard 3-5 giorni')" class="shipping-card p-3 rounded-xl bg-[#101218] border-2 border-cyan-400 shadow-[0_0_15px_rgba(34,211,238,0.25)] cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-cyan-500/20 text-cyan-300 font-bold border border-cyan-400/40" id="i18n-shipStdBadge">Consigliata</span>
+                      <div class="w-6 h-6 rounded-lg bg-cyan-500/15 text-cyan-400 flex items-center justify-center">
+                        <i data-lucide="package" class="w-3.5 h-3.5"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-cyan-300 transition" id="i18n-shipStdTitle">Standard</h4>
+                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipStdDays">3 - 5 giorni lavorativi</p>
+                    </div>
+                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipStdDesc">Tariffa base bilanciata con spedizione tracciata e imballo protettivo.</p>
+                  </div>
+
+                  <!-- Urgente (+30% Priorità) -->
+                  <div id="shippingCardUrgent" onclick="selectShippingOption('Urgente Flash 24-48h')" class="shipping-card p-3 rounded-xl bg-[#101218] border border-white/10 hover:border-amber-500/50 cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-2 group">
+                    <div class="flex items-center justify-between">
+                      <span class="text-[9px] font-mono uppercase px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30" id="i18n-shipUrgBadge">+30% Priorità</span>
+                      <div class="w-6 h-6 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+                        <i data-lucide="zap" class="w-3.5 h-3.5"></i>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 class="text-xs font-cyber font-bold text-white group-hover:text-amber-300 transition" id="i18n-shipUrgTitle">Urgente Flash</h4>
+                      <p class="text-[10px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipUrgDays">24 - 48 ore</p>
+                    </div>
+                    <p class="text-[9.5px] text-zinc-400 font-sans leading-tight" id="i18n-shipUrgDesc">Priorità assoluta in coda macchina e lavorazione immediata h24.</p>
+                  </div>
+                </div>
+
+                <!-- Input nascosti per preservare piena retrocompatibilità con form & DB -->
+                <input type="hidden" id="reqTolerance" value="Standard ±0.20 mm" />
+                <input type="hidden" id="reqPostProcess" value="Grezzo (Rimozione supporti standard)" />
+                <input type="file" id="reqFileInput" accept=".stl,.step,.stp,.obj,.3mf" class="hidden" onchange="handleFileSelected(event)" />
+                <span id="labelUploadedFile" class="hidden">Nessun file selezionato</span>
+              </div>
+
+            </div>
+          </div>
+
+
+        </div>
+
+
+
+        <!-- ========================================================================= -->
+        
+          </div>
+
+          <!-- 4. CALCOLO ESCROW UFFICIALE & MANLEVA -->
+          <div class="w-full min-w-0 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-[#090A0E] border border-white/10 space-y-3 shadow-lg">
+            <!-- AVVISO SOGLIA MINIMA BUDGET MAKER (INSERITO ESATTAMENTE SOTTO IL COLORE) -->
+                <div id="budgetWarningBox" class="hidden p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-[#141008] border border-amber-500/50 text-amber-400 font-mono text-xs sm:text-[13px] items-center gap-3 shadow-lg my-2 transition-all">
+                  <div class="w-5 h-5 rounded-full border border-amber-500/80 flex items-center justify-center shrink-0 text-amber-400 font-mono text-xs font-bold leading-none select-none">i</div>
+                  <span id="budgetWarningText" class="leading-relaxed text-[#FBBF24]">Con un budget inferiore a € 77 i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € 102,00.</span>
+                </div>
+
+                <!-- RIQUADRO UFFICIALE PROTEZIONE STRIPE ESCROW & GARANZIA (GARANZIA STRIPE ESCROW) -->
+                <div id="stripeEscrowFeeNotice" class="p-3.5 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-b from-[#0D121F] via-[#0A0D16] to-[#07090F] border border-blue-500/50 shadow-[0_0_20px_rgba(59,130,246,0.15)] space-y-2.5 mt-2 transition-all block">
+                  <div class="flex items-center justify-between gap-2 flex-wrap">
+                    <div class="flex items-center gap-2.5">
+                      <div class="w-8 h-8 rounded-xl bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0 shadow-sm">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i>
+                      </div>
+                      <div>
+                        <span class="text-xs sm:text-xs font-cyber font-bold text-white tracking-wide block" id="i18n-stripeNoticeTitle">Protezione Acquisti &amp; Garanzia Stripe Escrow</span>
+                        <span class="text-[10px] text-blue-300/90 font-mono" id="i18n-stripeNoticeSubtitle">Tariffa Stripe Escrow: 1,5% + € 0,25 con calcolo al centesimo</span>
+                      </div>
+                    </div>
+                    <span class="px-2.5 py-1 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[10.5px] font-bold border border-blue-500/40 shrink-0" id="liveNoticeStripeBadge">Stripe Escrow: 1,5% + € 0,25</span>
+                  </div>
+
+                  <!-- Griglia Calcolo Dinamico al Centesimo in Tempo Reale: Manifattura | + Tassa Stripe | Totale Protetto -->
+                  <div class="p-2 sm:p-2.5 rounded-xl bg-black/40 border border-blue-500/30 grid grid-cols-3 gap-2 text-center font-mono text-[10.5px] shadow-inner">
+                    <div class="space-y-0.5">
+                      <span class="text-zinc-400 block text-[9px] uppercase tracking-wider" id="i18n-stripeColMfg">Manifattura</span>
+                      <span id="liveNoticeBasePrice" class="text-white font-bold block">€ 0,00</span>
+                    </div>
+                    <div class="space-y-0.5 border-x border-white/10 px-1">
+                      <span class="text-blue-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColFee">+ Tassa Stripe</span>
+                      <span id="liveNoticeStripeFee" class="text-blue-300 font-bold block">+ € 0,00</span>
+                    </div>
+                    <div class="space-y-0.5">
+                      <span class="text-emerald-400 block text-[9px] uppercase font-bold tracking-wider" id="i18n-stripeColTotal">Totale Protetto</span>
+                      <span id="liveNoticeTotalPrice" class="text-emerald-400 font-bold block">€ 0,00</span>
+                    </div>
+                  </div>
+
+                  <p class="text-[11px] text-zinc-300 leading-relaxed font-sans" id="i18n-stripeNoticeText">
+                    Al preventivo viene applicata automaticamente la tariffa ufficiale di Stripe al centesimo (<b>1,5% + € 0,25</b>) per la <b>Protezione Totale Acquirente</b> e custodia fiduciaria. 
+                    <span class="text-zinc-400 block mt-1" id="i18n-stripeNoticeSubtext">🔒 Il Maker riceve il compenso solo dopo che hai verificato e approvato le 3 foto di collaudo con calibro. In caso di difetti o ritardo hai rimborso immediato al 100%.</span>
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            
+            <!-- MANCANZA 4: Check di Manleva e Garanzia Tolleranza Zero -->
         <div class="p-2.5 sm:p-3.5 rounded-lg sm:rounded-xl bg-[#1E2120] border border-emerald-500/30 flex items-start gap-2.5 sm:gap-3">
           <input type="checkbox" id="checkLegalCompliance" required checked class="mt-0.5 rounded bg-black text-white border-white/20 shrink-0" />
           <label for="checkLegalCompliance" class="text-[10px] sm:text-[11px] text-zinc-300 font-sans leading-relaxed" id="i18n-legalText">
@@ -6955,7 +7049,11 @@
           </label>
         </div>
 
-        <!-- Pulsante di Invio Broadcast con Indicatore di Rete -->
+        
+          </div>
+
+          <!-- 5. TASTO TROVA IL MAKER (APRE IL RIQUADRO DI SINTESI ESCROW) -->
+          <!-- Pulsante di Invio Broadcast con Indicatore di Rete -->
         <div class="pt-2 border-t border-white/[0.08] flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
           <div class="flex items-center gap-2 text-[11px] sm:text-xs font-mono text-zinc-400">
             <i data-lucide="shield-check" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0"></i>
@@ -6967,6 +7065,10 @@
             <span id="i18n-btnSubmitRfp">TROVA IL MAKER PER QUESTA SCOMMESSA</span>
           </button>
         </div>
+
+      
+        </div>
+
 
       </form>
 
@@ -11551,35 +11653,7 @@
           </div>
         `
       },
-      'maker-tax': {
-        badge: 'MAKER TAX // CIV. CODE ART. 2222',
-        version: 'TAX GUIDE & P2P RECEIPT',
-        title: 'Maker Tax Guide: Occasional Self-Employment & VAT Registration',
-        subtitle: 'Legal Framework for Hobbyist Makers (up to €5,000/year) and VAT Registered Labs',
-        html: `
-          <div class="space-y-4">
-            <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300">
-              <span class="font-bold block mb-1">OPEN AND TRANSPARENT MARKETPLACE ACCESS</span>
-              On PrintForge you can sell your 3D prints either as a private individual (without VAT number) via an Occasional Service Receipt, or as a professional / workshop with a registered VAT number (Flat-rate or Standard tax scheme).
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 1 - Private Seller (Occasional Service - Italian Civ. Code Art. 2222)</h4>
-            <p>1.1. If you print 3D parts occasionally and without an organized enterprise, your activity qualifies as <strong>Occasional Self-Employment</strong> under Article 2222 of the Italian Civil Code (and comparable EU micro-work provisions).</p>
-            <p>1.2. <strong>€5,000 Annual Exemption Threshold:</strong> Up to €5,000 net compensation in a calendar year, you are exempt from VAT registration and social security (INPS Gestione Separata) obligations.</p>
-            <p>1.3. <strong>Issuing the Receipt:</strong> Private makers issue a simple receipt for occasional services with their personal tax code. If the buyer is a registered business, a 20% withholding tax applies; if the buyer is a private citizen, no withholding is deducted (gross equals net).</p>
-            <p>1.4. <strong>Revenue Stamp:</strong> For receipts exceeding €77.47, a standard €2.00 digital revenue stamp applies.</p>
-            <p>1.5. <strong>Income Tax Filing:</strong> Earnings are declared as "other income" in your annual tax return.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 2 - Professional Seller (VAT Flat-Rate or Standard Scheme)</h4>
-            <p>2.1. Makers exceeding €5,000/year or operating as ongoing commercial entities must hold a valid VAT number. The Flat-rate Scheme (5% substitute tax for the first 5 years, or 15% standard, up to €85,000/year) is ideal for 3D printing hubs.</p>
-            <p>2.2. Flat-rate sellers do not charge VAT on customer invoices and are exempt from withholding tax.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 3 - Direct Payouts via Stripe Connect & Platform Fees</h4>
-            <p>3.1. PrintForge operates as a SaaS platform provider and retains an 8% platform fee to cover escrow custody, payment gateways, and Three.js 3D infrastructure.</p>
-            <p>3.2. Net funds are automatically transferred by Stripe Connect to the maker's bank account upon tracked carrier pickup (Packlink PRO / UPS / GLS / DHL), following the upload of the 3 caliper QC verification photos.</p>
-          </div>
-        `
-      },
+      
       'seller-agreement': {
         badge: 'MAKER TAX // CIV. CODE ART. 2222',
         version: 'TAX GUIDE & P2P RECEIPT',
@@ -11966,35 +12040,7 @@
           </div>
         `
       },
-      'maker-tax': {
-        badge: 'FISCALIDAD MAKER // TRABAJO AUTÓNOMO OCASIONAL',
-        version: 'GUÍA FISCAL & RECIBO P2P',
-        title: 'Guía Fiscal Maker: Prestación Ocasional y Facturación con NIF/IVA',
-        subtitle: 'Régimen para Makers Particulares (hasta 5.000€/año) y Talleres Profesionales con NIF/IVA',
-        html: `
-          <div class="space-y-4">
-            <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300">
-              <span class="font-bold block mb-1">ACCESO ABIERTO Y TRANSPARENTE AL MARKETPLACE</span>
-              En PrintForge puedes vender tus impresiones 3D tanto como particular (sin alta como autónomo ni IVA) mediante Recibo de Prestación Ocasional, como en calidad de profesional o taller con NIF/IVA.
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 1 - Venta como Particular (Prestación Ocasional hasta 5.000 €/año)</h4>
-            <p>1.1. Si imprimes en 3D de manera esporádica y sin organización empresarial continuada, tu actividad encaja como <strong>Servicio Ocasional</strong> (conforme a las normativas europeas y el art. 2222 del Código Civil italiano para operaciones transfronterizas).</p>
-            <p>1.2. <strong>Franquicia de 5.000 € anuales:</strong> Hasta 5.000 euros netos percibidos al año, no existe obligación de alta censal en IVA ni cotización a la Seguridad Social de trabajadores por cuenta propia.</p>
-            <p>1.3. <strong>Emisión del Recibo:</strong> El maker particular emite un sencillo recibo con sus datos identificativos y NIF. Si el cliente es una empresa, se aplica la retención fiscal correspondiente; si el cliente es un particular, no se practica retención (el bruto equivale al neto).</p>
-            <p>1.4. <strong>Timbre Fiscal:</strong> En recibos superiores a 77,47 euros, procede la inclusión de la tasa/timbre correspondiente según legislación local.</p>
-            <p>1.5. <strong>Declaración de la Renta:</strong> Los ingresos obtenidos se declaran como rendimientos del trabajo o actividades económicas esporádicas en la declaración anual.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 2 - Venta Profesional con NIF/IVA</h4>
-            <p>2.1. Quienes ejerzan la actividad de forma habitual o superen los 5.000 € anuales deben contar con NIF/IVA profesional (régimen simplificado, de módulos o general).</p>
-            <p>2.2. Los autónomos y empresas emiten factura oficial con desglose de IVA y retenciones en su caso.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 3 - Cobros Directos vía Stripe Connect & Comisiones</h4>
-            <p>3.1. PrintForge opera como plataforma tecnológica SaaS y retiene una comisión del 8% para costear la custodia escrow, pasarelas de pago y la infraestructura de visualización Three.js.</p>
-            <p>3.2. Los fondos netos se transfieren automáticamente por Stripe Connect a la cuenta bancaria del maker en cuanto el transportista (Packlink PRO / UPS / GLS / DHL) registra la recogida rastreada del paquete, tras validar las 3 fotos de control con calibre.</p>
-          </div>
-        `
-      },
+      
       'seller-agreement': {
         badge: 'FISCALIDAD MAKER // PRESTACIÓN OCASIONAL',
         version: 'GUÍA FISCAL & RECIBO P2P',
@@ -26435,7 +26481,7 @@ window.__lastComputedQuotePrice = computedPrice;
       }
 
       if (viewId === 'my-requests' || viewId === 'instant-quote' || viewId === 'richieste-cliente') {
-        viewId = 'client-request';
+        viewId = 'client-request'; if (typeof goToClientWizardStep === 'function') goToClientWizardStep(1);
       }
       if (viewId === 'home') viewId = 'client-home';
       if (viewId === 'esplora') viewId = 'explore';
@@ -32219,6 +32265,23 @@ function renderDealChat(rfpId) {
       AppState.portfolioWorks = [];
     }
 
+    
+    function isUserUploadedPhoto(url) {
+      if (!url || typeof url !== 'string') return false;
+      const s = url.trim().toLowerCase();
+      if (!s || s === 'null' || s === 'undefined') return false;
+      if (s.startsWith('data:image/')) return true;
+      if (s.includes('images/') || s.includes('dice') || s.includes('cube') || s.includes('benchy') || s.includes('vase') || s.includes('stand') || s.includes('gear') || s.includes('skull') || s.includes('sneaker') || s.includes('dragon') || s.includes('landscape') || s.includes('qc_')) {
+        return false;
+      }
+      if (s.startsWith('http://') || s.startsWith('https://')) {
+        if (s.includes('printforge.dev') || s.includes('vercel.app')) return false;
+        return true;
+      }
+      return false;
+    }
+    window.isUserUploadedPhoto = isUserUploadedPhoto;
+
     function filterExploreCategory(cat) {
       currentExploreFilter = (cat || 'all').toLowerCase();
       const filterDefs = [
@@ -32598,7 +32661,7 @@ function renderDealChat(rfpId) {
         const safeDims = escapeHtml(w?.dimensions || '80 × 60 × 25 mm');
         const safeCreator = escapeHtml(w?.creatorName || 'Maker Certificato');
         const safeDesc = escapeHtml(w?.description || '');
-        const hasRealPhoto = Boolean(w && w.photoUrl && !w.photoUrl.startsWith('/images/'));
+        const hasRealPhoto = Boolean(w && w.photoUrl && isUserUploadedPhoto(w.photoUrl));
 
         return `
           <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/25 transition overflow-hidden shadow-xl flex flex-col justify-between group">
@@ -32662,12 +32725,17 @@ function renderDealChat(rfpId) {
       
       // Sanitizzazione foto stock: se un'opera ha photoUrl che punta a immagini stock (/images/dice.jpg, /images/cube.jpg), rimuovila del tutto!
       (AppState.portfolioWorks || []).forEach(w => {
-        if (w && w.photoUrl && w.photoUrl.startsWith('/images/')) {
+        if (w && !isUserUploadedPhoto(w.photoUrl)) {
           w.photoUrl = null;
         }
       });
         if (typeof localStorage !== 'undefined') {
           let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
+          pWorks.forEach(w => {
+            if (w && !isUserUploadedPhoto(w.photoUrl)) {
+              w.photoUrl = null;
+            }
+          });
           const originalLen = pWorks.length;
           pWorks = pWorks.filter(w => !w || !phantomPatterns.some(pt => (w.title || '').toLowerCase().includes(pt)));
           if (pWorks.length !== originalLen) {
@@ -32811,7 +32879,7 @@ function renderDealChat(rfpId) {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
         const safePrice = escapeHtml(w.price || '€ 35,00');
-        const hasRealPhoto = Boolean(w.photoUrl && !w.photoUrl.startsWith('/images/'));
+        const hasRealPhoto = Boolean(w.photoUrl && isUserUploadedPhoto(w.photoUrl));
         const localizedMat = typeof getLocalizedMaterial === 'function' ? getLocalizedMaterial(w.material) : (w.material || 'PETG Tecnico');
 
         return `
@@ -32993,7 +33061,7 @@ function renderDealChat(rfpId) {
 
       const photoEl = document.getElementById('itemDetailPhoto');
       if (photoEl) {
-        if (work.photoUrl && !work.photoUrl.startsWith('/images/')) {
+        if (work.photoUrl && isUserUploadedPhoto(work.photoUrl)) {
           photoEl.src = work.photoUrl;
           photoEl.style.display = 'block';
           if (photoEl.parentElement) photoEl.parentElement.style.display = 'block';
@@ -33038,7 +33106,7 @@ function renderDealChat(rfpId) {
 
       const photoEl = document.getElementById('showcaseOrderArtworkPhoto');
       if (photoEl) {
-        if (work.photoUrl && !work.photoUrl.startsWith('/images/')) {
+        if (work.photoUrl && isUserUploadedPhoto(work.photoUrl)) {
           photoEl.src = work.photoUrl;
           photoEl.style.display = 'block';
         } else {
