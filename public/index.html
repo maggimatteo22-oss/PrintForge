@@ -21656,13 +21656,35 @@ const warnBox = document.getElementById('budgetWarningBox');
       const z = Math.max(1, valZ);
       const volBoxCm3 = (x * y * z) / 1000;
 
-      // 2. Fattore Riempimento (Infill)
+      // 2. Fattore Riempimento (Infill) & Parametri Tecnico-Economici Dedicati
       let infillRatio = 0.50;
-      if (infillStr.includes('20%')) infillRatio = 0.20;
-      else if (infillStr.includes('100%')) infillRatio = 1.00;
+      let infillTimeMultiplier = 1.35;
+      let infillComplexityFee = 2.50;
 
-      // Volume effettivo materiale: pareti/perimetri solidi (26%) + reticolo infill interno (74% * infillRatio)
-      const effectiveSolidRatio = 0.26 + 0.74 * infillRatio;
+      if (infillStr.includes('20%')) {
+        infillRatio = 0.20;
+        infillTimeMultiplier = 1.00;
+        infillComplexityFee = 0.00; // Standard prototipale leggero
+      } else if (infillStr.includes('40%')) {
+        infillRatio = 0.40;
+        infillTimeMultiplier = 1.18;
+        infillComplexityFee = 1.50; // Robusto per uso quotidiano
+      } else if (infillStr.includes('50%')) {
+        infillRatio = 0.50;
+        infillTimeMultiplier = 1.35;
+        infillComplexityFee = 2.50; // Meccanico strutturale
+      } else if (infillStr.includes('75%')) {
+        infillRatio = 0.75;
+        infillTimeMultiplier = 1.70;
+        infillComplexityFee = 4.50; // Tecnico resistente ad alta sollecitazione
+      } else if (infillStr.includes('100%')) {
+        infillRatio = 1.00;
+        infillTimeMultiplier = 2.20;
+        infillComplexityFee = 7.00; // Pieno massiccio monolitico
+      }
+
+      // Volume effettivo materiale: pareti/perimetri solidi (22%) + reticolo infill interno (78% * infillRatio)
+      const effectiveSolidRatio = Math.min(1.0, 0.22 + 0.78 * infillRatio);
       const effectiveVolCm3 = volBoxCm3 * effectiveSolidRatio;
 
       // 3. Proprietà Fisiche & Costi per Tipologia Materiale
@@ -21688,7 +21710,7 @@ const warnBox = document.getElementById('budgetWarningBox');
 
       // 4. Peso e Ore per Singolo Pezzo
       const singlePieceGrams = Math.max(1, Math.round(effectiveVolCm3 * density));
-      const singlePieceHours = Math.max(0.1, singlePieceGrams / 28);
+      const singlePieceHours = Math.max(0.1, (singlePieceGrams / 28) * infillTimeMultiplier);
 
       // 5. Quantità / Pezzi
       const customQtyVal = parseInt(document.getElementById('reqCustomQtyInput')?.value, 10);
@@ -21712,7 +21734,7 @@ const warnBox = document.getElementById('budgetWarningBox');
       }
 
       // 7. Modello di Costo Industriale con Economia di Scala per Batch
-      const baseStartFee = 8.00; // Quota setup macchina e slicing
+      const baseStartFee = 8.00 + infillComplexityFee; // Quota setup macchina e slicing
       const batchDiscount = Math.max(0.72, 1 - (qty - 1) * 0.025);
       const manufacturingCost = baseStartFee + 
                                 (totalGrams * pricePerGram * batchDiscount) + 
