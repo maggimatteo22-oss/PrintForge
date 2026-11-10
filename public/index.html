@@ -4366,13 +4366,24 @@
               <!-- 5. RIEMPIMENTO (INFILL) -->
               <div class="space-y-1">
                 <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioInfillLabel">Riempimento (Infill) *</label>
-                <select id="portfolioInfill" class="w-full bg-[#121217] border border-white/10 rounded-xl px-2.5 sm:px-3 py-2 text-white font-mono text-xs focus:border-white outline-none">
-                  <option value="20% Leggero / Standard">20% Leggero (Standard)</option>
-                  <option value="40% Robusto">40% Robusto</option>
-                  <option value="50% Meccanico Strutturale" selected>50% Meccanico Strutturale</option>
-                  <option value="75% Tecnico Resistente">75% Tecnico Resistente</option>
-                  <option value="100% Pieno / Massiccio">100% Pieno (Massiccio)</option>
-                </select>
+                <div class="relative w-full cursor-pointer">
+                  <!-- Visual Cyber Skin matching other selects -->
+                  <div id="portfolioInfillVisualDisplay" class="w-full bg-[#111218] border border-white/15 rounded-xl px-3 py-2.5 flex items-center justify-between text-xs font-mono text-white pointer-events-none shadow-sm transition">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <i data-lucide="grid" class="w-3.5 h-3.5 text-amber-400 shrink-0"></i>
+                      <span id="portfolioInfillDisplayText" class="truncate font-bold">50% Meccanico Strutturale</span>
+                    </div>
+                    <i data-lucide="chevron-down" class="w-3.5 h-3.5 text-zinc-400 shrink-0"></i>
+                  </div>
+                  <!-- Native Interactive Select Overlaid with 100% click/touch reliability -->
+                  <select id="portfolioInfill" onchange="onPortfolioInfillChange(this.value)" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-30 pointer-events-auto">
+                    <option value="20% Leggero / Standard">20% Leggero (Standard)</option>
+                    <option value="40% Robusto">40% Robusto</option>
+                    <option value="50% Meccanico Strutturale" selected>50% Meccanico Strutturale</option>
+                    <option value="75% Tecnico Resistente">75% Tecnico Resistente</option>
+                    <option value="100% Pieno / Massiccio">100% Pieno (Massiccio)</option>
+                  </select>
+                </div>
               </div>
 
               <!-- 6. PREZZO INDICATIVO -->
@@ -6342,26 +6353,26 @@
                     <label class="text-[10px] font-cyber font-bold text-zinc-300 uppercase block tracking-wider" id="i18n-reqInfillLabel">Opzione Infill (Robustezza)</label>
                     <span class="text-[9px] font-mono text-emerald-400 font-bold" id="infillSelectedNameDisplay">50% Meccanico</span>
                   </div>
-                  <div class="grid grid-cols-5 gap-1 sm:gap-1.5" id="infillPillsContainer">
-                    <button type="button" class="infill-pill py-1.5 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('20% Leggero / Standard')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">20%</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate">Leggero</span>
+                  <div class="grid grid-cols-5 gap-1 sm:gap-1.5 relative z-20" id="infillPillsContainer">
+                    <button type="button" data-infill="20% Leggero / Standard" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('20% Leggero / Standard')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">20%</span>
+                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Leggero</span>
                     </button>
-                    <button type="button" class="infill-pill py-1.5 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('40% Robusto')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">40%</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate">Robusto</span>
+                    <button type="button" data-infill="40% Robusto" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('40% Robusto')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">40%</span>
+                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Robusto</span>
                     </button>
-                    <button type="button" class="infill-pill py-1.5 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/25 active-infill-pill transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('50% Meccanico Strutturale')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">50%</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate">Meccanico</span>
+                    <button type="button" data-infill="50% Meccanico Strutturale" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/25 active-infill-pill transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('50% Meccanico Strutturale')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">50%</span>
+                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Meccanico</span>
                     </button>
-                    <button type="button" class="infill-pill py-1.5 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('75% Tecnico Resistente')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">75%</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate">Tecnico</span>
+                    <button type="button" data-infill="75% Tecnico Resistente" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('75% Tecnico Resistente')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">75%</span>
+                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Tecnico</span>
                     </button>
-                    <button type="button" class="infill-pill py-1.5 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/20 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95" onclick="selectQuickInfill('100% Pieno / Massiccio')">
-                      <span class="text-xs font-mono font-bold text-white tracking-wider">100%</span>
-                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate">Massiccio</span>
+                    <button type="button" data-infill="100% Pieno / Massiccio" class="infill-pill py-2 px-0.5 text-center rounded-lg bg-[#14151B] border border-white/10 hover:border-white/25 transition flex flex-col items-center justify-center cursor-pointer shadow-sm active:scale-95 pointer-events-auto touch-manipulation select-none" onclick="selectQuickInfill('100% Pieno / Massiccio')">
+                      <span class="text-xs font-mono font-bold text-white tracking-wider pointer-events-none">100%</span>
+                      <span class="text-[7.5px] sm:text-[8.5px] text-zinc-400 font-sans truncate pointer-events-none">Massiccio</span>
                     </button>
                   </div>
                   <!-- Select nascosto reqInfill con i 5 parametri identici alla bacheca creator -->
@@ -16389,7 +16400,7 @@ END-ISO-10303-21;`;
     /* BESPOKE CYBERNETIC SELECT ENGINE (REPLACES OS WIN32 SELECT MENUS)          */
     /* ========================================================================= */
     const CustomSelectEngine = {
-      selectIds: ['reqMaterial', 'reqUsage', 'portfolioMaterial', 'portfolioQuantity', 'portfolioInfill', 'disputeReason'],
+      selectIds: ['reqMaterial', 'reqUsage', 'portfolioMaterial', 'portfolioQuantity', 'disputeReason'],
       _listenersAttached: false,
 
       init() {
@@ -17551,6 +17562,14 @@ END-ISO-10303-21;`;
       updateLiveRequestSummary();
     }
     window.selectQuickInfill = selectQuickInfill;
+    function onPortfolioInfillChange(val) {
+      const disp = document.getElementById('portfolioInfillDisplayText');
+      if (disp && val) {
+        disp.innerText = val;
+      }
+    }
+    window.onPortfolioInfillChange = onPortfolioInfillChange;
+
 
     function toggleAdvancedManufacturingSpecs() {
       const content = document.getElementById('advancedSpecsAccordionContent');
