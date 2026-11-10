@@ -9222,8 +9222,18 @@
 
     function getSupabaseCredentials() {
       const cfg = window.PRINTFORGE_CONFIG || {};
-      const url = cfg.SUPABASE_URL || localStorage.getItem('printforge_supabase_url') || 'https://oxvfrbpmelcpryksfcpz.supabase.co';
-      const key = cfg.SUPABASE_ANON_KEY || localStorage.getItem('printforge_supabase_anon_key') || 'sb_publishable_KvdZ9xqCvRDhuD_fu6RPHA_RMHfewDw';
+      
+      // Auto-migrate legacy Supabase URL in user browser localStorage
+      try {
+        const storedUrl = localStorage.getItem('printforge_supabase_url');
+        if (storedUrl && (storedUrl.includes('oxvfrbpmelcpryksfcpz') || storedUrl.includes('ztcuxpddwfromqcprjad'))) {
+          localStorage.setItem('printforge_supabase_url', 'https://wlmnddsoyilgweegvswo.supabase.co');
+          localStorage.setItem('printforge_supabase_anon_key', 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2');
+        }
+      } catch(e) {}
+
+      const url = cfg.SUPABASE_URL || localStorage.getItem('printforge_supabase_url') || 'https://wlmnddsoyilgweegvswo.supabase.co';
+      const key = cfg.SUPABASE_ANON_KEY || localStorage.getItem('printforge_supabase_anon_key') || 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2';
       return { url: url.trim(), key: key.trim() };
     }
 

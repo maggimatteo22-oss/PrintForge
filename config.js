@@ -3,10 +3,10 @@
 // =========================================================================
 window.PRINTFORGE_CONFIG = {
   // Supabase Cloud Project URL
-  SUPABASE_URL: "https://oxvfrbpmelcpryksfcpz.supabase.co",
+  SUPABASE_URL: "https://wlmnddsoyilgweegvswo.supabase.co",
 
   // Supabase Anon Public Key
-  SUPABASE_ANON_KEY: "sb_publishable_KvdZ9xqCvRDhuD_fu6RPHA_RMHfewDw",
+  SUPABASE_ANON_KEY: "sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2",
 
   // Stripe Payments & Connect (Production Live Mode Active)
   STRIPE_PUBLISHABLE_KEY: "pk_live_51USGvZPSgxvx7pza72IhzNzqtWSExetbgwivz3pm2TPxfKoBtLSSpo3RcnjrkX65lWnImVUx5cLhfg8ylGvbVihY00HrHKrzDA",
