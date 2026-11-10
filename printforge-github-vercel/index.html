@@ -6596,16 +6596,16 @@
                 <!-- Urgente (+30% Priorità) -->
                 <div id="shippingCardUrgent" onclick="selectShippingOption('Urgente Flash 24-48h')" class="shipping-card p-2.5 rounded-xl bg-[#101218] border border-white/10 hover:border-amber-500/50 cursor-pointer transition active:scale-[0.98] flex flex-col justify-between space-y-1 group">
                   <div class="flex items-center justify-between">
-                    <span class="text-[8.5px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30" id="i18n-shipUrgBadge">+30% Priorità</span>
+                    <span class="text-[8.5px] font-mono uppercase px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-bold border border-amber-500/30" id="i18n-shipUrgBadge">Salta Coda + Consegna</span>
                     <div class="w-5 h-5 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
                       <i data-lucide="zap" class="w-3 h-3"></i>
                     </div>
                   </div>
                   <div>
-                    <h4 class="text-xs font-cyber font-bold text-white group-hover:text-amber-300 transition" id="i18n-shipUrgTitle">Urgente Flash</h4>
-                    <p class="text-[9.5px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipUrgDays">24 - 48 ore</p>
+                    <h4 class="text-xs font-cyber font-bold text-white group-hover:text-amber-300 transition" id="i18n-shipUrgTitle">Coda Prioritaria + Consegna 24h</h4>
+                    <p class="text-[9.5px] font-mono text-zinc-300 font-semibold mt-0.5" id="i18n-shipUrgDays">24h post-collaudo approvato</p>
                   </div>
-                  <p class="text-[9px] text-zinc-400 font-sans leading-tight" id="i18n-shipUrgDesc">Priorità assoluta in lavorazione h24.</p>
+                  <p class="text-[9px] text-zinc-400 font-sans leading-tight" id="i18n-shipUrgDesc">Salta la coda di produzione del Maker e ricevi con corriere espresso 24h dopo il collaudo approvato.</p>
                 </div>
               </div>
 
@@ -12423,10 +12423,10 @@
         shipStdTitle: 'Standard',
         shipStdDays: '3 - 5 giorni lavorativi',
         shipStdDesc: 'Tariffa base bilanciata con spedizione tracciata e imballo protettivo.',
-        shipUrgBadge: '+30% Priorità',
-        shipUrgTitle: 'Urgente Flash',
-        shipUrgDays: '24 - 48 ore',
-        shipUrgDesc: 'Priorità assoluta in coda macchina e lavorazione immediata h24.',
+        shipUrgBadge: 'Salta Coda + Consegna',
+        shipUrgTitle: 'Coda Prioritaria + Consegna 24h',
+        shipUrgDays: '24h post-collaudo approvato',
+        shipUrgDesc: 'Salta la coda di produzione del Maker e ricevi con corriere espresso 24h dopo il collaudo approvato.',
         reqNotesLabel: 'Note Tecniche / Specifiche di Carico & Montaggio',
         legalText: 'Garanzia Tolleranza Zero & Manleva Legale: Dichiaro che il modello CAD non costituisce componente di armi, oggetti illegali o protetti da copyright commerciale di terzi. Accetto che l\'importo sia custodito in Escrow Stripe fino al caricamento delle 3 foto di collaudo con calibro e svincolato al ritiro tracciato del corriere.',
         escrowNotice: 'Pagamento protetto in garanzia Escrow Stripe solo all\'approvazione del pezzo.',
@@ -13302,10 +13302,10 @@
         shipStdTitle: 'Standard',
         shipStdDays: '3 - 5 business days',
         shipStdDesc: 'Balanced baseline rate with tracked shipping and secure packaging.',
-        shipUrgBadge: '+30% Priority',
-        shipUrgTitle: 'Rush Priority',
-        shipUrgDays: '24 - 48 hours',
-        shipUrgDesc: 'Top machine queue priority and round-the-clock urgent fabrication.',
+        shipUrgBadge: 'Skip Queue + Delivery',
+        shipUrgTitle: 'Priority Queue + 24h Delivery',
+        shipUrgDays: '24h after approved inspection',
+        shipUrgDesc: 'Skip the Maker production queue and receive via 24h express courier once inspection is approved.',
         reqNotesLabel: 'Technical Notes / Load & Assembly Specs',
         legalText: 'Zero-Tolerance Guarantee & Legal Waiver: I certify that this CAD model is not a weapon component, illicit item, or infringing third-party copyright. I agree funds are held in Stripe Escrow until the 3 caliper QC photos are uploaded and released upon tracked carrier delivery.',
         escrowNotice: 'Payment secured in Stripe Escrow custody released only upon part approval.',
@@ -14181,10 +14181,10 @@
         shipStdTitle: 'Estándar',
         shipStdDays: '3 - 5 días laborables',
         shipStdDesc: 'Tarifa base equilibrada con envío rastreado y embalaje protector.',
-        shipUrgBadge: '+30% Prioridad',
-        shipUrgTitle: 'Urgente Flash',
-        shipUrgDays: '24 - 48 horas',
-        shipUrgDesc: 'Prioridad absoluta en cola de máquina y fabricación inmediata 24h.',
+        shipUrgBadge: 'Saltar Cola + Entrega',
+        shipUrgTitle: 'Cola Prioritaria + Entrega 24h',
+        shipUrgDays: '24h tras control aprobado',
+        shipUrgDesc: 'Salta la cola de producción del Maker y recibe por mensajería urgente 24h tras la aprobación del control.',
         reqNotesLabel: 'Notas Técnicas / Ajustes & Montaje',
         legalText: 'Garantía Tolerancia Cero & Descargo Legal: Certifico que el modelo 3D no constituye armas, objetos ilícitos ni infringe propiedad intelectual de terceros. Acepto que los fondos se custodien en Stripe Escrow hasta subir las 3 fotos de control con calibre y se liberen con la recogida del transportista.',
         escrowNotice: 'Pago protegido bajo custodia en garantía Stripe Escrow liberado solo tras aprobar la pieza.',
@@ -17703,7 +17703,7 @@ END-ISO-10303-21;`;
       if (deadlineVal.includes('Urgente') || deadlineVal.includes('Flash') || deadlineVal.includes('24-48h')) {
         // Tassa sulla spedizione flash: priorità macchina + corriere express (+30% o min € 6,50)
         speedFee = val > 0 ? Math.max(6.50, Math.round(val * 0.30 * 100) / 100) : 6.50;
-        speedLabel = '+ € ' + speedFee.toFixed(2).replace('.', ',') + ' (Flash 24-48h)';
+        speedLabel = '+ € ' + speedFee.toFixed(2).replace('.', ',') + (isEn ? ' (Priority + 24h Delivery)' : isEs ? ' (Prioridad + Entrega 24h)' : ' (Coda Prioritaria + 24h)');
       } else if (deadlineVal.includes('Flessibile') || deadlineVal.includes('7-10')) {
         // Sconto flessibile -10% su manifattura
         speedFee = val > 0 ? -Math.round(val * 0.10 * 100) / 100 : 0;
