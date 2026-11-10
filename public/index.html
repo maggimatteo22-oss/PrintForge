@@ -6039,13 +6039,13 @@
                 </div>
 
                 <!-- 5 CARD TAGLIA VISIVA CON OGGETTI QUOTIDIANI -->
-                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="sizeCardsGrid">
+                <div class="flex overflow-x-auto no-scrollbar gap-2 pb-1.5 snap-x sm:grid sm:grid-cols-5" id="sizeCardsGrid">
                   
                   <!-- XS: Tascabile -->
                   <button type="button" 
                           onclick="selectPartSizePreset('XS', 40, 40, 15, this)"
                           id="sizeCard_XS"
-                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XS</span>
                       <span class="text-base select-none">🪙</span>
@@ -6064,7 +6064,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('S', 80, 60, 25, this)"
                           id="sizeCard_S"
-                          class="size-preset-card active-size-card p-2.5 rounded-xl border border-white/50 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)] ring-1 ring-white/40 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                          class="size-preset-card active-size-card p-2.5 rounded-xl border border-white/50 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)] ring-1 ring-white/40 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white text-black font-cyber font-black text-xs transition-colors">S</span>
                       <span class="text-base select-none">🖱️</span>
@@ -6083,7 +6083,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('M', 150, 80, 40, this)"
                           id="sizeCard_M"
-                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">M</span>
                       <span class="text-base select-none">📱</span>
@@ -6102,7 +6102,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('L', 220, 150, 80, this)"
                           id="sizeCard_L"
-                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                          class="size-preset-card p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">L</span>
                       <span class="text-base select-none">🎧</span>
@@ -6121,7 +6121,7 @@
                   <button type="button" 
                           onclick="selectPartSizePreset('XL', 320, 240, 140, this)"
                           id="sizeCard_XL"
-                          class="size-preset-card col-span-2 sm:col-span-1 p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                          class="size-preset-card col-span-2 sm:col-span-1 p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98 min-w-[130px] sm:min-w-0 shrink-0 snap-start">
                     <div class="flex items-center justify-between w-full">
                       <span class="size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XL</span>
                       <span class="text-base select-none">🪖</span>
@@ -11391,259 +11391,7 @@
           </div>
         `
       },
-      'maker-tax': {
-        badge: 'FISCO MAKER // ART. 2222 C.C.',
-        version: 'GUIDA FISCALE & RICEVUTA P2P',
-        title: 'Guida Fiscale Maker: Prestazione Occasionale & Partita IVA',
-        subtitle: 'Inquadramento per Maker Privati (fino a 5.000€/anno) e Laboratori con P.IVA',
-        html: `
-          <div class="space-y-4">
-            <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300">
-              <span class="font-bold block mb-1">ACCESSO LIBERO E TRASPARENTE AL MARKETPLACE</span>
-              Su PrintForge puoi vendere le tue stampe 3D sia come privato (senza Partita IVA) mediante Ricevuta per Prestazione Occasionale, sia come professionista o laboratorio con Partita IVA (Regime Forfettario o Ordinario).
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 1 - Vendita da Privato (Prestazione Occasionale art. 2222 c.c.)</h4>
-            <p>1.1. Se stampi in 3D in modo saltuario e non professionale, la tua attività si configura come <strong>Prestazione di Lavoro Autonomo Occasionale</strong> ai sensi dell'art. 2222 del Codice Civile.</p>
-            <p>1.2. <strong>Franchigia di 5.000 €:</strong> Fino a 5.000 euro di compensi netti percepiti nell'anno solare, non sussiste alcun obbligo di apertura di Partita IVA né di iscrizione alla Gestione Separata INPS.</p>
-            <p>1.3. <strong>Emissione della Ricevuta:</strong> Il maker privato emette una semplice ricevuta per prestazione occasionale con i propri dati anagrafici e codice fiscale. Se il committente è un soggetto con Partita IVA, viene applicata la ritenuta d'acconto del 20% che il committente verserà con F24; se il committente è un privato cittadino, non si applica ritenuta d'acconto (il compenso lordo coincide con il netto).</p>
-            <p>1.4. <strong>Marca da Bollo:</strong> Per ricevute di importo superiore a 77,47 euro, è richiesta l'applicazione di una marca da bollo da 2,00 euro.</p>
-            <p>1.5. <strong>Dichiarazione dei Redditi:</strong> I compensi percepiti vanno inseriti nel quadro RL del modello Redditi Persone Fisiche (o quadro D del modello 730) come "redditi diversi".</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 2 - Vendita con Partita IVA (Regime Forfettario o Ordinario)</h4>
-            <p>2.1. Per chi svolge attività continuativa o supera i 5.000 € annui, è richiesta la Partita IVA. Il <strong>Regime Forfettario</strong> è la soluzione ottimale per maker e service di stampa 3D (imposta sostitutiva al 5% per i primi 5 anni, o 15% ordinaria, fino a 85.000 €/anno di fatturato).</p>
-            <p>2.2. I forfettari non addebitano IVA in fattura al cliente e godono di esonero dalla ritenuta d'acconto. Codici ATECO consigliati: <em>18.13.00</em> (Lavorazioni di prestampa e prototipazione) oppure <em>74.10.29</em> (Attività di design specializzate).</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 3 - Payout Diretti via Stripe Connect & Commissioni</h4>
-            <p>3.1. PrintForge opera come fornitore tecnologico di piattaforma SaaS e trattiene una commissione di servizio dell'8% per coprire la crittografia escrow, i gateway di pagamento e l'infrastruttura Three.js.</p>
-            <p>3.2. I fondi netti vengono trasferiti in automatico da Stripe Connect sull'IBAN del maker non appena il corriere (Packlink PRO / UPS / GLS / Poste) registra il ritiro tracciato del pacco, a seguito dell'avvenuto caricamento delle 3 foto di collaudo con calibro centesimale.</p>
-          </div>
-        `
-      },
-      'seller-agreement': {
-        badge: 'FISCO MAKER // ART. 2222 C.C.',
-        version: 'GUIDA FISCALE & RICEVUTA P2P',
-        title: 'Guida Fiscale Maker: Prestazione Occasionale & Partita IVA',
-        subtitle: 'Inquadramento per Maker Privati (fino a 5.000€/anno) e Laboratori con P.IVA',
-        html: `
-          <div class="space-y-4">
-            <div class="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-mono text-emerald-300">
-              <span class="font-bold block mb-1">ACCESSO LIBERO E TRASPARENTE AL MARKETPLACE</span>
-              Su PrintForge puoi vendere le tue stampe 3D sia come privato (senza Partita IVA) mediante Ricevuta per Prestazione Occasionale, sia come professionista o laboratorio con Partita IVA (Regime Forfettario o Ordinario).
-            </div>
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 1 - Vendita da Privato (Prestazione Occasionale art. 2222 c.c.)</h4>
-            <p>Fino a 5.000 euro di compensi netti percepiti nell'anno solare, il maker privato non ha obbligo di Partita IVA né di iscrizione INPS, emettendo semplice ricevuta per prestazione occasionale.</p>
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 2 - Vendita con Partita IVA (Regime Forfettario)</h4>
-            <p>Per i laboratori e service professionali è previsto il Regime Forfettario (tassa piatta 5%/15%, no IVA in fattura).</p>
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 3 - Custodia Escrow Stripe Connect</h4>
-            <p>Tutti i pagamenti sono protetti da custodia fiduciaria Stripe Escrow con svincolo al ritiro tracciato del corriere previa verifica delle 3 foto di collaudo con calibro.</p>
-          </div>
-        `
-      },
-      privacy: {
-        badge: 'PRIVACY POLICY (GDPR)',
-        version: 'REGOLAMENTO UE 2016/679',
-        title: 'Informativa sul Trattamento dei Dati Personali',
-        subtitle: 'Titolare del Trattamento: Fondatore & Team Tecnico PrintForge (Fase MVP P2P) - privacy@printforge.dev',
-        html: `
-          <div class="space-y-4">
-            <h4 class="font-cyber font-bold text-sm text-white">1. Titolare del Trattamento e Contatti</h4>
-            <p>Il Titolare del trattamento dei dati è il Fondatore e Team Operativo del progetto PrintForge (piattaforma software di intermediazione manifatturiera P2P in fase di lancio MVP). Per qualsiasi informazione in materia di privacy o per l'esercizio dei diritti, il punto di contatto dedicato è: <strong class="text-cyan-400">privacy@printforge.dev</strong>.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">2. Categorie di Dati Trattati</h4>
-            <p>I dati raccolti comprendono: dati anagrafici e di contatto, indirizzo di spedizione merci (trasmesso all'API Packlink PRO per l'acquisto dell'etichetta del vettore), modelli geometrici 3D (STL, STEP, IGES), messaggi di trattativa e fotografie di collaudo con calibro. I dati di pagamento (carte di credito, token bancari) sono trattati in conformità allo standard PCI-DSS Level 1 direttamente da Stripe Payments Europe Ltd. e non transitano mai sui nostri server.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">3. Protezione dei File CAD e Crittografia</h4>
-            <p>Tutti i file 3D caricati sulla piattaforma vengono crittografati a riposo con algoritmo AES-256 su datacenter situati all'interno dell'Unione Europea (Francoforte). I file non vengono ceduti a terzi né utilizzati per addestrare modelli di intelligenza artificiale di terze parti.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">4. Diritti dell'Interessato (Artt. 15-22 GDPR)</h4>
-            <p>L'utente può richiedere in ogni momento l'accesso, la rettifica, la portabilità o la cancellazione definitiva (diritto all'oblio) dei propri dati e dei modelli 3D caricati inviando una comunicazione a privacy@printforge.dev con riscontro entro 72 ore lavorative.</p>
-          </div>
-        `
-      },
-      cookies: {
-        badge: 'COOKIE POLICY',
-        version: 'DIRETTIVA ePRIVACY & LINEE GUIDA GARANTE',
-        title: 'Informativa Estesa sui Cookie & Strumenti di Tracciamento',
-        subtitle: 'Trasparenza Totale: Zero Cookie di Profilazione Pubblicitaria di Terze Parti',
-        html: `
-          <div class="space-y-4">
-            <h4 class="font-cyber font-bold text-sm text-white">1. Cosa sono i Cookie e Come li Utilizziamo</h4>
-            <p>I cookie sono stringhe di testo di piccole dimensioni che il sito invia al terminale dell'utente. PrintForge adotta un approccio "Privacy-by-Design": il nostro sito web non installa alcun cookie pubblicitario o di profilazione commerciale.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">2. Tabella dei Cookie Tecnici Installati</h4>
-            <div class="overflow-x-auto">
-              <table class="w-full text-[11px] font-mono border border-white/10 rounded-xl overflow-hidden">
-                <thead class="bg-white/10 text-white">
-                  <tr>
-                    <th class="p-2 text-left">Nome Cookie</th>
-                    <th class="p-2 text-left">Fornitore</th>
-                    <th class="p-2 text-left">Finalità</th>
-                    <th class="p-2 text-left">Scadenza</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/10 text-zinc-300">
-                  <tr>
-                    <td class="p-2 font-bold text-white">printforge_session</td>
-                    <td class="p-2">PrintForge</td>
-                    <td class="p-2">Mantenimento sessione autenticata utente</td>
-                    <td class="p-2">Sessione</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2 font-bold text-white">printforge_cookie_consent</td>
-                    <td class="p-2">PrintForge</td>
-                    <td class="p-2">Memorizzazione del consenso alle preferenze cookie</td>
-                    <td class="p-2">12 Mesi</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2 font-bold text-white">printforge_theme</td>
-                    <td class="p-2">PrintForge</td>
-                    <td class="p-2">Preferenza grafica (tema Dark / Light)</td>
-                    <td class="p-2">Persistente</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2 font-bold text-white">__stripe_mid / __stripe_sid</td>
-                    <td class="p-2">Stripe Ltd</td>
-                    <td class="p-2">Prevenzione frodi e tokenizzazione escrow sicuro</td>
-                    <td class="p-2">1 Anno / 30 Min</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">3. Gestione e Revoca del Consenso</h4>
-            <p>Puoi modificare o revocare il tuo consenso in qualsiasi momento cliccando sul link <strong class="text-cyan-400 cursor-pointer" onclick="openCookieBanner(true)">"Gestisci Preferenze Cookie"</strong> posizionato nel footer del sito.</p>
-          </div>
-        `
-      },
-      nda: {
-        badge: 'NON-DISCLOSURE AGREEMENT',
-        version: 'ACCORDO DI RISERVATEZZA INDUSTRIALE',
-        title: 'Accordo di Riservatezza & Segreto Industriale su File CAD',
-        subtitle: 'Tutela del Diritto di Brevetto e Segreto Industriale (Artt. 98-99 Codice Proprietà Industriale)',
-        html: `
-          <div class="space-y-4">
-            <div class="p-3.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-xs font-mono text-cyan-300">
-              <span class="font-bold block mb-1">PROTEZIONE AUTOMATICA ALL'UPLOAD</span>
-              Ogni file 3D, disegno bidimensionale o specifica meccanica caricata sulla piattaforma è protetta da un accordo di non divulgazione (NDA) giuridicamente vincolante nei confronti di tutti i Creator del network.
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 1 - Definizione di Informazioni Riservate</h4>
-            <p>Costituisce "Informazione Riservata" qualsiasi modello geometrico 3D (.STL, .STEP, .SLDPRT, .F3D), disegno quotato 2D, tolleranza, nota tecnica o applicazione finale comunicata dal Cliente.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 2 - Obblighi Inderogabili di Custodia e Non Divulgazione</h4>
-            <p>2.1. Il Creator che visualizza o scarica il file 3D per formulare un preventivo o per eseguire la stampa si impegna a custodirlo con la massima diligenza e a non divulgarlo, pubblicarlo, duplicarlo o cederlo a terzi per nessuna ragione.</p>
-            <p>2.2. È fatto assoluto divieto al Creator di esporre fotografie del componente su social network, portfolio o canali promozionali senza il preventivo consenso scritto del Cliente.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 3 - Obbligo di Cancellazione G-code</h4>
-            <p>Trascorsi 30 giorni dalla conclusione dell'ordine e dall'avvenuto sblocco escrow, il Creator ha l'obbligo contrattuale di eliminare dai propri slicer e supporti di memoria i file G-code e le geometrie sorgenti del Cliente.</p>
-          </div>
-        `
-      },
-      'gdpr-rights': {
-        badge: 'DIRITTI GDPR',
-        version: 'MODULO ARTT. 15-22 REG. UE',
-        title: 'Esercizio dei Diritti dell\'Interessato (GDPR)',
-        subtitle: 'Come Richiedere la Cancellazione Totale dei File o la Portabilità dei Dati',
-        html: `
-          <div class="space-y-4">
-            <p class="text-zinc-300">In qualità di utente di PrintForge, hai il pieno controllo sui tuoi dati. Di seguito sono elencati i canali e le modalità per esercitare i tuoi diritti previsti dal Regolamento UE 2016/679:</p>
-
-            <div class="space-y-3 font-mono text-xs">
-              <div class="p-3 rounded-xl bg-white/5 border border-white/10">
-                <span class="text-white font-bold block mb-0.5">Diritto di Accesso e Portabilità (Art. 15 & 20)</span>
-                <span class="text-zinc-400 font-sans">Puoi richiedere in qualsiasi momento un archivio .ZIP contenente tutti i tuoi file 3D, storico preventivi, fatture e messaggi di trattativa.</span>
-              </div>
-              <div class="p-3 rounded-xl bg-white/5 border border-white/10">
-                <span class="text-white font-bold block mb-0.5">Diritto alla Cancellazione / Oblio (Art. 17)</span>
-                <span class="text-zinc-400 font-sans">Puoi richiedere la rimozione irreversibile del tuo account e l'eliminazione definitiva di tutti i file CAD dai bucket crittografati UE.</span>
-              </div>
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Canale Ufficiale di Richiesta</h4>
-            <p>Invia una richiesta email all'indirizzo <strong class="text-cyan-400">privacy@printforge.it</strong> indicando la tua email di registrazione. Riceverai conferma di presa in carico e adempimento tempestivamente.</p>
-          </div>
-        `
-      },
-      tolerances: {
-        badge: 'METROLOGIA ISO',
-        version: 'NORMA ISO 2768-mK / DIN 16742',
-        title: 'Standard Meccanico di Tolleranza Dimensionale ISO 2768-mK',
-        subtitle: 'Linee Guida per Scostamenti Ammissibili su Stampa 3D FDM, Resina & SLS',
-        html: `
-          <div class="space-y-4">
-            <h4 class="font-cyber font-bold text-sm text-white">1. Classi di Tolleranza su PrintForge</h4>
-            <p>Per garantire la certezza negli accoppiamenti meccanici (alberi, fori, sedi cuscinetto 608RS, filettature metriche), PrintForge adotta le seguenti classi contrattuali:</p>
-            
-            <div class="overflow-x-auto">
-              <table class="w-full text-[11px] font-mono border border-white/10 rounded-xl overflow-hidden">
-                <thead class="bg-white/10 text-white">
-                  <tr>
-                    <th class="p-2 text-left">Classe</th>
-                    <th class="p-2 text-left">Scostamento Ammissibile</th>
-                    <th class="p-2 text-left">Tecnologia Raccomandata</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/10 text-zinc-300">
-                  <tr>
-                    <td class="p-2 font-bold text-white">Standard</td>
-                    <td class="p-2">±0.20 mm</td>
-                    <td class="p-2">FDM Standard (PLA, PETG per dime e carter)</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2 font-bold text-emerald-400">Meccanica Fine</td>
-                    <td class="p-2">±0.10 mm</td>
-                    <td class="p-2">FDM Calibrato, PETG Tecnico, PA12-CF</td>
-                  </tr>
-                  <tr>
-                    <td class="p-2 font-bold text-cyan-400">Aerospaziale / Ottico</td>
-                    <td class="p-2">±0.05 mm</td>
-                    <td class="p-2">Stereolitografia SLA/DLP 8K, Resina Calcinabile, SLS Nylon</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">2. Metodo di Verifica Contrattuale</h4>
-            <p>Le quote nominali indicate nel file CAD originale (.STEP o .STL) costituiscono il benchmark di riferimento. Il rilievo effettuato con calibro centesimale durante il collaudo fotografico fa fede ai fini dell'approvazione o dello sblocco dell'escrow fiduciario.</p>
-          </div>
-        `
-      },
-      materials: {
-        badge: 'COMPLIANCE MATERIALI',
-        version: 'DIRETTIVE RoHS & REACH',
-        title: 'Dichiarazione di Conformità Materiali e Normative Ambientali',
-        subtitle: 'Tracciabilità dei Polimeri Ingegneristici e Assenza di Sostanze Tossiche',
-        html: `
-          <div class="space-y-4">
-            <h4 class="font-cyber font-bold text-sm text-white">1. Conformità RoHS e Regolamento REACH</h4>
-            <p>Tutti i materiali offerti dai Creator qualificati di PrintForge (PETG, PLA Ingegneristico, Nylon PA12 caricato con fibra di carbonio al 15%, Resina Tough e TPU Flessibile 95A) sono conformi alle direttive europee RoHS 2011/65/UE e REACH CE 1907/2006.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">2. Schede Tecniche TDS & MSDS</h4>
-            <p>Su richiesta del cliente in fase di trattativa, il Creator è tenuto a fornire il lotto di fabbricazione della bobina o della resina e le relative schede di sicurezza con carichi di rottura a trazione (MPa) e temperatura di deflessione termica (HDT).</p>
-          </div>
-        `
-      },
-      'weapons-ban': {
-        badge: 'ZERO TOLERANCE',
-        version: 'LEGGE 110/1975 & DECRETO ARMI UE',
-        title: 'Policy Assoluta di Divieto Armi da Fuoco & Oggetti Pericolosi',
-        subtitle: 'Zero Weapons Policy: Sicurezza Pubblica e Filtro Preventivo',
-        html: `
-          <div class="space-y-4">
-            <div class="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs font-mono text-rose-300">
-              <span class="font-bold block mb-1">DIVIETO ASSOLUTO E INDEROGABILE</span>
-              È severamente vietato caricare, preventivare o stampare su PrintForge qualsiasi componente di arma da fuoco, arma bianca non autorizzata o manufatto destinato a recare offesa alla persona.
-            </div>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 1 - Componenti Proibiti</h4>
-            <p>Rientrano nel divieto: lower receiver, fusti, otturatori, percussori, caricatori, soppressori di suono e modificatori di scatto, a prescindere dal materiale utilizzato.</p>
-
-            <h4 class="font-cyber font-bold text-sm text-white">Art. 2 - Sanzioni e Segnalazione alle Autorità</h4>
-            <p>Qualsiasi tentativo di commissionare o fabbricare componenti bellici comporta l'immediata cancellazione dell'account, il sequestro dei fondi in escrow e la trasmissione dei log e dei file STL alla Polizia Postale e alle autorità di pubblica sicurezza competenti.</p>
-          </div>
-        `
-      },
+      
       'packlink-shipping': {
         badge: 'LOGISTICA & SPEDIZIONI',
         version: 'PACKLINK PRO API & IATA STANDARDS',
@@ -13245,7 +12993,6 @@
           footerLinkEscrow: "Protocollo Escrow & Svincolo al Ritiro",
           footerLinkDispute: "Risoluzione Dispute & Rilievi Calibro",
           footerLinkRefund: "Ristampa Gratuita o Rimborso 100%",
-          footerLinkMakerTax: "Fisco Maker: Prestazione Occasionale & P.IVA",
           footerLinkPrivacy: "Informativa Privacy (Reg. UE 2016/679)",
           footerLinkCookies: "Cookie Policy & Registro Tecnico",
           footerLinkManageCookies: "Gestisci Preferenze Cookie",
@@ -13265,7 +13012,6 @@
           tabDoc_escrow: "Protocollo Escrow",
           tabDoc_dispute: "Dispute & Risoluzione",
           tabDoc_refund: "Rimborsi & Ristampa",
-          tabDoc_maker_tax: "Fisco Maker (Art. 2222)",
           tabDoc_packlink_shipping: "Spedizioni Packlink PRO",
           tabDoc_privacy: "Privacy GDPR",
           tabDoc_cookies: "Cookie Policy",
@@ -14126,7 +13872,6 @@
           footerLinkEscrow: "Escrow & Carrier Pickup Protocol",
           footerLinkDispute: "Dispute Resolution & Caliper Inspection",
           footerLinkRefund: "Free Reprint or 100% Refund",
-          footerLinkMakerTax: "Maker Tax Guide: Freelance Exemption & VAT",
           footerLinkPrivacy: "Privacy Notice (EU Reg. 2016/679)",
           footerLinkCookies: "Cookie Policy & Technical Registry",
           footerLinkManageCookies: "Manage Cookie Preferences",
@@ -14146,7 +13891,6 @@
           tabDoc_escrow: "Escrow Protocol",
           tabDoc_dispute: "Disputes & Resolution",
           tabDoc_refund: "Refunds & Reprints",
-          tabDoc_maker_tax: "Maker Tax Guide",
           tabDoc_packlink_shipping: "Packlink PRO Shipping",
           tabDoc_privacy: "GDPR Privacy",
           tabDoc_cookies: "Cookie Policy",
@@ -15000,7 +14744,6 @@
           footerLinkEscrow: "Protocolo Escrow & Liberación en Recogida",
           footerLinkDispute: "Resolución de Disputas y Calibre",
           footerLinkRefund: "Reimpresión Gratuita o Reembolso 100%",
-          footerLinkMakerTax: "Fiscalidad Maker: Prestación Ocasional y NIF/IVA",
           footerLinkPrivacy: "Política de Privacidad (Reg. UE 2016/679)",
           footerLinkCookies: "Política de Cookies y Registro Técnico",
           footerLinkManageCookies: "Gestionar Preferencias de Cookies",
@@ -15020,7 +14763,6 @@
           tabDoc_escrow: "Protocolo Escrow",
           tabDoc_dispute: "Disputas y Resolución",
           tabDoc_refund: "Reembolsos y Reimpresión",
-          tabDoc_maker_tax: "Fiscalidad Maker",
           tabDoc_packlink_shipping: "Envíos Packlink PRO",
           tabDoc_privacy: "Privacidad RGPD",
           tabDoc_cookies: "Política de Cookies",
@@ -16268,7 +16010,6 @@ END-ISO-10303-21;`;
         'footerLinkEscrow': t.footerLinkEscrow,
         'footerLinkDispute': t.footerLinkDispute,
         'footerLinkRefund': t.footerLinkRefund,
-        'footerLinkMakerTax': t.footerLinkMakerTax,
         'footerLinkPrivacy': t.footerLinkPrivacy,
         'footerLinkCookies': t.footerLinkCookies,
         'footerLinkManageCookies': t.footerLinkManageCookies,
@@ -16288,7 +16029,6 @@ END-ISO-10303-21;`;
         'tabDoc_escrow': t.tabDoc_escrow,
         'tabDoc_dispute': t.tabDoc_dispute,
         'tabDoc_refund': t.tabDoc_refund,
-        'tabDoc_maker-tax': t.tabDoc_maker_tax,
         'tabDoc_packlink-shipping': t.tabDoc_packlink_shipping,
         'tabDoc_privacy': t.tabDoc_privacy,
         'tabDoc_cookies': t.tabDoc_cookies,
@@ -32614,7 +32354,7 @@ function renderDealChat(rfpId) {
         return;
       }
 
-      const photoUrl = window._currentPortfolioPhotoDataUrl || '/images/cube.jpg';
+      const photoUrl = window._currentPortfolioPhotoDataUrl || null;
       const workId = 'WORK-' + Math.floor(1000 + Math.random() * 9000);
       const creatorName = AppState.user?.name || 'Maker Certificato';
       const creatorEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
@@ -32679,6 +32419,13 @@ function renderDealChat(rfpId) {
       document.getElementById('portfolioTitle').value = '';
       document.getElementById('portfolioDesc').value = '';
       document.getElementById('portfolioDimensions').value = '';
+      window._currentPortfolioPhotoDataUrl = null;
+      const previewImgEl = document.getElementById('portfolioPhotoPreviewImg');
+      const previewBoxEl = document.getElementById('portfolioPhotoPreviewBox');
+      if (previewImgEl) { previewImgEl.src = ''; previewImgEl.classList.add('hidden'); }
+      if (previewBoxEl) { previewBoxEl.classList.remove('hidden'); }
+      const photoInputEl = document.getElementById('portfolioPhoto');
+      if (photoInputEl) photoInputEl.value = '';
       document.getElementById('portfolioPrice').value = '';
       if (document.getElementById('portfolioQuantity')) {
         document.getElementById('portfolioQuantity').value = '1 pezzo (Opera Unica)';
@@ -32851,19 +32598,30 @@ function renderDealChat(rfpId) {
         const safeDims = escapeHtml(w?.dimensions || '80 × 60 × 25 mm');
         const safeCreator = escapeHtml(w?.creatorName || 'Maker Certificato');
         const safeDesc = escapeHtml(w?.description || '');
-        const photo = (w && w.photoUrl) ? w.photoUrl : '/images/cube.jpg';
+        const hasRealPhoto = Boolean(w && w.photoUrl && !w.photoUrl.startsWith('/images/'));
 
         return `
           <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/25 transition overflow-hidden shadow-xl flex flex-col justify-between group">
             <div>
-              <!-- Immagine 2D Cliccabile con Badge Tecnico Materiale In Alto a Destra -->
-              <div onclick="openItemDetailModal('${safeId}')" class="relative w-full h-48 bg-black/60 overflow-hidden cursor-pointer flex items-center justify-center border-b border-white/10">
-                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
-                <span class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/85 backdrop-blur-md border border-white/20 text-[10px] font-mono text-emerald-400 font-bold shadow-md flex items-center gap-1.5">
-                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                  ${safeMaterial}
-                </span>
-              </div>
+              ${hasRealPhoto ? `
+                <!-- Immagine 2D Reale Caricata dal Maker -->
+                <div onclick="openItemDetailModal('${safeId}')" class="relative w-full h-48 bg-black/60 overflow-hidden cursor-pointer flex items-center justify-center border-b border-white/10">
+                  <img src="${escapeHtml(w.photoUrl)}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                  <span class="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-full bg-black/85 backdrop-blur-md border border-white/20 text-[10px] font-mono text-emerald-400 font-bold shadow-md flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    ${safeMaterial}
+                  </span>
+                </div>
+              ` : `
+                <!-- Nessuna foto: Mostra layout tecnico minimale senza foto finte -->
+                <div onclick="openItemDetailModal('${safeId}')" class="p-4 pb-2 flex items-center justify-between border-b border-white/5 cursor-pointer bg-white/[0.02] hover:bg-white/[0.04] transition">
+                  <span class="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[10px] font-mono text-emerald-400 font-bold flex items-center gap-1.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                    ${safeMaterial}
+                  </span>
+                  <span class="text-[10px] font-mono text-zinc-400">${safeDims}</span>
+                </div>
+              `}
 
               <!-- Dettagli Dell'Opera -->
               <div class="p-4 space-y-2">
@@ -32901,6 +32659,13 @@ function renderDealChat(rfpId) {
     (function purgePhantomWorksBoot() {
       try {
         const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico', 'viagra'];
+      
+      // Sanitizzazione foto stock: se un'opera ha photoUrl che punta a immagini stock (/images/dice.jpg, /images/cube.jpg), rimuovila del tutto!
+      (AppState.portfolioWorks || []).forEach(w => {
+        if (w && w.photoUrl && w.photoUrl.startsWith('/images/')) {
+          w.photoUrl = null;
+        }
+      });
         if (typeof localStorage !== 'undefined') {
           let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
           const originalLen = pWorks.length;
@@ -33046,25 +32811,39 @@ function renderDealChat(rfpId) {
         const safeId = escapeHtml(w.id);
         const safeTitle = escapeHtml(w.title);
         const safePrice = escapeHtml(w.price || '€ 35,00');
-        const photo = w.photoUrl || '/images/cube.jpg';
+        const hasRealPhoto = Boolean(w.photoUrl && !w.photoUrl.startsWith('/images/'));
         const localizedMat = typeof getLocalizedMaterial === 'function' ? getLocalizedMaterial(w.material) : (w.material || 'PETG Tecnico');
 
         return `
           <div class="rounded-2xl bg-[#0E0E14] border border-white/10 hover:border-white/20 transition p-3.5 space-y-2.5 shadow-lg flex flex-col justify-between group relative">
-            <div class="space-y-2">
-              <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
-                <img src="${photo}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" onerror="this.onerror=null;this.src='/images/cube.jpg';" />
-                
-                <!-- Tasto Elimina Opera per Sempre -->
-                <button type="button" onclick="deletePortfolioWork('${safeId}', event)" class="absolute top-2 left-2 p-1.5 rounded-lg bg-black/75 hover:bg-red-500 text-zinc-300 hover:text-white border border-white/20 hover:border-red-400 transition cursor-pointer z-10 shadow-lg" title="${isEn ? 'Delete artwork forever' : isEs ? 'Eliminar obra para siempre' : 'Elimina opera per sempre'}">
-                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-                </button>
+            <div class="space-y-2.5">
+              ${hasRealPhoto ? `
+                <div class="w-full h-36 rounded-xl bg-black/40 overflow-hidden relative">
+                  <img src="${escapeHtml(w.photoUrl)}" alt="${safeTitle}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300" />
+                  
+                  <!-- Tasto Elimina Opera per Sempre -->
+                  <button type="button" onclick="deletePortfolioWork('${safeId}', event)" class="absolute top-2 left-2 p-1.5 rounded-lg bg-black/75 hover:bg-red-500 text-zinc-300 hover:text-white border border-white/20 hover:border-red-400 transition cursor-pointer z-10 shadow-lg" title="${isEn ? 'Delete artwork forever' : isEs ? 'Eliminar obra para siempre' : 'Elimina opera per sempre'}">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
 
-                <!-- Badge In Vetrina -->
-                <span class="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-emerald-400 border border-emerald-500/30 font-mono text-[9px] font-bold">
-                  ${t.portfolioCardInShowcase || (isEn ? 'IN SHOWCASE' : isEs ? 'EN ESCAPARATE' : 'IN VETRINA')}
-                </span>
-              </div>
+                  <!-- Badge In Vetrina -->
+                  <span class="absolute top-2 right-2 px-2.5 py-0.5 rounded-full bg-black/75 backdrop-blur-md text-emerald-400 border border-emerald-500/30 font-mono text-[9px] font-bold">
+                    ${t.portfolioCardInShowcase || (isEn ? 'IN SHOWCASE' : isEs ? 'EN ESCAPARATE' : 'IN VETRINA')}
+                  </span>
+                </div>
+              ` : `
+                <div class="flex items-center justify-between pb-1">
+                  <!-- Tasto Elimina Opera per Sempre -->
+                  <button type="button" onclick="deletePortfolioWork('${safeId}', event)" class="p-1.5 rounded-lg bg-white/5 hover:bg-red-500 text-zinc-400 hover:text-white border border-white/10 hover:border-red-400 transition cursor-pointer shadow" title="${isEn ? 'Delete artwork forever' : isEs ? 'Eliminar obra para siempre' : 'Elimina opera per sempre'}">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                  </button>
+
+                  <!-- Badge In Vetrina -->
+                  <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-mono text-[9px] font-bold">
+                    ${t.portfolioCardInShowcase || (isEn ? 'IN SHOWCASE' : isEs ? 'EN ESCAPARATE' : 'IN VETRINA')}
+                  </span>
+                </div>
+              `}
 
               <div class="flex items-center justify-between text-xs font-mono">
                 <span class="font-bold text-white truncate max-w-[150px]">${safeTitle}</span>
@@ -33177,7 +32956,17 @@ function renderDealChat(rfpId) {
       if (descEl) descEl.innerText = work.description || 'Nessuna descrizione specificata.';
 
       const photoEl = document.getElementById('itemDetailPhoto');
-      if (photoEl) photoEl.src = work.photoUrl || '/images/cube.jpg';
+      if (photoEl) {
+        if (work.photoUrl && !work.photoUrl.startsWith('/images/')) {
+          photoEl.src = work.photoUrl;
+          photoEl.style.display = 'block';
+          if (photoEl.parentElement) photoEl.parentElement.style.display = 'block';
+        } else {
+          photoEl.src = '';
+          photoEl.style.display = 'none';
+          if (photoEl.parentElement) photoEl.parentElement.style.display = 'none';
+        }
+      }
 
       const catBadge = document.getElementById('itemDetailCategoryBadge');
       if (catBadge) {
@@ -33212,7 +33001,15 @@ function renderDealChat(rfpId) {
       if (!work) return;
 
       const photoEl = document.getElementById('showcaseOrderArtworkPhoto');
-      if (photoEl) photoEl.src = work.photoUrl || '/images/cube.jpg';
+      if (photoEl) {
+        if (work.photoUrl && !work.photoUrl.startsWith('/images/')) {
+          photoEl.src = work.photoUrl;
+          photoEl.style.display = 'block';
+        } else {
+          photoEl.src = '';
+          photoEl.style.display = 'none';
+        }
+      }
 
       const makerEl = document.getElementById('showcaseOrderMakerName');
       if (makerEl) makerEl.textContent = work.creatorName || 'Maker Certificato';
