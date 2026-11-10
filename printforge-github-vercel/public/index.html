@@ -3225,47 +3225,11 @@
         grid-column: span 5 / span 5 !important;
       }
 
-      /* Pillola Bianca in basso al centro del quadro con testo ingrandito e leggibile */
+      /* Pillola Bianca rimossa su richiesta esplicita */
       .scenic-bottom-pill-wrapper,
-      .scenic-hero-container > div:last-child {
-        position: absolute !important;
-        bottom: 11px !important;
-        left: 0 !important;
-        right: 0 !important;
-        margin: 0 !important;
-        display: flex !important;
-        justify-content: center !important;
-        z-index: 20 !important;
-      }
       .scenic-bottom-pill,
-      .scenic-hero-container > div:last-child > div {
-        background: #FFFFFF !important;
-        color: #09090B !important;
-        font-weight: 600 !important;
-        font-size: 11px !important;
-        padding: 4px 14px !important;
-        border-radius: 9999px !important;
-        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4) !important;
-        border: 1px solid rgba(0, 0, 0, 0.08) !important;
-        max-width: 94% !important;
-        white-space: nowrap !important;
-        overflow: hidden !important;
-        text-overflow: ellipsis !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 6px !important;
-      }
-      .scenic-bottom-pill span:first-child,
-      .scenic-hero-container > div:last-child > div span:first-child {
-        background-color: #10B981 !important;
-        width: 5.5px !important;
-        height: 5.5px !important;
-      }
       #i18n-simplPillCaption {
-        display: inline !important;
-        color: #09090B !important;
-        font-weight: 600 !important;
-        font-size: 11px !important;
+        display: none !important;
       }
     }
 
@@ -5195,15 +5159,7 @@
 
         </div>
 
-        <!-- Centered Bottom Floating Glass Pill (Exact simplsales.ai photo style) -->
-        <div class="scenic-bottom-pill-wrapper mt-2.5 flex justify-center relative z-10">
-          <div class="scenic-bottom-pill px-4 py-1.5 rounded-full bg-[#101014]/90 backdrop-blur-xl border border-white/15 text-[11px] text-zinc-300 font-sans shadow-lg text-center max-w-xl flex items-center gap-2">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
-            <span id="i18n-simplPillCaption">Il tuo intero ciclo di manifattura in un unico feed — preventivo, produzione e collaudo.</span>
-          </div>
         </div>
-
-      </div>
 
       <!-- 3 Feature Columns Below Scenic Container (Ultra-Clean, Minimal on Mobile) -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 max-w-5xl mx-auto pt-2">
