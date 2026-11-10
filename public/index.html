@@ -4390,18 +4390,18 @@
 
             <!-- RIQUADRO TARIFFA: TASSA STRIPE ESCROW & CALCOLO AUTOMATICO PREZZO IN VETRINA -->
             <div id="creatorStripeNoticeBox" class="p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#0c1424] via-[#09101c] to-[#070b14] border border-blue-500/40 text-blue-200 font-sans text-xs space-y-2.5 shadow-xl mt-3">
-              <!-- Header sintetico anti-schiacciamento -->
+              <!-- Header sintetico anti-schiacciamento ultra-compatto -->
               <div class="flex items-center justify-between gap-2">
-                <div class="flex items-center gap-2 min-w-0">
+                <div class="flex items-center gap-2 min-w-0 flex-1">
                   <div class="w-6 h-6 rounded-lg bg-blue-500/20 border border-blue-500/40 flex items-center justify-center text-blue-400 shrink-0">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
                   </div>
                   <div class="min-w-0">
-                    <span class="text-xs font-cyber font-bold text-white tracking-wide truncate block" id="i18n-creatorStripeTitle">Garanzia Stripe Escrow</span>
-                    <span class="text-[9.5px] text-blue-300/80 font-mono block truncate" id="i18n-creatorStripeSubtitle">Tariffa ufficiale: 1,5% + € 0,25</span>
+                    <span class="text-xs font-cyber font-bold text-white tracking-wide block leading-tight" id="i18n-creatorStripeTitle">Garanzia Stripe Escrow</span>
+                    <span class="text-[9px] text-blue-300/80 font-mono block leading-tight" id="i18n-creatorStripeSubtitle">Tariffa: 1,5% + € 0,25</span>
                   </div>
                 </div>
-                <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[9.5px] sm:text-[10px] font-bold border border-blue-500/30 shrink-0 whitespace-nowrap">1,5% + € 0,25</span>
+                <span class="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 font-mono text-[9px] sm:text-[10px] font-bold border border-blue-500/30 shrink-0 whitespace-nowrap">1,5% + € 0,25</span>
               </div>
 
               <!-- Griglia Calcolo Dinamico al Centesimo -->
@@ -17675,18 +17675,17 @@ END-ISO-10303-21;`;
     /* CALCOLO COMPLETO PREZZO FINALE (MANIFATTURA + SPEDIZIONE + FLASH + ESCROW) */
     /* ========================================================================= */
     function updateOrderBreakdownQuote() {
-      // 1. Manifattura 3D
+      // 1. Manifattura 3D (Budget digitato dal cliente, oppure 0 se non ha ancora scritto nulla)
       let val = 0;
       const budgetInput = document.getElementById('reqBudget');
-      if (budgetInput && budgetInput.value && !isNaN(parseFloat(budgetInput.value)) && parseFloat(budgetInput.value) > 0) {
+      const hasTypedBudget = budgetInput && budgetInput.value && !isNaN(parseFloat(budgetInput.value)) && parseFloat(budgetInput.value) > 0;
+      if (hasTypedBudget) {
         val = parseFloat(budgetInput.value);
-      } else if (typeof window.__lastComputedBaseMfg === 'number' && window.__lastComputedBaseMfg > 0) {
-        val = window.__lastComputedBaseMfg;
-      } else if (typeof window.__lastComputedQuotePrice === 'number' && window.__lastComputedQuotePrice > 0) {
-        val = window.__lastComputedQuotePrice;
+      } else {
+        val = 0; // Se il cliente non ha ancora digitato il budget, manifattura è 0 e il prezzo parte già dalla spedizione e dal pacco!
       }
 
-      // 2. Spedizione Base (in base alla scatola auto-calcolata)
+      // 2. Spedizione Base (in base alla scatola auto-calcolata: da 5.72, 6.05, 7.20, 8.90)
       let shipCost = typeof window.currentBaseShippingPrice === 'number' && window.currentBaseShippingPrice > 0
         ? window.currentBaseShippingPrice
         : 6.05;
@@ -17700,7 +17699,7 @@ END-ISO-10303-21;`;
       const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
       const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
 
-      if (deadlineVal.includes('Urgente') || deadlineVal.includes('Flash') || deadlineVal.includes('24-48h')) {
+      if (deadlineVal.includes('Urgente') || deadlineVal.includes('Flash') || deadlineVal.includes('24-48h') || deadlineVal.includes('Prioritaria')) {
         // Tassa sulla spedizione flash: priorità macchina + corriere express (+30% o min € 6,50)
         speedFee = val > 0 ? Math.max(6.50, Math.round(val * 0.30 * 100) / 100) : 6.50;
         speedLabel = '+ € ' + speedFee.toFixed(2).replace('.', ',') + (isEn ? ' (Priority + 24h Delivery)' : isEs ? ' (Prioridad + Entrega 24h)' : ' (Coda Prioritaria + 24h)');
@@ -17714,6 +17713,8 @@ END-ISO-10303-21;`;
       }
 
       // 4. Subtotale Protetto (Manifattura + Spedizione + Flash fee)
+      // Se l'utente scrive 400: subtotal = 400 + 6.05 + 120 = 526.05
+      // Se non ha ancora scritto il budget: subtotal = 0 + 6.05 + 0 = 6.05 (parte già da 6€ o 8€!)
       const subtotalProtected = Math.max(0, val + shipCost + speedFee);
 
       // 5. Tassa Stripe Escrow (1,5% + € 0,25 con calcolo al centesimo)
@@ -17758,6 +17759,9 @@ END-ISO-10303-21;`;
       window.__lastTotalCheckout = totalCheckout;
       window.__lastStripeFee = stripeFee;
       window.__lastSubtotalProtected = subtotalProtected;
+      window.__lastBaseMfg = val;
+      window.__lastShipCost = shipCost;
+      window.__lastSpeedFee = speedFee;
 
       // Aggiorna anche eventuale sticky display mobile
       const mobileSticky = document.getElementById('mobileStickyTotalDisplay');
@@ -21974,99 +21978,78 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         function handleReqBudgetChange() {
       const bInput = document.getElementById('reqBudget');
       const val = parseFloat(bInput?.value) || 0;
-      const rec = window.__lastComputedQuotePrice || 0;
-      const minThreshold = (rec > 0) ? Math.max(12, Math.round(rec * 0.75)) : 12;
+      const recPrice = window.__lastComputedQuotePrice || 0;
+      const recMfg = window.__lastComputedBaseMfg || recPrice;
+      const shipCost = window.currentBaseShippingPrice || 6.05;
+      const recTotalWithShip = (recMfg + shipCost).toFixed(2).replace('.', ',');
 
       const warnBox = document.getElementById('budgetWarningBox');
       const warnText = document.getElementById('budgetWarningText');
       const sumWarnBox = document.getElementById('summaryBudgetWarningBox');
       const sumWarnText = document.getElementById('summaryBudgetWarningText');
 
-      const noticeBase = document.getElementById('liveNoticeBasePrice');
-      const noticeFee = document.getElementById('liveNoticeStripeFee');
-      const noticeTotal = document.getElementById('liveNoticeTotalPrice');
-      const noticeBadge = document.getElementById('liveNoticeStripeBadge');
-
-      const bMfg = document.getElementById('breakdownMfgPrice');
-      const bStripe = document.getElementById('breakdownStripeFee');
-      const bTotal = document.getElementById('breakdownTotalPrice');
+      // Calcola e aggiorna il breakdown completo con tutti i 4 pagamenti (floor price attivo!)
+      if (typeof updateOrderBreakdownQuote === 'function') {
+        updateOrderBreakdownQuote();
+      }
 
       // Se il cliente ha inserito un prezzo di suo pugno (Libero Arbitrio):
       if (val > 0) {
-        if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote();
-        // Calcolo automatico al centesimo della tassa Stripe Stripe Escrow (1,5% + € 0,25) aggiunta automaticamente
-        const stripeFee = Math.round((val * 0.015 + 0.25) * 100) / 100;
-        const totalWithStripe = parseFloat((val + stripeFee).toFixed(2));
+        // Se il budget è inferiore al prezzo ideale calcolato in base a dimensioni, infill e ore:
+        if (recMfg > 0 && val < recMfg) {
+          const dx = Math.round(parseFloat(document.getElementById('dimX')?.value) || 80);
+          const dy = Math.round(parseFloat(document.getElementById('dimY')?.value) || 60);
+          const dz = Math.round(parseFloat(document.getElementById('dimZ')?.value) || 25);
+          const infill = document.getElementById('reqInfill')?.value || '50%';
+          const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+          const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
 
-        // Aggiorna riquadro di sintesi ordine nella colonna destra
-        if (bMfg) bMfg.innerText = '€ ' + val.toFixed(2).replace('.', ',');
-        if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
-        if (bTotal) bTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
-
-        // Aggiorna riquadro sotto al colore (Stripe Escrow con calcolo dinamico al centesimo)
-        if (noticeBase) noticeBase.innerText = '€ ' + val.toFixed(2).replace('.', ',');
-        if (noticeFee) noticeFee.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
-        if (noticeTotal) noticeTotal.innerText = '€ ' + totalWithStripe.toFixed(2).replace('.', ',');
-        if (noticeBadge) noticeBadge.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
-
-        // MOSTRA L'AVVISO SIA SOTTO (warningBox) SIA NEL RIQUADRO DI SINTESI (sumWarnBox) SE IL BUDGET È TROPPO BASSO
-        if (rec > 0 && val < rec) {
-          const warnMsg = currentLang === 'en'
-            ? `With a budget below € ${minThreshold} qualified Makers might not accept the order. At least € ${rec.toFixed(2).replace('.', ',')} is recommended.`
-            : currentLang === 'es'
-            ? `Con un presupuesto inferior a € ${minThreshold} los Creadores cualificados podrían no aceptar el pedido. Se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
-            : `Con un budget inferiore a € ${minThreshold} i Maker qualificati potrebbero non accettare la commessa. Si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
+          const warnMsg = isEn
+            ? `⚠️ The budget (€ ${val.toFixed(2).replace('.', ',')}) is too low for this part: given its size (${dx} × ${dy} × ${dz} mm), ${infill} infill and print time, the ideal manufacturing budget is at least € ${recMfg.toFixed(2).replace('.', ',')} (ideal total with packaging: € ${recTotalWithShip}). Click to apply.`
+            : isEs
+            ? `⚠️ El presupuesto (€ ${val.toFixed(2).replace('.', ',')}) es demasiado bajo para esta pieza: por sus dimensiones (${dx} × ${dy} × ${dz} mm), relleno ${infill} y tiempo de impresión, el presupuesto ideal es de al menos € ${recMfg.toFixed(2).replace('.', ',')} (total ideal con embalaje: € ${recTotalWithShip}). Haz clic para aplicar.`
+            : `⚠️ Il budget inserito (€ ${val.toFixed(2).replace('.', ',')}) è troppo piccolo per quest'opera: date le dimensioni (${dx} × ${dy} × ${dz} mm), il riempimento ${infill} e le ore macchina, il prezzo consigliato ideale è di almeno € ${recMfg.toFixed(2).replace('.', ',')} (totale ideale con pacco e spedizione: € ${recTotalWithShip}). Clicca per applicare.`;
 
           if (warnBox) {
             warnBox.classList.remove('hidden');
             warnBox.style.display = 'flex';
+            warnBox.onclick = () => { if (typeof applyRecommendedBudget === 'function') applyRecommendedBudget(); };
+            warnBox.style.cursor = 'pointer';
           }
           if (warnText) warnText.innerText = warnMsg;
 
           if (sumWarnBox) {
             sumWarnBox.classList.remove('hidden');
             sumWarnBox.style.display = 'flex';
+            sumWarnBox.onclick = () => { if (typeof applyRecommendedBudget === 'function') applyRecommendedBudget(); };
+            sumWarnBox.style.cursor = 'pointer';
           }
-          if (sumWarnText) {
-            sumWarnText.innerText = currentLang === 'en'
-              ? `Low budget (€ ${val.toFixed(2).replace('.', ',')}): at least € ${rec.toFixed(2).replace('.', ',')} recommended.`
-              : currentLang === 'es'
-              ? `Presupuesto bajo (€ ${val.toFixed(2).replace('.', ',')}): se recomienda al menos € ${rec.toFixed(2).replace('.', ',')}.`
-              : `Budget basso (€ ${val.toFixed(2).replace('.', ',')}): si consiglia almeno € ${rec.toFixed(2).replace('.', ',')}.`;
-          }
+          if (sumWarnText) sumWarnText.innerText = warnMsg;
         } else {
           // Offerta congrua: nascondi avvisi
           if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
           if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
         }
       } else {
-        // Nessun budget manuale inserito dal cliente: MOSTRA SEMPRE ZERO ("€ 0,00")
+        // Nessun budget manuale inserito dal cliente: nascondi avvisi di budget basso
         if (warnBox) { warnBox.classList.add('hidden'); warnBox.style.display = 'none'; }
         if (sumWarnBox) { sumWarnBox.classList.add('hidden'); sumWarnBox.style.display = 'none'; }
-
-        if (bMfg) bMfg.innerText = '€ 0,00';
-        if (bStripe) bStripe.innerText = '+ € 0,00';
-        if (bTotal) bTotal.innerText = '€ 0,00';
-
-        if (noticeBase) noticeBase.innerText = '€ 0,00';
-        if (noticeFee) noticeFee.innerText = '+ € 0,00';
-        if (noticeTotal) noticeTotal.innerText = '€ 0,00';
-        if (noticeBadge) noticeBadge.innerText = 'Stripe Escrow: 1,5% + € 0,25';
       }
 
-      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
+      const budgetDisplayStr = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : (typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0 ? ('€ ' + window.__lastTotalCheckout.toFixed(2).replace('.', ',')) : '€ 0,00');
       ['liveUploadEstimatedPrice', 'attachedFileEstimatedPrice', 'escrowEstimatedPriceDisplay', 'escrowConfirmEstimatedPriceDisplay', 'liveDossierPrice'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = budgetDisplayStr;
       });
 
       const checkoutPart = document.getElementById('checkoutPartCost');
-      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + Math.max(0, (val - 0.25)/1.015).toFixed(2).replace('.', ',')) : '€ 0,00';
+      if (checkoutPart) checkoutPart.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
       const checkoutTotal = document.getElementById('checkoutTotalEscrow');
-      if (checkoutTotal) checkoutTotal.innerText = (val > 0) ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00';
+      if (checkoutTotal) checkoutTotal.innerText = typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0 ? ('€ ' + window.__lastTotalCheckout.toFixed(2).replace('.', ',')) : (val > 0 ? ('€ ' + val.toFixed(2).replace('.', ',')) : '€ 0,00');
 
-      updateLiveRequestSummary();
+      if (typeof updateLiveRequestSummary === 'function') updateLiveRequestSummary();
     }
+    window.handleReqBudgetChange = handleReqBudgetChange;
 
     /* ========================================================================= */
     /* 3D BOX VOLUME MODELER (PARAMETRIC THREE.JS PACKAGING STUDIO)              */
@@ -27147,35 +27130,48 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const infill = document.getElementById('reqInfill')?.value || '50% Meccanico Strutturale';
       const postProcess = document.getElementById('reqPostProcess')?.value || 'Grezzo (Rimozione supporti standard)';
 
-      // Calcolo automatico della tassa Stripe Escrow Stripe Escrow (1,5% + € 0,25) aggiunta automaticamente
+      // Calcolo automatico completo: Manifattura + Spedizione Pacco + Flash Fee + Tassa Stripe Escrow
       const rawBudgetVal = document.getElementById('reqBudget')?.value;
       const parsedBudget = parseFloat(rawBudgetVal);
       const recPrice = window.__lastComputedQuotePrice || 0;
+      const recMfg = window.__lastComputedBaseMfg || recPrice;
       const minThreshold = (recPrice > 0) ? Math.max(12, Math.round(recPrice * 0.75)) : 12;
 
+      // 1. Manifattura Netta (Budget inserito o stima consigliata se vuoto)
       let mfgNetto = 0;
-      let stripeFee = 0;
-      let budgetNum = 0;
-      let isCustomLowBudget = false;
-
       if (!isNaN(parsedBudget) && parsedBudget > 0) {
-        // Il cliente ha digitato un proprio budget (Libero Arbitrio)
         mfgNetto = parsedBudget;
-        // Calcola da sola la tassa Stripe Stripe Escrow (1,5% + € 0,25) e aggiungila automaticamente al totale
-        stripeFee = Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
-        budgetNum = parseFloat((mfgNetto + stripeFee).toFixed(2));
-        isCustomLowBudget = (recPrice > 0 && mfgNetto < minThreshold);
+      } else if (window.__lastComputedBaseMfg && window.__lastComputedBaseMfg > 0) {
+        mfgNetto = window.__lastComputedBaseMfg;
       } else if (recPrice > 0) {
-        // Cliente non ha scritto nulla: usa la stima calcolata di mercato
-        mfgNetto = window.__lastComputedBaseMfg || Math.max(12, Math.round(((recPrice - 0.25) / 1.015) * 100) / 100);
-        stripeFee = window.__lastComputedStripeFee || Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
-        budgetNum = parseFloat((mfgNetto + stripeFee).toFixed(2));
+        mfgNetto = recPrice;
       }
 
-      const budgetStr = formatEuroClean(budgetNum);
-      const shippingNum = 0;
-      const escrowTotalStr = budgetStr;
+      // 2. Spedizione e Pacco (Calcolata in tempo reale sulle dimensioni)
+      const shippingNum = typeof window.currentBaseShippingPrice === 'number' && window.currentBaseShippingPrice > 0
+        ? window.currentBaseShippingPrice
+        : 6.05;
+
+      // 3. Tempistica di Produzione e Consegna (es. Coda Prioritaria Flash 24h)
       const deadline = document.getElementById('reqDeadline')?.value || 'Standard 3-5 giorni';
+      let speedFee = 0;
+      if (deadline.includes('Urgente') || deadline.includes('Flash') || deadline.includes('24-48h') || deadline.includes('Prioritaria')) {
+        speedFee = mfgNetto > 0 ? Math.max(6.50, Math.round(mfgNetto * 0.30 * 100) / 100) : 6.50;
+      } else if (deadline.includes('Flessibile') || deadline.includes('7-10')) {
+        speedFee = mfgNetto > 0 ? -Math.round(mfgNetto * 0.10 * 100) / 100 : 0;
+      }
+
+      // 4. Subtotale Protetto (Manifattura + Spedizione + Tempistica Flash)
+      const subtotalProtected = Math.max(0, mfgNetto + shippingNum + speedFee);
+
+      // 5. Protezione Stripe Escrow (1,5% + € 0,25 al centesimo)
+      const stripeFee = Math.round((subtotalProtected * 0.015 + 0.25) * 100) / 100;
+
+      // 6. Totale Finale al Checkout da bloccare in garanzia Escrow (Budget + 3 pagamenti)
+      const budgetNum = parseFloat((subtotalProtected + stripeFee).toFixed(2));
+      const budgetStr = formatEuroClean(budgetNum);
+      const escrowTotalStr = budgetStr;
+      const isCustomLowBudget = (recPrice > 0 && mfgNetto < minThreshold);
       const notes = document.getElementById('reqNotes')?.value || '';
       const clientFile = AppState.clientSelectedFile;
       const aiImage = (clientFile && clientFile.dataUrl) ? clientFile.dataUrl : null;
@@ -27194,14 +27190,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           : 'Modello CAD (.stl)'
       );
 
-      
       const street = document.getElementById('reqShippingStreet')?.value?.trim() || '';
       const city = document.getElementById('reqShippingCity')?.value?.trim() || 'Milano';
       const cap = document.getElementById('reqShippingCap')?.value?.trim() || '20121';
       const prov = (document.getElementById('reqShippingProv')?.value?.trim() || 'MI').toUpperCase();
       const shippingFull = street ? `${street}, ${cap} ${city} (${prov})` : `${city} (${prov})`;
       const clientEmail = AppState.user?.email || document.getElementById('reqClientEmail')?.value?.trim() || 'matteo@printforge.dev';
-
 
       // Bozza Commessa per il Modal di Riepilogo
       const orderDraft = {
@@ -27337,14 +27331,22 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
       // Calcolo trasparente Stripe Escrow nel Riepilogo Commessa (1,5% + € 0,25 al centesimo aggiunto automaticamente)
-      const reviewMfgVal = draft.mfgNetto || (draft.budgetNum > 0 ? Math.max(0, Math.round(((draft.budgetNum - 0.25) / 1.015) * 100) / 100) : 0);
-      const reviewStripeVal = draft.stripeFee || (draft.budgetNum > 0 ? Math.max(0, Math.round((reviewMfgVal * 0.015 + 0.25) * 100) / 100) : 0);
+      const reviewMfgVal = draft.mfgNetto || 0;
+      const reviewStripeVal = draft.stripeFee || (Math.round(((draft.subtotalProtected || draft.budgetNum) * 0.015 + 0.25) * 100) / 100);
       const mfgNettoEl = document.getElementById('reviewMfgNetto');
       if (mfgNettoEl) mfgNettoEl.innerText = '€ ' + reviewMfgVal.toFixed(2).replace('.', ',');
       const stripeFeeEl = document.getElementById('reviewStripeFee');
       if (stripeFeeEl) stripeFeeEl.innerText = '+ € ' + reviewStripeVal.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
 
-      if (totalEscrowEl) totalEscrowEl.innerText = draft.budgetStr;
+      incInfoEl = document.getElementById('i18n-reviewIncludedInfo');
+      if (incInfoEl) {
+        let speedText = 'Standard inclusa';
+        if (draft.speedFee > 0) speedText = 'Flash Prioritaria (+€ ' + draft.speedFee.toFixed(2).replace('.', ',') + ')';
+        else if (draft.speedFee < 0) speedText = 'Flessibile (-€ ' + Math.abs(draft.speedFee).toFixed(2).replace('.', ',') + ')';
+        incInfoEl.innerText = 'Pacco & Spedizione (€ ' + (draft.shippingNum || 6.05).toFixed(2).replace('.', ',') + ') + ' + speedText + ' + Escrow inclusi nel totale';
+      }
+
+      if (totalEscrowEl) totalEscrowEl.innerText = '€ ' + (draft.budgetNum || 0).toFixed(2).replace('.', ',');
 
       // Gestione Avviso Budget Basso nel Messaggio di Sintesi Ordine (Modal)
       const reviewWarnBox = document.getElementById('reviewBudgetLowWarning');
