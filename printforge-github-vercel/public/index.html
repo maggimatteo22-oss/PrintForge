@@ -227,6 +227,11 @@
 
   <style>
     /* ELIMINA QUALSIASI ZOOM AUTOMATICO SU TELEFONO (FORM FOCUS & GESTURE ZOOM) */
+    /* Garanzia assoluta: nessun modale o elemento nascosto può MAI intercettare click */
+    .hidden, [hidden] {
+      display: none !important;
+    }
+
     html, body {
       touch-action: manipulation;
       -webkit-text-size-adjust: 100%;
@@ -4453,7 +4458,7 @@
     <!-- ===================================================================== -->
     <!-- MODALE: DETTAGLIO OPERA VETRINA 2D                                    -->
     <!-- ===================================================================== -->
-    <div id="modalItemDetail" class="fixed inset-0 z-[9999] bg-[#070709]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+    <div id="modalItemDetail" class="fixed inset-0 z-[9999] bg-[#070709]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="display: none;">
       <div class="w-full max-w-2xl bg-[#0E0E12] border border-white/15 rounded-3xl p-5 sm:p-7 shadow-2xl space-y-5 max-h-[90vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
           <div class="flex items-center gap-2">
@@ -4526,7 +4531,7 @@
     <!-- ===================================================================== -->
     
 
-    <div id="modalLeaveReview" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;">
+    <div id="modalLeaveReview" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;; display: none;">
       <div class="w-full max-w-lg bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 relative animate-in fade-in zoom-in-95 duration-200">
         <button type="button" onclick="closeLeaveReviewModal()" class="absolute top-4 right-4 text-zinc-400 hover:text-white p-1.5 rounded-lg bg-white/5 hover:bg-white/10 transition z-10" title="Chiudi">
           <i data-lucide="x" class="w-4 h-4"></i>
@@ -4610,7 +4615,7 @@
     <!-- ===================================================================== -->
     <!-- MODULO 5: MODALE RECENSIONI PUBBLICHE CREATOR                          -->
     <!-- ===================================================================== -->
-    <div id="modalCreatorReviews" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;">
+    <div id="modalCreatorReviews" class="fixed inset-0 z-[999999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="z-index: 999999 !important; isolation: isolate !important;; display: none;">
       <div class="w-full max-w-xl bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 max-h-[85vh] overflow-y-auto">
         <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
           <div class="flex items-center gap-2">
@@ -7911,7 +7916,7 @@
 
     <!-- MINI RIQUADRO: CONFIGURAZIONE DATI INCASSO IBAN PER IL CREATOR        -->
     <!-- ===================================================================== -->
-    <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important;">
+    <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important;; display: none;">
       <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
         
         <!-- Header -->
@@ -8099,7 +8104,7 @@
   <!-- ========================================================================= -->
   <!-- MODAL SINCRONIZZAZIONE DISPOSITIVI (PC <-> SMARTPHONE)                   -->
   <!-- ========================================================================= -->
-  <div id="modalDeviceSync" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modalDeviceSync" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4" style="display: none;">
     <div class="w-full max-w-md cyber-card p-6 space-y-5 modal-spring-enter max-h-[90vh] overflow-y-auto bg-[#0E0E12] border border-white/10 rounded-2xl shadow-2xl">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <div class="flex items-center gap-2">
@@ -8159,7 +8164,7 @@
     </div>
   </div>
 
-  <div id="modalAuth" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modalAuth" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4" style="display: none;">
     <div class="w-full max-w-md cyber-card p-6 space-y-5 modal-spring-enter max-h-[90vh] overflow-y-auto">
       
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
@@ -8344,7 +8349,7 @@
     </div>
   </div>
 
-  <div id="modalRfpSuccess" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modalRfpSuccess" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4" style="display: none;">
     <div class="w-full max-w-lg cyber-card p-6 space-y-4 modal-spring-enter border border-white/20 shadow-2xl bg-[#090A0D]">
       
       <!-- Modal Header with Live Beacon -->
@@ -8476,7 +8481,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE DISPUTA / SEGNALAZIONE NON CONFORMITÀ                              -->
   <!-- ========================================================================= -->
-  <div id="modalDispute" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modalDispute" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4" style="display: none;">
     <div class="w-full max-w-md cyber-card p-6 space-y-4 modal-spring-enter">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <div class="flex items-center gap-2 text-[#FFFFFF] font-cyber font-bold text-sm">
@@ -8626,7 +8631,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE: GESTIONE PREFERENZE COOKIE DETTAGLIATE                            -->
   <!-- ========================================================================= -->
-  <div id="modalCookiePreferences" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4">
+  <div id="modalCookiePreferences" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-4" style="display: none;">
     <div class="w-full max-w-lg cyber-card p-6 space-y-5 modal-spring-enter max-h-[90vh] overflow-y-auto text-xs font-sans">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <h3 class="text-sm font-cyber font-bold text-white tracking-wide flex items-center gap-2">
@@ -8700,7 +8705,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE: RIEPILOGO COMMESSA & DEPOSITO IN ESCROW (APPLE GLASS MINIMAL)     -->
   <!-- ========================================================================= -->
-  <div id="modalOrderReviewEscrow" class="fixed inset-0 z-50 bg-[#0A0B0E]/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+  <div id="modalOrderReviewEscrow" class="fixed inset-0 z-50 bg-[#0A0B0E]/80 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="display: none;">
     <div class="w-full max-w-lg cyber-card p-4 sm:p-5 space-y-3.5 modal-spring-enter max-h-[92vh] flex flex-col text-xs font-sans rounded-2xl shadow-2xl border border-white/20">
       
       <!-- Modal Header Minimal -->
@@ -8846,7 +8851,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE: REGISTRO EMAIL TRANSAZIONALI & NOTIFICHE                          -->
   <!-- ========================================================================= -->
-  <div id="modalEmailHistory" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+  <div id="modalEmailHistory" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="display: none;">
     <div class="w-full max-w-2xl cyber-card p-5 sm:p-7 space-y-5 modal-spring-enter max-h-[90vh] flex flex-col text-xs font-sans bg-[#090A0D] border border-white/20 shadow-2xl rounded-2xl">
       
       <!-- Header -->
@@ -8901,7 +8906,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE: VISUALIZZATORE DOCUMENTI LEGALI & BUROCRAZIE UFFICIALI            -->
   <!-- ========================================================================= -->
-  <div id="modalLegalDoc" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+  <div id="modalLegalDoc" class="fixed inset-0 z-50 bg-[#121214]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5" style="display: none;">
     <div class="w-full max-w-4xl cyber-card p-4 sm:p-8 space-y-4 sm:space-y-6 modal-spring-enter max-h-[92vh] flex flex-col text-xs font-sans">
       
       <!-- Modal Header -->
@@ -8967,7 +8972,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE: RUOTA CROMATICA INTERATTIVA STUDIO 3D                             -->
   <!-- ========================================================================= -->
-  <div id="stylishColorWheelModal" class="fixed inset-0 z-50 bg-[#08090D]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="stylishColorWheelModal" class="fixed inset-0 z-50 bg-[#08090D]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4" style="display: none;">
     <div class="w-full max-w-sm rounded-3xl bg-[#0F1017] border border-white/20 p-5 sm:p-6 space-y-4 shadow-2xl modal-spring-enter text-white relative">
       
       <!-- Modal Header -->
