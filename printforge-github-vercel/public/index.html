@@ -6488,20 +6488,33 @@
               </div>
 
               <!-- Dettaglio Trasparente Quote: Manifattura + Protezione Stripe Escrow -->
-              <div id="priceEscrowBreakdownBox" class="p-2 sm:p-2.5 rounded-lg bg-[#0F1015] border border-white/10 space-y-1 text-[10px] font-mono mt-1.5">
+              <div id="priceEscrowBreakdownBox" class="p-2.5 sm:p-3 rounded-xl bg-[#0F1015] border border-white/10 space-y-1.5 text-[10px] font-mono mt-1.5 shadow-md">
                 <div class="flex items-center justify-between text-zinc-400">
                   <span id="i18n-breakdownMfgLabel">Manifattura 3D &amp; Materiale:</span>
                   <span id="breakdownMfgPrice" class="text-zinc-200 font-bold">€ 0,00</span>
                 </div>
                 <div class="flex items-center justify-between text-zinc-400">
+                  <span class="flex items-center gap-1" id="i18n-breakdownShipLabel">
+                    <span class="text-cyan-400">📦 Spedizione Corriere:</span>
+                    <span class="text-zinc-400 text-[9px] font-mono" id="breakdownPackageNameDisplay">(Scatola S)</span>
+                  </span>
+                  <span id="breakdownShippingPrice" class="text-zinc-200 font-bold">+ € 6,05</span>
+                </div>
+                <div class="flex items-center justify-between text-zinc-400" id="breakdownSpeedRow">
+                  <span class="flex items-center gap-1" id="i18n-breakdownSpeedLabel">
+                    <span class="text-amber-400">⚡ Tempistica Consegna:</span>
+                  </span>
+                  <span id="breakdownSpeedPrice" class="text-zinc-300 font-bold">Standard (Inclusa)</span>
+                </div>
+                <div class="flex items-center justify-between text-zinc-400">
                   <span class="flex items-center gap-1">
-                    <span class="text-blue-400" id="i18n-breakdownStripeLabel">🛡️ Protezione Stripe Escrow (1,5% + € 0,25 al centesimo):</span>
+                    <span class="text-blue-400" id="i18n-breakdownStripeLabel">🛡️ Protezione Stripe Escrow (1,5% + € 0,25):</span>
                   </span>
                   <span id="breakdownStripeFee" class="text-blue-300 font-bold">+ € 0,00</span>
                 </div>
-                <div class="flex items-center justify-between text-zinc-300 pt-1 border-t border-white/10 font-bold">
-                  <span id="i18n-breakdownTotalLabel">Totale al Checkout:</span>
-                  <span id="breakdownTotalPrice" class="text-emerald-400 text-xs font-mono">€ 0,00</span>
+                <div class="flex items-center justify-between text-zinc-200 pt-1.5 border-t border-white/10 font-bold text-xs">
+                  <span id="i18n-breakdownTotalLabel" class="text-white">Totale al Checkout:</span>
+                  <span id="breakdownTotalPrice" class="text-emerald-400 text-sm font-mono font-bold">€ 0,00</span>
                 </div>
                 
                 <!-- Alert di Avviso se Prezzo Troppo Basso nel Riquadro di Sintesi Ordine -->
@@ -17631,6 +17644,7 @@ END-ISO-10303-21;`;
 
       if (typeof recalculateInstantQuote === 'function') {
         recalculateInstantQuote();
+      if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote();
       }
       if (typeof updateLiveRequestSummary === 'function') {
         updateLiveRequestSummary();
@@ -17640,6 +17654,162 @@ END-ISO-10303-21;`;
       }
     }
     window.selectShippingOption = selectShippingOption;
+
+    /* ========================================================================= */
+    /* SINCRONIZZAZIONE BI-DIREZIONALE TAGLIE (XS-S-M-L-XL), MISURE & SCATOLA    */
+    /* ========================================================================= */
+    function syncPartSizeCardsFromDimensions(x, y, z) {
+      const dx = Math.max(0, parseFloat(x) || 0);
+      const dy = Math.max(0, parseFloat(y) || 0);
+      const dz = Math.max(0, parseFloat(z) || 0);
+
+      const maxDim = Math.max(dx, dy, dz);
+      let matchedKey = 'S';
+      if (maxDim <= 55) matchedKey = 'XS';
+      else if (maxDim <= 115) matchedKey = 'S';
+      else if (maxDim <= 185) matchedKey = 'M';
+      else if (maxDim <= 260) matchedKey = 'L';
+      else matchedKey = 'XL';
+
+      const keys = ['XS', 'S', 'M', 'L', 'XL'];
+      keys.forEach(k => {
+        const card = document.getElementById('sizeCard_' + k);
+        if (!card) return;
+        const pill = card.querySelector('.size-card-pill');
+        if (k === matchedKey) {
+          card.classList.add('active-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+          card.classList.remove('border-white/10', 'bg-[#16171F]');
+          if (pill) {
+            pill.classList.remove('bg-white/10', 'text-white');
+            pill.classList.add('bg-white', 'text-black');
+          }
+        } else {
+          card.classList.remove('active-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+          card.classList.add('border-white/10', 'bg-[#16171F]');
+          if (pill) {
+            pill.classList.remove('bg-white', 'text-black');
+            pill.classList.add('bg-white/10', 'text-white');
+          }
+        }
+      });
+
+      const badge = document.getElementById('dimensionSourceBadge');
+      if (badge && dx > 0 && dy > 0 && dz > 0) {
+        const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+        const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+        const sizeLabels = {
+          'XS': isEn ? 'SIZE XS // POCKET (~4 CM)' : isEs ? 'TALLA XS // BOLSILLO (~4 CM)' : 'TAGLIA XS // TASCABILE (~4 CM)',
+          'S': isEn ? 'SIZE S // SMALL (~8 CM)' : isEs ? 'TALLA S // PEQUEÑO (~8 CM)' : 'TAGLIA S // PICCOLO (~8 CM)',
+          'M': isEn ? 'SIZE M // MEDIUM (~15 CM)' : isEs ? 'TALLA M // MEDIANO (~15 CM)' : 'TAGLIA M // MEDIO (~15 CM)',
+          'L': isEn ? 'SIZE L // LARGE (~22 CM)' : isEs ? 'TALLA L // GRANDE (~22 CM)' : 'TAGLIA L // GRANDE (~22 CM)',
+          'XL': isEn ? 'SIZE XL // EXTRA LARGE (~32 CM)' : isEs ? 'TALLA XL // EXTRA GRANDE (~32 CM)' : 'TAGLIA XL // EXTRA GRANDE (~32 CM)'
+        };
+        badge.innerText = sizeLabels[matchedKey] || ('TAGLIA ' + matchedKey);
+        badge.className = 'text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20';
+      }
+
+      // Adatta immediatamente la scatola in tempo reale in base alla grandezza dell'opera!
+      if (typeof autoSelectIdealPackaging === 'function') {
+        autoSelectIdealPackaging(dx, dy, dz);
+      }
+    }
+    window.syncPartSizeCardsFromDimensions = syncPartSizeCardsFromDimensions;
+
+    /* ========================================================================= */
+    /* CALCOLO COMPLETO PREZZO FINALE (MANIFATTURA + SPEDIZIONE + FLASH + ESCROW) */
+    /* ========================================================================= */
+    function updateOrderBreakdownQuote() {
+      // 1. Manifattura 3D
+      let val = 0;
+      const budgetInput = document.getElementById('reqBudget');
+      if (budgetInput && budgetInput.value && !isNaN(parseFloat(budgetInput.value)) && parseFloat(budgetInput.value) > 0) {
+        val = parseFloat(budgetInput.value);
+      } else if (typeof window.__lastComputedBaseMfg === 'number' && window.__lastComputedBaseMfg > 0) {
+        val = window.__lastComputedBaseMfg;
+      } else if (typeof window.__lastComputedQuotePrice === 'number' && window.__lastComputedQuotePrice > 0) {
+        val = window.__lastComputedQuotePrice;
+      }
+
+      // 2. Spedizione Base (in base alla scatola auto-calcolata)
+      let shipCost = typeof window.currentBaseShippingPrice === 'number' && window.currentBaseShippingPrice > 0
+        ? window.currentBaseShippingPrice
+        : 6.05;
+
+      // 3. Tempistica / Spedizione Flash / Flessibile
+      const dSel = document.getElementById('reqDeadline');
+      const deadlineVal = (dSel ? dSel.value : '') || (AppState.pendingOrderDraft?.deadline || 'Standard 3-5 giorni');
+      
+      let speedFee = 0;
+      let speedLabel = 'Standard (Inclusa)';
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+
+      if (deadlineVal.includes('Urgente') || deadlineVal.includes('Flash') || deadlineVal.includes('24-48h')) {
+        // Tassa sulla spedizione flash: priorità macchina + corriere express (+30% o min € 6,50)
+        speedFee = val > 0 ? Math.max(6.50, Math.round(val * 0.30 * 100) / 100) : 6.50;
+        speedLabel = '+ € ' + speedFee.toFixed(2).replace('.', ',') + ' (Flash 24-48h)';
+      } else if (deadlineVal.includes('Flessibile') || deadlineVal.includes('7-10')) {
+        // Sconto flessibile -10% su manifattura
+        speedFee = val > 0 ? -Math.round(val * 0.10 * 100) / 100 : 0;
+        speedLabel = speedFee < 0 ? ('- € ' + Math.abs(speedFee).toFixed(2).replace('.', ',') + ' (-10% Flex)') : 'Flessibile (Inclusa)';
+      } else {
+        speedFee = 0;
+        speedLabel = isEn ? 'Standard (Included)' : isEs ? 'Estándar (Incluido)' : 'Standard (Inclusa)';
+      }
+
+      // 4. Subtotale Protetto (Manifattura + Spedizione + Flash fee)
+      const subtotalProtected = Math.max(0, val + shipCost + speedFee);
+
+      // 5. Tassa Stripe Escrow (1,5% + € 0,25 con calcolo al centesimo)
+      let stripeFee = 0;
+      if (subtotalProtected > 0) {
+        stripeFee = Math.round((subtotalProtected * 0.015 + 0.25) * 100) / 100;
+      }
+      const totalCheckout = parseFloat((subtotalProtected + stripeFee).toFixed(2));
+
+      // Aggiornamento DOM Riquadro di Sintesi
+      const bMfg = document.getElementById('breakdownMfgPrice');
+      if (bMfg) bMfg.innerText = '€ ' + val.toFixed(2).replace('.', ',');
+
+      const bShip = document.getElementById('breakdownShippingPrice');
+      if (bShip) bShip.innerText = '+ € ' + shipCost.toFixed(2).replace('.', ',');
+
+      const bSpeed = document.getElementById('breakdownSpeedPrice');
+      if (bSpeed) {
+        bSpeed.innerText = speedLabel;
+        bSpeed.className = speedFee > 0 ? 'text-amber-400 font-bold' : speedFee < 0 ? 'text-emerald-400 font-bold' : 'text-zinc-300 font-bold';
+      }
+
+      const bStripe = document.getElementById('breakdownStripeFee');
+      if (bStripe) bStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',');
+
+      const bTotal = document.getElementById('breakdownTotalPrice');
+      if (bTotal) bTotal.innerText = '€ ' + totalCheckout.toFixed(2).replace('.', ',');
+
+      // Aggiornamento Card Garanzia Stripe Escrow
+      const noticeBase = document.getElementById('liveNoticeBasePrice');
+      if (noticeBase) noticeBase.innerText = '€ ' + subtotalProtected.toFixed(2).replace('.', ',');
+
+      const noticeStripe = document.getElementById('liveNoticeStripeFee');
+      if (noticeStripe) noticeStripe.innerText = '+ € ' + stripeFee.toFixed(2).replace('.', ',');
+
+      const noticeTotal = document.getElementById('liveNoticeTotalPrice');
+      if (noticeTotal) noticeTotal.innerText = '€ ' + totalCheckout.toFixed(2).replace('.', ',');
+
+      const noticeBadge = document.getElementById('liveNoticeStripeBadge');
+      if (noticeBadge) noticeBadge.innerText = 'Stripe Escrow: + € ' + stripeFee.toFixed(2).replace('.', ',');
+
+      window.__lastTotalCheckout = totalCheckout;
+      window.__lastStripeFee = stripeFee;
+      window.__lastSubtotalProtected = subtotalProtected;
+
+      // Aggiorna anche eventuale sticky display mobile
+      const mobileSticky = document.getElementById('mobileStickyTotalDisplay');
+      if (mobileSticky) {
+        mobileSticky.innerText = '€ ' + totalCheckout.toFixed(2).replace('.', ',');
+      }
+    }
+    window.updateOrderBreakdownQuote = updateOrderBreakdownQuote;
 
     /* GESTIONE DIMENSIONI PERSONALIZZATE E SCALA RAPIDA DEL PEZZO */
     let originalDimensions = { x: 80, y: 60, z: 25 };
@@ -17787,6 +17957,7 @@ END-ISO-10303-21;`;
         badge.className = 'text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20';
       }
 
+      syncPartSizeCardsFromDimensions(x, y, z);
       updateCalculatedDimensionMetrics(x, y, z);
     }
     window.onManualDimensionInput = onManualDimensionInput;
@@ -17835,6 +18006,7 @@ END-ISO-10303-21;`;
         clientMeshGroup.scale.set(scale, scale, scale);
       }
 
+      syncPartSizeCardsFromDimensions(newX, newY, newZ);
       updateCalculatedDimensionMetrics(newX, newY, newZ);
     }
     window.applyDimensionScale = applyDimensionScale;
@@ -17878,6 +18050,44 @@ END-ISO-10303-21;`;
 
       if (typeof selectPackagingPreset === 'function') {
         selectPackagingPreset(presetKey, boxL, boxW, boxH, boxWeightGrams);
+      }
+
+      // Prezzo base calcolato in base alla scatola necessaria
+      let baseShipPrice = 6.05;
+      if (presetKey === 'envelope' || (boxL <= 8 && boxW <= 8 && boxH <= 3)) baseShipPrice = 5.72;
+      else if (presetKey === 's') baseShipPrice = 6.05;
+      else if (presetKey === 'm') baseShipPrice = 7.20;
+      else if (presetKey === 'l') baseShipPrice = 8.90;
+      else baseShipPrice = parseFloat((6.05 + (boxWeightGrams / 1000) * 1.5).toFixed(2));
+
+      window.currentBaseShippingPrice = baseShipPrice;
+
+      const autoPkgPrice = document.getElementById('autoPackagingPriceDisplay');
+      if (autoPkgPrice) autoPkgPrice.innerText = 'da € ' + baseShipPrice.toFixed(2).replace('.', ',');
+
+      const autoPkgDims = document.getElementById('autoPackagingDimsDisplay');
+      if (autoPkgDims) autoPkgDims.innerText = 'Dimensioni: ' + boxL + ' × ' + boxW + ' × ' + boxH + ' cm (' + boxWeightGrams + 'g)';
+
+      const autoPkgName = document.getElementById('autoPackagingNameDisplay');
+      if (autoPkgName) {
+        const pName = (presetKey === 'envelope') ? 'Busta Imbottita' : ('Scatola ' + presetKey.toUpperCase());
+        autoPkgName.innerText = pName + ' (' + boxL + '×' + boxW + '×' + boxH + ' cm)';
+      }
+
+      const autoPillBadge = document.getElementById('autoPackagingPillBadge');
+      if (autoPillBadge) {
+        const pName = (presetKey === 'envelope') ? 'Busta' : ('Scatola ' + presetKey.toUpperCase());
+        autoPillBadge.innerText = pName + ' (' + boxL + '×' + boxW + '×' + boxH + ' cm)';
+      }
+
+      const bPkgName = document.getElementById('breakdownPackageNameDisplay');
+      if (bPkgName) {
+        const pName = (presetKey === 'envelope') ? 'Busta' : ('Scatola ' + presetKey.toUpperCase());
+        bPkgName.innerText = '(' + pName + ')';
+      }
+
+      if (typeof updateOrderBreakdownQuote === 'function') {
+        updateOrderBreakdownQuote();
       }
 
       if (pillEl) {
@@ -21570,7 +21780,8 @@ const warnBox = document.getElementById('budgetWarningBox');
       if (bTotal) bTotal.innerText = `€ ${computedPrice.toFixed(2).replace('.', ',')}`;
       const noticeBadge = document.getElementById('liveNoticeStripeBadge');
       if (noticeBadge) noticeBadge.innerText = `+ € ${stripeEscrowFee.toFixed(2).replace('.', ',')} (1,5% + € 0,25)`;
-window.__lastComputedQuotePrice = computedPrice;
+if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote();
+      window.__lastComputedQuotePrice = computedPrice;
       window.__lastComputedBaseMfg = baseManufacturingPrice;
       window.__lastComputedStripeFee = stripeEscrowFee;
       const minPrice = Math.max(10, Math.round(computedPrice * 0.88));
@@ -21804,6 +22015,7 @@ window.__lastComputedQuotePrice = computedPrice;
 
       // Se il cliente ha inserito un prezzo di suo pugno (Libero Arbitrio):
       if (val > 0) {
+        if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote();
         // Calcolo automatico al centesimo della tassa Stripe Stripe Escrow (1,5% + € 0,25) aggiunta automaticamente
         const stripeFee = Math.round((val * 0.015 + 0.25) * 100) / 100;
         const totalWithStripe = parseFloat((val + stripeFee).toFixed(2));
