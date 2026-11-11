@@ -21964,26 +21964,27 @@ END-ISO-10303-21;`;
         sendProjectAcceptedEmailToClient(req);
       }
 
-      // 5. Update UI: remove from requests feed immediately & update live counters
-      renderCreatorRequestsFeed();
-      renderBroadcastTable();
+      // NAVIGAZIONE IMMEDIATA SENZA ALCUN RITARDO (0ms DELAY)
+      navigateTo('activity');
+      window.scrollTo({ top: 0, behavior: 'instant' });
 
-      // 6. Localized Toast
-      const toastMsg = isEn 
-        ? `✓ Request #${req.id} accepted! Redirecting to manufacturing activity...` 
-        : isEs 
-        ? `✓ ¡Solicitud #${req.id} aceptada! Redirigiendo a la pantalla de actividad...` 
-        : `✓ Richiesta #${req.id} accettata! Reindirizzamento automatico alla schermata attività...`;
-      showToast(toastMsg, 'success');
-
-      // 7. Aggiorna Tab Dinamico nella Barra (ATTIVITÀ subito dopo RICHIESTE e prima di ESCROW)
+      if (typeof renderStudioSpecs === 'function') {
+        renderStudioSpecs();
+      }
       updateNavigationTabs();
 
-      // 8. Reindirizzamento automatico direttamente sulla schermata ATTIVITÀ per iniziare a lavorare
+      const toastMsg = isEn 
+        ? `✓ Request #${req.id} accepted! Opened in CAD Studio.` 
+        : `✓ Richiesta #${req.id} presa in carico! Aperta subito nello Studio CAD.`;
+      showToast(toastMsg, 'success');
+
+      // Operazioni secondarie eseguite in background per non bloccare lo scatto visivo
       setTimeout(() => {
-        navigateTo('activity');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 80);
+        try {
+          renderCreatorRequestsFeed();
+          renderBroadcastTable();
+        } catch(e) {}
+      }, 20);
     }
     window.acceptCreatorRequest = acceptCreatorRequest;
 
@@ -26207,18 +26208,30 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       if (AppState.user.email) {
         syncUserProfileToCloud(AppState.user);
       }
+      if (typeof closeUserProfileDropdown === 'function') {
+        closeUserProfileDropdown();
+      }
+
       renderNavUserArea();
       updateNavigationTabs();
       updateLaptopBarButtons();
-      loadRequestsFromSupabase();
+
       if (targetRole === 'client') {
-        showToast(currentLang === 'it' ? 'Modalità CLIENTE attiva.' : 'CLIENT Mode active.', 'success');
-        navigateTo('client-home');
+        showToast(currentLang === 'it' ? '✓ Modalità CLIENTE attiva!' : '✓ CLIENT Mode active!', 'success');
+        // Reindirizzamento ISTANTANEO alla pagina richieste del cliente (cambio visivo immediato)
+        navigateTo('client-request');
       } else {
-        showToast(currentLang === 'it' ? 'Modalità CREATOR attiva.' : 'CREATOR Mode active.', 'success');
-        // Porta il creator direttamente alla Bacheca Richieste
+        showToast(currentLang === 'it' ? '✓ Modalità CREATOR attiva!' : '✓ CREATOR Mode active!', 'success');
+        // Reindirizzamento ISTANTANEO alla bacheca commesse del creator
         navigateTo('creator-requests');
       }
+
+      window.scrollTo({ top: 0, behavior: 'instant' });
+
+      // Operazioni secondarie in background (zero blocchi UI)
+      setTimeout(() => {
+        try { loadRequestsFromSupabase(); } catch(e) {}
+      }, 30);
     }
     window.switchUserRole = switchUserRole;
 
