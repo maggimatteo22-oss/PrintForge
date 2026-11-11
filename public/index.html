@@ -9315,50 +9315,7 @@
     } catch(e) {}
 
     // Recensioni Certificate Predefinite per il Creator
-    const INITIAL_CERTIFIED_REVIEWS = [
-      {
-        id: 'REV-9821',
-        orderId: 'RFP-9821',
-        makerId: 'maggimatteo22@gmail.com',
-        makerName: 'Maker Certificato PrintForge',
-        clientName: 'Ing. Elena Moretti',
-        clientEmail: 'e.moretti@robotica-labs.it',
-        general: 5,
-        quality: 5,
-        comms: 5,
-        speed: 5,
-        comment: 'Pezzo stampato alla perfezione con PETG-CF. Le tolleranze dimensionali sul calibro digitale corrispondono esattamente al file STEP (+/- 0.03mm). Ottima comunicazione durante il collaudo.',
-        createdAt: '2026-11-04T15:20:00.000Z'
-      },
-      {
-        id: 'REV-7742',
-        orderId: 'RFP-7742',
-        makerId: 'maggimatteo22@gmail.com',
-        makerName: 'Maker Certificato PrintForge',
-        clientName: 'Studio Design Andrea Riva',
-        clientEmail: 'a.riva@studioriva.design',
-        general: 5,
-        quality: 5,
-        comms: 5,
-        speed: 4,
-        comment: 'Finitura superficiale impeccabile e rimozione supporti pulitissima. Il protocollo a 3 foto ha garantito la piena conformità prima dell\'affido al corriere.',
-        createdAt: '2026-11-02T11:10:00.000Z'
-      },
-      {
-        id: 'REV-6109',
-        orderId: 'RFP-6109',
-        makerId: 'maggimatteo22@gmail.com',
-        makerName: 'Maker Certificato PrintForge',
-        clientName: 'Dott. Roberto Conti',
-        clientEmail: 'r.conti@automotive-lab.it',
-        general: 5,
-        quality: 5,
-        comms: 5,
-        speed: 5,
-        comment: 'Stampa tecnica robusta e precisa. Maker estremamente professionale e spedizione tracciata rapidissima.',
-        createdAt: '2026-10-29T16:45:00.000Z'
-      }
-    ];
+    const INITIAL_CERTIFIED_REVIEWS = [];
     window.INITIAL_CERTIFIED_REVIEWS = INITIAL_CERTIFIED_REVIEWS;
 
     // Richieste Attive Predefinite con il Creator e per la Bacheca
@@ -9479,38 +9436,6 @@
           shippingLocked: false
         },
         messages: []
-      },
-      {
-        id: 'RFP-9821',
-        title: 'Staffa di Supporto Motore NEMA 17',
-        clientName: 'Ing. Elena Moretti',
-        clientCity: 'Modena (MO)',
-        clientEmail: 'e.moretti@robotica-labs.it',
-        usage: 'Componente Meccanico Strutturale',
-        material: 'PETG-CF Carbonio',
-        color: 'Nero Opaco',
-        colorHex: 0x1a1a1c,
-        dimensions: '60 × 60 × 35 mm',
-        quantity: '2 pezzi',
-        tolerance: 'Alta Precisione ±0.05 mm',
-        infill: '80% Strutturale',
-        budget: '€ 34.00',
-        status: 'COMPLETATO',
-        isCompleted: true,
-        isAccepted: true,
-        maker: 'Maker Certificato PrintForge',
-        maker_name: 'Maker Certificato PrintForge',
-        makerEmail: 'maggimatteo22@gmail.com',
-        acceptedBy: 'Maker Certificato PrintForge',
-        creatorAssigned: 'Maker Certificato PrintForge',
-        agreements: {
-          cadVerified: true,
-          toleranceConfirmed: true,
-          qcPhotosAgreed: true,
-          orientationAgreed: true,
-          shippingLocked: true
-        },
-        messages: []
       }
     ];
     window.PRESET_DEMO_REQUESTS = PRESET_DEMO_REQUESTS;
@@ -9523,11 +9448,24 @@
           const rawRev = localStorage.getItem('printforge_certified_reviews');
           if (rawRev) currentReviews = JSON.parse(rawRev);
         } catch(e) {}
-        if (!currentReviews || !Array.isArray(currentReviews) || currentReviews.length === 0) {
-          currentReviews = JSON.parse(JSON.stringify(INITIAL_CERTIFIED_REVIEWS));
-          localStorage.setItem('printforge_certified_reviews', JSON.stringify(currentReviews));
+        // PURGE TOTALE RECENSIONI FAKE (Elena Moretti, Andrea Riva, Roberto Conti o prefisso REV-)
+        if (Array.isArray(currentReviews)) {
+          currentReviews = currentReviews.filter(r => r && r.id && !String(r.id).startsWith('REV-') && r.clientEmail !== 'e.moretti@robotica-labs.it' && r.clientEmail !== 'a.riva@studioriva.design' && r.clientEmail !== 'r.conti@automotive-lab.it');
+        } else {
+          currentReviews = [];
         }
+        localStorage.setItem('printforge_certified_reviews', JSON.stringify(currentReviews));
         if (window.AppState) window.AppState.certifiedReviews = currentReviews;
+
+        // PURGE TOTALE REGISTRO INCASSI FAKE (Azzera guadagni simulati del maker a 0€)
+        try {
+          let ledger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
+          if (Array.isArray(ledger)) {
+            ledger = ledger.filter(entry => entry && entry.id !== 'RFP-9821' && !String(entry.id).startsWith('RFP-9821') && entry.clientEmail !== 'e.moretti@robotica-labs.it');
+            localStorage.setItem('printforge_creator_earnings_ledger', JSON.stringify(ledger));
+          }
+        } catch(e) {}
+        try { localStorage.removeItem('printforge_completed_RFP-9821'); } catch(e) {}
 
         let currentReqs = [];
         try {
@@ -9536,8 +9474,11 @@
         } catch(e) {}
         if (!currentReqs || !Array.isArray(currentReqs) || currentReqs.length === 0) {
           currentReqs = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
-          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(currentReqs));
-        } else {
+        }
+        // PURGE TOTALE RICHIESTE COMPLETATE FAKE
+        currentReqs = currentReqs.filter(r => r && r.id !== 'RFP-9821' && r.clientEmail !== 'e.moretti@robotica-labs.it');
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(currentReqs));
+        if (true) {
           // Unisci richieste preservando quelle dell'utente
           const existingIds = new Set(currentReqs.map(r => r.id));
           PRESET_DEMO_REQUESTS.forEach(pr => {
@@ -26376,8 +26317,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
     async function executeDirectGoogleLogin(email, role) {
       const cleanEmail = (email || localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com').toLowerCase().trim();
-      const cleanName = cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      const cleanRole = role || localStorage.getItem('printforge_pending_auth_role') || 'client';
+      const isPrimaryUser = (cleanEmail === 'maggimatteo22@gmail.com');
+      const cleanName = isPrimaryUser ? 'Matteo Maggi' : cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const savedPrimaryRole = localStorage.getItem('printforge_primary_role') || (isPrimaryUser ? 'creator' : 'client');
+      const cleanRole = role || localStorage.getItem('printforge_pending_auth_role') || savedPrimaryRole;
 
       let cloudProfile = null;
       try {
@@ -26408,13 +26351,23 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch(e) {}
 
-      if (cloudProfile.payoutConfig && cloudProfile.payoutConfig.iban) {
-        AppState.user.payoutConfig = cloudProfile.payoutConfig;
+      // Ripristina sempre l'IBAN privato del Creator (visibile solo a lui nel profilo)
+      const userKey = 'printforge_payout_details_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
+      let savedPayout = cloudProfile.payoutConfig;
+      if (!savedPayout || !savedPayout.iban) {
+        try {
+          const rawP = localStorage.getItem(userKey) || localStorage.getItem('printforge_payout_details');
+          if (rawP) savedPayout = JSON.parse(rawP);
+        } catch(e) {}
+      }
+      if (savedPayout && savedPayout.iban) {
+        cloudProfile.payoutConfig = savedPayout;
+        cloudProfile.stripeConnected = true;
+        AppState.user.payoutConfig = savedPayout;
         AppState.user.stripeConnected = true;
         try {
-          const userKey = 'printforge_payout_details_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
-          localStorage.setItem(userKey, JSON.stringify(cloudProfile.payoutConfig));
-          localStorage.setItem('printforge_payout_details', JSON.stringify(cloudProfile.payoutConfig));
+          localStorage.setItem(userKey, JSON.stringify(savedPayout));
+          localStorage.setItem('printforge_payout_details', JSON.stringify(savedPayout));
           localStorage.setItem('printforge_payout_configured', 'true');
           localStorage.setItem('printforge_stripe_connected', 'true');
         } catch(e) {}
@@ -27120,6 +27073,23 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       if (typeof closeUserProfileDropdown === 'function') {
         closeUserProfileDropdown();
       }
+      // PRESERVA SEMPRE I DATI PRIVATI DEL CREATOR: IBAN, PASSWORD E PROFILO PRINCIPALE
+      try {
+        if (AppState.user && AppState.user.email) {
+          localStorage.setItem('printforge_saved_email', AppState.user.email);
+          if (AppState.user.payoutConfig) {
+            const uKey = 'printforge_payout_details_' + AppState.user.email.replace(/[^a-z0-9]/g, '_');
+            localStorage.setItem(uKey, JSON.stringify(AppState.user.payoutConfig));
+            localStorage.setItem('printforge_payout_details', JSON.stringify(AppState.user.payoutConfig));
+            localStorage.setItem('printforge_payout_configured', 'true');
+            localStorage.setItem('printforge_stripe_connected', 'true');
+          }
+          if (AppState.user.role) {
+            localStorage.setItem('printforge_primary_role', AppState.user.role);
+          }
+        }
+      } catch(e) {}
+
       AppState.user = {
         isLoggedIn: false,
         role: 'client',
@@ -27130,26 +27100,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         stripeConnected: false,
         creatorData: null
       };
-      // MULTI-TENANT PURGE: Nessun dato rimane in memoria tra un logout e il successivo login
-      AppState.portfolioWorks = [];
-      AppState.broadcastRequests = [];
-      AppState.activeEscrowOrder = null;
-      AppState.activeDealRfpId = null;
-      AppState.loadedRequestInStudio = null;
-      AppState.cadQcFiles = [];
+
       try {
         localStorage.removeItem('printforge_auth_session');
-        localStorage.removeItem('printforge_pending_auth_role');
-        localStorage.removeItem('printforge_portfolio_works');
-        localStorage.removeItem('printforge_broadcast_requests');
-        localStorage.removeItem('printforge_escrow_order');
-        localStorage.removeItem('printforge_payout_config');
-        localStorage.removeItem('printforge_payout_iban');
-        localStorage.removeItem('printforge_payout_configured');
-        localStorage.removeItem('printforge_payout_details');
-        localStorage.removeItem('printforge_stripe_connected');
-        localStorage.removeItem('printforge_stage4_completed');
-        sessionStorage.clear();
+        // NON cancellare printforge_saved_email, printforge_saved_pass, printforge_payout_details, printforge_portfolio_works
       } catch (e) {}
 
       if (typeof supabaseClient !== 'undefined' && supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signOut === 'function') {
@@ -27168,6 +27122,18 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       renderNavUserArea();
       updateNavigationTabs();
+      navigateTo('login-gate');
+
+      setTimeout(() => {
+        try {
+          const emailInput = document.getElementById('gateUnifiedEmail');
+          const passInput = document.getElementById('gateUnifiedPass');
+          const savedEmail = localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com';
+          const savedPass = localStorage.getItem('printforge_saved_pass') || '';
+          if (emailInput && !emailInput.value) emailInput.value = savedEmail;
+          if (passInput && !passInput.value && savedPass) passInput.value = savedPass;
+        } catch(e) {}
+      }, 50);
       updateLaptopBarButtons();
       
       const byeMsg = currentLang === 'it' 
