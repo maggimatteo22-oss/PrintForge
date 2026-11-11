@@ -34541,8 +34541,44 @@ function renderDealChat(rfpId) {
         showToast(currentLang === 'it' ? 'Inserisci l\'intestatario del conto' : 'Please enter account holder name', 'warning');
         return;
       }
+    // Validatore Ufficiale ISO 13616 / ISO 7064 Modulo 97 per IBAN Bancari
+    function isValidIBANChecksum(input) {
+      if (!input || typeof input !== 'string') return false;
+      const CODE_LENGTHS = {
+        AD: 24, AE: 23, AL: 28, AT: 20, AZ: 28, BA: 20, BE: 16, BG: 22, BH: 22, BR: 29,
+        CH: 21, CR: 22, CY: 28, CZ: 24, DE: 22, DK: 18, DO: 28, EE: 20, ES: 24, FI: 18,
+        FO: 18, FR: 27, GB: 22, GE: 22, GI: 23, GL: 18, GR: 27, GT: 28, HR: 21, HU: 28,
+        IE: 22, IL: 23, IS: 26, IT: 27, JO: 30, KW: 30, KZ: 20, LB: 28, LC: 32, LI: 21,
+        LT: 28, LU: 20, LV: 21, MC: 27, MD: 24, ME: 22, MK: 19, MR: 27, MT: 31, MU: 30,
+        NL: 18, NO: 15, PK: 24, PL: 28, PS: 29, PT: 25, QA: 29, RO: 24, RS: 22, SA: 24,
+        SE: 24, SI: 19, SK: 24, SM: 27, TN: 24, TR: 26, UA: 29, VA: 22, VG: 24
+      };
+      const clean = input.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const code = clean.match(/^([A-Z]{2})(d{2})([A-Z0-9]+)$/);
+      if (!code) return false;
+      const country = code[1];
+      const check = code[2];
+      const bban = code[3];
+      if (CODE_LENGTHS[country] && clean.length !== CODE_LENGTHS[country]) return false;
+      const digits = (bban + country + check).replace(/[A-Z]/g, letter => letter.charCodeAt(0) - 55);
+      let checksum = 0;
+      for (let i = 0; i < digits.length; i++) {
+        checksum = (checksum * 10 + parseInt(digits[i], 10)) % 97;
+      }
+      return checksum === 1;
+    }
+    window.isValidIBANChecksum = isValidIBANChecksum;
+
       if (!iban || iban.length < 15) {
         showToast(currentLang === 'it' ? 'Inserisci un codice IBAN valido (min. 15 caratteri)' : 'Please enter a valid IBAN code', 'warning');
+        return;
+      }
+      if (!isValidIBANChecksum(iban)) {
+        showToast(currentLang === 'it' 
+          ? 'Codice IBAN non valido: le cifre di controllo bancarie non corrispondono allo standard SEPA (Modulo 97). Verifica le coordinate del conto.' 
+          : 'Invalid IBAN code: bank checksum verification failed (Modulo 97). Please verify your account details.', 'warning');
+        const ibanEl = document.getElementById('payoutIban');
+        if (ibanEl) ibanEl.focus();
         return;
       }
       if (!taxId) {
