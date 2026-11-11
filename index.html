@@ -19103,7 +19103,7 @@ END-ISO-10303-21;`;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
       
-      const rawReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests || []).find(r => r && (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT') || r.status.includes('TRATTATIVA')))) && !r.isCompleted && !r.isDelivered && !r.isClosed) || AppState.broadcastRequests[0];
+      const rawReq = (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted === true) ? AppState.loadedRequestInStudio : ((AppState.broadcastRequests || []).find(r => r && r.isAccepted === true && !r.isCompleted && !r.isDelivered && !r.isClosed) || null);
       if (rawReq && rawReq.isAccepted && !AppState.loadedRequestInStudio) {
         AppState.loadedRequestInStudio = rawReq;
         AppState.activeDealRfpId = rawReq.id;
@@ -19692,14 +19692,11 @@ END-ISO-10303-21;`;
       const role = String(AppState.user.role || '').toLowerCase();
       if (role !== 'creator') return false;
 
-      // Se in memoria vi è un ordine attivo accettato e non ancora consegnato
-      if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
-        const s = String(AppState.loadedRequestInStudio.status || '').toUpperCase();
-        if (AppState.loadedRequestInStudio.isAccepted || s.includes('LAVORAZION') || s.includes('APPROVAT') || s.includes('TRATTATIVA') || s.includes('ATTIV') || s.includes('SPEDIT')) {
-          return true;
-        }
+      // Se in memoria vi è un ordine attivo realmente accettato e non ancora consegnato
+      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted === true && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
+        return true;
       }
-      if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered && !AppState.activeEscrowOrder.isClosed) {
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted === true && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered && !AppState.activeEscrowOrder.isClosed) {
         return true;
       }
 
@@ -19711,17 +19708,7 @@ END-ISO-10303-21;`;
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
         if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
         if (r.isCompleted || r.isClosed || r.isDelivered) return false;
-        const s = String(r.status || '').toUpperCase();
-        const isAcc = Boolean(
-          r.isAccepted === true ||
-          s.includes('ACCETTAT') ||
-          s.includes('TRATTATIVA') ||
-          s.includes('LAVORAZION') ||
-          s.includes('PRODUCTION') ||
-          s.includes('PRODUZION') ||
-          s.includes('SPEDIT')
-        );
-        if (!isAcc) return false;
+        if (r.isAccepted !== true) return false;
 
         const assignedUid = (r.assigned_creator_id || r.makerUserId || '').toLowerCase().trim();
         const assignedEmail = (r.makerEmail || r.creatorEmail || '').toLowerCase().trim();
@@ -19903,19 +19890,15 @@ END-ISO-10303-21;`;
         // 3. BACHECA RICHIESTE & RICHIESTA ATTIVA (SPOSTATO AL 3° POSTO: dopo i progetti)
         // REQUISITO UTENTE: "appena il creator acceta la richiesta al suo posto si attiva la pagina rchiesta e dopo le 3 foto la pagina escroow room"
         const activeCreatorReq = (function() {
-          if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
-            const s = String(AppState.loadedRequestInStudio.status || '').toUpperCase();
-            if (AppState.loadedRequestInStudio.isAccepted || s.includes('LAVORAZION') || s.includes('APPROVAT') || s.includes('TRATTATIVA') || s.includes('ATTIV') || s.includes('SPEDIT')) {
-              return AppState.loadedRequestInStudio;
-            }
+          if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted === true && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
+            return AppState.loadedRequestInStudio;
           }
-          if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+          if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted === true && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
             return AppState.activeEscrowOrder;
           }
           return (AppState.broadcastRequests || []).find(r => {
             if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
-            const s = String(r.status || '').toUpperCase();
-            return Boolean(r.isAccepted || s.includes('LAVORAZION') || s.includes('APPROVAT') || s.includes('TRATTATIVA') || s.includes('SPEDIT'));
+            return r.isAccepted === true;
           });
         })();
         const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
@@ -28705,7 +28688,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           postProcess: 'Grezzo (Supporti rimossi)',
           deadline: 'Standard 3-5 giorni',
           notes: "Richiesta precisione sui denti dell'ingranaggio e tenuta del perno centrale con asse da 8mm.",
-          status: 'IN TRATTATIVA // CHAT ATTIVA',
+          status: 'APERTA (IN ATTESA CREATOR)',
           messages: []
         },
         en: {
@@ -28721,7 +28704,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           postProcess: 'Raw (Supports Removed)',
           deadline: 'Standard 3-5 days',
           notes: 'High precision required on gear teeth and 8.00mm ground steel central axle shaft fit.',
-          status: 'IN DEAL // ACTIVE 1-ON-1 CHAT',
+          status: 'OPEN (WAITING FOR CREATOR)',
           messages: []
         },
         es: {
@@ -28737,7 +28720,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           postProcess: 'Sin Tratar (Soportes Retirados)',
           deadline: 'Estándar 3-5 días',
           notes: 'Se requiere alta precisión en los dientes del engranaje y ajuste de eje central rectificado de 8.00 mm.',
-          status: 'EN NEGOCIACIÓN // CHAT ACTIVO',
+          status: 'ABIERTA (EN ESPERA DEL CREADOR)',
           messages: []
         }
       },
