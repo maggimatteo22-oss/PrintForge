@@ -7158,7 +7158,7 @@
             </span>
           </div>
           <h2 class="text-base sm:text-2xl font-cyber font-bold text-white tracking-wide mt-0.5 sm:mt-1 truncate" id="dealChatHeaderRfpContainer">
-            <span class="text-white">//</span> <span id="dealChatHeaderRfpTitle">Richiesta #RFP-3891</span>
+            <span class="text-white">//</span> <span id="dealChatHeaderRfpTitle">Richiesta</span>
           </h2>
         </div>
 
@@ -7782,7 +7782,7 @@
             <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span class="text-[9px] sm:text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25" id="escrowOrderRfp">
-                RICHIESTA #RFP-3891 // IN CUSTODIA ESCROW
+                COMMESSA ESCROW // IN CUSTODIA
               </span>
               <span class="text-[9px] sm:text-[10px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-white/5 border border-white/10 hidden sm:inline-block">STRIPE VAULT</span>
             </div>
@@ -9345,47 +9345,6 @@
     // Richieste Attive Predefinite con il Creator e per la Bacheca
     const PRESET_DEMO_REQUESTS = [
       {
-        id: 'RFP-3891',
-        title: 'Componente Meccanico Personalizzato',
-        clientName: 'Ing. Marco Ferraris',
-        clientCity: 'Torino (TO)',
-        clientEmail: 'm.ferraris@precisionlab.it',
-        usage: 'Parte Meccanica Funzionale',
-        material: 'PETG Tecnico',
-        color: 'Arancione Meccanico',
-        colorHex: 0xff6600,
-        presetKind: 'gear',
-        dimensions: '80 × 60 × 25 mm',
-        dimX: 80,
-        dimY: 60,
-        dimZ: 25,
-        quantity: '1 pezzo (Prototipo)',
-        tolerance: 'Alta Precisione ±0.05 mm',
-        infill: '50% Meccanico Strutturale',
-        postProcess: 'Grezzo (Rimozione supporti standard)',
-        budget: '€ 48.00',
-        deadline: 'Standard 3-5 giorni',
-        notes: 'Richiesta precisione sui denti dell\'ingranaggio e tenuta del perno centrale con asse da 8mm.',
-        fileName: 'ingranaggio_planetario.stl',
-        aiImage: null,
-        timestamp: '10:45',
-        status: 'APERTA (IN ATTESA CREATOR)',
-        isAccepted: false,
-        acceptedBy: null,
-        maker: null,
-        maker_name: null,
-        makerEmail: null,
-        creatorAssigned: 'PrintForge Maker Pool',
-        agreements: {
-          cadVerified: false,
-          toleranceConfirmed: false,
-          qcPhotosAgreed: false,
-          orientationAgreed: false,
-          shippingLocked: false
-        },
-        messages: []
-      },
-      {
         id: 'RFP-4120',
         title: 'Cubo di Calibrazione XYZ 20mm & Collaudo',
         clientName: 'Studio Design Andrea Riva',
@@ -10129,7 +10088,8 @@
             if (dbR.status === 'PORTFOLIO_WORK' || String(dbR.id).startsWith('WORK-')) return false;
             if (dbR.status === 'CERTIFIED_REVIEW' || String(dbR.id).startsWith('REV-') || String(dbR.title || '').startsWith('CREATOR_REVIEW:')) return false;
             if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE') return false;
-            if (dbR.id === "RFP-9821" || dbR.id === "RFP-3891") {
+            if (["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"].includes(dbR.id)) return false;
+            if (false) {
               if (deletedIds.has(dbR.id) || (typeof localStorage !== "undefined" && localStorage.getItem("printforge_client_hidden_req_" + dbR.id) === "true")) return false;
             }
             if (deletedIds.has(dbR.id)) return false;
@@ -10143,7 +10103,7 @@
           // Assicura che le richieste attive storiche siano incluse se non presenti sul DB cloud
           const dbReqIds = new Set(actualRequests.map(r => r.id));
           PRESET_DEMO_REQUESTS.forEach(pr => {
-            if (!dbReqIds.has(pr.id) && !deletedIds.has(pr.id)) {
+            if (!["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"].includes(pr.id) && !dbReqIds.has(pr.id) && !deletedIds.has(pr.id)) {
               actualRequests.push(pr);
             }
           });
@@ -11469,7 +11429,7 @@
 
     function populateDemoRequests() {
       AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
-      AppState.activeDealRfpId = 'RFP-3891';
+      AppState.activeDealRfpId = null;
       renderBroadcastTable();
       renderCreatorRequestsFeed();
       updateNavigationTabs();
@@ -15675,16 +15635,16 @@
         document.body.removeChild(a);
         showToast(currentLang === 'it' ? 'Download file tecnico avviato' : currentLang === 'es' ? 'Descarga del archivo técnico iniciada' : 'Technical file download started');
       } else {
-        const r = req || { id: 'RFP-3891', title: 'Staffa Meccanica Rinforzata', dimensions: '80 × 60 × 25 mm', material: 'PETG Tecnico', color: 'Arancione Meccanico', tolerance: '±0.05 mm', infill: '50% Meccanico Strutturale' };
+        const r = req || { id: 'RFP-4120', title: 'Cubo di Calibrazione', dimensions: '80 × 60 × 25 mm', material: 'PETG Tecnico', color: 'Arancione Meccanico', tolerance: '±0.05 mm', infill: '50% Meccanico Strutturale' };
         const cadContent = `ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('PRINTFORGE TECHNICAL ASSET // CONTRATTO ESCROW STRIPE'), '2;1');
-FILE_NAME('${r.id || 'RFP-3891'}_opera.step', '2026-10-24T19:40:00', ('PrintForge Client'), ('PrintForge Mechanical Vault'), 'PrintForge STEP Processor', 'PrintForge CAD Kernel', '');
+FILE_NAME('${r.id || 'RFP-4120'}_opera.step', '2026-10-24T19:40:00', ('PrintForge Client'), ('PrintForge Mechanical Vault'), 'PrintForge STEP Processor', 'PrintForge CAD Kernel', '');
 FILE_SCHEMA(('CONFIG_CONTROL_DESIGN'));
 ENDSEC;
 DATA;
 /* CARTIGLIO & SPECIFICHE CONGELATE DELL'OPERA */
-/* COMMESSA: ${r.id || 'RFP-3891'} */
+/* COMMESSA: ${r.id || 'RFP-4120'} */
 /* TITOLO: ${r.title || 'Staffa Meccanica Rinforzata'} */
 /* QUOTE NOMINALI DI INGOMBRO: ${r.dimensions || '80 × 60 × 25 mm'} */
 /* MATERIALE E GRADO TECNICO: ${r.material || 'PETG Tecnico'} ${r.color || 'Arancione Meccanico'} */
@@ -15697,7 +15657,7 @@ END-ISO-10303-21;`;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${r.id || 'RFP-3891'}_specifiche_tecniche_congelate.step`;
+        a.download = `${r.id || 'RFP-4120'}_specifiche_tecniche_congelate.step`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -19160,24 +19120,24 @@ END-ISO-10303-21;`;
         const watertightBadge = document.getElementById('i18n-studioWatertight');
         const studioHudTol = document.getElementById('studioHudTolerance');
 
-        if (usageEl) usageEl.innerText = isEn ? 'Functional Mechanical Component' : isEs ? 'Componente Mecánico Funcional' : 'Parte Meccanica Funzionale';
-        if (matEl) matEl.innerText = isEn ? 'Technical PETG' : isEs ? 'PETG Técnico' : 'PETG Tecnico';
-        if (colEl) colEl.innerText = isEn ? 'Mechanical Orange' : isEs ? 'Naranja Mecánico' : 'Arancione Meccanico';
-        if (qtyEl) qtyEl.innerText = isEn ? '1 piece (Single Prototype)' : isEs ? '1 pieza (Prototipo)' : '1 pezzo (Prototipo)';
-        if (tolEl) tolEl.innerText = isEn ? 'High Precision ±0.05 mm' : isEs ? 'Alta Precisión ±0.05 mm' : 'Alta Precisione ±0.05 mm';
-        if (infEl) infEl.innerText = '50%';
-        if (postEl) postEl.innerText = isEn ? 'Raw (Supports Removed)' : isEs ? 'Sin Tratar (Soportes Retirados)' : 'Grezzo (Supporti rimossi)';
-        if (ddlEl) ddlEl.innerText = '3-5 gg';
-        if (budgetEl) budgetEl.innerText = isEn ? '€ 48.00' : isEs ? '48,00 €' : '€ 48,00';
+        if (usageEl) usageEl.innerText = '-';
+        if (matEl) matEl.innerText = '-';
+        if (colEl) colEl.innerText = '-';
+        if (qtyEl) qtyEl.innerText = '-';
+        if (tolEl) tolEl.innerText = '-';
+        if (infEl) infEl.innerText = '-';
+        if (postEl) postEl.innerText = '-';
+        if (ddlEl) ddlEl.innerText = '-';
+        if (budgetEl) budgetEl.innerText = '€ 0,00';
         
         const dimElStandby = document.getElementById('cadLockedDimensions');
         const volElStandby = document.getElementById('cadLockedVolume');
-        if (dimElStandby) dimElStandby.innerText = '80 × 60 × 25 mm';
-        if (volElStandby) volElStandby.innerText = '120 cm³';
+        if (dimElStandby) dimElStandby.innerText = '-';
+        if (volElStandby) volElStandby.innerText = '-';
         const colDotStandby = document.getElementById('cadLockedColorDot');
-        if (colDotStandby) colDotStandby.style.backgroundColor = '#F97316';
+        if (colDotStandby) colDotStandby.style.backgroundColor = '#71717A';
         const infBarStandby = document.getElementById('cadLockedInfillBar');
-        if (infBarStandby) infBarStandby.style.width = '50%';
+        if (infBarStandby) infBarStandby.style.width = '0%';
         if (watertightBadge) {
           watertightBadge.innerText = isEn ? 'PARAMETRIC SPECS LOCKED' : isEs ? 'ESPECIFICACIONES PARAMÉTRICAS' : 'SPECIFICHE PARAMETRICHE CONGELATE';
         }
@@ -19227,9 +19187,9 @@ END-ISO-10303-21;`;
       const wsFondi = document.getElementById('studioFondiEscrowBadge');
       if (wsFondi) wsFondi.innerText = formatEuroClean(r.budget || 48);
       const cTitolo = document.getElementById('cartiglioTitoloCodice');
-      if (cTitolo) cTitolo.innerText = `${displayTitle} // #${r.id || 'RFP-3891'}`;
+      if (cTitolo) cTitolo.innerText = `${displayTitle} // #${r.id || 'RFP-4120'}`;
       const cBadge = document.getElementById('cartiglioCodiceUnivocoBadge');
-      if (cBadge) cBadge.innerText = `#${r.id || 'RFP-3891'}`;
+      if (cBadge) cBadge.innerText = `#${r.id || 'RFP-4120'}`;
       const cFondi = document.getElementById('cartiglioFondiEscrow');
       if (cFondi) cFondi.innerText = r.budget || '€ 48,00';
       const cQuote = document.getElementById('cartiglioQuoteNominali');
@@ -19713,7 +19673,7 @@ END-ISO-10303-21;`;
       const isSpecialPrimary = (myMakerEmail === 'maggimatteo22@gmail.com' || myMakerEmail === 'matteomaggi22@gmail.com');
 
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
-        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
+        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || ['RFP-3891', 'RFP-6482', 'RFP-9821', 'TEST-PING-1'].includes(r.id) || r.isDeleted || r.isRejected) return false;
         if (r.isCompleted || r.isClosed || r.isDelivered) return false;
         if (r.isAccepted !== true) return false;
 
@@ -19777,7 +19737,7 @@ END-ISO-10303-21;`;
       if (isCreator) {
         // Per il Creator: ha accesso se ha una commessa presa in carico non ancora conclusa
         return (AppState.broadcastRequests || []).some(r => {
-          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || ['RFP-3891', 'RFP-6482', 'RFP-9821', 'TEST-PING-1'].includes(r.id) || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
           if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) {
             return false;
           }
@@ -24319,7 +24279,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // MODULO 5: TRIGGER STRIPE TRANSFER CON TAKE-RATE & RECENSIONE CERTIFICATA
       try {
-        const orderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || 'RFP-3891';
+        const orderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id) || '';
         const rawBudget = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 46.00';
         const numEur = parseFloat(String(rawBudget).replace(/[^0-9.]/g, '')) || 46.0;
         const makerId = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.makerUserId || AppState.activeEscrowOrder.maker)) || 'maker_certified';
@@ -24566,7 +24526,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const isEn = lang === 'en';
       const isEs = lang === 'es';
 
-      const orderId = order.id || 'RFP-3891';
+      const orderId = order.id || 'RFP-4120';
       const partTitle = order.title || (isEn ? 'Custom Component' : isEs ? 'Pieza Personalizada' : 'Componente Personalizzato');
       const clientName = order.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
       const makerName = order.maker || (isEn ? 'Certified Maker' : isEs ? 'Creador Certificado' : 'Maker Certificato');
@@ -25205,7 +25165,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
-      const rfpId = data?.rfpId || (AppState.activeEscrowOrder?.id) || 'RFP-3891';
+      const rfpId = data?.rfpId || (AppState.activeEscrowOrder?.id) || (AppState.loadedRequestInStudio?.id) || '';
       const amount = data?.amount || (AppState.activeEscrowOrder?.budget) || '€ 48,00';
       
       modal.innerHTML = `
@@ -25813,7 +25773,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.resetAll = resetAllSimulators;
 
     async function simulatePacklinkDelivery(status) {
-      const activeOrderId = AppState.activeEscrowOrder?.id || 'RFP-3891';
+      const activeOrderId = AppState.activeEscrowOrder?.id || (AppState.loadedRequestInStudio?.id) || '';
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
@@ -28678,56 +28638,6 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.handleBroadcastSubmit = handleBroadcastSubmit;
 
     const PRESET_REQUEST_TRANSLATIONS = {
-      'RFP-3891': {
-        it: {
-          title: 'Componente Meccanico Personalizzato',
-          clientName: 'Ing. Marco Ferraris',
-          clientCity: 'Torino (TO)',
-          usage: 'Parte Meccanica Funzionale',
-          material: 'PETG Tecnico',
-          color: 'Arancione Meccanico',
-          quantity: '1 pezzo (Prototipo)',
-          tolerance: 'Alta Precisione ±0.05 mm',
-          infill: '50% Meccanico Strutturale',
-          postProcess: 'Grezzo (Supporti rimossi)',
-          deadline: 'Standard 3-5 giorni',
-          notes: "Richiesta precisione sui denti dell'ingranaggio e tenuta del perno centrale con asse da 8mm.",
-          status: 'APERTA (IN ATTESA CREATOR)',
-          messages: []
-        },
-        en: {
-          title: 'High-Torque Mechanical Planetary Gearbox',
-          clientName: 'Eng. Marco Ferraris',
-          clientCity: 'Turin, Italy',
-          usage: 'Functional Mechanical Part',
-          material: 'Engineering PETG',
-          color: 'Mechanical Orange',
-          quantity: '1 piece (Prototype)',
-          tolerance: 'High Precision ±0.05 mm',
-          infill: '50% Structural / Mechanical',
-          postProcess: 'Raw (Supports Removed)',
-          deadline: 'Standard 3-5 days',
-          notes: 'High precision required on gear teeth and 8.00mm ground steel central axle shaft fit.',
-          status: 'OPEN (WAITING FOR CREATOR)',
-          messages: []
-        },
-        es: {
-          title: 'Engranaje Planetario Mecánico de Alto Par',
-          clientName: 'Ing. Marco Ferraris',
-          clientCity: 'Turín, Italia',
-          usage: 'Parte Mecánica Funcional',
-          material: 'PETG Técnico',
-          color: 'Naranja Mecánico',
-          quantity: '1 pieza (Prototipo Único)',
-          tolerance: 'Alta Precisión ±0.05 mm',
-          infill: '50% Estructural / Mecánico',
-          postProcess: 'Sin Tratar (Soportes Retirados)',
-          deadline: 'Estándar 3-5 días',
-          notes: 'Se requiere alta precisión en los dientes del engranaje y ajuste de eje central rectificado de 8.00 mm.',
-          status: 'ABIERTA (EN ESPERA DEL CREADOR)',
-          messages: []
-        }
-      },
       'RFP-4120': {
         it: {
           title: 'Cubo di Calibrazione XYZ 20mm & Collaudo',
@@ -28829,8 +28739,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         }
       }
     };
-    PRESET_REQUEST_TRANSLATIONS['RFP-9821'] = PRESET_REQUEST_TRANSLATIONS['RFP-3891'];
-
+    
     const BROADCAST_TRANSLATION_MAPS = {
       material: {
         'PETG Tecnico': { en: 'Engineering PETG', es: 'PETG Técnico', it: 'PETG Tecnico' },
@@ -35046,22 +34955,23 @@ function renderDealChat(rfpId) {
         localStorage.removeItem("printforge_creator_earnings_ledger");
         localStorage.setItem("printforge_creator_earnings_ledger", "[]");
       try {
-        recordDeletedRequestIds(["RFP-9821", "RFP-3891", "RFP-4120", "RFP-1044", "RFP-6482"]);
-        localStorage.setItem("printforge_client_hidden_req_RFP-9821", "true");
-        localStorage.setItem("printforge_client_hidden_req_RFP-3891", "true");
-        localStorage.setItem("printforge_client_hidden_req_RFP-6482", "true");
-        localStorage.removeItem("printforge_completed_RFP-9821");
-        localStorage.removeItem("printforge_completed_RFP-3891");
-        localStorage.removeItem("printforge_completed_RFP-6482");
+        const blacklist = ["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"];
+        recordDeletedRequestIds(blacklist);
+        blacklist.forEach(id => { localStorage.setItem("printforge_client_hidden_req_" + id, "true"); localStorage.removeItem("printforge_completed_" + id); localStorage.removeItem("printforge_qc_photos_" + id); localStorage.removeItem("printforge_cad_qc_files_" + id); });
+
+
+
+
+
         localStorage.removeItem("printforge_active_escrow_order");
         localStorage.removeItem("printforge_cad_qc_files");
         localStorage.removeItem("printforge_stage4_completed");
         let clientRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
-        clientRfps = clientRfps.filter(id => id !== "RFP-9821" && id !== "RFP-3891" && id !== "RFP-4120" && id !== "RFP-1044" && id !== "RFP-6482");
+        clientRfps = clientRfps.filter(id => !blacklist.includes(id));
         localStorage.setItem("printforge_client_created_rfps", JSON.stringify(clientRfps));
         if (typeof AppState !== "undefined") {
           if (AppState.broadcastRequests) {
-            AppState.broadcastRequests = AppState.broadcastRequests.filter(r => r && r.id !== "RFP-9821" && r.id !== "RFP-3891" && r.id !== "RFP-6482");
+          AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && !blacklist.includes(r.id));
           }
           AppState.loadedRequestInStudio = null;
           AppState.activeDealRfpId = null;
@@ -35235,19 +35145,20 @@ function renderDealChat(rfpId) {
 
       // Broadcast RFPs Restoration - Epurazione annunci fake/demo
       try {
+        const blacklist = ["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"];
         const storedReqs = localStorage.getItem('printforge_broadcast_requests');
         if (storedReqs) {
           const parsed = JSON.parse(storedReqs);
           if (Array.isArray(parsed) && parsed.length > 0) {
-            AppState.broadcastRequests = parsed.filter(req => req && req.id && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW');
+            AppState.broadcastRequests = parsed.filter(req => req && req.id && !blacklist.includes(req.id) && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW' && req.status !== 'DELETED');
           } else {
             AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
           }
-          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         } else {
           AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
-          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         }
+        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && !blacklist.includes(r.id));
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
       } catch (e) {}
 
       try { initLaptopFounderAccess(); } catch (e) { console.warn('Founder access:', e); }
