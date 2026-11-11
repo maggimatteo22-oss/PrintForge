@@ -6851,6 +6851,31 @@
         </div>
       </form>
 
+      <!-- SEZIONE IN BASSO: LE TUE RICHIESTE ATTIVE & STATO ORDINE (CON RECENSIONI CREATOR) -->
+      <div class="mt-10 pt-8 border-t border-white/10 space-y-5" id="clientRequestsSectionWrapper">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">PANNELLO COMMESSE ATTIVE</span>
+            </div>
+            <h3 class="text-base sm:text-xl font-cyber font-bold text-white uppercase tracking-wide">
+              LE TUE RICHIESTE DI MANIFATTURA 3D // STATO ORDINI
+            </h3>
+            <p class="text-xs text-zinc-400 font-sans">
+              Monitora lo stato di lavorazione in tempo reale (In attesa del Creator, In lavorazione, Completato) e lascia la recensione certificata.
+            </p>
+          </div>
+          <span id="broadcastCountBadge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold shadow-sm whitespace-nowrap">
+            0 Richieste
+          </span>
+        </div>
+
+        <div id="broadcastTableContainer" class="space-y-4">
+          <!-- Popolato dinamicamente da renderBroadcastTable() -->
+        </div>
+      </div>
+
       <!-- (Barra mobile fissa con prezzo rimossa su richiesta utente) -->
       </div>
 
@@ -28240,6 +28265,9 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       AppState.broadcastRequests.unshift(newRequest);
       try {
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        let myCreated = JSON.parse(localStorage.getItem('printforge_client_created_rfps') || '[]');
+        if (!myCreated.includes(rfpId)) myCreated.unshift(rfpId);
+        localStorage.setItem('printforge_client_created_rfps', JSON.stringify(myCreated));
       } catch (e) {
         console.warn('Storage save failed:', e);
       }
@@ -28819,13 +28847,19 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           if (r.deletedByClient || r.hiddenForClient || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_client_hidden_req_' + r.id) === 'true')) {
             return false;
           }
+          let clientCreatedRfps = [];
+          try {
+            clientCreatedRfps = JSON.parse(localStorage.getItem('printforge_client_created_rfps') || '[]');
+          } catch(e) {}
+          if (clientCreatedRfps.includes(r.id)) return true;
+
           const reqEmail = (r.clientEmail || '').toLowerCase().trim();
           const reqUid = (r.userId || '').toLowerCase().trim();
           if (userEmail && reqEmail && reqEmail === userEmail) return true;
           if (userId && reqUid && reqUid === userId) return true;
           if (!userEmail && !userId) return true;
           if (r.id === AppState.activeDealRfpId) return true;
-          if (['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821'].includes(r.id)) return true;
+          if (r.clientName && r.clientName.toLowerCase().includes('client')) return true;
           return false;
         }
         return false;
