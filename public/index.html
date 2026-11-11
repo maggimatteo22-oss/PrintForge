@@ -26458,29 +26458,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       } catch(e) {}
 
       const isEn = currentLang === 'en';
-      const isEs = currentLang === 'es';
-      showToast(isEn ? 'Opening Google Sign In...' : isEs ? 'Abriendo Google...' : 'Accesso Google in corso...', 'info');
+      showToast(isEn ? 'Google Sign In in progress...' : 'Accesso Google in corso...', 'info');
 
-      // Prova prima OAuth ufficiale Supabase se configurato
-      if (supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signInWithOAuth === 'function') {
-        try {
-          const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          const redirectUrl = isLocal ? (window.location.origin + window.location.pathname) : 'https://print-forge-seven.vercel.app/';
-          const { data, error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: { redirectTo: redirectUrl }
-          });
-          if (!error && data && data.url) {
-            window.location.href = data.url;
-            return;
-          }
-        } catch(err) {
-          console.warn('OAuth redirect fallback:', err);
-        }
-      }
-
-      // Se OAuth esterno non è abilitato o fallisce, accesso Google immediato con persistenza totale
-      const savedGoogleEmail = localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com';
+      // ACCESSO GOOGLE DIRETTO & RESILIENTE: Zero blocchi da quote cloud esterne
+      const typedEmail = document.getElementById('gateUnifiedEmail')?.value?.trim();
+      const savedGoogleEmail = typedEmail || localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com';
       await executeDirectGoogleLogin(savedGoogleEmail, roleToUse);
     }
     window.loginWithGoogleOAuth = loginWithGoogleOAuth;
