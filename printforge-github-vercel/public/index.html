@@ -9369,13 +9369,13 @@
         fileName: 'ingranaggio_planetario.stl',
         aiImage: null,
         timestamp: '10:45',
-        status: 'IN TRATTATIVA // CHAT ATTIVA',
-        isAccepted: true,
-        acceptedBy: 'Maker Certificato PrintForge',
-        maker: 'Maker Certificato PrintForge',
-        maker_name: 'Maker Certificato PrintForge',
-        makerEmail: 'maggimatteo22@gmail.com',
-        creatorAssigned: 'Maker Certificato PrintForge',
+        status: 'APERTA (IN ATTESA CREATOR)',
+        isAccepted: false,
+        acceptedBy: null,
+        maker: null,
+        maker_name: null,
+        makerEmail: null,
+        creatorAssigned: 'PrintForge Maker Pool',
         agreements: {
           cadVerified: false,
           toleranceConfirmed: false,
@@ -19670,6 +19670,7 @@ END-ISO-10303-21;`;
       const myMakerName = (AppState.user.name || '').toLowerCase().trim();
       const myMakerEmail = (AppState.user.email || '').toLowerCase().trim();
       const myMakerUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
+      const isSpecialPrimary = (myMakerEmail === 'maggimatteo22@gmail.com' || myMakerEmail === 'matteomaggi22@gmail.com');
 
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
         if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
@@ -19843,10 +19844,12 @@ END-ISO-10303-21;`;
         const activeCreatorReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
         const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
 
+        // SOSTITUZIONE DIRETTA: ATTIVITÀ AL POSTO DELLE RICHIESTE
+        // Requisito espresso: "quando un creator prende l'incarico deve sostituirsi subito la pagina attività al posto delle richieste, fallo anche da mobile"
         if (activeCreatorReq) {
-          // Quando il creator ha accettato una richiesta, al suo posto si attiva la pagina richiesta (ATTIVITÀ / RICHIESTA #ID)
           const isAct = (v === 'activity' || v === 'studio');
-          const reqTabLabel = isEn ? `REQUEST #${activeCreatorReq.id}` : isEs ? `PEDIDO #${activeCreatorReq.id}` : `RICHIESTA #${activeCreatorReq.id}`;
+          const reqTabLabel = isEn ? `REQUEST #${activeCreatorReq.id}` : isEs ? `PEDIDO #${activeCreatorReq.id}` : `ATTIVITÀ (#${activeCreatorReq.id})`;
+          const mReqTabLabel = isEn ? `ACTIVITY` : isEs ? `ACTIVIDAD` : `ATTIVITÀ`;
           html += `
             <button onclick="navigateTo('activity')" id="navActiveRequestBtn" class="${isAct ? activeClass : inactiveClass}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
@@ -19857,29 +19860,12 @@ END-ISO-10303-21;`;
           mobileHtml += `
             <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>${reqTabLabel}</span>
+              <span>${mReqTabLabel}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             </button>
           `;
-
-          // Bacheca richieste consultabile
-          const isReqs = (v === 'creator-requests');
-          html += `
-            <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>${creatorRequestsLabel}</span>
-              <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
-            </button>
-          `;
-          mobileHtml += `
-            <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>${mRequestsLabel}</span>
-              <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
-            </button>
-          `;
         } else {
-          // Nessuna commessa accettata: mostra Bacheca Richieste
+          // Quando non ci sono richieste prese in carico, mostra la tab RICHIESTE
           const isReqs = (v === 'creator-requests');
           html += `
             <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
@@ -26271,7 +26257,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const targetRole = newRole || (AppState.user.role === 'creator' ? 'client' : 'creator');
       if (AppState.user.role === targetRole) {
         const defaultView = targetRole === 'creator' 
-          ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio')
+          ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests')
           : 'client-home';
         navigateTo(defaultView);
         return;
@@ -26311,7 +26297,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         navigateTo('client-home');
       } else {
         showToast(currentLang === 'it' ? '✓ Modalità CREATOR attiva!' : '✓ CREATOR Mode active!', 'success');
-        const creatorDest = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio';
+        const creatorDest = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests';
         navigateTo(creatorDest);
       }
 
@@ -27390,7 +27376,9 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // REQUISITO: Una volta effettuato l'accesso, non mostrare MAI più login-gate!
       if (viewId === 'login-gate' && AppState.user && AppState.user.isLoggedIn) {
-        const safeView = (AppState.user.role === 'creator') ? 'creator-portfolio' : 'client-home';
+        const safeView = (AppState.user.role === 'creator') 
+          ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests') 
+          : 'client-home';
         if (AppState.currentView !== safeView) {
           navigateTo(safeView);
         }
@@ -29422,7 +29410,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
         const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
         const assignedUid = (r.makerUserId || '').toLowerCase().trim();
-        return (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
+        return (isSpecialPrimary && (assignedEmail === 'maggimatteo22@gmail.com' || assignedEmail === 'matteomaggi22@gmail.com')) ||
+               (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
                (assignedEmail && assignedEmail === myMakerEmail) ||
                (assignedUid && assignedUid === myMakerUid);
       });
@@ -35309,7 +35298,9 @@ function renderDealChat(rfpId) {
       } else {
         // Se autenticato: NON MOSTRARE MAI la schermata di login-gate
         if (!targetView || targetView === 'login-gate' || targetView === 'home') {
-          targetView = (AppState.user.role === 'creator') ? 'creator-portfolio' : 'client-home';
+          targetView = (AppState.user.role === 'creator') 
+            ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests') 
+            : 'client-home';
         }
         // Se autenticato (sia cliente che creator), apri la vista richiesta o la Home page
         if (targetView && ['client-home', 'order-room', 'client-request', 'creator-requests', 'creator-portfolio', 'explore', 'esplora', 'deal-chat', 'studio', 'activity'].includes(targetView)) {
@@ -35320,7 +35311,9 @@ function renderDealChat(rfpId) {
             targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'client-home';
           }
           if (targetView === 'creator-requests' && AppState.user && AppState.user.role === 'creator') {
-            targetView = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio';
+            if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
+              targetView = 'activity';
+            }
           }
           navigateTo(targetView);
         } else {
