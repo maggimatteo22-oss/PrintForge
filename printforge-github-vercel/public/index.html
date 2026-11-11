@@ -10105,7 +10105,11 @@
             if (dbR.status === 'PORTFOLIO_WORK' || String(dbR.id).startsWith('WORK-')) return false;
             if (dbR.status === 'CERTIFIED_REVIEW' || String(dbR.id).startsWith('REV-') || String(dbR.title || '').startsWith('CREATOR_REVIEW:')) return false;
             if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE') return false;
+            if (dbR.id === "RFP-9821" || dbR.id === "RFP-3891") {
+              if (deletedIds.has(dbR.id) || (typeof localStorage !== "undefined" && localStorage.getItem("printforge_client_hidden_req_" + dbR.id) === "true")) return false;
+            }
             if (deletedIds.has(dbR.id)) return false;
+            if (typeof localStorage !== "undefined" && localStorage.getItem("printforge_client_hidden_req_" + dbR.id) === "true") return false;
             if (dbR.status === 'CANCELLATA_DEFINITIVAMENTE' || dbR.status === 'DELETED') return false;
             return true;
           });
@@ -11340,28 +11344,27 @@
         } catch(e) {}
 
         // 3. Nascondi la commessa SOLO per il cliente (pulizia schermo), ma MANTIENILA per il creator!
+        // 3. Eliminazione PERMANENTE della commessa per il cliente (Zero ricomparsa al refresh)
         if (targetReq) {
           targetReq.deletedByClient = true;
           targetReq.hiddenForClient = true;
           targetReq.isCompleted = true;
-          targetReq.status = 'COMPLETATO';
+          targetReq.isDeleted = true;
         }
         try {
-          localStorage.setItem('printforge_client_hidden_req_' + requestId, 'true');
-          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          recordDeletedRequestIds([requestId]);
+          localStorage.setItem("printforge_client_hidden_req_" + requestId, "true");
+          AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== requestId);
+          localStorage.setItem("printforge_broadcast_requests", JSON.stringify(AppState.broadcastRequests));
+          let clientRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
+          clientRfps = clientRfps.filter(id => id !== requestId);
+          localStorage.setItem("printforge_client_created_rfps", JSON.stringify(clientRfps));
         } catch(e) {}
-
-        // Aggiorna Supabase senza eliminare fisicamente la riga dal cloud
         if (supabaseClient) {
           try {
-            await supabaseClient.from('broadcast_requests').update({
-              deleted_by_client: true,
-              is_completed: true,
-              status: 'COMPLETATO'
-            }).eq('id', requestId);
+            await supabaseClient.from("broadcast_requests").delete().eq("id", requestId);
           } catch(e) {}
         }
-
         renderBroadcastTable();
         if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
         if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
@@ -28872,33 +28875,40 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // MULTI-TENANT ISOLATION: il cliente vede ESCLUSIVAMENTE le proprie richieste
       const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
-        if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return false;
-        // Elimina sempre recensioni inserite erroneamente come richieste
-        if (String(r.id).startsWith('REV-') || (r.title && String(r.title).startsWith('CREATOR_REVIEW:')) || r.status === 'CERTIFIED_REVIEW') return false;
+        if (!r || !r.id || r.id.startsWith("USER-PROFILE-") || r.isDeleted) return false;
+        if (String(r.id).startsWith("REV-") || (r.title && String(r.title).startsWith("CREATOR_REVIEW:")) || r.status === "CERTIFIED_REVIEW") return false;
 
-        // Ogni richiesta ha il proprio ciclo di vita: le nuove richieste in attesa devono essere SEMPRE visibili al cliente!
+        // Pulizia schermo & cancellazione perenne: se eliminata o nascosta, non mostrarla MAI a nessuno (nemmeno refresh)
+        const isDeletedPermanently = Boolean(
+          r.deletedByClient || 
+          r.hiddenForClient || 
+          r.isDeleted ||
+          (typeof localStorage !== "undefined" && (
+            localStorage.getItem("printforge_client_hidden_req_" + r.id) === "true" || 
+            (typeof getDeletedRequestIds === "function" && getDeletedRequestIds().has(r.id))
+          ))
+        );
+        if (isDeletedPermanently) return false;
 
-        if (isAdmin) return true;
-        if (isClient || !userEmail) {
-          // Pulizia schermo: se il cliente ha eliminato la richiesta completata, non mostrarla sul suo schermo
-          if (r.deletedByClient || r.hiddenForClient || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_client_hidden_req_' + r.id) === 'true')) {
-            return false;
-          }
-          let clientCreatedRfps = [];
-          try {
-            clientCreatedRfps = JSON.parse(localStorage.getItem('printforge_client_created_rfps') || '[]');
-          } catch(e) {}
-          if (clientCreatedRfps.includes(r.id)) return true;
+        // ISOLAMENTO RIGOROSO SESSIONE PRIVATA: Il cliente vede SOLO E SOLTANTO le proprie richieste create!
+        let clientCreatedRfps = [];
+        try {
+          clientCreatedRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
+        } catch(e) {}
 
-          const reqEmail = (r.clientEmail || '').toLowerCase().trim();
-          const reqUid = (r.userId || '').toLowerCase().trim();
-          if (userEmail && reqEmail && reqEmail === userEmail) return true;
-          if (userId && reqUid && reqUid === userId) return true;
-          if (!userEmail && !userId) return true;
-          if (r.id === AppState.activeDealRfpId) return true;
-          if (r.clientName && r.clientName.toLowerCase().includes('client')) return true;
+        // Le richieste demo (RFP-3891, RFP-9821, RFP-4120, RFP-1044) non devono MAI inquinare la tabella privata del cliente
+        const isPresetDemo = (r.id === "RFP-3891" || r.id === "RFP-9821" || r.id === "RFP-4120" || r.id === "RFP-1044");
+        if (isPresetDemo && !clientCreatedRfps.includes(r.id)) {
           return false;
         }
+
+        if (clientCreatedRfps.includes(r.id)) return true;
+
+        const reqEmail = (r.clientEmail || "").toLowerCase().trim();
+        const reqUid = (r.userId || "").toLowerCase().trim();
+        if (userEmail && reqEmail && reqEmail === userEmail) return true;
+        if (userId && reqUid && reqUid === userId) return true;
+        if (r.id === AppState.activeDealRfpId) return true;
         return false;
       });
 
@@ -34757,6 +34767,15 @@ function renderDealChat(rfpId) {
       initKowalskiButtons();
 
       // Session Management: Ripristino sessione da localStorage per lo stesso dispositivo/browser
+      // Purge perenne ordini simulati o cancellati per garantire sessione privata pulita
+      try {
+        recordDeletedRequestIds(["RFP-9821"]);
+        localStorage.setItem("printforge_client_hidden_req_RFP-9821", "true");
+        localStorage.removeItem("printforge_completed_RFP-9821");
+        if (typeof AppState !== "undefined" && AppState.broadcastRequests) {
+          AppState.broadcastRequests = AppState.broadcastRequests.filter(r => r && r.id !== "RFP-9821");
+        }
+      } catch(e) {}
       const urlParams = new URLSearchParams(window.location.search);
       let sessionRestored = false;
 
