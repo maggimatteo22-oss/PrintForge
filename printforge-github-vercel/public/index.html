@@ -19656,14 +19656,18 @@ END-ISO-10303-21;`;
 
     /* Helper: Verifica se esiste una richiesta per l'area Attività */
     function hasAcceptedRequest() {
-      if (!AppState.user || !AppState.user.isLoggedIn) return false;
-      if (AppState.user.role !== 'creator') return false;
+      if (!AppState.user) return false;
+      const role = String(AppState.user.role || '').toLowerCase();
+      if (role !== 'creator') return false;
 
       // Se in memoria vi è un ordine attivo accettato e non ancora consegnato
-      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted && !AppState.activeEscrowOrder.isDelivered && !AppState.activeEscrowOrder.isCompleted) {
-        return true;
+      if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
+        const s = String(AppState.loadedRequestInStudio.status || '').toUpperCase();
+        if (AppState.loadedRequestInStudio.isAccepted || s.includes('LAVORAZION') || s.includes('APPROVAT') || s.includes('TRATTATIVA') || s.includes('ATTIV') || s.includes('SPEDIT')) {
+          return true;
+        }
       }
-      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isCompleted) {
+      if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered && !AppState.activeEscrowOrder.isClosed) {
         return true;
       }
 
@@ -19675,16 +19679,15 @@ END-ISO-10303-21;`;
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
         if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected) return false;
         if (r.isCompleted || r.isClosed || r.isDelivered) return false;
+        const s = String(r.status || '').toUpperCase();
         const isAcc = Boolean(
           r.isAccepted === true ||
-          (typeof r.status === 'string' && (
-            r.status.toUpperCase().includes('ACCETTAT') ||
-            r.status.toUpperCase().includes('TRATTATIVA') ||
-            r.status.toUpperCase().includes('LAVORAZION') ||
-            r.status.toUpperCase().includes('PRODUCTION') ||
-            r.status.toUpperCase().includes('PRODUZION') ||
-            r.status.toUpperCase().includes('SPEDIT')
-          ))
+          s.includes('ACCETTAT') ||
+          s.includes('TRATTATIVA') ||
+          s.includes('LAVORAZION') ||
+          s.includes('PRODUCTION') ||
+          s.includes('PRODUZION') ||
+          s.includes('SPEDIT')
         );
         if (!isAcc) return false;
 
@@ -19805,7 +19808,7 @@ END-ISO-10303-21;`;
       const mobileNav = document.getElementById('mobileNavBar');
       if (!nav && !mobileNav) return;
 
-      const isCreator = AppState.user.isLoggedIn && AppState.user.role === 'creator';
+      const isCreator = Boolean(AppState.user && (AppState.user.role === 'creator' || AppState.user.role === 'Creator'));
       let html = '';
       let mobileHtml = '';
 
@@ -19851,14 +19854,29 @@ END-ISO-10303-21;`;
 
         // 2. BACHECA RICHIESTE & RICHIESTA ATTIVA
         // REQUISITO UTENTE: "appena il creator acceta la richiesta al suo posto si attiva la pagina rchiesta e dopo le 3 foto la pagina escroow room"
-        const activeCreatorReq = (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered) || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
+        const activeCreatorReq = (function() {
+          if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
+            const s = String(AppState.loadedRequestInStudio.status || '').toUpperCase();
+            if (AppState.loadedRequestInStudio.isAccepted || s.includes('LAVORAZION') || s.includes('APPROVAT') || s.includes('TRATTATIVA') || s.includes('ATTIV') || s.includes('SPEDIT')) {
+              return AppState.loadedRequestInStudio;
+            }
+          }
+          if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+            return AppState.activeEscrowOrder;
+          }
+          return (AppState.broadcastRequests || []).find(r => {
+            if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+            const s = String(r.status || '').toUpperCase();
+            return Boolean(r.isAccepted || s.includes('LAVORAZION') || s.includes('APPROVAT') || s.includes('TRATTATIVA') || s.includes('SPEDIT'));
+          });
+        })();
         const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
 
         // SOSTITUZIONE DIRETTA: ATTIVITÀ AL POSTO DELLE RICHIESTE
         // Requisito espresso: "quando un creator prende l'incarico deve sostituirsi subito la pagina attività al posto delle richieste, fallo anche da mobile"
         if (activeCreatorReq) {
           const isAct = (v === 'activity' || v === 'studio');
-          const reqTabLabel = isEn ? `REQUEST #${activeCreatorReq.id}` : isEs ? `PEDIDO #${activeCreatorReq.id}` : `ATTIVITÀ (#${activeCreatorReq.id})`;
+          const reqTabLabel = isEn ? `ACTIVITY (#${activeCreatorReq.id})` : isEs ? `ACTIVIDAD (#${activeCreatorReq.id})` : `ATTIVITÀ (#${activeCreatorReq.id})`;
           const mReqTabLabel = isEn ? `ACTIVITY` : isEs ? `ACTIVIDAD` : `ATTIVITÀ`;
           html += `
             <button onclick="navigateTo('activity')" id="navActiveRequestBtn" class="${isAct ? activeClass : inactiveClass}">
@@ -27423,15 +27441,24 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           navigateTo('client-home');
           return;
         }
-        // Assicura che una richiesta attiva sia caricata nello Studio CAD
-        const accReq = (AppState.broadcastRequests || []).find(r => r && (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDelivered);
+        // Questa pagina è la pagina Attività del Creator
+        const accReq = (function() {
+          if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
+            return AppState.loadedRequestInStudio;
+          }
+          if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+            return AppState.activeEscrowOrder;
+          }
+          return (AppState.broadcastRequests || []).find(r => r && (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDelivered);
+        })();
+
         if (accReq) {
           AppState.loadedRequestInStudio = accReq;
           AppState.activeDealRfpId = accReq.id;
-        } else if (!AppState.loadedRequestInStudio || !AppState.loadedRequestInStudio.isAccepted) {
+        } else if (!AppState.loadedRequestInStudio) {
           showToast(currentLang === 'it' 
-            ? 'Nessun incarico in corso: accetta una richiesta dalla bacheca per aprire lo Studio CAD.' 
-            : 'No active job: accept a request from the board to open CAD Studio.', 'info');
+            ? 'Nessun incarico in corso: accetta una richiesta dalla bacheca per aprire la pagina Attività.' 
+            : 'No active job: accept a request from the board to open the Activity page.', 'info');
           navigateTo('creator-requests');
           return;
         }
