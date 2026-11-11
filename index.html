@@ -18772,7 +18772,7 @@ END-ISO-10303-21;`;
         if (Array.isArray(ledger)) {
           ledger.forEach(entry => {
             if (!entry || !entry.price || entry.isFake || entry.isDemo) return;
-            if (entry.id === "RFP-9821" || entry.id === "RFP-3891") return;
+            if (entry.id === "RFP-9821" || entry.id === "RFP-3891" || entry.id === "RFP-4120" || entry.id === "RFP-1044" || String(entry.id).startsWith("RFP-")) return;
             const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, "").replace(",", "."));
             if (!isNaN(num) && num > 0) total += num;
           });
@@ -26816,7 +26816,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         userProfile = {
           userId: generateUserIdForAccount(email, "client"),
           id: generateUserIdForAccount(email, "client"),
-          isLoggedIn: true;
+          isLoggedIn: true,
           role: "client",
           isAdmin: isSpecialPrimary,
           name: isSpecialPrimary ? "Matteo Maggi" : name,
@@ -29119,8 +29119,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         } catch(e) {}
 
         // Le richieste demo (RFP-3891, RFP-9821, RFP-4120, RFP-1044) non devono MAI inquinare la tabella privata del cliente
-        const isPresetDemo = (r.id === "RFP-3891" || r.id === "RFP-9821" || r.id === "RFP-4120" || r.id === "RFP-1044");
-        if (isPresetDemo && !clientCreatedRfps.includes(r.id)) {
+        const isPresetDemo = (r.id === "RFP-3891" || r.id === "RFP-9821" || r.id === "RFP-4120" || r.id === "RFP-1044" || String(r.id).startsWith("RFP-3891") || String(r.id).startsWith("RFP-9821"));
+        if (isPresetDemo) {
           return false;
         }
 
@@ -29130,7 +29130,6 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         const reqUid = (r.userId || "").toLowerCase().trim();
         if (userEmail && reqEmail && reqEmail === userEmail) return true;
         if (userId && reqUid && reqUid === userId) return true;
-        if (r.id === AppState.activeDealRfpId) return true;
         return false;
       });
 
@@ -34994,11 +34993,16 @@ function renderDealChat(rfpId) {
         localStorage.removeItem("printforge_creator_earnings_ledger");
         localStorage.setItem("printforge_creator_earnings_ledger", "[]");
       try {
-        recordDeletedRequestIds(["RFP-9821"]);
+        recordDeletedRequestIds(["RFP-9821", "RFP-3891", "RFP-4120", "RFP-1044"]);
         localStorage.setItem("printforge_client_hidden_req_RFP-9821", "true");
+        localStorage.setItem("printforge_client_hidden_req_RFP-3891", "true");
         localStorage.removeItem("printforge_completed_RFP-9821");
+        localStorage.removeItem("printforge_completed_RFP-3891");
+        let clientRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
+        clientRfps = clientRfps.filter(id => id !== "RFP-9821" && id !== "RFP-3891" && id !== "RFP-4120" && id !== "RFP-1044");
+        localStorage.setItem("printforge_client_created_rfps", JSON.stringify(clientRfps));
         if (typeof AppState !== "undefined" && AppState.broadcastRequests) {
-          AppState.broadcastRequests = AppState.broadcastRequests.filter(r => r && r.id !== "RFP-9821");
+          AppState.broadcastRequests = AppState.broadcastRequests.filter(r => r && r.id !== "RFP-9821" && r.id !== "RFP-3891");
         }
       } catch(e) {}
       // Session Concurrency: Se l'utente è già loggato in questo browser, mantieni attiva la sessione
