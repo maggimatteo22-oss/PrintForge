@@ -7420,15 +7420,15 @@
       <!-- Workstation Header: Commessa, Stato Escrow, Download File e Bacheca -->
       <div class="p-4 rounded-2xl bg-[#0E0F14] border border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
         <div class="flex items-center gap-3 min-w-0 flex-wrap">
-          <span class="px-2.5 py-1 rounded text-xs font-mono font-extrabold bg-white text-black shadow-sm" id="studioLoadedRichiestaBadge">RFP-3891</span>
+          <span class="px-2.5 py-1 rounded text-xs font-mono font-extrabold bg-zinc-800 text-zinc-400 border border-white/10 shadow-sm" id="studioLoadedRichiestaBadge">STANDBY</span>
           <div class="min-w-0">
-            <h2 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide truncate" id="cadLockedTitle">Staffa Meccanica Rinforzata</h2>
+            <h2 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide truncate" id="cadLockedTitle">In Attesa di Nuovo Incarico</h2>
             <div class="flex items-center gap-2 text-xs font-mono">
-              <span class="text-emerald-400 font-bold flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> CONTRATTO ESCROW ATTIVO
+              <span class="text-zinc-400 font-bold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> NESSUN ORDINE ATTIVO
               </span>
               <span class="text-zinc-500">•</span>
-              <span class="text-zinc-400" id="cadLockedStatusBadge">IN LAVORAZIONE</span>
+              <span class="text-zinc-400" id="cadLockedStatusBadge">BACHECA RICHIESTE</span>
             </div>
           </div>
         </div>
@@ -19185,27 +19185,27 @@ END-ISO-10303-21;`;
           studioHudTol.innerText = '±0.05 mm';
         }
 
-        // Standby Cartiglio Opera & Header Compatto
+        // Standby Cartiglio Opera & Header: AZZERATO A € 0,00 SENZA COMMESSE FITTIZIE
         const wsFondiStandby = document.getElementById('studioFondiEscrowBadge');
-        if (wsFondiStandby) wsFondiStandby.innerText = '€ 48,00';
+        if (wsFondiStandby) wsFondiStandby.innerText = '€ 0,00';
         const cTitoloStandby = document.getElementById('cartiglioTitoloCodice');
-        if (cTitoloStandby) cTitoloStandby.innerText = 'Staffa Meccanica Rinforzata // #RFP-3891';
+        if (cTitoloStandby) cTitoloStandby.innerText = isEn ? 'Standby // Waiting for Job' : isEs ? 'Standby // En Espera de Pedido' : 'Standby // In Attesa di Nuovo Incarico';
         const cBadgeStandby = document.getElementById('cartiglioCodiceUnivocoBadge');
-        if (cBadgeStandby) cBadgeStandby.innerText = '#RFP-3891';
+        if (cBadgeStandby) cBadgeStandby.innerText = 'STANDBY';
         const cFondiStandby = document.getElementById('cartiglioFondiEscrow');
-        if (cFondiStandby) cFondiStandby.innerText = '€ 48,00';
+        if (cFondiStandby) cFondiStandby.innerText = '€ 0,00';
         const cQuoteStandby = document.getElementById('cartiglioQuoteNominali');
-        if (cQuoteStandby) cQuoteStandby.innerText = '80 × 60 × 25 mm';
+        if (cQuoteStandby) cQuoteStandby.innerText = '-';
         const cVolStandby = document.getElementById('cartiglioVolumeCalcolato');
-        if (cVolStandby) cVolStandby.innerText = '120 cm³';
+        if (cVolStandby) cVolStandby.innerText = '-';
         const cMatStandby = document.getElementById('cartiglioMaterialeGrado');
-        if (cMatStandby) cMatStandby.innerText = 'PETG Tecnico Arancione Meccanico';
+        if (cMatStandby) cMatStandby.innerText = isEn ? 'No Material' : isEs ? 'Sin Material' : 'Nessun Materiale';
         const cDotStandby = document.getElementById('cartiglioColoreDot');
-        if (cDotStandby) cDotStandby.style.backgroundColor = '#F97316';
+        if (cDotStandby) cDotStandby.style.backgroundColor = '#71717A';
         const cTolStandby = document.getElementById('cartiglioTolleranzaContrattuale');
-        if (cTolStandby) cTolStandby.innerText = '±0.05 mm';
+        if (cTolStandby) cTolStandby.innerText = '-';
         const cInfStandby = document.getElementById('cartiglioInfillStrutturale');
-        if (cInfStandby) cInfStandby.innerText = '50% Meccanico Strutturale';
+        if (cInfStandby) cInfStandby.innerText = '-';
 
         if (typeof updateCadQcStatusUI === 'function') updateCadQcStatusUI();
         return;
@@ -19691,6 +19691,13 @@ END-ISO-10303-21;`;
       if (!AppState.user) return false;
       const role = String(AppState.user.role || '').toLowerCase();
       if (role !== 'creator') return false;
+
+      // DOPO LA CONSEGNA: tutto rimane azzerato finché il creator non accetta una nuova richiesta
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_delivery_completed') === 'true') {
+        if (!AppState.loadedRequestInStudio || !AppState.loadedRequestInStudio.isAccepted || AppState.loadedRequestInStudio.isCompleted || AppState.loadedRequestInStudio.isDelivered) {
+          return false;
+        }
+      }
 
       // Se in memoria vi è un ordine attivo realmente accettato e non ancora consegnato
       if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted === true && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
@@ -21851,6 +21858,7 @@ END-ISO-10303-21;`;
       AppState.isShipped = false;
       AppState.activeEscrowOrder = null;
       try {
+        localStorage.removeItem('printforge_delivery_completed');
         localStorage.removeItem('printforge_stage4_completed');
         localStorage.removeItem('printforge_active_escrow_order');
         localStorage.removeItem('printforge_cad_qc_files');
@@ -24386,22 +24394,35 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         });
       } catch(e) {}
 
-      // DIFFERENZIAZIONE SUL DISPOSITIVO LOCALE:
-      if (AppState.user && AppState.user.role === 'creator') {
-        if (typeof showStage4CompletionModal === 'function') {
-          showStage4CompletionModal({
-            rfpId: completedReqId,
-            amount: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 48,00'
-          });
-        }
-      }
-
+      // DIFFERENZIAZIONE SUL DISPOSITIVO LOCALE: AZZERA TUTTO DOPO LA CONSEGNA
       try {
+        localStorage.setItem('printforge_delivery_completed', 'true');
         localStorage.setItem('printforge_stage4_completed', 'true');
         if (completedReqId) {
           localStorage.setItem('printforge_completed_' + completedReqId, 'true');
         }
+        localStorage.removeItem('printforge_active_escrow_order');
+        localStorage.removeItem('printforge_cad_qc_files');
       } catch(e) {}
+
+      AppState.activeEscrowOrder = null;
+      AppState.loadedRequestInStudio = null;
+      AppState.activeDealRfpId = null;
+      AppState.cadQcFiles = [];
+      AppState.stage2Completed = false;
+      AppState.isShipped = false;
+      AppState.isDelivered = true;
+      AppState.stage4Completed = true;
+
+      if (AppState.user && AppState.user.role === 'creator') {
+        if (typeof showStage4CompletionModal === 'function') {
+          showStage4CompletionModal({
+            rfpId: completedReqId,
+            amount: '€ 0,00'
+          });
+        }
+        navigateTo('creator-requests');
+      }
 
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
@@ -27450,24 +27471,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           navigateTo('client-home');
           return;
         }
-        // Questa pagina è la pagina Attività del Creator
-        const accReq = (function() {
-          if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
-            return AppState.loadedRequestInStudio;
-          }
-          if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
-            return AppState.activeEscrowOrder;
-          }
-          return (AppState.broadcastRequests || []).find(r => r && (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDelivered);
-        })();
-
-        if (accReq) {
-          AppState.loadedRequestInStudio = accReq;
-          AppState.activeDealRfpId = accReq.id;
-        } else if (!AppState.loadedRequestInStudio) {
-          showToast(currentLang === 'it' 
-            ? 'Nessun incarico in corso: accetta una richiesta dalla bacheca per aprire la pagina Attività.' 
-            : 'No active job: accept a request from the board to open the Activity page.', 'info');
+        if (typeof hasAcceptedRequest === 'function' && !hasAcceptedRequest()) {
           navigateTo('creator-requests');
           return;
         }
