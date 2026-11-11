@@ -26027,6 +26027,142 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     /* ========================================================================= */
     /* MODULO 1: GOOGLE OAUTH & ISOLAMENTO RIGOROSO SESSIONI                     */
     /* ========================================================================= */
+    /* ========================================================================= */
+    /* SESSIONE SINGOLA UNIVERSALE & CONCURRENCY LOCK (1 DISPOSITIVO ATTIVO)    */
+    /* ========================================================================= */
+    let _deviceHeartbeatTimer = null;
+
+    function getDeviceSessionToken() {
+      let token = null;
+      try {
+        token = sessionStorage.getItem("printforge_device_token");
+        if (!token) {
+          token = "dev_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+          sessionStorage.setItem("printforge_device_token", token);
+        }
+      } catch(e) {
+        token = "dev_" + Date.now();
+      }
+      return token;
+    }
+    window.getDeviceSessionToken = getDeviceSessionToken;
+
+    async function checkEmailActiveSessionLock(email) {
+      if (!email) return { isLocked: false };
+      const cleanEmail = email.toLowerCase().trim();
+      const myToken = getDeviceSessionToken();
+
+      // 1. Controlla nel Cloud Supabase se l'account è attualmente attivo su altro dispositivo
+      try {
+        if (typeof fetchUserProfileFromCloud === "function") {
+          const cloudProf = await fetchUserProfileFromCloud(cleanEmail);
+          if (cloudProf && cloudProf.isActive && cloudProf.activeSessionToken) {
+            if (cloudProf.activeSessionToken !== myToken) {
+              const lastHb = parseInt(cloudProf.lastHeartbeat || 0, 10);
+              const diff = Date.now() - lastHb;
+              // Se la sessione remota è attiva (heartbeat recente entro 90 secondi)
+              if (diff < 90000) {
+                return { isLocked: true, activeOnOtherDevice: true, lastHeartbeat: lastHb };
+              }
+            }
+          }
+        }
+      } catch(e) {}
+
+      // 2. Controlla lock locale cross-tab/finestra
+      try {
+        const localToken = localStorage.getItem("printforge_active_device_" + cleanEmail.replace(/[^a-z0-9]/g, "_"));
+        if (localToken && localToken !== myToken) {
+          const localHb = parseInt(localStorage.getItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_")) || "0", 10);
+          if (Date.now() - localHb < 90000) {
+            return { isLocked: true, activeOnOtherDevice: true, lastHeartbeat: localHb };
+          }
+        }
+      } catch(e) {}
+
+      return { isLocked: false };
+    }
+    window.checkEmailActiveSessionLock = checkEmailActiveSessionLock;
+
+    function claimEmailActiveSession(email, userObj) {
+      if (!email) return;
+      const cleanEmail = email.toLowerCase().trim();
+      const myToken = getDeviceSessionToken();
+      if (userObj) {
+        userObj.activeSessionToken = myToken;
+        userObj.isActive = true;
+        userObj.lastHeartbeat = Date.now();
+      }
+      try {
+        localStorage.setItem("printforge_active_device_" + cleanEmail.replace(/[^a-z0-9]/g, "_"), myToken);
+        localStorage.setItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_"), String(Date.now()));
+      } catch(e) {}
+      startDeviceHeartbeat(cleanEmail);
+    }
+    window.claimEmailActiveSession = claimEmailActiveSession;
+
+    function startDeviceHeartbeat(email) {
+      if (_deviceHeartbeatTimer) clearInterval(_deviceHeartbeatTimer);
+      const cleanEmail = (email || (AppState.user && AppState.user.email) || "").toLowerCase().trim();
+      if (!cleanEmail) return;
+
+      _deviceHeartbeatTimer = setInterval(async () => {
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.email.toLowerCase().trim() !== cleanEmail) {
+          clearInterval(_deviceHeartbeatTimer);
+          return;
+        }
+        const now = Date.now();
+        AppState.user.lastHeartbeat = now;
+        AppState.user.isActive = true;
+        AppState.user.activeSessionToken = getDeviceSessionToken();
+        try {
+          localStorage.setItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_"), String(now));
+        } catch(e) {}
+
+        if (typeof supabaseClient !== "undefined" && supabaseClient) {
+          try {
+            const cleanId = "USER-PROFILE-" + cleanEmail.replace(/[^a-z0-9]/g, "_");
+            await supabaseClient.from("broadcast_requests").update({
+              notes: JSON.stringify(Object.assign({}, AppState.user, {
+                activeSessionToken: getDeviceSessionToken(),
+                isActive: true,
+                lastHeartbeat: now
+              }))
+            }).eq("id", cleanId);
+          } catch(e) {}
+        }
+      }, 25000);
+    }
+    window.startDeviceHeartbeat = startDeviceHeartbeat;
+
+    async function releaseEmailActiveSession(email) {
+      if (_deviceHeartbeatTimer) clearInterval(_deviceHeartbeatTimer);
+      const cleanEmail = (email || (AppState.user && AppState.user.email) || "").toLowerCase().trim();
+      if (!cleanEmail) return;
+      try {
+        localStorage.removeItem("printforge_active_device_" + cleanEmail.replace(/[^a-z0-9]/g, "_"));
+        localStorage.removeItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_"));
+      } catch(e) {}
+
+      if (typeof supabaseClient !== "undefined" && supabaseClient) {
+        try {
+          const cleanId = "USER-PROFILE-" + cleanEmail.replace(/[^a-z0-9]/g, "_");
+          let prof = null;
+          if (typeof fetchUserProfileFromCloud === "function") {
+            prof = await fetchUserProfileFromCloud(cleanEmail);
+          }
+          if (prof) {
+            prof.isActive = false;
+            prof.activeSessionToken = null;
+            prof.lastHeartbeat = 0;
+            await supabaseClient.from("broadcast_requests").update({
+              notes: JSON.stringify(prof)
+            }).eq("id", cleanId);
+          }
+        } catch(e) {}
+      }
+    }
+    window.releaseEmailActiveSession = releaseEmailActiveSession;
     let currentGoogleModalRole = 'client';
     function selectGoogleModalRole(role) {
       currentGoogleModalRole = role;
@@ -26277,6 +26413,15 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const cleanName = isPrimaryUser ? 'Matteo Maggi' : cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       const savedPrimaryRole = localStorage.getItem('printforge_primary_role') || (isPrimaryUser ? 'creator' : 'client');
       const cleanRole = role || localStorage.getItem('printforge_pending_auth_role') || savedPrimaryRole;
+      // CONTROLLO SESSIONE ATTIVA: Blocca l'accesso se l'account è già attivo su un altro dispositivo
+      const sessionCheck = await checkEmailActiveSessionLock(cleanEmail);
+      if (sessionCheck.isLocked) {
+        const errMsg = currentLang === "it"
+          ? "⚠️ ACCESSO NEGATO: L'account " + cleanEmail + " è attualmente ATTIVO su un altro dispositivo. Per sicurezza, disconnettiti prima dall'altro dispositivo per accedere qui."
+          : "⚠️ ACCESS DENIED: Account " + cleanEmail + " is currently ACTIVE on another device. Please sign out from that device first.";
+        showToast(errMsg, "error", 8000);
+        return;
+      }
 
       let cloudProfile = null;
       try {
@@ -26337,6 +26482,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       updateNavigationTabs();
       loadRequestsFromSupabase();
 
+      claimEmailActiveSession(cleanEmail, AppState.user);
       showToast(currentLang === 'it' ? ('Accesso Google completato: ' + cleanEmail) : ('Google Sign-In completed: ' + cleanEmail), 'success');
 
       if (AppState.user.role === 'creator') {
@@ -26564,10 +26710,24 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         return;
       }
 
+      // CONTROLLO DISPOSITIVO CONCORRENTE: Se l'email è attiva su un altro dispositivo, impedisci l'accesso!
+      const sessionCheck = await checkEmailActiveSessionLock(email);
+      if (sessionCheck.isLocked) {
+        const errMsg = currentLang === "it"
+          ? "⚠️ ACCESSO NEGATO: L'email " + email + " è attualmente ATTIVA su un altro dispositivo. Disconnettiti prima dall'altro dispositivo per poter accedere qui."
+          : "⚠️ ACCESS DENIED: The email " + email + " is currently ACTIVE on another device. Please sign out from that device first.";
+        showToast(errMsg, "error", 8000);
+        return;
+      }
       showToast(currentLang === 'it' ? 'Accesso in corso...' : 'Signing in...', 'info');
 
       // Cerca profilo cloud esistente per sincronizzare cross-device
       let userProfile = await fetchUserProfileFromCloud(email);
+      // SICUREZZA EMAIL UNICA: Se l'account esiste già con una password, verifica corrispondenza
+      if (userProfile && userProfile.password && pass && userProfile.password !== pass) {
+        showToast(currentLang === "it" ? "⚠️ Password non corretta per questo account." : "⚠️ Incorrect password for this account.", "error");
+        return;
+      }
       if (!userProfile) {
         userProfile = {
           userId: generateUserIdForAccount(email, 'client'),
@@ -26613,6 +26773,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       updateLaptopBarButtons();
       loadRequestsFromSupabase();
 
+      claimEmailActiveSession(email, AppState.user);
       const welcomeMsg = currentLang === 'it' 
         ? `Benvenuto su PrintForge, ${AppState.user.name}!` 
         : `Welcome to PrintForge, ${AppState.user.name}!`;
@@ -27026,6 +27187,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     }
 
     function logoutUser() {
+      // RILASCIO SESSIONE DISPOSITIVO: Libera l'email per permettere l'accesso immediato da altri dispositivi
+      try {
+        const loggingOutEmail = (AppState.user && AppState.user.email) || localStorage.getItem("printforge_saved_email");
+        if (loggingOutEmail && typeof releaseEmailActiveSession === "function") {
+          releaseEmailActiveSession(loggingOutEmail);
+        }
+      } catch(e) {}
       if (typeof closeUserProfileDropdown === 'function') {
         closeUserProfileDropdown();
       }
@@ -34730,6 +34898,12 @@ function renderDealChat(rfpId) {
         localStorage.removeItem("printforge_completed_RFP-9821");
         if (typeof AppState !== "undefined" && AppState.broadcastRequests) {
           AppState.broadcastRequests = AppState.broadcastRequests.filter(r => r && r.id !== "RFP-9821");
+        }
+      } catch(e) {}
+      // Session Concurrency: Se l'utente è già loggato in questo browser, mantieni attiva la sessione
+      try {
+        if (AppState.user && AppState.user.isLoggedIn && AppState.user.email && typeof claimEmailActiveSession === "function") {
+          claimEmailActiveSession(AppState.user.email, AppState.user);
         }
       } catch(e) {}
       const urlParams = new URLSearchParams(window.location.search);
