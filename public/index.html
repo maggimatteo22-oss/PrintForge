@@ -11320,30 +11320,6 @@
           } catch(e) {}
         }
 
-        // 2. Archivia in modo permanente nel Registro Incassi del Creator i SOLDI INCASSATI
-        try {
-          let creatorLedger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
-          const safePrice = (targetReq && (targetReq.budget || targetReq.escrowTotal || targetReq.itemBudget)) || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.budget || AppState.activeEscrowOrder.escrowTotal)) || '€ 0,00';
-          const makerId = (targetReq && (targetReq.makerUserId || targetReq.assigned_creator_id)) || 'creator';
-          const makerName = (targetReq && (targetReq.maker || targetReq.acceptedBy)) || 'Maker Certificato';
-          
-          if (!creatorLedger.some(entry => entry.id === requestId)) {
-            creatorLedger.push({
-              id: requestId,
-              title: workTitle || 'Componente 3D',
-              price: safePrice,
-              makerUserId: makerId,
-              makerName: makerName,
-              clientName: (targetReq && targetReq.clientName) || 'Cliente',
-              workPhotoUrl: isUserUploadedPhoto(targetReq && (targetReq.workPhotoUrl || targetReq.aiImage)) ? (targetReq.workPhotoUrl || targetReq.aiImage) : null,
-              completedAt: new Date().toISOString()
-            });
-            localStorage.setItem('printforge_creator_earnings_ledger', JSON.stringify(creatorLedger));
-          }
-          localStorage.setItem('printforge_completed_' + requestId, 'true');
-        } catch(e) {}
-
-        // 3. Nascondi la commessa SOLO per il cliente (pulizia schermo), ma MANTIENILA per il creator!
         // 3. Eliminazione PERMANENTE della commessa per il cliente (Zero ricomparsa al refresh)
         if (targetReq) {
           targetReq.deletedByClient = true;
@@ -18722,52 +18698,29 @@ END-ISO-10303-21;`;
       return matName;
     }
 
-        function getCreatorTotalEarnings() {
+    function getCreatorTotalEarnings() {
       let total = 0;
-      const myUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
-      const myName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
-      const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const user = AppState.user;
+      if (!user || !user.isLoggedIn) return 0;
 
+      const myEmail = ((user.email) || "").toLowerCase().trim();
+      const myUid = ((user.userId || user.id) || "").toLowerCase().trim();
+      if (!myEmail && !myUid) return 0;
+
+      // Registro privato e soggettivo del singolo Creator: ogni utente vede ESCLUSIVAMENTE i propri incassi effettivi
+      const userKey = "printforge_creator_earnings_ledger_" + (myEmail || myUid).replace(/[^a-z0-9]/g, "_");
       try {
-        const ledger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
-        ledger.forEach(entry => {
-          if (!entry) return;
-          // Escludi ordini dove l'utente corrente era il cliente o titolo di test
-          const entryClient = (entry.clientName || '').toLowerCase().trim();
-          const entryTitle = (entry.title || '').toLowerCase().trim();
-          if (myName && entryClient === myName) return;
-          if (entryTitle.includes('viagra') || entryTitle.includes('papapap')) return;
-
-          if (entry.price) {
-            const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, '').replace(',', '.'));
+        const ledger = JSON.parse(localStorage.getItem(userKey) || "[]");
+        if (Array.isArray(ledger)) {
+          ledger.forEach(entry => {
+            if (!entry || !entry.price || entry.isFake || entry.isDemo) return;
+            if (entry.id === "RFP-9821" || entry.id === "RFP-3891") return;
+            const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, "").replace(",", "."));
             if (!isNaN(num) && num > 0) total += num;
-          }
-        });
+          });
+        }
       } catch(e) {}
 
-      if (total === 0 && AppState.broadcastRequests) {
-        AppState.broadcastRequests.forEach(r => {
-          if (!r || !r.id || r.isRejected || r.isDeleted) return;
-          // MAI sommare se l'utente corrente è il CLIENTE che ha pagato!
-          const rClient = (r.clientName || '').toLowerCase().trim();
-          const rClientEmail = (r.clientEmail || '').toLowerCase().trim();
-          const rClientUid = (r.userId || r.clientId || '').toLowerCase().trim();
-          if ((myName && rClient === myName) || (myEmail && rClientEmail === myEmail) || (myUid && rClientUid === myUid)) return;
-          const rTitle = (r.title || '').toLowerCase().trim();
-          if (rTitle.includes('viagra') || rTitle.includes('papapap')) return;
-
-          const isMaker = (myUid && (r.makerUserId || r.assigned_creator_id) === myUid) ||
-                          (myName && (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().includes(myName)) ||
-                          (myEmail && (r.makerEmail || '').toLowerCase() === myEmail);
-          if (!isMaker) return;
-
-          if (r.isCompleted || r.isDelivered || (typeof r.status === 'string' && r.status.includes('COMPLETAT'))) {
-            const raw = r.budget || r.itemBudget || r.escrowTotal || '';
-            const num = parseFloat(String(raw).replace(/[^0-9,.]/g, '').replace(',', '.'));
-            if (!isNaN(num) && num > 0) total += num;
-          }
-        });
-      }
       return total;
     }
 
@@ -34768,6 +34721,9 @@ function renderDealChat(rfpId) {
 
       // Session Management: Ripristino sessione da localStorage per lo stesso dispositivo/browser
       // Purge perenne ordini simulati o cancellati per garantire sessione privata pulita
+        // Reset contatore incassi fake globale (garantisce dato soggettivo reale a 0€ per tutti i creator)
+        localStorage.removeItem("printforge_creator_earnings_ledger");
+        localStorage.setItem("printforge_creator_earnings_ledger", "[]");
       try {
         recordDeletedRequestIds(["RFP-9821"]);
         localStorage.setItem("printforge_client_hidden_req_RFP-9821", "true");
