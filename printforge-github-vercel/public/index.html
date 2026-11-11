@@ -19912,6 +19912,23 @@ END-ISO-10303-21;`;
           </button>
         `;
 
+        // 4. VETRINA (Accessibile anche per Creator su mobile)
+        const isCreatorExp = (v === 'explore' || v === 'esplora');
+        mobileHtml += `
+          <button onclick="navigateTo('esplora')" class="${isCreatorExp ? mActive : mInactive}">
+            <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
+            <span>${mShowcaseLabel}</span>
+          </button>
+        `;
+
+        // Tasto Diretto Switch a Cliente su Mobile
+        mobileHtml += `
+          <button type="button" onclick="switchUserRole('client')" class="px-2.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-[11px] font-mono font-bold flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0 min-h-[34px] ml-auto active:scale-95 transition" title="Passa all'area Cliente">
+            <i data-lucide="user" class="w-3 h-3 text-emerald-400"></i>
+            <span>Cliente</span>
+          </button>
+        `;
+
         // 4. ESCROW ROOM: ATTIVA ESCLUSIVAMENTE DOPO IL COLLAUDO DELLE 3 FOTO!
         // REQUISITO UTENTE: "e dopo le 3 foto la pagina escroow room"
         const has3QcPhotos = Boolean(
@@ -19987,6 +20004,14 @@ END-ISO-10303-21;`;
             <button onclick="navigateTo('client-request')" class="${isReq ? mActive : mInactive}">
               <i data-lucide="sparkles" class="w-3.5 h-3.5 text-zinc-400"></i>
               <span>${mRequestsLabel}</span>
+            </button>
+          `;
+
+          // Tasto Diretto Switch a Creator su Mobile
+          mobileHtml += `
+            <button type="button" onclick="switchUserRole('creator')" class="px-2.5 py-1.5 rounded-full bg-cyan-500/15 border border-cyan-500/35 text-cyan-300 text-[11px] font-mono font-bold flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0 min-h-[34px] ml-auto active:scale-95 transition" title="Passa all'area Creator">
+              <i data-lucide="printer" class="w-3 h-3 text-cyan-400"></i>
+              <span>Creator</span>
             </button>
           `;
 
@@ -20130,7 +20155,7 @@ END-ISO-10303-21;`;
                 ${escapeHtml(AppState.user.name)}
               </span>
               <!-- Ruolo Badge Subdolo (Visibile da tablet/desktop) -->
-              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isCreator ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'} uppercase hidden lg:inline font-bold">
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isCreator ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'} uppercase inline-flex font-bold">
                 ${roleBadgeText}
               </span>
               <!-- Freccia Dropdown Indicativa (Rende 100% intuibile la cliccabilità sia da PC che da Smartphone) -->
@@ -26244,77 +26269,60 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         return;
       }
       const targetRole = newRole || (AppState.user.role === 'creator' ? 'client' : 'creator');
-      AppState.user.role = targetRole;
-      if (targetRole === 'creator') {
-        registerCreatorPresence();
+      if (AppState.user.role === targetRole) {
+        const defaultView = targetRole === 'creator' 
+          ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio')
+          : 'client-home';
+        navigateTo(defaultView);
+        return;
+      }
 
-      // Auto-Idratazione Profilo e IBAN da Supabase Cloud per sincronizzazione PC <-> Smartphone all'avvio
-      if (AppState.user && AppState.user.email && typeof fetchUserProfileFromCloud === 'function') {
-        const uEmail = AppState.user.email.toLowerCase().trim();
-        setTimeout(async () => {
-          try {
-            const cloudProf = await fetchUserProfileFromCloud(uEmail);
-            if (cloudProf) {
-              let updated = false;
-              if (cloudProf.payoutConfig && (!AppState.user.payoutConfig || !AppState.user.payoutConfig.iban || AppState.user.payoutConfig.iban !== cloudProf.payoutConfig.iban)) {
-                AppState.user.payoutConfig = Object.assign(AppState.user.payoutConfig || {}, cloudProf.payoutConfig);
-                AppState.user.stripeConnected = true;
-                const userKey = 'printforge_payout_details_' + uEmail.replace(/[^a-z0-9]/g, '_');
-                localStorage.setItem(userKey, JSON.stringify(cloudProf.payoutConfig));
-                localStorage.setItem('printforge_payout_configured', 'true');
-                localStorage.setItem('printforge_payout_details', JSON.stringify(cloudProf.payoutConfig));
-                localStorage.setItem('printforge_stripe_connected', 'true');
-                updated = true;
-              }
-              if (cloudProf.creatorData) {
-                AppState.user.creatorData = Object.assign(AppState.user.creatorData || {}, cloudProf.creatorData);
-                updated = true;
-              }
-              if (updated) {
-                localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-                if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
-                if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
-                console.log('☁️ [Auto-Hydrate] Profilo e IBAN sincronizzati con successo dal cloud su questo dispositivo');
-              }
-            }
-          } catch(e) {
-            console.warn('Errore auto-hydrate profilo cloud:', e);
-          }
-        }, 600);
-      }
-      } else {
-        unregisterCreatorPresence();
-      }
-      try {
-        localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-      } catch(e) {}
-      if (AppState.user.email) {
-        syncUserProfileToCloud(AppState.user);
-      }
+      AppState.user.role = targetRole;
+
+      // 1. Chiudi subito il dropdown per evitare overlay o blocchi touch su mobile
       if (typeof closeUserProfileDropdown === 'function') {
         closeUserProfileDropdown();
       }
 
+      // 2. Registra o disattiva presenza creator
+      if (targetRole === 'creator') {
+        registerCreatorPresence();
+      } else {
+        unregisterCreatorPresence();
+      }
+
+      try {
+        localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+      } catch(e) {}
+
+      // 3. Ferma animazioni pesanti 3D / Remotion in background se non in home (libera 100% GPU/CPU mobile)
+      if (typeof RemotionVideoEngine !== 'undefined' && typeof RemotionVideoEngine.stopLoop === 'function') {
+        RemotionVideoEngine.stopLoop();
+      }
+
+      // 4. Aggiorna barre di navigazione e header
       renderNavUserArea();
       updateNavigationTabs();
       updateLaptopBarButtons();
 
+      // 5. Reindirizzamento fluido verso la vista principale corretta
       if (targetRole === 'client') {
         showToast(currentLang === 'it' ? '✓ Modalità CLIENTE attiva!' : '✓ CLIENT Mode active!', 'success');
-        // Reindirizzamento ISTANTANEO alla pagina richieste del cliente (cambio visivo immediato)
-        navigateTo('client-request');
+        navigateTo('client-home');
       } else {
         showToast(currentLang === 'it' ? '✓ Modalità CREATOR attiva!' : '✓ CREATOR Mode active!', 'success');
-        // Reindirizzamento ISTANTANEO alla bacheca commesse del creator
-        navigateTo('creator-requests');
+        const creatorDest = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio';
+        navigateTo(creatorDest);
       }
 
-      window.scrollTo({ top: 0, behavior: 'instant' });
+      window.scrollTo(0, 0);
 
-      // Operazioni secondarie in background (zero blocchi UI)
-      setTimeout(() => {
-        try { loadRequestsFromSupabase(); } catch(e) {}
-      }, 30);
+      // 6. Sincronizzazione cloud in background non bloccante
+      if (AppState.user.email) {
+        setTimeout(() => {
+          try { syncUserProfileToCloud(AppState.user); } catch(e) {}
+        }, 150);
+      }
     }
     window.switchUserRole = switchUserRole;
 
@@ -27440,10 +27448,6 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         }
       }
       if (viewId === 'explore') {
-        if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
-          navigateTo('creator-portfolio');
-          return;
-        }
         try {
           if (window.location.pathname !== '/esplora') {
             window.history.pushState(null, '', '/esplora');
@@ -27563,6 +27567,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           headerBarEl.classList.add('header-relative');
         }
       }
+      if (viewId !== 'client-home' && viewId !== 'home') {
+        if (typeof RemotionVideoEngine !== 'undefined' && typeof RemotionVideoEngine.stopLoop === 'function') {
+          RemotionVideoEngine.stopLoop();
+        }
+      }
+
       ['login-gate', 'client-home', 'client-request', 'creator-requests', 'deal-chat', 'studio', 'order-room', 'explore', 'creator-portfolio', 'showcase-order'].forEach(v => {
         const sec = document.getElementById(`view-${v}`);
         if (sec) {
@@ -32744,10 +32754,21 @@ function renderDealChat(rfpId) {
         RecordlyAudio.playClick(900 + spd * 200, 0.04);
       },
 
+      stopLoop() {
+        if (this.rafId) {
+          cancelAnimationFrame(this.rafId);
+          this.rafId = null;
+        }
+      },
+
       startLoop() {
         if (this.rafId) cancelAnimationFrame(this.rafId);
         let lastTime = performance.now();
         const tick = (now) => {
+          if (AppState.currentView !== 'client-home' && AppState.currentView !== 'home') {
+            this.rafId = null;
+            return;
+          }
           const dt = Math.min((now - lastTime) / 1000, 0.08);
           lastTime = now;
           if (this.isPlaying) {
