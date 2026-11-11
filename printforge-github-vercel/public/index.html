@@ -9514,7 +9514,7 @@
         }
         if (window.AppState) {
           window.AppState.broadcastRequests = currentReqs;
-          if (!window.AppState.activeDealRfpId) window.AppState.activeDealRfpId = 'RFP-3891';
+          if (!window.AppState.activeDealRfpId) window.AppState.activeDealRfpId = null;
         }
       } catch(e) {
         console.warn('Errore restoreActiveRequestsAndReviews:', e);
@@ -19659,11 +19659,11 @@ END-ISO-10303-21;`;
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
       if (AppState.user.role !== 'creator') return false;
 
-      // Se in memoria vi è un ordine attivo non ancora consegnato
-      if (AppState.activeEscrowOrder && !AppState.activeEscrowOrder.isDelivered) {
+      // Se in memoria vi è un ordine attivo accettato e non ancora consegnato
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted && !AppState.activeEscrowOrder.isDelivered && !AppState.activeEscrowOrder.isCompleted) {
         return true;
       }
-      if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isDelivered) {
+      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isCompleted) {
         return true;
       }
 
@@ -19686,15 +19686,25 @@ END-ISO-10303-21;`;
             r.status.toUpperCase().includes('SPEDIT')
           ))
         );
-        return isAcc;
+        if (!isAcc) return false;
+
+        const assignedUid = (r.assigned_creator_id || r.makerUserId || '').toLowerCase().trim();
+        const assignedEmail = (r.makerEmail || r.creatorEmail || '').toLowerCase().trim();
+        const assignedName = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
+
+        if (isSpecialPrimary) return true;
+        if (myMakerUid && assignedUid && assignedUid === myMakerUid) return true;
+        if (myMakerEmail && assignedEmail && assignedEmail === myMakerEmail) return true;
+        if (myMakerName && assignedName && assignedName === myMakerName) return true;
+        return true;
       });
 
       if (myAcceptedJob) {
-        if (!AppState.loadedRequestInStudio) AppState.loadedRequestInStudio = myAcceptedJob;
-        if (!AppState.activeDealRfpId) AppState.activeDealRfpId = myAcceptedJob.id;
+        AppState.loadedRequestInStudio = myAcceptedJob;
+        AppState.activeDealRfpId = myAcceptedJob.id;
         return true;
       }
-      return true; // Per i creator l'area Attività/Studio 3D è sempre accessibile
+      return false; // Se non c'è un incarico accettato, restituisce RIGOROSAMENTE false
     }
     window.hasAcceptedRequest = hasAcceptedRequest;
 
@@ -19841,7 +19851,7 @@ END-ISO-10303-21;`;
 
         // 2. BACHECA RICHIESTE & RICHIESTA ATTIVA
         // REQUISITO UTENTE: "appena il creator acceta la richiesta al suo posto si attiva la pagina rchiesta e dopo le 3 foto la pagina escroow room"
-        const activeCreatorReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
+        const activeCreatorReq = (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered) || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
         const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
 
         // SOSTITUZIONE DIRETTA: ATTIVITÀ AL POSTO DELLE RICHIESTE
@@ -19907,13 +19917,7 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // Tasto Diretto Switch a Cliente su Mobile
-        mobileHtml += `
-          <button type="button" onclick="switchUserRole('client')" class="px-2.5 py-1.5 rounded-full bg-emerald-500/15 border border-emerald-500/35 text-emerald-300 text-[11px] font-mono font-bold flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0 min-h-[34px] ml-auto active:scale-95 transition" title="Passa all'area Cliente">
-            <i data-lucide="user" class="w-3 h-3 text-emerald-400"></i>
-            <span>Cliente</span>
-          </button>
-        `;
+
 
         // 4. ESCROW ROOM: ATTIVA ESCLUSIVAMENTE DOPO IL COLLAUDO DELLE 3 FOTO!
         // REQUISITO UTENTE: "e dopo le 3 foto la pagina escroow room"
@@ -19993,13 +19997,7 @@ END-ISO-10303-21;`;
             </button>
           `;
 
-          // Tasto Diretto Switch a Creator su Mobile
-          mobileHtml += `
-            <button type="button" onclick="switchUserRole('creator')" class="px-2.5 py-1.5 rounded-full bg-cyan-500/15 border border-cyan-500/35 text-cyan-300 text-[11px] font-mono font-bold flex items-center gap-1 shadow-sm whitespace-nowrap shrink-0 min-h-[34px] ml-auto active:scale-95 transition" title="Passa all'area Creator">
-              <i data-lucide="printer" class="w-3 h-3 text-cyan-400"></i>
-              <span>Creator</span>
-            </button>
-          `;
+
 
           const isEscrowActive = hasActiveEscrowOrder();
           // La Escrow Room appare per il Cliente SOLO se vi è un ordine attivo in corso; dopo la Fase 4 o in assenza di ordini è TOTALMENTE NASCOSTA
@@ -21922,14 +21920,13 @@ END-ISO-10303-21;`;
         sendProjectAcceptedEmailToClient(req);
       }
 
-      // NAVIGAZIONE IMMEDIATA SENZA ALCUN RITARDO (0ms DELAY)
-      navigateTo('activity');
-      window.scrollTo({ top: 0, behavior: 'instant' });
-
+      // APRI IMMEDIATAMENTE LA PAGINA ATTIVITÀ / STUDIO CAD (SIA DA PC CHE DA MOBILE)
       if (typeof renderStudioSpecs === 'function') {
         renderStudioSpecs();
       }
+      navigateTo('activity');
       updateNavigationTabs();
+      window.scrollTo({ top: 0, behavior: 'instant' });
 
       const toastMsg = isEn 
         ? `✓ Request #${req.id} accepted! Opened in CAD Studio.` 
@@ -27427,12 +27424,16 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           return;
         }
         // Assicura che una richiesta attiva sia caricata nello Studio CAD
-        if (!AppState.loadedRequestInStudio && AppState.broadcastRequests) {
-          const accReq = AppState.broadcastRequests.find(r => r.isAccepted) || AppState.broadcastRequests[0];
-          if (accReq) {
-            AppState.loadedRequestInStudio = accReq;
-            AppState.activeDealRfpId = accReq.id;
-          }
+        const accReq = (AppState.broadcastRequests || []).find(r => r && (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDelivered);
+        if (accReq) {
+          AppState.loadedRequestInStudio = accReq;
+          AppState.activeDealRfpId = accReq.id;
+        } else if (!AppState.loadedRequestInStudio || !AppState.loadedRequestInStudio.isAccepted) {
+          showToast(currentLang === 'it' 
+            ? 'Nessun incarico in corso: accetta una richiesta dalla bacheca per aprire lo Studio CAD.' 
+            : 'No active job: accept a request from the board to open CAD Studio.', 'info');
+          navigateTo('creator-requests');
+          return;
         }
       }
       if (viewId === 'explore') {
