@@ -9746,7 +9746,7 @@
             stripeConnected: true,
             creatorData: userObj.creatorData || null,
             payoutConfig: userObj.payoutConfig || null,
-            password: pass || '',
+            password: pass || userObj.password || (typeof localStorage !== "undefined" ? (localStorage.getItem("printforge_saved_pass_" + userObj.email.toLowerCase().trim().replace(/[^a-z0-9]/g, "_")) || localStorage.getItem("printforge_saved_pass")) : "") || "",
             syncedAt: new Date().toISOString()
           })
         };
@@ -26444,6 +26444,16 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         if (cleanEmail === 'maggimatteo22@gmail.com') cloudProfile.isAdmin = true;
       }
 
+      // Salva e vincola perennemente lo stato di email registrata
+      const cleanEmailKey = cleanEmail.replace(/[^a-z0-9]/g, "_");
+      const existingLocalPass = localStorage.getItem("printforge_saved_pass_" + cleanEmailKey) || localStorage.getItem("printforge_saved_pass");
+      if (cloudProfile && !cloudProfile.password && existingLocalPass) {
+        cloudProfile.password = existingLocalPass;
+      }
+      try {
+        localStorage.setItem("printforge_user_registered_" + cleanEmailKey, "true");
+        if (existingLocalPass) localStorage.setItem("printforge_saved_pass_" + cleanEmailKey, existingLocalPass);
+      } catch(e) {}
       AppState.user = cloudProfile;
       
       // Salva credenziali e sessione permanente in localStorage
@@ -26722,31 +26732,64 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       showToast(currentLang === 'it' ? 'Accesso in corso...' : 'Signing in...', 'info');
 
       // Cerca profilo cloud esistente per sincronizzare cross-device
+      // Cerca profilo cloud o locale esistente per verificare se l'email è già registrata
+      const emailKey = email.replace(/[^a-z0-9]/g, "_");
       let userProfile = await fetchUserProfileFromCloud(email);
-      // SICUREZZA EMAIL UNICA: Se l'account esiste già con una password, verifica corrispondenza
-      if (userProfile && userProfile.password && pass && userProfile.password !== pass) {
-        showToast(currentLang === "it" ? "⚠️ Password non corretta per questo account." : "⚠️ Incorrect password for this account.", "error");
-        return;
+      const localSavedPass = (typeof localStorage !== "undefined") 
+        ? (localStorage.getItem("printforge_saved_pass_" + emailKey) || (email === (localStorage.getItem("printforge_saved_email") || "").toLowerCase().trim() ? localStorage.getItem("printforge_saved_pass") : null))
+        : null;
+      const isRegistered = Boolean(userProfile || localSavedPass || (typeof localStorage !== "undefined" && localStorage.getItem("printforge_user_registered_" + emailKey) === "true"));
+      const registeredPass = (userProfile && userProfile.password) || localSavedPass;
+
+      // BLOCCO TOTALE 2° ACCOUNT: Se l'email è già registrata, verifica rigorosa password (impossibile creare due account con la stessa mail)
+      if (isRegistered && registeredPass) {
+        if (pass && pass !== registeredPass) {
+          const errPass = currentLang === "it"
+            ? "⚠️ Questa email è già registrata ed è associata a un account univoco. La password inserita non è corretta (impossibile creare due account con la stessa email)."
+            : "⚠️ This email is already registered to a single account. The password entered is incorrect.";
+          showToast(errPass, "error", 8000);
+          return;
+        }
       }
+
       if (!userProfile) {
+        // Primo accesso assoluto per questa nuova email: crea l'account univoco e vincola la password per sempre
+        const isSpecialPrimary = (email === "maggimatteo22@gmail.com" || email === "matteomaggi22@gmail.com");
         userProfile = {
-          userId: generateUserIdForAccount(email, 'client'),
-          id: generateUserIdForAccount(email, 'client'),
-          isLoggedIn: true,
-          role: 'client',
-          isAdmin: (email === 'maggimatteo22@gmail.com'),
-          name: name,
+          userId: generateUserIdForAccount(email, "client"),
+          id: generateUserIdForAccount(email, "client"),
+          isLoggedIn: true;
+          role: "client",
+          isAdmin: isSpecialPrimary,
+          name: isSpecialPrimary ? "Matteo Maggi" : name,
           email: email,
+          password: pass || "",
           avatar: name.charAt(0).toUpperCase(),
-          stripeConnected: true,
+          isLoggedIn: true,
           creatorData: null
         };
       } else {
         userProfile.isLoggedIn = true;
-        if (name && name !== 'Utente' && name !== 'Cliente') userProfile.name = name;
-        if (email === 'maggimatteo22@gmail.com') userProfile.isAdmin = true;
+        if (pass && !userProfile.password) userProfile.password = pass;
+        if (email === "maggimatteo22@gmail.com" || email === "matteomaggi22@gmail.com") {
+          userProfile.isAdmin = true;
+          userProfile.name = "Matteo Maggi";
+        }
       }
 
+      // Salva e vincola perennemente la password e lo stato di email registrata
+      try {
+        if (pass) {
+          localStorage.setItem("printforge_saved_pass_" + emailKey, pass);
+          localStorage.setItem("printforge_saved_pass", pass);
+        } else if (registeredPass) {
+          localStorage.setItem("printforge_saved_pass_" + emailKey, registeredPass);
+          localStorage.setItem("printforge_saved_pass", registeredPass);
+        }
+        localStorage.setItem("printforge_user_registered_" + emailKey, "true");
+        localStorage.setItem("printforge_saved_email", email);
+        localStorage.setItem("printforge_saved_credentials", JSON.stringify({ email: email, pass: pass || registeredPass, name: userProfile.name }));
+      } catch(err) {}
       AppState.user = userProfile;
       if (userProfile && userProfile.payoutConfig && userProfile.payoutConfig.iban) {
         AppState.user.payoutConfig = userProfile.payoutConfig;
