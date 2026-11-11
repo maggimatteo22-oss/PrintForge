@@ -19885,7 +19885,22 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // 2. BACHECA RICHIESTE & RICHIESTA ATTIVA
+        // 2. I MIEI PROGETTI (SPOSTATO AL 2° POSTO: prima delle richieste su richiesta utente)
+        const isPortfolio = (v === 'creator-portfolio');
+        html += `
+          <button onclick="navigateTo('creator-portfolio')" id="navCreatorPortfolioBtn" class="${isPortfolio ? activeClass : inactiveClass}">
+            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
+            <span>${creatorProjectsLabel}</span>
+          </button>
+        `;
+        mobileHtml += `
+          <button onclick="navigateTo('creator-portfolio')" class="${isPortfolio ? mActive : mInactive}">
+            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
+            <span>${mCreatorProjectsLabel}</span>
+          </button>
+        `;
+
+        // 3. BACHECA RICHIESTE & RICHIESTA ATTIVA (SPOSTATO AL 3° POSTO: dopo i progetti)
         // REQUISITO UTENTE: "appena il creator acceta la richiesta al suo posto si attiva la pagina rchiesta e dopo le 3 foto la pagina escroow room"
         const activeCreatorReq = (function() {
           if (AppState.loadedRequestInStudio && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
@@ -19905,8 +19920,7 @@ END-ISO-10303-21;`;
         })();
         const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
 
-        // SOSTITUZIONE DIRETTA: ATTIVITÀ AL POSTO DELLE RICHIESTE
-        // Requisito espresso: "quando un creator prende l'incarico deve sostituirsi subito la pagina attività al posto delle richieste, fallo anche da mobile"
+        // SOSTITUZIONE DIRETTA: ATTIVITÀ AL POSTO DELLE RICHIESTE SE C'È UN ORDINE ATTIVO
         if (activeCreatorReq) {
           const isAct = (v === 'activity' || v === 'studio');
           const reqTabLabel = isEn ? `ACTIVITY (#${activeCreatorReq.id})` : isEs ? `ACTIVIDAD (#${activeCreatorReq.id})` : `ATTIVITÀ (#${activeCreatorReq.id})`;
@@ -19944,29 +19958,8 @@ END-ISO-10303-21;`;
           `;
         }
 
-        // 3. I MIEI PROGETTI (Portfolio e gestione opere)
-        const isPortfolio = (v === 'creator-portfolio');
-        html += `
-          <button onclick="navigateTo('creator-portfolio')" id="navCreatorPortfolioBtn" class="${isPortfolio ? activeClass : inactiveClass}">
-            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
-            <span>${creatorProjectsLabel}</span>
-          </button>
-        `;
-        mobileHtml += `
-          <button onclick="navigateTo('creator-portfolio')" class="${isPortfolio ? mActive : mInactive}">
-            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
-            <span>${mCreatorProjectsLabel}</span>
-          </button>
-        `;
-
-        // 4. VETRINA (Accessibile anche per Creator su mobile)
-        const isCreatorExp = (v === 'explore' || v === 'esplora');
-        mobileHtml += `
-          <button onclick="navigateTo('esplora')" class="${isCreatorExp ? mActive : mInactive}">
-            <i data-lucide="compass" class="w-3.5 h-3.5 text-white"></i>
-            <span>${mShowcaseLabel}</span>
-          </button>
-        `;
+        // VETRINA ELIMINATA COMPLETAMENTE PER I CREATOR DA MOBILE SU RICHIESTA ESPRESSA:
+        // "togli la vetrina per i creator da mobile"
 
 
 
@@ -35066,16 +35059,27 @@ function renderDealChat(rfpId) {
         localStorage.removeItem("printforge_creator_earnings_ledger");
         localStorage.setItem("printforge_creator_earnings_ledger", "[]");
       try {
-        recordDeletedRequestIds(["RFP-9821", "RFP-3891", "RFP-4120", "RFP-1044"]);
+        recordDeletedRequestIds(["RFP-9821", "RFP-3891", "RFP-4120", "RFP-1044", "RFP-6482"]);
         localStorage.setItem("printforge_client_hidden_req_RFP-9821", "true");
         localStorage.setItem("printforge_client_hidden_req_RFP-3891", "true");
+        localStorage.setItem("printforge_client_hidden_req_RFP-6482", "true");
         localStorage.removeItem("printforge_completed_RFP-9821");
         localStorage.removeItem("printforge_completed_RFP-3891");
+        localStorage.removeItem("printforge_completed_RFP-6482");
+        localStorage.removeItem("printforge_active_escrow_order");
+        localStorage.removeItem("printforge_cad_qc_files");
+        localStorage.removeItem("printforge_stage4_completed");
         let clientRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
-        clientRfps = clientRfps.filter(id => id !== "RFP-9821" && id !== "RFP-3891" && id !== "RFP-4120" && id !== "RFP-1044");
+        clientRfps = clientRfps.filter(id => id !== "RFP-9821" && id !== "RFP-3891" && id !== "RFP-4120" && id !== "RFP-1044" && id !== "RFP-6482");
         localStorage.setItem("printforge_client_created_rfps", JSON.stringify(clientRfps));
-        if (typeof AppState !== "undefined" && AppState.broadcastRequests) {
-          AppState.broadcastRequests = AppState.broadcastRequests.filter(r => r && r.id !== "RFP-9821" && r.id !== "RFP-3891");
+        if (typeof AppState !== "undefined") {
+          if (AppState.broadcastRequests) {
+            AppState.broadcastRequests = AppState.broadcastRequests.filter(r => r && r.id !== "RFP-9821" && r.id !== "RFP-3891" && r.id !== "RFP-6482");
+          }
+          AppState.loadedRequestInStudio = null;
+          AppState.activeDealRfpId = null;
+          AppState.activeEscrowOrder = null;
+          AppState.cadQcFiles = [];
         }
       } catch(e) {}
       // Session Concurrency: Se l'utente è già loggato in questo browser, mantieni attiva la sessione
