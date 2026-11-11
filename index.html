@@ -10171,7 +10171,7 @@
               (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + orderIdVal) === 'true')
             );
             const isDirectOrder = Boolean(meta.isDirectShowcase || meta.isShowcaseOrder || meta.targetCreatorId || meta.targetCreatorName);
-            const isAcc = isCompletedReq ? false : (isDirectOrder ? Boolean(meta.isAccepted === true) : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("PRESA IN CARICO")))));
+            const isAcc = isCompletedReq ? false : (isDirectOrder ? Boolean(meta.isAccepted === true) : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("PRESA IN CARICO") || dbR.status.includes("LAVORAZION")))));
 
             const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
@@ -10247,6 +10247,23 @@
           const isCreator = AppState.user && AppState.user.role === 'creator';
           const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
 
+          const isSpecialPrimary = (myEmail === 'maggimatteo22@gmail.com' || myEmail === 'matteomaggi22@gmail.com');
+
+          // Sincronizza l'ID delle commesse create dal cliente in localStorage per vederle ovunque (PC e Mobile)
+          try {
+            let clientRfps = JSON.parse(localStorage.getItem('printforge_client_created_rfps') || '[]');
+            AppState.broadcastRequests.forEach(r => {
+              if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return;
+              const reqEmail = (r.clientEmail || '').toLowerCase().trim();
+              const reqUid = (r.userId || '').toLowerCase().trim();
+              const match = (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid) || (isSpecialPrimary && (reqEmail === 'maggimatteo22@gmail.com' || reqEmail === 'matteomaggi22@gmail.com'));
+              if (match && !clientRfps.includes(r.id)) {
+                clientRfps.unshift(r.id);
+              }
+            });
+            localStorage.setItem('printforge_client_created_rfps', JSON.stringify(clientRfps));
+          } catch(e) {}
+
           const activeOrderReq = AppState.broadcastRequests.find(r => {
             if (!r || !r.isAccepted) return false;
             if (r.isCompleted || r.isDelivered || r.isClosed) return false;
@@ -10255,12 +10272,14 @@
             if (isClient) {
               const reqEmail = (r.clientEmail || '').toLowerCase().trim();
               const reqUid = (r.userId || '').toLowerCase().trim();
+              if (isSpecialPrimary && (reqEmail === 'maggimatteo22@gmail.com' || reqEmail === 'matteomaggi22@gmail.com')) return true;
               return (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid);
             }
             if (isCreator) {
               const assigned = (r.maker || r.acceptedBy || '').toLowerCase().trim();
               const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
               const assignedUid = (r.makerUserId || '').toLowerCase().trim();
+              if (isSpecialPrimary && (assignedEmail === 'maggimatteo22@gmail.com' || assignedEmail === 'matteomaggi22@gmail.com' || assigned.includes('matteo') || assigned.includes('maggi'))) return true;
               return (assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
                      (assignedEmail && assignedEmail === myEmail) ||
                      (assignedUid && assignedUid === myUid);
@@ -10964,10 +10983,10 @@
           status: req.status || 'IN ATTESA',
           file_name: req.fileName || 'part.stl'
         };
-        const { error } = await supabaseClient.from('broadcast_requests').insert([dbPayload]);
+        const { error } = await supabaseClient.from('broadcast_requests').upsert(dbPayload, { onConflict: 'id' });
         if (error) console.warn('Errore salvataggio Supabase Cloud:', error);
         else {
-          console.log('✅ Richiesta pubblicata su Supabase Cloud:', req.id);
+          console.log('✅ Richiesta pubblicata/aggiornata su Supabase Cloud:', req.id);
           broadcastRealtimeEvent('request_created', { request: req });
         }
       } catch (e) {
@@ -10977,12 +10996,21 @@
     async function updateRequestInSupabase(reqId, updateData) {
       if (!supabaseClient) return;
       try {
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
           .from('broadcast_requests')
           .update(updateData)
-          .eq('id', reqId);
+          .eq('id', reqId)
+          .select();
         if (error) console.warn('Errore update Supabase:', error);
-        else console.log('✅ Aggiornamento Supabase completato per:', reqId);
+        else {
+          console.log('✅ Aggiornamento Supabase completato per:', reqId);
+          if (!data || data.length === 0) {
+            const fullReq = (AppState.broadcastRequests || []).find(x => x && x.id === reqId);
+            if (fullReq) {
+              await saveRequestToSupabase(fullReq);
+            }
+          }
+        }
       } catch (e) {
         console.warn('Errore update Supabase:', e);
       }
@@ -19075,7 +19103,11 @@ END-ISO-10303-21;`;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
       
-      const rawReq = AppState.loadedRequestInStudio || AppState.broadcastRequests[0];
+      const rawReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests || []).find(r => r && (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT') || r.status.includes('TRATTATIVA')))) && !r.isCompleted && !r.isDelivered && !r.isClosed) || AppState.broadcastRequests[0];
+      if (rawReq && rawReq.isAccepted && !AppState.loadedRequestInStudio) {
+        AppState.loadedRequestInStudio = rawReq;
+        AppState.activeDealRfpId = rawReq.id;
+      }
       if (!rawReq) {
         const headingEl = document.getElementById('i18n-studioHeading');
         if (headingEl) {
@@ -29154,6 +29186,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
         const reqEmail = (r.clientEmail || "").toLowerCase().trim();
         const reqUid = (r.userId || "").toLowerCase().trim();
+        const isSpecialPrimary = (userEmail === 'maggimatteo22@gmail.com' || userEmail === 'matteomaggi22@gmail.com');
+        if (isSpecialPrimary && (reqEmail === 'maggimatteo22@gmail.com' || reqEmail === 'matteomaggi22@gmail.com')) return true;
         if (userEmail && reqEmail && reqEmail === userEmail) return true;
         if (userId && reqUid && reqUid === userId) return true;
         return false;
