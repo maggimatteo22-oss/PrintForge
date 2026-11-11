@@ -19856,6 +19856,7 @@ END-ISO-10303-21;`;
       // - PrintForge, HOME e ESCROW ROOM non vanno tradotte (rimangono fisse e protette)
       // - VETRINA e RICHIESTE vanno tradotte nelle lingue appropriate (IT, EN, ES)
       const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
 
       const showcaseLabel = isEn ? 'SHOWCASE' : 'VETRINA 2D';
       const mShowcaseLabel = isEn ? 'SHOWCASE' : 'VETRINA';
