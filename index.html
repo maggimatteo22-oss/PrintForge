@@ -8555,7 +8555,7 @@
 
         <div class="space-y-1">
           <label class="text-[11px] font-mono text-zinc-300 block font-bold">Email Account Google *</label>
-          <input type="email" id="googleModalEmail" required placeholder="tuonome@gmail.com" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
+          <input type="email" id="googleModalEmail" required placeholder="nome@esempio.com" autocomplete="email" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
         </div>
 
         <div class="space-y-1">
@@ -8700,7 +8700,7 @@
 
           <div class="space-y-1">
             <label class="text-[11px] font-mono text-zinc-400" id="i18n-authEmailLabel">Email di Contatto</label>
-            <input type="email" id="clientAuthEmail" placeholder="m.rossi@email.it" required class="w-full bg-[#08080A] border border-white/10 rounded-xl px-3 py-2 text-white font-sans focus:border-white" />
+            <input type="email" id="clientAuthEmail" placeholder="nome@esempio.com" required autocomplete="email" class="w-full bg-[#08080A] border border-white/10 rounded-xl px-3 py-2 text-white font-sans focus:border-white" />
           </div>
 
           <!-- COLLEGAMENTO STRIPE PER ACCESSO CLIENTE -->
@@ -9670,84 +9670,7 @@
     window.INITIAL_CERTIFIED_REVIEWS = INITIAL_CERTIFIED_REVIEWS;
 
     // Richieste Attive Predefinite con il Creator e per la Bacheca
-    const PRESET_DEMO_REQUESTS = [
-      {
-        id: 'RFP-4120',
-        title: 'Cubo di Calibrazione XYZ 20mm & Collaudo',
-        clientName: 'Studio Design Andrea Riva',
-        clientCity: 'Milano (MI)',
-        shippingStreet: 'Via Dante 18',
-        shippingCity: 'Milano',
-        shippingCap: '20121',
-        shippingProv: 'MI',
-        shippingFull: 'Via Dante 18, 20121 Milano (MI)',
-        clientEmail: 'a.riva@studioriva.design',
-        usage: 'Prototipo di Validazione',
-        material: 'PLA+ Alta Resistenza',
-        color: 'Bianco Naturale Puro',
-        colorHex: 0xffffff,
-        presetKind: 'cube',
-        dimensions: '20 × 20 × 20 mm',
-        dimX: 20,
-        dimY: 20,
-        dimZ: 20,
-        quantity: '2 - 5 pezzi',
-        tolerance: 'Meccanica Fine ±0.10 mm',
-        infill: '20% Leggero / Standard',
-        postProcess: 'Grezzo (Rimozione supporti standard)',
-        budget: '€ 22.00',
-        deadline: 'Urgente Flash 24-48h',
-        notes: 'Verifica della planarità del piatto e calibrazione assi X, Y, Z con calibro digitale.',
-        fileName: 'cubo_calibrazione_xyz_20mm.stl',
-        aiImage: null,
-        timestamp: '09:20',
-        status: 'APERTA (IN ATTESA CREATOR)',
-        isAccepted: false,
-        creatorAssigned: 'PrintForge Maker Pool',
-        agreements: {
-          cadVerified: false,
-          toleranceConfirmed: false,
-          qcPhotosAgreed: false,
-          orientationAgreed: false,
-          shippingLocked: false
-        },
-        messages: []
-      },
-      {
-        id: 'RFP-1044',
-        title: 'Boccola Meccanica Flangiata con Fori di Fissaggio',
-        clientName: 'Dott. Roberto Conti',
-        clientCity: 'Bologna (BO)',
-        clientEmail: 'r.conti@automotive-lab.it',
-        usage: 'Componente Meccanico di Scorrimento',
-        material: 'PA12-CF Carbonio',
-        color: 'Nero Opaco Cyber',
-        colorHex: 0x1a1a1c,
-        presetKind: 'bushing',
-        dimensions: '45 × 45 × 30 mm',
-        quantity: '6 - 20 pezzi',
-        tolerance: 'Alta Precisione ±0.05 mm',
-        infill: '100% Pieno Massiccio Solido',
-        postProcess: 'Inserti filettati termo-fissati',
-        budget: '€ 85.00',
-        deadline: 'Standard 3-5 giorni',
-        notes: 'Foro interno calibrato per albero da 22mm e 4 fori su flangia per viti M4 con inserti filettati in ottone.',
-        fileName: 'boccola_flangiata_meccanica.stl',
-        aiImage: null,
-        timestamp: '08:40',
-        status: 'APERTA (IN ATTESA CREATOR)',
-        isAccepted: false,
-        creatorAssigned: 'PrintForge Maker Pool',
-        agreements: {
-          cadVerified: false,
-          toleranceConfirmed: false,
-          qcPhotosAgreed: false,
-          orientationAgreed: false,
-          shippingLocked: false
-        },
-        messages: []
-      }
-    ];
+    const PRESET_DEMO_REQUESTS = [];
     window.PRESET_DEMO_REQUESTS = PRESET_DEMO_REQUESTS;
 
     // Ripristino e persistenza delle richieste attive e delle recensioni del creator
@@ -11154,12 +11077,7 @@
           console.log(`📦 [Supabase] Caricate ${actualRequests.length} richieste e ${portfolioDbRows.length} opere di vetrina dal Cloud`);
           
           // Assicura che le richieste attive storiche siano incluse se non presenti sul DB cloud
-          const dbReqIds = new Set(actualRequests.map(r => r.id));
-          PRESET_DEMO_REQUESTS.forEach(pr => {
-            if (!["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"].includes(pr.id) && !dbReqIds.has(pr.id) && !deletedIds.has(pr.id)) {
-              actualRequests.push(pr);
-            }
-          });
+          // Solo richieste reali caricate dal database condiviso Supabase
 
           AppState.broadcastRequests = actualRequests.map(dbR => {
             let meta = {};
@@ -12060,7 +11978,8 @@
           dimensions: req.dimensions,
           budget: req.budget,
           notes: payloadNotes,
-          status: req.status || 'IN ATTESA',
+          status: (req.status === 'IN ATTESA' || !req.status || req.status.includes('WAITING') || req.status.includes('ATTESA')) ? 'open' : req.status,
+          maker_name: req.maker_name || null,
           file_name: req.fileName || 'part.stl'
         };
         const { error } = await supabaseClient.from('broadcast_requests').upsert(dbPayload, { onConflict: 'id' });
@@ -23151,7 +23070,11 @@ END-ISO-10303-21;`;
 
       // 1. Mark request as accepted with Lock di Assegnazione
       req.isAccepted = true;
-      req.status = 'IN LAVORAZIONE (PRESA IN CARICO)';
+      req.status = 'accepted';
+      req.maker = AppState.user.name || (isEn ? 'PrintForge Certified Maker' : 'Maker Certificato PrintForge');
+      req.maker_name = req.maker;
+      req.acceptedBy = req.maker;
+      req.makerEmail = AppState.user.email || '';
       req.clientApprovedQc = false;
       req.qcStatus = 'in_attesa_collaudo';
       req.hasQcPhotos = false;
@@ -23208,12 +23131,14 @@ END-ISO-10303-21;`;
       } catch(e) {}
 
       updateRequestInSupabase(req.id, {
-        status: 'IN LAVORAZIONE (PRESA IN CARICO)',
-        maker_name: req.acceptedBy,
+        status: 'accepted',
+        maker_name: req.maker,
         notes: buildNotesPayload(req, {
           isAccepted: true,
+          status: 'accepted',
           assigned_creator_id: req.assigned_creator_id,
-          makerName: req.acceptedBy,
+          maker_id: req.makerUserId,
+          makerName: req.maker,
           makerEmail: req.makerEmail,
           makerUserId: req.makerUserId
         })
@@ -27519,6 +27444,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.getDeviceSessionToken = getDeviceSessionToken;
 
     async function checkEmailActiveSessionLock(email) {
+      // Isolamento per dispositivo: ogni dispositivo gestisce la propria sessione locale in sicurezza
+      return { isLocked: false };
       if (!email) return { isLocked: false };
       const cleanEmail = email.toLowerCase().trim();
       const myToken = getDeviceSessionToken();
@@ -28132,6 +28059,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
     function setGateTab(tab) {
       currentGateTab = tab;
+      try {
+        const eEl = document.getElementById('gateUnifiedEmail');
+        const pEl = document.getElementById('gateUnifiedPass');
+        if (eEl && !eEl.value) eEl.value = '';
+        if (pEl && !pEl.value) pEl.value = '';
+      } catch(e) {}
       const loginCard = document.getElementById('gateLoginContainer');
       const regCard = document.getElementById('gateRegisterContainer');
       const tabBtnLogin = document.getElementById('tabBtnLogin');
@@ -28446,7 +28379,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     async function handleGateClientSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
       const name = document.getElementById('gateClientName')?.value?.trim() || 'Cliente';
-      const email = (document.getElementById('gateClientEmail')?.value?.trim() || 'cliente@printforge.it').toLowerCase();
+      const email = (document.getElementById('gateClientEmail')?.value?.trim() || (AppState.user && AppState.user.email) || '').toLowerCase();
+      if (!email || !email.includes('@')) {
+        showToast(currentLang === 'it' ? 'Inserisci un indirizzo email valido' : 'Please enter a valid email address', 'error');
+        return;
+      }
       const pass = document.getElementById('gateClientPass')?.value || '';
 
       // Cerca profilo cloud esistente per sincronizzare cross-device
@@ -28719,7 +28656,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       if (e && e.preventDefault) e.preventDefault();
       const isBusiness = (window.currentCreatorProfileType || 'private') === 'business';
       const labName = document.getElementById('gateCrLabName')?.value?.trim() || document.getElementById('crAuthLabName')?.value?.trim() || (isBusiness ? 'Hub Additivo' : 'Maker 3D');
-      const email = (document.getElementById('gateCrEmail')?.value?.trim() || 'maker@printforge.it').toLowerCase();
+      const email = (document.getElementById('gateCrEmail')?.value?.trim() || (AppState.user && AppState.user.email) || '').toLowerCase();
+      if (!email || !email.includes('@')) {
+        showToast(currentLang === 'it' ? 'Inserisci un indirizzo email valido' : 'Please enter a valid email address', 'error');
+        return;
+      }
       const pass = document.getElementById('gateCrPass')?.value || '';
       const printers = document.getElementById('gateCrPrinters')?.value?.trim() || document.getElementById('crAuthPrinters')?.value?.trim() || 'Bambu Lab X1-Carbon, Prusa MK4';
       const iban = document.getElementById('gateCrIban')?.value?.trim() || document.getElementById('crAuthIban')?.value?.trim() || '';
@@ -30014,13 +29955,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         aiImage: isDirectShowcase ? (directWork.photoUrl || draft.aiImage) : draft.aiImage,
         workPhotoUrl: isDirectShowcase ? directWork.photoUrl : null,
         timestamp: timeNow,
-        status: isDirectShowcase ? 'IN LAVORAZIONE (PRESA IN CARICO)' : statusOpen,
+        status: isDirectShowcase ? 'accepted' : 'open',
         isAccepted: isDirectShowcase,
         creatorAssigned: isDirectShowcase ? directCreator.name : '',
-        maker: isDirectShowcase ? directCreator.name : '',
-        maker_name: isDirectShowcase ? directCreator.name : '',
+        maker: isDirectShowcase ? directCreator.name : null,
+        maker_name: isDirectShowcase ? directCreator.name : null,
         acceptedBy: isDirectShowcase ? directCreator.name : '',
-        assigned_creator_id: isDirectShowcase ? directCreator.id : '',
+        assigned_creator_id: isDirectShowcase ? directCreator.id : null,
         makerUserId: isDirectShowcase ? directCreator.id : '',
         makerEmail: isDirectShowcase ? directCreator.email : '',
         targetCreatorId: isDirectShowcase ? directCreator.id : null,
@@ -30673,6 +30614,31 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
+
+      // REQUISITO PRIVACY: Se l'utente non è autenticato, non mostrare ordini privati
+      if (!AppState.user || !AppState.user.isLoggedIn) {
+        if (countBadge) countBadge.innerText = isEn ? '0 Active Requests' : '0 Richieste Attive';
+        container.innerHTML = `
+          <div class="p-6 sm:p-8 text-center rounded-2xl bg-[#0E0E12] border border-white/10 space-y-3">
+            <div class="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center mx-auto text-zinc-400">
+              <i data-lucide="shield-check" class="w-6 h-6 text-emerald-400"></i>
+            </div>
+            <h4 class="text-sm font-cyber font-bold text-white uppercase tracking-wide">
+              ${isEn ? 'Private Orders Area' : isEs ? 'Área de Pedidos Privada' : 'Area Ordini Personale'}
+            </h4>
+            <p class="text-xs text-zinc-400 max-w-md mx-auto">
+              ${isEn ? 'Sign in to view and track your custom 3D manufacturing requests.' : 'Accedi con il tuo account per visualizzare e monitorare le tue richieste di stampa 3D.'}
+            </p>
+            <button type="button" onclick="navigateTo('login-gate')" class="btn-kowalski-primary px-5 py-2 rounded-xl text-xs font-cyber font-bold uppercase inline-flex items-center gap-2 mt-2">
+              <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+              <span>${isEn ? 'Sign In / Register' : 'Accedi o Registrati'}</span>
+            </button>
+          </div>
+        `;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
       const userEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
       const userId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
       const isClient = AppState.user && AppState.user.role === 'client';
@@ -30949,15 +30915,27 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
         if (!r || !r.id) return false;
-        if (r.id.startsWith('USER-PROFILE-')) return false;
+        if (r.id.startsWith('USER-PROFILE-') || String(r.id).startsWith('REV-') || String(r.title || '').startsWith('CREATOR_REVIEW:') || r.status === 'CERTIFIED_REVIEW') return false;
         if (r.isRejected || r.isDeleted || r.isCompleted || r.isClosed || r.isDelivered) return false;
-        if (r.isAccepted === true) return false; // Se già accettata, non compare nella bacheca
-        if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('COMPLETAT'))) return false;
+
+        // REQUISITO CRITICO: Esclusione delle proprie richieste dalla Bacheca pubblica
+        // "nascondi sempre gli ordini creati dall'utente stesso (order.client_id !== currentUser.id e order.client_email !== currentUser.email)"
+        const reqClientEmail = (r.clientEmail || r.client_email || '').toLowerCase().trim();
+        const reqClientId = (r.userId || r.client_id || '').toLowerCase().trim();
+        if (myMakerEmail && reqClientEmail && reqClientEmail === myMakerEmail) return false;
+        if (myMakerUid && reqClientId && reqClientId === myMakerUid) return false;
+
+        // REQUISITO CRITICO: Sparizione immediata appena un creator accetta
+        // "La Bacheca pubblica deve mostrare SOLO ed ESCLUSIVAMENTE gli ordini con status === 'open' e maker_id === null"
+        if (r.isAccepted === true) return false;
+        if (r.maker || r.maker_name || r.makerUserId || r.assigned_creator_id || (r.acceptedBy && String(r.acceptedBy).trim() !== '')) return false;
+
+        const st = String(r.status || '').toLowerCase().trim();
+        const isOpen = (st === 'open' || st === 'in attesa' || st === 'aperta' || st.includes('attesa creator') || st.includes('waiting for creator'));
+        if (!isOpen) return false;
 
         const isDirect = Boolean(r.isDirectShowcase || r.isShowcaseOrder || r.targetCreatorId || r.targetCreatorName);
         if (isDirect) {
-          // RICHIESTA DIRETTA DA VETRINA: TOTALMENTE INVISIBILE AI CREATOR COMUNI!
-          // Visibile ESCLUSIVAMENTE al creator destinatario dell'opera
           const targetId = (r.targetCreatorId || r.assigned_creator_id || r.makerUserId || '').toLowerCase().trim();
           const targetName = (r.targetCreatorName || r.maker_name || r.maker || '').toLowerCase().trim();
           const targetEmail = (r.targetCreatorEmail || r.makerEmail || '').toLowerCase().trim();
@@ -30967,15 +30945,9 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
             (myMakerName && targetName && (targetName === myMakerName || targetName.includes(myMakerName) || myMakerName.includes(targetName))) ||
             (myMakerEmail && targetEmail && targetEmail === myMakerEmail)
           );
-
-          if (!isForMe) {
-            return false; // Nascosta per tutti gli altri creator!
-          }
-          return true;
+          if (!isForMe) return false;
         }
 
-        // Richieste broadcast normali (non da vetrina): non devono essere già prese in carico
-        if (r.acceptedBy && typeof r.acceptedBy === 'string' && r.acceptedBy.trim() !== '') return false;
         return true;
       });
 
@@ -37095,25 +37067,8 @@ function renderDealChat(rfpId) {
             sessionRestored = true;
           }
         } else {
-          // Se non c'è una sessione attiva ma ci sono credenziali salvate, ripristina la sessione
-          const savedCredsRaw = localStorage.getItem('printforge_saved_credentials');
-          if (savedCredsRaw) {
-            const sc = JSON.parse(savedCredsRaw);
-            if (sc && sc.email) {
-              AppState.user = {
-                id: 'usr_' + sc.email.replace(/[^a-z0-9]/g, '_'),
-                userId: 'usr_' + sc.email.replace(/[^a-z0-9]/g, '_'),
-                name: sc.name || sc.email.split('@')[0],
-                email: sc.email,
-                role: 'client',
-                isAdmin: Boolean(sc.isAdmin),
-                isLoggedIn: true,
-                stripeConnected: true
-              };
-              sessionRestored = true;
-              localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-            }
-          }
+          // Nessuna sessione attiva: l'utente parte rigorosamente come ospite non autenticato
+          sessionRestored = false;
         }
       } catch (e) {
         console.warn('Errore lettura sessione salvata:', e);
