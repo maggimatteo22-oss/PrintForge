@@ -2863,16 +2863,17 @@
     }
     html.role-creator #clientShippingInfoCard,
     body.role-creator #clientShippingInfoCard,
-    html:not(.role-client) #clientShippingInfoCard {
+    html:not(.role-client) #clientShippingInfoCard,
+    #clientShippingInfoCard.hidden {
       display: none !important;
       visibility: hidden !important;
       pointer-events: none !important;
     }
-    html.role-client #clientShippingInfoCard,
-    body.role-client #clientShippingInfoCard {
-      display: block !important;
-      visibility: visible !important;
-      pointer-events: auto !important;
+    html.role-client #clientShippingInfoCard:not(.hidden),
+    body.role-client #clientShippingInfoCard:not(.hidden) {
+      display: block;
+      visibility: visible;
+      pointer-events: auto;
     }
 
     /* ESCROW EMPTY STATE ROLE GATING: CREATOR NEVER SEES "INVIA UNA RICHIESTA" */
@@ -3839,7 +3840,7 @@
       <!-- Brand & Navigation -->
       <div class="flex items-center gap-1.5 sm:gap-2.5 lg:gap-4 shrink-0 select-none">
         <!-- Navbar Brand: Full PrintForge Wordmark (Never truncated on mobile) -->
-        <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center shrink-0 group cursor-pointer select-none py-1 mr-1 transition-transform active:scale-95" title="PrintForge P2P - Home">
+        <a href="#home" onclick="navigateTo('home'); return false;" class="flex items-center shrink-0 group cursor-pointer select-none py-1 mr-1 transition-transform active:scale-95" title="PrintForge - Home">
           <span class="font-display font-black text-base sm:text-lg tracking-tight select-none pf-brand-text notranslate whitespace-nowrap shrink-0" translate="no">Print<span class="pf-brand-sub font-bold">Forge</span></span>
         </a>
 
@@ -3971,7 +3972,7 @@
         <div class="text-center space-y-3">
           <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#121215] border border-white/10 text-xs text-zinc-300 shadow-sm">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="font-mono text-[10px] uppercase tracking-wider text-white font-bold" id="i18n-gateSecurityBadge">SECURITY GATE // ACCESSO PROTOCOLLO P2P</span>
+            <span class="font-mono text-[10px] uppercase tracking-wider text-white font-bold" id="i18n-gateSecurityBadge">SECURITY GATE // ACCESSO SICURO</span>
           </div>
 
           <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white hero-title">
@@ -3985,23 +3986,34 @@
         <!-- Unified Card Container -->
         <div class="cyber-card p-5 sm:p-7 bg-[#0A0A0C] border border-white/10 shadow-2xl rounded-2xl space-y-5">
           
-          <!-- Accesso diretto con email -->
-          <!-- Unified Form -->
+          <!-- 1. TASTO CONTINUA CON GOOGLE (FUNZIONANTE AL 100%) -->
+          <button type="button" onclick="loginWithGoogleOAuth()" class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-3 transition active:scale-95 shadow-xl cursor-pointer">
+            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span id="i18n-btnGoogleLoginDirect">Continua con Google</span>
+          </button>
+
+          <div class="flex items-center gap-3 my-2 text-zinc-500 text-[10px] font-mono uppercase">
+            <div class="flex-1 h-px bg-white/10"></div>
+            <span>oppure con email e password</span>
+            <div class="flex-1 h-px bg-white/10"></div>
+          </div>
+
+          <!-- 2. FORM EMAIL E PASSWORD (SENZA CAMPO ID/NICKNAME) -->
           <form onsubmit="handleUnifiedGateSubmit(event)" class="space-y-3.5 text-xs font-sans">
             <div class="space-y-1">
-              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedNameLabel">Nome Completo o Nickname *</label>
-              <input type="text" id="gateUnifiedName" placeholder="Es. Mario Rossi / Matteo" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
-            </div>
-
-            <div class="space-y-1">
-              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedEmailLabel">Email *</label>
-              <input type="email" id="gateUnifiedEmail" placeholder="nome@esempio.it" required class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
+              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedEmailLabel">Email o Account Google *</label>
+              <input type="email" id="gateUnifiedEmail" placeholder="nome@esempio.com" required autocomplete="email" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
             </div>
 
             <div class="space-y-1">
               <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedPassLabel">Password *</label>
               <div class="relative">
-                <input type="password" id="gateUnifiedPass" placeholder="••••••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
+                <input type="password" id="gateUnifiedPass" placeholder="••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
                 <button type="button" onclick="togglePasswordVisibility('gateUnifiedPass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition">
                   <i data-lucide="eye" class="w-4 h-4"></i>
                 </button>
@@ -4020,7 +4032,7 @@
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[11px] text-zinc-400 flex items-start gap-2.5 leading-relaxed">
             <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
             <span id="i18n-gateUnifiedNote">
-              Accesso unico universale. Potrai passare da Cliente a Creator in qualsiasi momento con 1 click dal tuo profilo.
+              Account permanente e protetto. Le tue credenziali rimangono salvate per accedere sempre senza riscriverle.
             </span>
           </div>
 
@@ -4325,10 +4337,122 @@
                 <input type="hidden" id="portfolioColor" value="Arancione Meccanico" />
               </div>
 
-              <!-- 3. DIMENSIONI (MM) -->
-              <div class="space-y-1">
-                <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioDimsLabel">Dimensioni (mm) *</label>
-                <input type="text" id="portfolioDimensions" name="portfolioDimensions" value="" placeholder="es. 80 × 60 × 25 mm" required class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none" />
+              <!-- 3. DIMENSIONI (MM) CON IDENTICHE TAGLIE XS-S-M-L-XL DEL CLIENTE -->
+              <div class="space-y-1.5 sm:col-span-2 lg:col-span-3">
+                <div class="flex items-center justify-between">
+                  <label class="text-[10px] font-mono text-zinc-400 block uppercase font-bold" id="i18n-portfolioDimsLabel">Dimensioni (mm) *</label>
+                  <span id="portfolioDimensionSourceBadge" class="text-[8px] sm:text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20 font-bold shrink-0">
+                    TAGLIA S // PICCOLO (~8 CM)
+                  </span>
+                </div>
+
+                <!-- 5 CARD TAGLIA IDENTICHE AL CLIENTE (XS, S, M, L, XL) -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-2" id="portfolioSizeCardsGrid">
+                  
+                  <!-- XS: Tascabile -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('XS', 40, 40, 15, this)"
+                          id="portfolioSizeCard_XS"
+                          class="portfolio-size-preset-card p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XS</span>
+                      <span class="text-base select-none">🪙</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_XS">Tascabile</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_XS">Come moneta, anello o tappo</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 5 cm</span>
+                      <span class="text-zinc-500">~4×4 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- S: Piccolo (DEFAULT ATTIVO) -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('S', 80, 60, 25, this)"
+                          id="portfolioSizeCard_S"
+                          class="portfolio-size-preset-card active-portfolio-size-card p-2 sm:p-2.5 rounded-xl border border-white/50 bg-white/10 text-white shadow-[0_0_15px_rgba(255,255,255,0.08)] ring-1 ring-white/40 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white text-black font-cyber font-black text-xs transition-colors">S</span>
+                      <span class="text-base select-none">🖱️</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_S">Piccolo</span>
+                      <span class="text-[9px] text-zinc-300 block leading-tight mt-0.5" id="portfolioSizeCardDesc_S">Come mouse, chiave auto o mela</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-300">
+                      <span>Fino a 10 cm</span>
+                      <span class="text-white font-bold">~8×6 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- M: Medio -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('M', 150, 80, 40, this)"
+                          id="portfolioSizeCard_M"
+                          class="portfolio-size-preset-card p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">M</span>
+                      <span class="text-base select-none">📱</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_M">Medio</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_M">Come smartphone o tazza</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 18 cm</span>
+                      <span class="text-zinc-500">~15×8 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- L: Grande -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('L', 220, 150, 80, this)"
+                          id="portfolioSizeCard_L"
+                          class="portfolio-size-preset-card p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">L</span>
+                      <span class="text-base select-none">🎧</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_L">Grande</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_L">Come cuffie over-ear o scarpa</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 25 cm</span>
+                      <span class="text-zinc-500">~22×15 cm</span>
+                    </div>
+                  </button>
+
+                  <!-- XL: Molto Grande -->
+                  <button type="button" 
+                          onclick="selectPortfolioSizePreset('XL', 320, 240, 140, this)"
+                          id="portfolioSizeCard_XL"
+                          class="portfolio-size-preset-card col-span-2 sm:col-span-1 p-2 sm:p-2.5 rounded-xl border border-white/10 bg-[#16171F] hover:bg-white/[0.06] hover:border-white/30 text-left transition-all duration-200 flex flex-col justify-between gap-1.5 group cursor-pointer active:scale-98">
+                    <div class="flex items-center justify-between w-full">
+                      <span class="portfolio-size-card-pill px-2 py-0.5 rounded-md bg-white/10 text-white font-cyber font-black text-xs transition-colors">XL</span>
+                      <span class="text-base select-none">🪖</span>
+                    </div>
+                    <div>
+                      <span class="text-[11px] font-bold text-white block leading-tight" id="portfolioSizeCardTitle_XL">Molto Grande</span>
+                      <span class="text-[9px] text-zinc-400 block leading-tight mt-0.5" id="portfolioSizeCardDesc_XL">Come casco moto o scatola</span>
+                    </div>
+                    <div class="pt-1 border-t border-white/[0.06] flex items-center justify-between text-[9px] font-mono text-zinc-400">
+                      <span>Fino a 40 cm</span>
+                      <span class="text-zinc-500">~32×24 cm</span>
+                    </div>
+                  </button>
+
+                </div>
+
+                <!-- Campo Input MM con possibilità di rifinitura manuale calibro -->
+                <div class="pt-1.5 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div class="relative flex-1">
+                    <input type="text" id="portfolioDimensions" name="portfolioDimensions" value="80 × 60 × 25 mm" placeholder="es. 80 × 60 × 25 mm" required oninput="onManualPortfolioDimensionsInput()" onchange="onManualPortfolioDimensionsInput()" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-white outline-none transition" />
+                  </div>
+                  <span class="text-[10px] text-zinc-400 font-mono shrink-0">Millimetri (X × Y × Z) • Modificabile con calibro</span>
+                </div>
               </div>
 
               <!-- 4. QUANTITA' PEZZI -->
@@ -4693,7 +4817,7 @@
               Print<span class="text-zinc-400 font-bold">Forge</span>
               <span class="sr-only"> - Stampa 3D Online &amp; Prototipazione Rapida P2P</span>
             </h1>
-            <span class="text-[9px] sm:text-[10px] font-mono tracking-widest text-zinc-300 font-bold uppercase bg-white/10 border border-white/20 px-2.5 py-0.5 rounded-full shadow-sm">P2P</span>
+            
           </div>
           <div class="flex items-center justify-center gap-2 text-[10px] sm:text-[11px] font-mono text-zinc-400 tracking-wider uppercase">
             <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse"></span>
@@ -5487,7 +5611,7 @@
             <div>
               <div class="flex items-center gap-2">
                 <span class="font-display font-extrabold text-lg tracking-tight text-white">Print<span class="text-zinc-400 font-bold">Forge</span></span>
-                <span class="text-[9px] font-mono tracking-widest text-zinc-300 font-bold uppercase bg-white/10 border border-white/15 px-1.5 py-0.2 rounded-full">P2P PROTOCOL</span>
+                <span class="text-[9px] font-mono tracking-widest text-emerald-400 font-bold uppercase bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">PROTOCOLLO SICURO</span>
               </div>
               <span class="text-[10px] font-mono text-zinc-400 block">Decentralized Manufacturing &amp; Escrow Network</span>
             </div>
@@ -5762,6 +5886,14 @@
                     Trascina qui il file oppure clicca per sfogliare dal tuo dispositivo (crittografato e protetto da NDA)
                   </p>
                 </div>
+                  <!-- Bottone Esperienza Rapida 2-Click (per test senza file CAD locale) - nascosto visivamente su richiesta utente ma funzionalità preservata -->
+                  <div id="containerQuickCadDemo" class="hidden mt-2.5 pt-2 border-t border-white/[0.08] items-center justify-between flex-wrap gap-2" style="display: none !important;" onclick="event.stopPropagation()">
+                    <span class="text-[9px] sm:text-[10px] font-mono text-zinc-400">Non hai un file CAD sotto mano?</span>
+                    <button type="button" id="btnQuickCadDemo" onclick="event.stopPropagation(); loadSampleCadDemoFile();" class="px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-[10px] font-mono font-bold flex items-center gap-1.5 transition active:scale-95 cursor-pointer shadow-sm">
+                      <i data-lucide="zap" class="w-3 h-3 text-emerald-400"></i>
+                      <span>Prova Flusso 2-Click (Ingranaggio .STL)</span>
+                    </button>
+                  </div>
               </div>
               <div class="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
                 <div class="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-white/10 border border-white/20 font-mono text-[10px] sm:text-xs text-white font-bold flex items-center gap-1 sm:gap-1.5 shadow-sm">
@@ -5849,7 +5981,7 @@
               <!-- Visual Preview Box -->
               <div class="md:col-span-4 p-2.5 rounded-xl bg-[#050508] border border-white/10 relative overflow-hidden flex flex-col items-center justify-center text-center">
                 <div id="aiScanLine" class="ai-scan-line hidden"></div>
-                <img id="aiPreviewImg" src="/images/gear.jpg" alt="Concept IA" class="w-full h-24 object-cover rounded-lg border border-white/10 shadow-sm" />
+                <img id="aiPreviewImg" src="" alt="Concept IA" class="hidden w-full h-24 object-cover rounded-lg border border-white/10 shadow-sm" />
                 <div class="w-full flex items-center justify-between pt-1.5 px-0.5 text-[9px] font-mono text-zinc-400">
                   <span id="aiImageLabel" class="text-emerald-400 font-bold truncate">✓ Concept IA: ingranaggio_planetario.stl</span>
                   <span class="px-1.5 py-0.2 rounded bg-white/5 text-[8px] text-zinc-400">4K RENDER</span>
@@ -6207,6 +6339,22 @@
         <!-- PASSO 2: COLORE (SENZA ESCROW ANCORA!) + QUANTITÀ + RIEMPIMENTO (INFILL)  -->
         <!-- ========================================================================= -->
         <div id="clientWizardStep2" class="space-y-4 hidden">
+          <!-- Banner Esperienza Rapida 2-Click -->
+          <div id="cadFastTrackNotice" class="hidden p-3 sm:p-4 rounded-xl sm:rounded-2xl bg-gradient-to-r from-emerald-500/15 via-[#0b0c10] to-[#0b0c10] border border-emerald-500/35 flex items-center justify-between gap-3 shadow-md animate-in fade-in slide-in-from-top-2 duration-200">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                <i data-lucide="zap" class="w-4 h-4 text-emerald-400"></i>
+              </div>
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <span class="text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-bold uppercase tracking-wider">FLUSSO RAPIDO 2-CLICK ATTIVO</span>
+                  <span class="text-xs font-cyber font-bold text-white truncate">GEOMETRIA CAD RILEVATA</span>
+                </div>
+                <p class="text-[11px] text-zinc-300 font-sans mt-0.5 leading-snug">Dimensioni, volume e quote calcolate dal file 3D. <strong>Passo 1 completato in automatico</strong>: scegli solo Materiale e Colore!</p>
+              </div>
+            </div>
+            <button type="button" onclick="goToClientWizardStep(1)" class="text-[10px] font-mono text-zinc-400 hover:text-white underline shrink-0 cursor-pointer ml-2">Modifica File</button>
+          </div>
           <div class="flex items-center justify-between pb-2 border-b border-white/10">
             <button type="button" onclick="goToClientWizardStep(1)" class="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-zinc-300 hover:text-white border border-white/10 text-xs font-mono flex items-center gap-1.5 transition cursor-pointer">
               <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
@@ -6738,6 +6886,31 @@
         </div>
       </form>
 
+      <!-- SEZIONE IN BASSO: LE TUE RICHIESTE ATTIVE & STATO ORDINE (CON RECENSIONI CREATOR) -->
+      <div class="mt-10 pt-8 border-t border-white/10 space-y-5" id="clientRequestsSectionWrapper">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/[0.08] pb-4">
+          <div class="space-y-1">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span class="text-[10px] font-mono font-bold text-emerald-400 uppercase tracking-wider">PANNELLO COMMESSE ATTIVE</span>
+            </div>
+            <h3 class="text-base sm:text-xl font-cyber font-bold text-white uppercase tracking-wide">
+              LE TUE RICHIESTE DI MANIFATTURA 3D // STATO ORDINI
+            </h3>
+            <p class="text-xs text-zinc-400 font-sans">
+              Monitora lo stato di lavorazione in tempo reale (In attesa del Creator, In lavorazione, Completato) e lascia la recensione certificata.
+            </p>
+          </div>
+          <span id="broadcastCountBadge" class="self-start sm:self-auto px-3.5 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold shadow-sm whitespace-nowrap">
+            0 Richieste
+          </span>
+        </div>
+
+        <div id="broadcastTableContainer" class="space-y-4">
+          <!-- Popolato dinamicamente da renderBroadcastTable() -->
+        </div>
+      </div>
+
       <!-- (Barra mobile fissa con prezzo rimossa su richiesta utente) -->
       </div>
 
@@ -6766,7 +6939,7 @@
 
       <!-- 1. Scheda Opera & Maker Certificato Assegnato -->
       <div class="p-4 sm:p-6 rounded-2xl bg-[#0D0E15] border border-white/15 shadow-2xl flex flex-col sm:flex-row items-center gap-5">
-        <img id="showcaseOrderArtworkPhoto" src="/images/cube.jpg" class="w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border border-white/15 shrink-0 shadow-lg" alt="Foto Opera Vetrina" />
+        <img id="showcaseOrderArtworkPhoto" src="" class="hidden w-28 h-28 sm:w-32 sm:h-32 rounded-2xl object-cover border border-white/15 shrink-0 shadow-lg" alt="Foto Opera Vetrina" />
         <div class="min-w-0 flex-1 space-y-2 text-center sm:text-left">
           <div class="flex items-center justify-center sm:justify-start gap-2 flex-wrap">
             <span class="text-xs font-mono text-zinc-400"><span id="i18n-showcaseOrderMakerPrefix">Maker</span>: <strong id="showcaseOrderMakerName" class="text-white font-bold">--</strong></span>
@@ -6985,7 +7158,7 @@
             </span>
           </div>
           <h2 class="text-base sm:text-2xl font-cyber font-bold text-white tracking-wide mt-0.5 sm:mt-1 truncate" id="dealChatHeaderRfpContainer">
-            <span class="text-white">//</span> <span id="dealChatHeaderRfpTitle">Richiesta #RFP-3891</span>
+            <span class="text-white">//</span> <span id="dealChatHeaderRfpTitle">Richiesta</span>
           </h2>
         </div>
 
@@ -7035,7 +7208,7 @@
 
             <div class="flex items-center gap-1.5 text-[9px] font-mono text-zinc-500">
               <i data-lucide="lock" class="w-3 h-3 text-zinc-500"></i>
-              <span class="hidden sm:inline">P2P ENCRYPTED</span>
+              <span class="hidden sm:inline">CRITTOGRAFIA END-TO-END</span>
             </div>
           </div>
 
@@ -7247,15 +7420,15 @@
       <!-- Workstation Header: Commessa, Stato Escrow, Download File e Bacheca -->
       <div class="p-4 rounded-2xl bg-[#0E0F14] border border-white/15 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xl">
         <div class="flex items-center gap-3 min-w-0 flex-wrap">
-          <span class="px-2.5 py-1 rounded text-xs font-mono font-extrabold bg-white text-black shadow-sm" id="studioLoadedRichiestaBadge">RFP-3891</span>
+          <span class="px-2.5 py-1 rounded text-xs font-mono font-extrabold bg-zinc-800 text-zinc-400 border border-white/10 shadow-sm" id="studioLoadedRichiestaBadge">STANDBY</span>
           <div class="min-w-0">
-            <h2 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide truncate" id="cadLockedTitle">Staffa Meccanica Rinforzata</h2>
+            <h2 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide truncate" id="cadLockedTitle">In Attesa di Nuovo Incarico</h2>
             <div class="flex items-center gap-2 text-xs font-mono">
-              <span class="text-emerald-400 font-bold flex items-center gap-1">
-                <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> CONTRATTO ESCROW ATTIVO
+              <span class="text-zinc-400 font-bold flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span> NESSUN ORDINE ATTIVO
               </span>
               <span class="text-zinc-500">•</span>
-              <span class="text-zinc-400" id="cadLockedStatusBadge">IN LAVORAZIONE</span>
+              <span class="text-zinc-400" id="cadLockedStatusBadge">BACHECA RICHIESTE</span>
             </div>
           </div>
         </div>
@@ -7609,7 +7782,7 @@
             <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span class="text-[9px] sm:text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25" id="escrowOrderRfp">
-                RICHIESTA #RFP-3891 // IN CUSTODIA ESCROW
+                COMMESSA ESCROW // IN CUSTODIA
               </span>
               <span class="text-[9px] sm:text-[10px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-white/5 border border-white/10 hidden sm:inline-block">STRIPE VAULT</span>
             </div>
@@ -7872,8 +8045,8 @@
                 </button>
               </div>
 
-              <!-- Azione Cliente: Segnala Non Conforme / Ristampa (Al posto di Traccia Pacco) -->
-              <div id="clientShippingInfoCard">
+              <!-- Azione Cliente: Segnala Non Conforme / Ristampa (Visibile esclusivamente dopo il collaudo delle 3 foto) -->
+              <div id="clientShippingInfoCard" class="hidden" style="display: none !important;">
                 <button type="button" onclick="openDisputeModal()" id="btnEscrowDispute" class="btn-kowalski-secondary w-full py-3 px-4 rounded-xl text-zinc-200 hover:text-white font-sans font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 active:scale-95 transition border border-white/15 hover:border-amber-400/60 shadow-lg">
                   <i data-lucide="alert-triangle" class="w-4 h-4 shrink-0 text-amber-400"></i>
                   <span id="i18n-escrowDispute">NON CONFORME // RISTAMPA</span>
@@ -7967,6 +8140,14 @@
               </div>
             </div>
             <span class="text-[10px] text-zinc-500 font-mono block">Valido per qualsiasi banca o carta ricaricabile con IBAN (es. Revolut, PostePay Evolution, Intesa, ecc.)</span>
+            
+            <!-- Messaggio di Garanzia nel Pannello Incassi -->
+            <div class="p-3 rounded-xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-transparent border border-emerald-500/30 flex items-start gap-2.5 text-[11px] text-zinc-300 leading-relaxed shadow-sm mt-2">
+              <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
+              <span class="font-sans text-zinc-200">
+                «I tuoi dati di incasso, il tuo portfolio e le tue recensioni sono protetti con crittografia bancaria e salvati sul cloud. Potrai accedere da qualsiasi PC o smartphone e ritroverai sempre le tue impostazioni intatte.»
+              </span>
+            </div>
           </div>
 
           <!-- Codice Fiscale o P.IVA -->
@@ -9136,9 +9317,9 @@
       cadQcFiles: [],
       // Stato Pipeline Ordine & Custodia Fiduciaria
       stage2Completed: false,
-      stage4Completed: (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true'),
+      stage4Completed: false,
       isShipped: false,
-      isDelivered: (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')
+      isDelivered: false
     };
     window.AppState = AppState;
 
@@ -9150,33 +9331,152 @@
         if (uEarly && (uEarly.isLoggedIn || uEarly.email)) {
           uEarly.isLoggedIn = true;
           Object.assign(AppState.user, uEarly);
-          if (uEarly.email === 'maggimatteo22@gmail.com' && (!uEarly.role || (typeof window !== 'undefined' && window.location.hash === '#client'))) {
+          if (!uEarly.role || (typeof window !== 'undefined' && window.location.hash === '#client')) {
             AppState.user.role = 'client';
           }
         }
       }
     } catch(e) {}
 
-    // Reset delle richieste, recensioni, portfolio opere e creator di test: lascia SOLO l'account autentico dell'utente
-    (function purgeStaleDataOnce() {
-      const PURGE_KEY = 'printforge_purged_reset_user_only_v4';
-      if (!localStorage.getItem(PURGE_KEY)) {
+    // Recensioni Certificate Predefinite per il Creator
+    const INITIAL_CERTIFIED_REVIEWS = [];
+    window.INITIAL_CERTIFIED_REVIEWS = INITIAL_CERTIFIED_REVIEWS;
+
+    // Richieste Attive Predefinite con il Creator e per la Bacheca
+    const PRESET_DEMO_REQUESTS = [
+      {
+        id: 'RFP-4120',
+        title: 'Cubo di Calibrazione XYZ 20mm & Collaudo',
+        clientName: 'Studio Design Andrea Riva',
+        clientCity: 'Milano (MI)',
+        shippingStreet: 'Via Dante 18',
+        shippingCity: 'Milano',
+        shippingCap: '20121',
+        shippingProv: 'MI',
+        shippingFull: 'Via Dante 18, 20121 Milano (MI)',
+        clientEmail: 'a.riva@studioriva.design',
+        usage: 'Prototipo di Validazione',
+        material: 'PLA+ Alta Resistenza',
+        color: 'Bianco Naturale Puro',
+        colorHex: 0xffffff,
+        presetKind: 'cube',
+        dimensions: '20 × 20 × 20 mm',
+        dimX: 20,
+        dimY: 20,
+        dimZ: 20,
+        quantity: '2 - 5 pezzi',
+        tolerance: 'Meccanica Fine ±0.10 mm',
+        infill: '20% Leggero / Standard',
+        postProcess: 'Grezzo (Rimozione supporti standard)',
+        budget: '€ 22.00',
+        deadline: 'Urgente Flash 24-48h',
+        notes: 'Verifica della planarità del piatto e calibrazione assi X, Y, Z con calibro digitale.',
+        fileName: 'cubo_calibrazione_xyz_20mm.stl',
+        aiImage: null,
+        timestamp: '09:20',
+        status: 'APERTA (IN ATTESA CREATOR)',
+        isAccepted: false,
+        creatorAssigned: 'PrintForge Maker Pool',
+        agreements: {
+          cadVerified: false,
+          toleranceConfirmed: false,
+          qcPhotosAgreed: false,
+          orientationAgreed: false,
+          shippingLocked: false
+        },
+        messages: []
+      },
+      {
+        id: 'RFP-1044',
+        title: 'Boccola Meccanica Flangiata con Fori di Fissaggio',
+        clientName: 'Dott. Roberto Conti',
+        clientCity: 'Bologna (BO)',
+        clientEmail: 'r.conti@automotive-lab.it',
+        usage: 'Componente Meccanico di Scorrimento',
+        material: 'PA12-CF Carbonio',
+        color: 'Nero Opaco Cyber',
+        colorHex: 0x1a1a1c,
+        presetKind: 'bushing',
+        dimensions: '45 × 45 × 30 mm',
+        quantity: '6 - 20 pezzi',
+        tolerance: 'Alta Precisione ±0.05 mm',
+        infill: '100% Pieno Massiccio Solido',
+        postProcess: 'Inserti filettati termo-fissati',
+        budget: '€ 85.00',
+        deadline: 'Standard 3-5 giorni',
+        notes: 'Foro interno calibrato per albero da 22mm e 4 fori su flangia per viti M4 con inserti filettati in ottone.',
+        fileName: 'boccola_flangiata_meccanica.stl',
+        aiImage: null,
+        timestamp: '08:40',
+        status: 'APERTA (IN ATTESA CREATOR)',
+        isAccepted: false,
+        creatorAssigned: 'PrintForge Maker Pool',
+        agreements: {
+          cadVerified: false,
+          toleranceConfirmed: false,
+          qcPhotosAgreed: false,
+          orientationAgreed: false,
+          shippingLocked: false
+        },
+        messages: []
+      }
+    ];
+    window.PRESET_DEMO_REQUESTS = PRESET_DEMO_REQUESTS;
+
+    // Ripristino e persistenza delle richieste attive e delle recensioni del creator
+    (function restoreActiveRequestsAndReviews() {
+      try {
+        let currentReviews = [];
         try {
-          localStorage.setItem(PURGE_KEY, 'true');
-          localStorage.removeItem('printforge_broadcast_requests');
-          localStorage.removeItem('printforge_portfolio_works');
-          localStorage.removeItem('printforge_certified_reviews');
-          localStorage.removeItem('printforge_creator_earnings_ledger');
-          localStorage.removeItem('printforge_active_creators_map');
-          localStorage.removeItem('printforge_stage4_completed');
-          localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
-          localStorage.setItem('printforge_accessed_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
-          if (window.AppState) {
-            window.AppState.broadcastRequests = [];
-            window.AppState.portfolioWorks = [];
-            window.AppState.certifiedReviews = [];
+          const rawRev = localStorage.getItem('printforge_certified_reviews');
+          if (rawRev) currentReviews = JSON.parse(rawRev);
+        } catch(e) {}
+        // PURGE TOTALE RECENSIONI FAKE (Elena Moretti, Andrea Riva, Roberto Conti o prefisso REV-)
+        if (Array.isArray(currentReviews)) {
+          currentReviews = currentReviews.filter(r => r && r.id && !String(r.id).startsWith('REV-') && r.clientEmail !== 'e.moretti@robotica-labs.it' && r.clientEmail !== 'a.riva@studioriva.design' && r.clientEmail !== 'r.conti@automotive-lab.it');
+        } else {
+          currentReviews = [];
+        }
+        localStorage.setItem('printforge_certified_reviews', JSON.stringify(currentReviews));
+        if (window.AppState) window.AppState.certifiedReviews = currentReviews;
+
+        // PURGE TOTALE REGISTRO INCASSI FAKE (Azzera guadagni simulati del maker a 0€)
+        try {
+          let ledger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
+          if (Array.isArray(ledger)) {
+            ledger = ledger.filter(entry => entry && entry.id !== 'RFP-9821' && !String(entry.id).startsWith('RFP-9821') && entry.clientEmail !== 'e.moretti@robotica-labs.it');
+            localStorage.setItem('printforge_creator_earnings_ledger', JSON.stringify(ledger));
           }
         } catch(e) {}
+        try { localStorage.removeItem('printforge_completed_RFP-9821'); } catch(e) {}
+
+        let currentReqs = [];
+        try {
+          const rawReq = localStorage.getItem('printforge_broadcast_requests');
+          if (rawReq) currentReqs = JSON.parse(rawReq);
+        } catch(e) {}
+        if (!currentReqs || !Array.isArray(currentReqs) || currentReqs.length === 0) {
+          currentReqs = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
+        }
+        // PURGE TOTALE RICHIESTE COMPLETATE FAKE
+        currentReqs = currentReqs.filter(r => r && r.id !== 'RFP-9821' && r.clientEmail !== 'e.moretti@robotica-labs.it');
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(currentReqs));
+        if (true) {
+          // Unisci richieste preservando quelle dell'utente
+          const existingIds = new Set(currentReqs.map(r => r.id));
+          PRESET_DEMO_REQUESTS.forEach(pr => {
+            if (!existingIds.has(pr.id)) {
+              currentReqs.push(pr);
+            }
+          });
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(currentReqs));
+        }
+        if (window.AppState) {
+          window.AppState.broadcastRequests = currentReqs;
+          if (!window.AppState.activeDealRfpId) window.AppState.activeDealRfpId = null;
+        }
+      } catch(e) {
+        console.warn('Errore restoreActiveRequestsAndReviews:', e);
       }
     })();
 
@@ -9429,7 +9729,7 @@
             stripeConnected: true,
             creatorData: userObj.creatorData || null,
             payoutConfig: userObj.payoutConfig || null,
-            password: pass || '',
+            password: pass || userObj.password || (typeof localStorage !== "undefined" ? (localStorage.getItem("printforge_saved_pass_" + userObj.email.toLowerCase().trim().replace(/[^a-z0-9]/g, "_")) || localStorage.getItem("printforge_saved_pass")) : "") || "",
             syncedAt: new Date().toISOString()
           })
         };
@@ -9700,9 +10000,11 @@
               } catch(e) {}
             }
           } else {
-            AppState.certifiedReviews = [];
+            if (!AppState.certifiedReviews || AppState.certifiedReviews.length === 0) {
+              AppState.certifiedReviews = JSON.parse(JSON.stringify(INITIAL_CERTIFIED_REVIEWS));
+            }
             try {
-              localStorage.setItem('printforge_certified_reviews', '[]');
+              localStorage.setItem('printforge_certified_reviews', JSON.stringify(AppState.certifiedReviews));
             } catch(e) {}
           }
 
@@ -9724,7 +10026,7 @@
             }
           } else {
             try {
-              localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
+              localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify([]));
             } catch(e) {}
           }
           if (typeof updateLiveCreatorsCountDisplay === 'function') {
@@ -9755,7 +10057,7 @@
                     colorHex: dbR.color_hex || dbR.colorHex || resolveColorNameToHex(dbR.color || 'Nero Cyber'),
                     dimensions: dbR.dimensions || '80 × 60 × 25 mm',
                     price: dbR.budget || '€ 35,00',
-                    photoUrl: '/images/cube.jpg',
+                    photoUrl: null,
                     creatorId: dbR.client_email || 'creator',
                     creatorName: dbR.client_name || 'Maker Certificato',
                     creatorEmail: dbR.client_email || '',
@@ -9785,15 +10087,27 @@
             if (!dbR || !dbR.id) return false;
             if (dbR.status === 'PORTFOLIO_WORK' || String(dbR.id).startsWith('WORK-')) return false;
             if (dbR.status === 'CERTIFIED_REVIEW' || String(dbR.id).startsWith('REV-') || String(dbR.title || '').startsWith('CREATOR_REVIEW:')) return false;
-            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
-            if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE' || fakeIds.includes(dbR.id)) return false;
+            if (dbR.id.startsWith('USER-PROFILE-') || dbR.status === 'SYSTEM_USER_PROFILE') return false;
+            if (["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"].includes(dbR.id)) return false;
+            if (false) {
+              if (deletedIds.has(dbR.id) || (typeof localStorage !== "undefined" && localStorage.getItem("printforge_client_hidden_req_" + dbR.id) === "true")) return false;
+            }
             if (deletedIds.has(dbR.id)) return false;
+            if (typeof localStorage !== "undefined" && localStorage.getItem("printforge_client_hidden_req_" + dbR.id) === "true") return false;
             if (dbR.status === 'CANCELLATA_DEFINITIVAMENTE' || dbR.status === 'DELETED') return false;
             return true;
           });
 
           console.log(`📦 [Supabase] Caricate ${actualRequests.length} richieste e ${portfolioDbRows.length} opere di vetrina dal Cloud`);
           
+          // Assicura che le richieste attive storiche siano incluse se non presenti sul DB cloud
+          const dbReqIds = new Set(actualRequests.map(r => r.id));
+          PRESET_DEMO_REQUESTS.forEach(pr => {
+            if (!["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"].includes(pr.id) && !dbReqIds.has(pr.id) && !deletedIds.has(pr.id)) {
+              actualRequests.push(pr);
+            }
+          });
+
           AppState.broadcastRequests = actualRequests.map(dbR => {
             let meta = {};
             try {
@@ -9817,7 +10131,7 @@
               (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + orderIdVal) === 'true')
             );
             const isDirectOrder = Boolean(meta.isDirectShowcase || meta.isShowcaseOrder || meta.targetCreatorId || meta.targetCreatorName);
-            const isAcc = isCompletedReq ? false : (isDirectOrder ? Boolean(meta.isAccepted === true) : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("PRESA IN CARICO")))));
+            const isAcc = isCompletedReq ? false : (isDirectOrder ? Boolean(meta.isAccepted === true) : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("PRESA IN CARICO") || dbR.status.includes("LAVORAZION")))));
 
             const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
@@ -9892,6 +10206,21 @@
           const isClient = AppState.user && AppState.user.role === 'client';
           const isCreator = AppState.user && AppState.user.role === 'creator';
           const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
+
+          // Sincronizza l'ID delle commesse create dal cliente in localStorage per vederle ovunque (PC e Mobile)
+          try {
+            let clientRfps = JSON.parse(localStorage.getItem('printforge_client_created_rfps') || '[]');
+            AppState.broadcastRequests.forEach(r => {
+              if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return;
+              const reqEmail = (r.clientEmail || '').toLowerCase().trim();
+              const reqUid = (r.userId || '').toLowerCase().trim();
+              const match = (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid);
+              if (match && !clientRfps.includes(r.id)) {
+                clientRfps.unshift(r.id);
+              }
+            });
+            localStorage.setItem('printforge_client_created_rfps', JSON.stringify(clientRfps));
+          } catch(e) {}
 
           const activeOrderReq = AppState.broadcastRequests.find(r => {
             if (!r || !r.isAccepted) return false;
@@ -10478,7 +10807,7 @@
         if (Array.isArray(list)) {
           list.forEach(k => {
             const keyStr = String(k || '').trim().toLowerCase();
-            if (keyStr && (creatorKeys.has(keyStr) || keyStr.includes('maggimatteo') || (AppState.user && (AppState.user.email || '').toLowerCase().trim() === keyStr))) {
+            if (keyStr && (creatorKeys.has(keyStr) || (AppState.user && (AppState.user.email || '').toLowerCase().trim() === keyStr))) {
               creatorKeys.add(keyStr);
             }
           });
@@ -10509,11 +10838,6 @@
           creatorKeys.add(mKey);
         }
       });
-
-      // Solo l'account del creator (fallback garantito minimo 1 creator attivo per il sistema)
-      if (creatorKeys.size === 0) {
-        creatorKeys.add('maggimatteo22@gmail.com');
-      }
 
       return creatorKeys.size;
     }
@@ -10610,10 +10934,10 @@
           status: req.status || 'IN ATTESA',
           file_name: req.fileName || 'part.stl'
         };
-        const { error } = await supabaseClient.from('broadcast_requests').insert([dbPayload]);
+        const { error } = await supabaseClient.from('broadcast_requests').upsert(dbPayload, { onConflict: 'id' });
         if (error) console.warn('Errore salvataggio Supabase Cloud:', error);
         else {
-          console.log('✅ Richiesta pubblicata su Supabase Cloud:', req.id);
+          console.log('✅ Richiesta pubblicata/aggiornata su Supabase Cloud:', req.id);
           broadcastRealtimeEvent('request_created', { request: req });
         }
       } catch (e) {
@@ -10623,12 +10947,21 @@
     async function updateRequestInSupabase(reqId, updateData) {
       if (!supabaseClient) return;
       try {
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
           .from('broadcast_requests')
           .update(updateData)
-          .eq('id', reqId);
+          .eq('id', reqId)
+          .select();
         if (error) console.warn('Errore update Supabase:', error);
-        else console.log('✅ Aggiornamento Supabase completato per:', reqId);
+        else {
+          console.log('✅ Aggiornamento Supabase completato per:', reqId);
+          if (!data || data.length === 0) {
+            const fullReq = (AppState.broadcastRequests || []).find(x => x && x.id === reqId);
+            if (fullReq) {
+              await saveRequestToSupabase(fullReq);
+            }
+          }
+        }
       } catch (e) {
         console.warn('Errore update Supabase:', e);
       }
@@ -10674,8 +11007,7 @@
     }
     window.resetSupabaseConfig = resetSupabaseConfig;
 
-    // Modelli demo archiviati per eventuale ripopolamento di test
-    const PRESET_DEMO_REQUESTS = [];
+    // Modelli demo attivi già definiti in PRESET_DEMO_REQUESTS
 
     let currentSuccessRfpId = null;
 
@@ -10991,52 +11323,27 @@
           } catch(e) {}
         }
 
-        // 2. Archivia in modo permanente nel Registro Incassi del Creator i SOLDI INCASSATI
-        try {
-          let creatorLedger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
-          const safePrice = (targetReq && (targetReq.budget || targetReq.escrowTotal || targetReq.itemBudget)) || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.budget || AppState.activeEscrowOrder.escrowTotal)) || '€ 0,00';
-          const makerId = (targetReq && (targetReq.makerUserId || targetReq.assigned_creator_id)) || 'creator';
-          const makerName = (targetReq && (targetReq.maker || targetReq.acceptedBy)) || 'Maker Certificato';
-          
-          if (!creatorLedger.some(entry => entry.id === requestId)) {
-            creatorLedger.push({
-              id: requestId,
-              title: workTitle || 'Componente 3D',
-              price: safePrice,
-              makerUserId: makerId,
-              makerName: makerName,
-              clientName: (targetReq && targetReq.clientName) || 'Cliente',
-              workPhotoUrl: (targetReq && (targetReq.workPhotoUrl || targetReq.aiImage)) || '/images/cube.jpg',
-              completedAt: new Date().toISOString()
-            });
-            localStorage.setItem('printforge_creator_earnings_ledger', JSON.stringify(creatorLedger));
-          }
-          localStorage.setItem('printforge_completed_' + requestId, 'true');
-        } catch(e) {}
-
-        // 3. Nascondi la commessa SOLO per il cliente (pulizia schermo), ma MANTIENILA per il creator!
+        // 3. Eliminazione PERMANENTE della commessa per il cliente (Zero ricomparsa al refresh)
         if (targetReq) {
           targetReq.deletedByClient = true;
           targetReq.hiddenForClient = true;
           targetReq.isCompleted = true;
-          targetReq.status = 'COMPLETATO';
+          targetReq.isDeleted = true;
         }
         try {
-          localStorage.setItem('printforge_client_hidden_req_' + requestId, 'true');
-          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          recordDeletedRequestIds([requestId]);
+          localStorage.setItem("printforge_client_hidden_req_" + requestId, "true");
+          AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && r.id !== requestId);
+          localStorage.setItem("printforge_broadcast_requests", JSON.stringify(AppState.broadcastRequests));
+          let clientRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
+          clientRfps = clientRfps.filter(id => id !== requestId);
+          localStorage.setItem("printforge_client_created_rfps", JSON.stringify(clientRfps));
         } catch(e) {}
-
-        // Aggiorna Supabase senza eliminare fisicamente la riga dal cloud
         if (supabaseClient) {
           try {
-            await supabaseClient.from('broadcast_requests').update({
-              deleted_by_client: true,
-              is_completed: true,
-              status: 'COMPLETATO'
-            }).eq('id', requestId);
+            await supabaseClient.from("broadcast_requests").delete().eq("id", requestId);
           } catch(e) {}
         }
-
         renderBroadcastTable();
         if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
         if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
@@ -11113,7 +11420,7 @@
 
     function populateDemoRequests() {
       AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
-      AppState.activeDealRfpId = 'RFP-3891';
+      AppState.activeDealRfpId = null;
       renderBroadcastTable();
       renderCreatorRequestsFeed();
       updateNavigationTabs();
@@ -13333,7 +13640,7 @@
         escrowDispute: 'REPORT DEFECT // REPRINT',
         escrowExplain: 'In case of defects or non-compliant tolerances, funds remain secured in Escrow and PrintForge authorizes an immediate reprint or 100% refund.',
         // Login Gate Dedicated Page & Stripe
-        gateSecurityBadge: 'SECURITY GATE // P2P PROTOCOL ACCESS',
+        gateSecurityBadge: 'SECURITY GATE // SECURE PROTOCOL ACCESS',
         gateTitle: 'Sign in to PrintForge',
         gateSubtitle: 'Select your operational mode to access the additive manufacturing portal and manage escrow payments.',
         gateTabClient: 'CLIENT / BUYER',
@@ -14209,7 +14516,7 @@
         escrowApprove: 'APROBAR PIEZA & LIBERAR',
         escrowDispute: 'NOTIFICAR DEFECTO // REIMPRESIÓN',
         escrowExplain: 'En caso de defectos o tolerancias no conformes, los fondos quedan protegidos en Escrow y PrintForge autoriza reimpresión inmediata o reembolso del 100%.',
-        gateSecurityBadge: 'SECURITY GATE // ACCESO PROTOCOLO P2P',
+        gateSecurityBadge: 'SECURITY GATE // ACCESO SEGURO',
         gateTitle: 'Iniciar Sesión en PrintForge',
         gateSubtitle: 'Selecciona tu modo operativo para acceder a la plataforma de fabricación aditiva y gestionar pagos garantizados.',
         gateTabClient: 'CLIENTE / COMPRADOR',
@@ -15185,6 +15492,30 @@
         if (dropzone) dropzone.classList.add('hidden');
         if (attachedCard) attachedCard.classList.remove('hidden');
 
+        // ESPERIENZA A 2 CLICK: Auto-compila titolo, quote geometriche e avanza al Passo 2 (Materiale & Colore)
+        const cleanTitle = file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
+        const titleEl = document.getElementById("reqTitle");
+        if (titleEl && (!titleEl.value || titleEl.value.includes("Componente") || titleEl.value === "")) {
+          titleEl.value = cleanTitle;
+        }
+        const dX = document.getElementById("reqDimX");
+        const dY = document.getElementById("reqDimY");
+        const dZ = document.getElementById("reqDimZ");
+        if (dX && !dX.value) dX.value = "85";
+        if (dY && !dY.value) dY.value = "60";
+        if (dZ && !dZ.value) dZ.value = "30";
+        if (typeof updateCalculatedDimensionsString === "function") updateCalculatedDimensionsString();
+
+        // Transizione automatica ultra-fluida al Passo 2 per risparmiare tempo all'utente
+        setTimeout(() => {
+          if (typeof goToClientWizardStep === "function") {
+            goToClientWizardStep(2);
+            const notice = document.getElementById("cadFastTrackNotice");
+            if (notice) notice.classList.remove("hidden");
+            if (window.lucide && typeof window.lucide.createIcons === "function") window.lucide.createIcons();
+          }
+        }, 300);
+
         // Se l'utente carica un file CAD, nascondi completamente il box manuale XYZ (riquadro rosso)
         const dimBox = document.getElementById('partDimensionsContainer');
         if (dimBox) dimBox.classList.add('hidden');
@@ -15220,6 +15551,16 @@
       recalculateInstantQuote();
     }
     window.processClientFile = processClientFile;
+    function loadSampleCadDemoFile() {
+      const sampleFile = {
+        name: "Ingranaggio_Elicoidale_80mm.stl",
+        size: 2450000,
+        type: "application/sla"
+      };
+      processClientFile(sampleFile);
+      showToast(currentLang === "it" ? "⚡ File CAD di test caricato! Flusso 2-Click avviato." : "⚡ Sample CAD loaded! 2-Click flow started.", "success");
+    }
+    window.loadSampleCadDemoFile = loadSampleCadDemoFile;
     window.removeClientAttachedFile = removeClientAttachedFile;
 
     function openAttachedPhotoZoom() {
@@ -15285,16 +15626,16 @@
         document.body.removeChild(a);
         showToast(currentLang === 'it' ? 'Download file tecnico avviato' : currentLang === 'es' ? 'Descarga del archivo técnico iniciada' : 'Technical file download started');
       } else {
-        const r = req || { id: 'RFP-3891', title: 'Staffa Meccanica Rinforzata', dimensions: '80 × 60 × 25 mm', material: 'PETG Tecnico', color: 'Arancione Meccanico', tolerance: '±0.05 mm', infill: '50% Meccanico Strutturale' };
+        const r = req || { id: 'RFP-4120', title: 'Cubo di Calibrazione', dimensions: '80 × 60 × 25 mm', material: 'PETG Tecnico', color: 'Arancione Meccanico', tolerance: '±0.05 mm', infill: '50% Meccanico Strutturale' };
         const cadContent = `ISO-10303-21;
 HEADER;
 FILE_DESCRIPTION(('PRINTFORGE TECHNICAL ASSET // CONTRATTO ESCROW STRIPE'), '2;1');
-FILE_NAME('${r.id || 'RFP-3891'}_opera.step', '2026-10-24T19:40:00', ('PrintForge Client'), ('PrintForge Mechanical Vault'), 'PrintForge STEP Processor', 'PrintForge CAD Kernel', '');
+FILE_NAME('${r.id || 'RFP-4120'}_opera.step', '2026-10-24T19:40:00', ('PrintForge Client'), ('PrintForge Mechanical Vault'), 'PrintForge STEP Processor', 'PrintForge CAD Kernel', '');
 FILE_SCHEMA(('CONFIG_CONTROL_DESIGN'));
 ENDSEC;
 DATA;
 /* CARTIGLIO & SPECIFICHE CONGELATE DELL'OPERA */
-/* COMMESSA: ${r.id || 'RFP-3891'} */
+/* COMMESSA: ${r.id || 'RFP-4120'} */
 /* TITOLO: ${r.title || 'Staffa Meccanica Rinforzata'} */
 /* QUOTE NOMINALI DI INGOMBRO: ${r.dimensions || '80 × 60 × 25 mm'} */
 /* MATERIALE E GRADO TECNICO: ${r.material || 'PETG Tecnico'} ${r.color || 'Arancione Meccanico'} */
@@ -15307,7 +15648,7 @@ END-ISO-10303-21;`;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `${r.id || 'RFP-3891'}_specifiche_tecniche_congelate.step`;
+        a.download = `${r.id || 'RFP-4120'}_specifiche_tecniche_congelate.step`;
         document.body.appendChild(a);
         a.click();
         document.body.removeChild(a);
@@ -18014,6 +18355,83 @@ END-ISO-10303-21;`;
     }
     window.applyDimensionScale = applyDimensionScale;
 
+    /* ========================================================================= */
+    /* TAGLIE PRESET PORTFOLIO CREATOR (XS - S - M - L - XL)                     */
+    /* ========================================================================= */
+    function selectPortfolioSizePreset(sizeKey, x, y, z, btnEl) {
+      const pfDims = document.getElementById('portfolioDimensions');
+      if (pfDims) {
+        pfDims.value = `${x} × ${y} × ${z} mm`;
+      }
+      syncPortfolioSizeCards(sizeKey);
+    }
+    window.selectPortfolioSizePreset = selectPortfolioSizePreset;
+
+    function syncPortfolioSizeCards(matchedKey) {
+      const keys = ['XS', 'S', 'M', 'L', 'XL'];
+      keys.forEach(k => {
+        const card = document.getElementById('portfolioSizeCard_' + k);
+        if (!card) return;
+        const pill = card.querySelector('.portfolio-size-card-pill');
+        if (k === matchedKey) {
+          card.classList.add('active-portfolio-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+          card.classList.remove('border-white/10', 'bg-[#16171F]');
+          if (pill) {
+            pill.classList.remove('bg-white/10', 'text-white');
+            pill.classList.add('bg-white', 'text-black');
+          }
+        } else {
+          card.classList.remove('active-portfolio-size-card', 'border-white/50', 'bg-white/10', 'text-white', 'shadow-[0_0_15px_rgba(255,255,255,0.08)]', 'ring-1', 'ring-white/40');
+          card.classList.add('border-white/10', 'bg-[#16171F]');
+          if (pill) {
+            pill.classList.remove('bg-white', 'text-black');
+            pill.classList.add('bg-white/10', 'text-white');
+          }
+        }
+      });
+
+      const badge = document.getElementById('portfolioDimensionSourceBadge');
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+      const sizeNames = {
+        'XS': isEn ? 'TAGLIA XS // TASCABILE (~4 CM)' : isEs ? 'TALLA XS // BOLSILLO (~4 CM)' : 'TAGLIA XS // TASCABILE (~4 CM)',
+        'S': isEn ? 'TAGLIA S // PICCOLO (~8 CM)' : isEs ? 'TALLA S // PEQUEÑO (~8 CM)' : 'TAGLIA S // PICCOLO (~8 CM)',
+        'M': isEn ? 'TAGLIA M // MEDIO (~15 CM)' : isEs ? 'TALLA M // MEDIANO (~15 CM)' : 'TAGLIA M // MEDIO (~15 CM)',
+        'L': isEn ? 'TAGLIA L // GRANDE (~22 CM)' : isEs ? 'TALLA L // GRANDE (~22 CM)' : 'TAGLIA L // GRANDE (~22 CM)',
+        'XL': isEn ? 'TAGLIA XL // MOLTO GRANDE (~32 CM)' : isEs ? 'TALLA XL // EXTRA GRANDE (~32 CM)' : 'TAGLIA XL // MOLTO GRANDE (~32 CM)'
+      };
+      if (badge && matchedKey) {
+        badge.innerText = sizeNames[matchedKey] || `TAGLIA ${matchedKey}`;
+      }
+    }
+    window.syncPortfolioSizeCards = syncPortfolioSizeCards;
+
+    function onManualPortfolioDimensionsInput() {
+      const pfDims = document.getElementById('portfolioDimensions');
+      const val = pfDims?.value?.trim() || '';
+      if (!val) {
+        syncPortfolioSizeCards('S');
+        return;
+      }
+
+      // Estrae le dimensioni numeriche inserite (es. 45x50x30 o 80 × 60 × 25 mm)
+      const nums = val.match(/\d+(\.\d+)?/g);
+      if (nums && nums.length >= 1) {
+        const dx = parseFloat(nums[0]) || 0;
+        const dy = parseFloat(nums[1]) || dx;
+        const dz = parseFloat(nums[2]) || (dx * 0.3);
+        const maxDim = Math.max(dx, dy, dz);
+        let matchedKey = 'S';
+        if (maxDim <= 55) matchedKey = 'XS';
+        else if (maxDim <= 115) matchedKey = 'S';
+        else if (maxDim <= 185) matchedKey = 'M';
+        else if (maxDim <= 260) matchedKey = 'L';
+        else matchedKey = 'XL';
+        syncPortfolioSizeCards(matchedKey);
+      }
+    }
+    window.onManualPortfolioDimensionsInput = onManualPortfolioDimensionsInput;
+
     function autoSelectIdealPackaging(x, y, z) {
       const dx = Math.max(0, parseFloat(x) || 0);
       const dy = Math.max(0, parseFloat(y) || 0);
@@ -18317,52 +18735,29 @@ END-ISO-10303-21;`;
       return matName;
     }
 
-        function getCreatorTotalEarnings() {
+    function getCreatorTotalEarnings() {
       let total = 0;
-      const myUid = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
-      const myName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
-      const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const user = AppState.user;
+      if (!user || !user.isLoggedIn) return 0;
 
+      const myEmail = ((user.email) || "").toLowerCase().trim();
+      const myUid = ((user.userId || user.id) || "").toLowerCase().trim();
+      if (!myEmail && !myUid) return 0;
+
+      // Registro privato e soggettivo del singolo Creator: ogni utente vede ESCLUSIVAMENTE i propri incassi effettivi
+      const userKey = "printforge_creator_earnings_ledger_" + (myEmail || myUid).replace(/[^a-z0-9]/g, "_");
       try {
-        const ledger = JSON.parse(localStorage.getItem('printforge_creator_earnings_ledger') || '[]');
-        ledger.forEach(entry => {
-          if (!entry) return;
-          // Escludi ordini dove l'utente corrente era il cliente o titolo di test
-          const entryClient = (entry.clientName || '').toLowerCase().trim();
-          const entryTitle = (entry.title || '').toLowerCase().trim();
-          if (myName && entryClient === myName) return;
-          if (entryTitle.includes('viagra') || entryTitle.includes('papapap')) return;
-
-          if (entry.price) {
-            const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, '').replace(',', '.'));
+        const ledger = JSON.parse(localStorage.getItem(userKey) || "[]");
+        if (Array.isArray(ledger)) {
+          ledger.forEach(entry => {
+            if (!entry || !entry.price || entry.isFake || entry.isDemo) return;
+            if (entry.id === "RFP-9821" || entry.id === "RFP-3891" || entry.id === "RFP-4120" || entry.id === "RFP-1044" || String(entry.id).startsWith("RFP-")) return;
+            const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, "").replace(",", "."));
             if (!isNaN(num) && num > 0) total += num;
-          }
-        });
+          });
+        }
       } catch(e) {}
 
-      if (total === 0 && AppState.broadcastRequests) {
-        AppState.broadcastRequests.forEach(r => {
-          if (!r || !r.id || r.isRejected || r.isDeleted) return;
-          // MAI sommare se l'utente corrente è il CLIENTE che ha pagato!
-          const rClient = (r.clientName || '').toLowerCase().trim();
-          const rClientEmail = (r.clientEmail || '').toLowerCase().trim();
-          const rClientUid = (r.userId || r.clientId || '').toLowerCase().trim();
-          if ((myName && rClient === myName) || (myEmail && rClientEmail === myEmail) || (myUid && rClientUid === myUid)) return;
-          const rTitle = (r.title || '').toLowerCase().trim();
-          if (rTitle.includes('viagra') || rTitle.includes('papapap')) return;
-
-          const isMaker = (myUid && (r.makerUserId || r.assigned_creator_id) === myUid) ||
-                          (myName && (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().includes(myName)) ||
-                          (myEmail && (r.makerEmail || '').toLowerCase() === myEmail);
-          if (!isMaker) return;
-
-          if (r.isCompleted || r.isDelivered || (typeof r.status === 'string' && r.status.includes('COMPLETAT'))) {
-            const raw = r.budget || r.itemBudget || r.escrowTotal || '';
-            const num = parseFloat(String(raw).replace(/[^0-9,.]/g, '').replace(',', '.'));
-            if (!isNaN(num) && num > 0) total += num;
-          }
-        });
-      }
       return total;
     }
 
@@ -18659,7 +19054,11 @@ END-ISO-10303-21;`;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
       
-      const rawReq = AppState.loadedRequestInStudio || AppState.broadcastRequests[0];
+      const rawReq = (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted === true) ? AppState.loadedRequestInStudio : ((AppState.broadcastRequests || []).find(r => r && r.isAccepted === true && !r.isCompleted && !r.isDelivered && !r.isClosed) || null);
+      if (rawReq && rawReq.isAccepted && !AppState.loadedRequestInStudio) {
+        AppState.loadedRequestInStudio = rawReq;
+        AppState.activeDealRfpId = rawReq.id;
+      }
       if (!rawReq) {
         const headingEl = document.getElementById('i18n-studioHeading');
         if (headingEl) {
@@ -18712,24 +19111,24 @@ END-ISO-10303-21;`;
         const watertightBadge = document.getElementById('i18n-studioWatertight');
         const studioHudTol = document.getElementById('studioHudTolerance');
 
-        if (usageEl) usageEl.innerText = isEn ? 'Functional Mechanical Component' : isEs ? 'Componente Mecánico Funcional' : 'Parte Meccanica Funzionale';
-        if (matEl) matEl.innerText = isEn ? 'Technical PETG' : isEs ? 'PETG Técnico' : 'PETG Tecnico';
-        if (colEl) colEl.innerText = isEn ? 'Mechanical Orange' : isEs ? 'Naranja Mecánico' : 'Arancione Meccanico';
-        if (qtyEl) qtyEl.innerText = isEn ? '1 piece (Single Prototype)' : isEs ? '1 pieza (Prototipo)' : '1 pezzo (Prototipo)';
-        if (tolEl) tolEl.innerText = isEn ? 'High Precision ±0.05 mm' : isEs ? 'Alta Precisión ±0.05 mm' : 'Alta Precisione ±0.05 mm';
-        if (infEl) infEl.innerText = '50%';
-        if (postEl) postEl.innerText = isEn ? 'Raw (Supports Removed)' : isEs ? 'Sin Tratar (Soportes Retirados)' : 'Grezzo (Supporti rimossi)';
-        if (ddlEl) ddlEl.innerText = '3-5 gg';
-        if (budgetEl) budgetEl.innerText = isEn ? '€ 48.00' : isEs ? '48,00 €' : '€ 48,00';
+        if (usageEl) usageEl.innerText = '-';
+        if (matEl) matEl.innerText = '-';
+        if (colEl) colEl.innerText = '-';
+        if (qtyEl) qtyEl.innerText = '-';
+        if (tolEl) tolEl.innerText = '-';
+        if (infEl) infEl.innerText = '-';
+        if (postEl) postEl.innerText = '-';
+        if (ddlEl) ddlEl.innerText = '-';
+        if (budgetEl) budgetEl.innerText = '€ 0,00';
         
         const dimElStandby = document.getElementById('cadLockedDimensions');
         const volElStandby = document.getElementById('cadLockedVolume');
-        if (dimElStandby) dimElStandby.innerText = '80 × 60 × 25 mm';
-        if (volElStandby) volElStandby.innerText = '120 cm³';
+        if (dimElStandby) dimElStandby.innerText = '-';
+        if (volElStandby) volElStandby.innerText = '-';
         const colDotStandby = document.getElementById('cadLockedColorDot');
-        if (colDotStandby) colDotStandby.style.backgroundColor = '#F97316';
+        if (colDotStandby) colDotStandby.style.backgroundColor = '#71717A';
         const infBarStandby = document.getElementById('cadLockedInfillBar');
-        if (infBarStandby) infBarStandby.style.width = '50%';
+        if (infBarStandby) infBarStandby.style.width = '0%';
         if (watertightBadge) {
           watertightBadge.innerText = isEn ? 'PARAMETRIC SPECS LOCKED' : isEs ? 'ESPECIFICACIONES PARAMÉTRICAS' : 'SPECIFICHE PARAMETRICHE CONGELATE';
         }
@@ -18737,27 +19136,27 @@ END-ISO-10303-21;`;
           studioHudTol.innerText = '±0.05 mm';
         }
 
-        // Standby Cartiglio Opera & Header Compatto
+        // Standby Cartiglio Opera & Header: AZZERATO A € 0,00 SENZA COMMESSE FITTIZIE
         const wsFondiStandby = document.getElementById('studioFondiEscrowBadge');
-        if (wsFondiStandby) wsFondiStandby.innerText = '€ 48,00';
+        if (wsFondiStandby) wsFondiStandby.innerText = '€ 0,00';
         const cTitoloStandby = document.getElementById('cartiglioTitoloCodice');
-        if (cTitoloStandby) cTitoloStandby.innerText = 'Staffa Meccanica Rinforzata // #RFP-3891';
+        if (cTitoloStandby) cTitoloStandby.innerText = isEn ? 'Standby // Waiting for Job' : isEs ? 'Standby // En Espera de Pedido' : 'Standby // In Attesa di Nuovo Incarico';
         const cBadgeStandby = document.getElementById('cartiglioCodiceUnivocoBadge');
-        if (cBadgeStandby) cBadgeStandby.innerText = '#RFP-3891';
+        if (cBadgeStandby) cBadgeStandby.innerText = 'STANDBY';
         const cFondiStandby = document.getElementById('cartiglioFondiEscrow');
-        if (cFondiStandby) cFondiStandby.innerText = '€ 48,00';
+        if (cFondiStandby) cFondiStandby.innerText = '€ 0,00';
         const cQuoteStandby = document.getElementById('cartiglioQuoteNominali');
-        if (cQuoteStandby) cQuoteStandby.innerText = '80 × 60 × 25 mm';
+        if (cQuoteStandby) cQuoteStandby.innerText = '-';
         const cVolStandby = document.getElementById('cartiglioVolumeCalcolato');
-        if (cVolStandby) cVolStandby.innerText = '120 cm³';
+        if (cVolStandby) cVolStandby.innerText = '-';
         const cMatStandby = document.getElementById('cartiglioMaterialeGrado');
-        if (cMatStandby) cMatStandby.innerText = 'PETG Tecnico Arancione Meccanico';
+        if (cMatStandby) cMatStandby.innerText = isEn ? 'No Material' : isEs ? 'Sin Material' : 'Nessun Materiale';
         const cDotStandby = document.getElementById('cartiglioColoreDot');
-        if (cDotStandby) cDotStandby.style.backgroundColor = '#F97316';
+        if (cDotStandby) cDotStandby.style.backgroundColor = '#71717A';
         const cTolStandby = document.getElementById('cartiglioTolleranzaContrattuale');
-        if (cTolStandby) cTolStandby.innerText = '±0.05 mm';
+        if (cTolStandby) cTolStandby.innerText = '-';
         const cInfStandby = document.getElementById('cartiglioInfillStrutturale');
-        if (cInfStandby) cInfStandby.innerText = '50% Meccanico Strutturale';
+        if (cInfStandby) cInfStandby.innerText = '-';
 
         if (typeof updateCadQcStatusUI === 'function') updateCadQcStatusUI();
         return;
@@ -18779,9 +19178,9 @@ END-ISO-10303-21;`;
       const wsFondi = document.getElementById('studioFondiEscrowBadge');
       if (wsFondi) wsFondi.innerText = formatEuroClean(r.budget || 48);
       const cTitolo = document.getElementById('cartiglioTitoloCodice');
-      if (cTitolo) cTitolo.innerText = `${displayTitle} // #${r.id || 'RFP-3891'}`;
+      if (cTitolo) cTitolo.innerText = `${displayTitle} // #${r.id || 'RFP-4120'}`;
       const cBadge = document.getElementById('cartiglioCodiceUnivocoBadge');
-      if (cBadge) cBadge.innerText = `#${r.id || 'RFP-3891'}`;
+      if (cBadge) cBadge.innerText = `#${r.id || 'RFP-4120'}`;
       const cFondi = document.getElementById('cartiglioFondiEscrow');
       if (cFondi) cFondi.innerText = r.budget || '€ 48,00';
       const cQuote = document.getElementById('cartiglioQuoteNominali');
@@ -19238,51 +19637,43 @@ END-ISO-10303-21;`;
     let toastTimer = null;
     let notificationDrawerOpen = false;
 
-    /* Helper: Verifica se esiste una richiesta accettata per sbloccare l'area Attività */
+    /* Helper: Verifica se esiste una richiesta per l'area Attività */
     function hasAcceptedRequest() {
-      if (!AppState.user || !AppState.user.isLoggedIn) return false;
-      if (AppState.user.role !== 'creator') return false;
+      if (!AppState.user) return false;
+      const role = String(AppState.user.role || '').toLowerCase();
+      if (role !== 'creator') return false;
 
-      // DOPO IL 4° PASSAGGIO: al creator NON mostrare mai più la pagina attività né escrow room
-      if (AppState.stage4Completed === true || AppState.isDelivered === true || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true')) return false;
-      if (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)) return false;
-      if (AppState.loadedRequestInStudio && (AppState.loadedRequestInStudio.isDelivered || AppState.loadedRequestInStudio.isCompleted)) return false;
+      // DOPO LA CONSEGNA: tutto rimane azzerato finché il creator non accetta una nuova richiesta
+      if (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_delivery_completed') === 'true') {
+        if (!AppState.loadedRequestInStudio || !AppState.loadedRequestInStudio.isAccepted || AppState.loadedRequestInStudio.isCompleted || AppState.loadedRequestInStudio.isDelivered) {
+          return false;
+        }
+      }
 
-      // Se in memoria vi è un ordine attivo non ancora completato/consegnato
-      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+      // Se in memoria vi è un ordine attivo realmente accettato e non ancora consegnato
+      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted === true && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
         return true;
       }
-      if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered) {
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted === true && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered && !AppState.activeEscrowOrder.isClosed) {
         return true;
       }
 
       const myMakerName = (AppState.user.name || '').toLowerCase().trim();
       const myMakerEmail = (AppState.user.email || '').toLowerCase().trim();
       const myMakerUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
-
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
-        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
-        if (typeof r.status === 'string' && (r.status.includes('CONSEGNATO') || r.status.includes('SVINCOLATI') || r.status.includes('ARCHIVIATO') || r.status.includes('COMPLETATO'))) return false;
-        const isAcc = Boolean(
-          r.isAccepted === true ||
-          (r.maker && r.maker.trim().length > 0) ||
-          (r.maker_name && r.maker_name.trim().length > 0) ||
-          (r.acceptedBy && r.acceptedBy.trim().length > 0) ||
-          (typeof r.status === 'string' && (
-            r.status.toUpperCase().includes('ACCETTAT') ||
-            r.status.toUpperCase().includes('LAVORAZION') ||
-            r.status.toUpperCase().includes('PRODUCTION') ||
-            r.status.toUpperCase().includes('PRODUZION') ||
-            r.status.toUpperCase().includes('SPEDIT')
-          ))
-        );
-        if (!isAcc) return false;
-        const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
-        const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
-        const assignedUid = (r.makerUserId || '').toLowerCase().trim();
-        return (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
-               (assignedEmail && assignedEmail === myMakerEmail) ||
-               (assignedUid && assignedUid === myMakerUid);
+        if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || ['RFP-3891', 'RFP-6482', 'RFP-9821', 'TEST-PING-1'].includes(r.id) || r.isDeleted || r.isRejected) return false;
+        if (r.isCompleted || r.isClosed || r.isDelivered) return false;
+        if (r.isAccepted !== true) return false;
+
+        const assignedUid = (r.assigned_creator_id || r.makerUserId || '').toLowerCase().trim();
+        const assignedEmail = (r.makerEmail || r.creatorEmail || '').toLowerCase().trim();
+        const assignedName = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
+
+        if (myMakerUid && assignedUid && assignedUid === myMakerUid) return true;
+        if (myMakerEmail && assignedEmail && assignedEmail === myMakerEmail) return true;
+        if (myMakerName && assignedName && assignedName === myMakerName) return true;
+        return false;
       });
 
       if (myAcceptedJob) {
@@ -19290,7 +19681,7 @@ END-ISO-10303-21;`;
         AppState.activeDealRfpId = myAcceptedJob.id;
         return true;
       }
-      return false;
+      return false; // Se non c'è un incarico accettato, restituisce RIGOROSAMENTE false
     }
     window.hasAcceptedRequest = hasAcceptedRequest;
 
@@ -19334,7 +19725,7 @@ END-ISO-10303-21;`;
       if (isCreator) {
         // Per il Creator: ha accesso se ha una commessa presa in carico non ancora conclusa
         return (AppState.broadcastRequests || []).some(r => {
-          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+          if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || ['RFP-3891', 'RFP-6482', 'RFP-9821', 'TEST-PING-1'].includes(r.id) || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
           if (typeof r.status === 'string' && (r.status.includes('CONSEGNAT') || r.status.includes('SVINCOLAT') || r.status.includes('ARCHIVIAT') || r.status.includes('COMPLETAT'))) {
             return false;
           }
@@ -19391,7 +19782,7 @@ END-ISO-10303-21;`;
       const mobileNav = document.getElementById('mobileNavBar');
       if (!nav && !mobileNav) return;
 
-      const isCreator = AppState.user.isLoggedIn && AppState.user.role === 'creator';
+      const isCreator = Boolean(AppState.user && (AppState.user.role === 'creator' || AppState.user.role === 'Creator'));
       let html = '';
       let mobileHtml = '';
 
@@ -19407,6 +19798,7 @@ END-ISO-10303-21;`;
       // - PrintForge, HOME e ESCROW ROOM non vanno tradotte (rimangono fisse e protette)
       // - VETRINA e RICHIESTE vanno tradotte nelle lingue appropriate (IT, EN, ES)
       const isEn = currentLang === 'en';
+      const isEs = currentLang === 'es';
 
       const showcaseLabel = isEn ? 'SHOWCASE' : 'VETRINA 2D';
       const mShowcaseLabel = isEn ? 'SHOWCASE' : 'VETRINA';
@@ -19420,7 +19812,7 @@ END-ISO-10303-21;`;
       const mCreatorProjectsLabel = isEn ? 'PROJECTS' : 'PROGETTI';
 
       if (isCreator) {
-        // --- NAVBAR CREATOR: HOME + VETRINA 2D + I MIEI PROGETTI + BACHECA RICHIESTE + ATTIVITÀ ---
+        // --- NAVBAR CREATOR: HOME + (RICHIESTA ATTIVA / BACHECA) + I MIEI PROGETTI + (ESCROW ROOM DOPO 3 FOTO) ---
         // 1. HOME (Fissa, non traducibile)
         html += `
           <button onclick="navigateTo('client-home')" id="navHomeBtn" class="${isHome ? activeClass : inactiveClass}">
@@ -19435,86 +19827,106 @@ END-ISO-10303-21;`;
           </button>
         `;
 
-        // Vetrina 2D / Esplora nascosta per i Creator su richiesta utente (riservata ai Clienti)
-
-        // 3. I MIEI PROGETTI
+        // 2. I MIEI PROGETTI (SPOSTATO AL 2° POSTO: prima delle richieste su richiesta utente)
         const isPortfolio = (v === 'creator-portfolio');
         html += `
           <button onclick="navigateTo('creator-portfolio')" id="navCreatorPortfolioBtn" class="${isPortfolio ? activeClass : inactiveClass}">
-            <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
             <span>${creatorProjectsLabel}</span>
           </button>
         `;
         mobileHtml += `
           <button onclick="navigateTo('creator-portfolio')" class="${isPortfolio ? mActive : mInactive}">
-            <i data-lucide="layers" class="w-3.5 h-3.5 text-zinc-400"></i>
+            <i data-lucide="layers" class="w-3.5 h-3.5 ${isPortfolio ? 'text-white' : 'text-zinc-400'}"></i>
             <span>${mCreatorProjectsLabel}</span>
           </button>
         `;
 
-        // 4. SCAMBIO TRA "RICHIESTE" E "ATTIVITÀ" (Sia da PC che da Mobile):
-        // Quando il creator accetta una richiesta, la pagina "Richieste" viene scambiata con "Attività".
-        // DOPO IL 4° PASSAGGIO: se il creator è ancora su order-room a visionare la schermata finale,
-        // mantieni visibile il tab ESCROW ROOM finché non cambia schermata con cursore o tocco.
-        const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
-        const shouldShowCreatorEscrowTab = (v === 'order-room' && AppState.activeEscrowOrder) || (!isPostStage4 && hasAcceptedRequest());
-        if (shouldShowCreatorEscrowTab) {
-          const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted && !r.isCompleted));
-          const hasQc = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed || Boolean(activeReq && (activeReq.hasQcPhotos || (activeReq.qcPhotos && activeReq.qcPhotos.length >= 3) || activeReq.clientApprovedQc));
+        // 3. BACHECA RICHIESTE & RICHIESTA ATTIVA (SPOSTATO AL 3° POSTO: dopo i progetti)
+        // REQUISITO UTENTE: "appena il creator acceta la richiesta al suo posto si attiva la pagina rchiesta e dopo le 3 foto la pagina escroow room"
+        const activeCreatorReq = (function() {
+          if (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.isAccepted === true && !AppState.loadedRequestInStudio.isCompleted && !AppState.loadedRequestInStudio.isDelivered && !AppState.loadedRequestInStudio.isClosed) {
+            return AppState.loadedRequestInStudio;
+          }
+          if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isAccepted === true && !AppState.activeEscrowOrder.isCompleted && !AppState.activeEscrowOrder.isDelivered) {
+            return AppState.activeEscrowOrder;
+          }
+          return (AppState.broadcastRequests || []).find(r => {
+            if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || r.isDeleted || r.isRejected || r.isCompleted || r.isClosed || r.isDelivered) return false;
+            return r.isAccepted === true;
+          });
+        })();
+        const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
 
+        // SOSTITUZIONE DIRETTA: ATTIVITÀ AL POSTO DELLE RICHIESTE SE C'È UN ORDINE ATTIVO
+        if (activeCreatorReq) {
           const isAct = (v === 'activity' || v === 'studio');
-          const isEscrow = (v === 'order-room' || v === 'escrow');
-          const actLabel = isEn ? 'ACTIVITY' : isEs ? 'ACTIVIDAD' : 'ATTIVITÀ';
-
-          // Tab 1: ATTIVITÀ (sempre accessibile per il creator per visionare 3D, specifiche e collaudo)
+          const reqTabLabel = isEn ? `ACTIVITY (#${activeCreatorReq.id})` : isEs ? `ACTIVIDAD (#${activeCreatorReq.id})` : `ATTIVITÀ (#${activeCreatorReq.id})`;
+          const mReqTabLabel = isEn ? `ACTIVITY` : isEs ? `ACTIVIDAD` : `ATTIVITÀ`;
           html += `
-            <button onclick="navigateTo('activity')" id="navActivityBtn" class="${isAct ? activeClass : inactiveClass}">
+            <button onclick="navigateTo('activity')" id="navActiveRequestBtn" class="${isAct ? activeClass : inactiveClass}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>${actLabel}</span>
+              <span>${reqTabLabel}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             </button>
           `;
           mobileHtml += `
             <button onclick="navigateTo('activity')" class="${isAct ? mActive : mInactive}">
               <i data-lucide="cpu" class="w-3.5 h-3.5 ${isAct ? 'text-white' : 'text-zinc-400'}"></i>
-              <span>${actLabel}</span>
+              <span>${mReqTabLabel}</span>
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
             </button>
           `;
-
-          // Tab 2: ESCROW ROOM (visibile per il creator una volta collaudate le foto fino al completamento)
-          if (hasQc) {
-            html += `
-              <button onclick="navigateTo('order-room')" id="navEscrowRoomBtn" class="${isEscrow ? activeClass : inactiveClass}">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
-                <span class="notranslate" translate="no">ESCROW ROOM</span>
-                <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
-              </button>
-            `;
-            mobileHtml += `
-              <button onclick="navigateTo('order-room')" class="${isEscrow ? mActive : mInactive}">
-                <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
-                <span class="notranslate" translate="no">ESCROW ROOM</span>
-                <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
-              </button>
-            `;
-          }
         } else {
-          // Quando il creator non ha una commessa accettata, mostra la bacheca richieste aperta per prendere nuovi incarichi
-          const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
+          // Quando non ci sono richieste prese in carico, mostra la tab RICHIESTE
           const isReqs = (v === 'creator-requests');
           html += `
             <button onclick="navigateTo('creator-requests')" id="navRequestsFeedBtn" class="${isReqs ? activeClass : inactiveClass}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
+              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
               <span>${creatorRequestsLabel}</span>
               <span class="px-1.5 py-0.2 rounded-full bg-white/10 text-white text-[9px] font-mono font-bold">${pendingCount}</span>
             </button>
           `;
           mobileHtml += `
             <button onclick="navigateTo('creator-requests')" class="${isReqs ? mActive : mInactive}">
-              <i data-lucide="inbox" class="w-3.5 h-3.5 text-zinc-400"></i>
+              <i data-lucide="inbox" class="w-3.5 h-3.5 ${isReqs ? 'text-white' : 'text-zinc-400'}"></i>
               <span>${mRequestsLabel}</span>
               <span class="px-1.5 py-0.5 rounded-full bg-white/15 text-white text-[10px] font-mono font-bold">${pendingCount}</span>
+            </button>
+          `;
+        }
+
+        // VETRINA ELIMINATA COMPLETAMENTE PER I CREATOR DA MOBILE SU RICHIESTA ESPRESSA:
+        // "togli la vetrina per i creator da mobile"
+
+
+
+        // 4. ESCROW ROOM: ATTIVA ESCLUSIVAMENTE DOPO IL COLLAUDO DELLE 3 FOTO!
+        // REQUISITO UTENTE: "e dopo le 3 foto la pagina escroow room"
+        const has3QcPhotos = Boolean(
+          (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) ||
+          AppState.stage2Completed ||
+          Boolean(activeCreatorReq && (
+            activeCreatorReq.hasQcPhotos ||
+            (activeCreatorReq.qcPhotos && activeCreatorReq.qcPhotos.length >= 3) ||
+            activeCreatorReq.clientApprovedQc
+          ))
+        );
+
+        if (has3QcPhotos) {
+          const isEscrow = (v === 'order-room' || v === 'escrow');
+          html += `
+            <button onclick="navigateTo('order-room')" id="navEscrowRoomBtn" class="${isEscrow ? activeClass : inactiveClass}">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
+              <span class="notranslate" translate="no">ESCROW ROOM</span>
+              <span class="px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
+            </button>
+          `;
+          mobileHtml += `
+            <button onclick="navigateTo('order-room')" class="${isEscrow ? mActive : mInactive}">
+              <i data-lucide="shield-check" class="w-3.5 h-3.5 ${isEscrow ? 'text-white' : 'text-zinc-400'}"></i>
+              <span class="notranslate" translate="no">ESCROW ROOM</span>
+              <span class="px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-mono font-bold">3/3</span>
             </button>
           `;
         }
@@ -19566,6 +19978,8 @@ END-ISO-10303-21;`;
               <span>${mRequestsLabel}</span>
             </button>
           `;
+
+
 
           const isEscrowActive = hasActiveEscrowOrder();
           // La Escrow Room appare per il Cliente SOLO se vi è un ordine attivo in corso; dopo la Fase 4 o in assenza di ordini è TOTALMENTE NASCOSTA
@@ -19686,7 +20100,9 @@ END-ISO-10303-21;`;
         const userInitial = (AppState.user.name || 'U').charAt(0).toUpperCase();
 
         container.innerHTML = `
-          <div class="relative shrink-0">
+          <div class="flex items-center gap-2 shrink-0">
+            
+            <div class="relative shrink-0">
             <!-- Pulsante Profilo Intuitivo (Cliccabile con chiarezza sia da PC che da Cellulare) -->
             <button type="button" 
                     id="navProfileBtn" 
@@ -19705,7 +20121,7 @@ END-ISO-10303-21;`;
                 ${escapeHtml(AppState.user.name)}
               </span>
               <!-- Ruolo Badge Subdolo (Visibile da tablet/desktop) -->
-              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isCreator ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'} uppercase hidden lg:inline font-bold">
+              <span class="text-[9px] font-mono px-1.5 py-0.2 rounded-full ${isCreator ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/35' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/35'} uppercase inline-flex font-bold">
                 ${roleBadgeText}
               </span>
               <!-- Freccia Dropdown Indicativa (Rende 100% intuibile la cliccabilità sia da PC che da Smartphone) -->
@@ -19715,6 +20131,7 @@ END-ISO-10303-21;`;
             <!-- Menù a Tendina Profilo / Switch (Opzione 1 - Stile Airbnb / Fiverr) -->
             <div id="userProfileDropdown" 
                  class="hidden absolute right-0 top-full mt-2 w-[275px] sm:w-72 max-w-[calc(100vw-16px)] bg-[#0c0c11] border border-white/25 rounded-2xl p-3 shadow-[0_25px_60px_rgba(0,0,0,0.98)] select-none animate-in fade-in slide-in-from-top-2 duration-150" style="z-index: 999999 !important;">
+              
               
               <!-- Scheda Profilo & Ruolo Attivo -->
               <div class="profile-header-card flex items-center gap-2.5 p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] mb-2.5">
@@ -19820,6 +20237,7 @@ END-ISO-10303-21;`;
 
             </div>
           </div>
+        </div>
         `;
         const roleInd = document.getElementById('navRoleIndicator');
         if (roleInd) roleInd.innerText = roleLabel;
@@ -21388,6 +21806,7 @@ END-ISO-10303-21;`;
       AppState.isShipped = false;
       AppState.activeEscrowOrder = null;
       try {
+        localStorage.removeItem('printforge_delivery_completed');
         localStorage.removeItem('printforge_stage4_completed');
         localStorage.removeItem('printforge_active_escrow_order');
         localStorage.removeItem('printforge_cad_qc_files');
@@ -21484,26 +21903,26 @@ END-ISO-10303-21;`;
         sendProjectAcceptedEmailToClient(req);
       }
 
-      // 5. Update UI: remove from requests feed immediately & update live counters
-      renderCreatorRequestsFeed();
-      renderBroadcastTable();
+      // APRI IMMEDIATAMENTE LA PAGINA ATTIVITÀ / STUDIO CAD (SIA DA PC CHE DA MOBILE)
+      if (typeof renderStudioSpecs === 'function') {
+        renderStudioSpecs();
+      }
+      navigateTo('activity');
+      updateNavigationTabs();
+      window.scrollTo({ top: 0, behavior: 'instant' });
 
-      // 6. Localized Toast
       const toastMsg = isEn 
-        ? `✓ Request #${req.id} accepted! Redirecting to manufacturing activity...` 
-        : isEs 
-        ? `✓ ¡Solicitud #${req.id} aceptada! Redirigiendo a la pantalla de actividad...` 
-        : `✓ Richiesta #${req.id} accettata! Reindirizzamento automatico alla schermata attività...`;
+        ? `✓ Request #${req.id} accepted! Opened in CAD Studio.` 
+        : `✓ Richiesta #${req.id} presa in carico! Aperta subito nello Studio CAD.`;
       showToast(toastMsg, 'success');
 
-      // 7. Aggiorna Tab Dinamico nella Barra (ATTIVITÀ subito dopo RICHIESTE e prima di ESCROW)
-      updateNavigationTabs();
-
-      // 8. Reindirizzamento automatico direttamente sulla schermata ATTIVITÀ per iniziare a lavorare
+      // Operazioni secondarie eseguite in background per non bloccare lo scatto visivo
       setTimeout(() => {
-        navigateTo('activity');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }, 80);
+        try {
+          renderCreatorRequestsFeed();
+          renderBroadcastTable();
+        } catch(e) {}
+      }, 20);
     }
     window.acceptCreatorRequest = acceptCreatorRequest;
 
@@ -22852,9 +23271,36 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         if (clientDecisionCard) clientDecisionCard.classList.remove('hidden');
         if (creatorStatusCard) creatorStatusCard.classList.add('hidden');
 
-        // Nascondi completamente card operativa venditore e mostra card rassicurante cliente
+        // Nascondi completamente card operativa venditore
         if (sellerShippingCard) sellerShippingCard.classList.add('hidden');
-        if (clientShippingInfoCard) clientShippingInfoCard.classList.remove('hidden');
+
+        // Mostra NON CONFORME // RISTAMPA al cliente ESCLUSIVAMENTE dopo il collaudo delle 3 foto
+        const activeEscrow = AppState.activeEscrowOrder;
+        const activeReq = AppState.loadedRequestInStudio 
+          || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.id === AppState.activeDealRfpId)) 
+          || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+        const orderPhotos = (activeReq && activeReq.qcPhotos && activeReq.qcPhotos.length) 
+          ? activeReq.qcPhotos 
+          : (activeEscrow && activeEscrow.qcPhotos && activeEscrow.qcPhotos.length ? activeEscrow.qcPhotos : (AppState.cadQcFiles || []));
+        // REQUISITO UTENTE TASSATIVO: Visibile al cliente ESCLUSIVAMENTE dopo il collaudo reale delle 3 foto!
+        const hasQcCollaudo = Boolean(
+          isClient &&
+          (activeEscrow || activeReq) &&
+          ((orderPhotos && orderPhotos.length >= 3) ||
+           (activeEscrow && Array.isArray(activeEscrow.qcPhotos) && activeEscrow.qcPhotos.length >= 3) ||
+           (activeReq && Array.isArray(activeReq.qcPhotos) && activeReq.qcPhotos.length >= 3))
+        );
+
+        if (clientShippingInfoCard) {
+          if (hasQcCollaudo && isClient) {
+            clientShippingInfoCard.classList.remove('hidden');
+            clientShippingInfoCard.style.removeProperty('display');
+            clientShippingInfoCard.style.display = 'block';
+          } else {
+            clientShippingInfoCard.classList.add('hidden');
+            clientShippingInfoCard.style.setProperty('display', 'none', 'important');
+          }
+        }
 
         if (downloadContainer) {
           downloadContainer.classList.add('hidden');
@@ -23407,6 +23853,27 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const isEs = currentLang === 'es';
 
       const isStage2Done = (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) || AppState.stage2Completed;
+
+      // Sincronizza visibilità pulsante NON CONFORME // RISTAMPA (visibile al cliente solo dopo il collaudo 3 foto)
+      const clientShippingCardSync = document.getElementById('clientShippingInfoCard');
+      if (clientShippingCardSync) {
+        const isUserLoggedIn = !!(AppState.user && AppState.user.isLoggedIn);
+        const isCreatorRole = isUserLoggedIn && AppState.user.role === 'creator';
+        const hasQcCollaudoDone = Boolean(
+          isStage2Done ||
+          (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) ||
+          AppState.stage2Completed ||
+          (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.qcPhotosDelivered || AppState.activeEscrowOrder.hasQcPhotos || AppState.activeEscrowOrder.isShipped || AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.qcApproved))
+        );
+        if (!isCreatorRole && hasQcCollaudoDone && AppState.activeEscrowOrder) {
+          clientShippingCardSync.classList.remove('hidden');
+          clientShippingCardSync.style.removeProperty('display');
+          clientShippingCardSync.style.display = 'block';
+        } else {
+          clientShippingCardSync.classList.add('hidden');
+          clientShippingCardSync.style.setProperty('display', 'none', 'important');
+        }
+      }
       const isStage3Done = AppState.isShipped || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isShipped);
       const isStage4Done = AppState.isDelivered || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.isDelivered);
 
@@ -23800,7 +24267,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // MODULO 5: TRIGGER STRIPE TRANSFER CON TAKE-RATE & RECENSIONE CERTIFICATA
       try {
-        const orderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || 'RFP-3891';
+        const orderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id) || '';
         const rawBudget = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 46.00';
         const numEur = parseFloat(String(rawBudget).replace(/[^0-9.]/g, '')) || 46.0;
         const makerId = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.makerUserId || AppState.activeEscrowOrder.maker)) || 'maker_certified';
@@ -23875,22 +24342,35 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         });
       } catch(e) {}
 
-      // DIFFERENZIAZIONE SUL DISPOSITIVO LOCALE:
-      if (AppState.user && AppState.user.role === 'creator') {
-        if (typeof showStage4CompletionModal === 'function') {
-          showStage4CompletionModal({
-            rfpId: completedReqId,
-            amount: (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 48,00'
-          });
-        }
-      }
-
+      // DIFFERENZIAZIONE SUL DISPOSITIVO LOCALE: AZZERA TUTTO DOPO LA CONSEGNA
       try {
+        localStorage.setItem('printforge_delivery_completed', 'true');
         localStorage.setItem('printforge_stage4_completed', 'true');
         if (completedReqId) {
           localStorage.setItem('printforge_completed_' + completedReqId, 'true');
         }
+        localStorage.removeItem('printforge_active_escrow_order');
+        localStorage.removeItem('printforge_cad_qc_files');
       } catch(e) {}
+
+      AppState.activeEscrowOrder = null;
+      AppState.loadedRequestInStudio = null;
+      AppState.activeDealRfpId = null;
+      AppState.cadQcFiles = [];
+      AppState.stage2Completed = false;
+      AppState.isShipped = false;
+      AppState.isDelivered = true;
+      AppState.stage4Completed = true;
+
+      if (AppState.user && AppState.user.role === 'creator') {
+        if (typeof showStage4CompletionModal === 'function') {
+          showStage4CompletionModal({
+            rfpId: completedReqId,
+            amount: '€ 0,00'
+          });
+        }
+        navigateTo('creator-requests');
+      }
 
       if (window.lucide && typeof window.lucide.createIcons === 'function') {
         window.lucide.createIcons();
@@ -24034,7 +24514,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const isEn = lang === 'en';
       const isEs = lang === 'es';
 
-      const orderId = order.id || 'RFP-3891';
+      const orderId = order.id || 'RFP-4120';
       const partTitle = order.title || (isEn ? 'Custom Component' : isEs ? 'Pieza Personalizada' : 'Componente Personalizzato');
       const clientName = order.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
       const makerName = order.maker || (isEn ? 'Certified Maker' : isEs ? 'Creador Certificado' : 'Maker Certificato');
@@ -24252,6 +24732,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // Se non ci sono ancora 3 foto caricate per questo ordine
       if (!hasPhotos) {
+        const clientDisputeCard = document.getElementById('clientShippingInfoCard');
+        if (clientDisputeCard) {
+          clientDisputeCard.classList.add('hidden');
+          clientDisputeCard.style.setProperty('display', 'none', 'important');
+        }
         container.innerHTML = 
           '<div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center gap-2 text-zinc-400 text-[10.5px] font-mono">' +
             '<i data-lucide="clock" class="w-4 h-4 text-zinc-500 shrink-0"></i>' +
@@ -24668,7 +25153,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
-      const rfpId = data?.rfpId || (AppState.activeEscrowOrder?.id) || 'RFP-3891';
+      const rfpId = data?.rfpId || (AppState.activeEscrowOrder?.id) || (AppState.loadedRequestInStudio?.id) || '';
       const amount = data?.amount || (AppState.activeEscrowOrder?.budget) || '€ 48,00';
       
       modal.innerHTML = `
@@ -25276,7 +25761,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.resetAll = resetAllSimulators;
 
     async function simulatePacklinkDelivery(status) {
-      const activeOrderId = AppState.activeEscrowOrder?.id || 'RFP-3891';
+      const activeOrderId = AppState.activeEscrowOrder?.id || (AppState.loadedRequestInStudio?.id) || '';
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
@@ -25604,6 +26089,142 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     /* ========================================================================= */
     /* MODULO 1: GOOGLE OAUTH & ISOLAMENTO RIGOROSO SESSIONI                     */
     /* ========================================================================= */
+    /* ========================================================================= */
+    /* SESSIONE SINGOLA UNIVERSALE & CONCURRENCY LOCK (1 DISPOSITIVO ATTIVO)    */
+    /* ========================================================================= */
+    let _deviceHeartbeatTimer = null;
+
+    function getDeviceSessionToken() {
+      let token = null;
+      try {
+        token = sessionStorage.getItem("printforge_device_token");
+        if (!token) {
+          token = "dev_" + Math.random().toString(36).substring(2, 10) + "_" + Date.now();
+          sessionStorage.setItem("printforge_device_token", token);
+        }
+      } catch(e) {
+        token = "dev_" + Date.now();
+      }
+      return token;
+    }
+    window.getDeviceSessionToken = getDeviceSessionToken;
+
+    async function checkEmailActiveSessionLock(email) {
+      if (!email) return { isLocked: false };
+      const cleanEmail = email.toLowerCase().trim();
+      const myToken = getDeviceSessionToken();
+
+      // 1. Controlla nel Cloud Supabase se l'account è attualmente attivo su altro dispositivo
+      try {
+        if (typeof fetchUserProfileFromCloud === "function") {
+          const cloudProf = await fetchUserProfileFromCloud(cleanEmail);
+          if (cloudProf && cloudProf.isActive && cloudProf.activeSessionToken) {
+            if (cloudProf.activeSessionToken !== myToken) {
+              const lastHb = parseInt(cloudProf.lastHeartbeat || 0, 10);
+              const diff = Date.now() - lastHb;
+              // Se la sessione remota è attiva (heartbeat recente entro 90 secondi)
+              if (diff < 90000) {
+                return { isLocked: true, activeOnOtherDevice: true, lastHeartbeat: lastHb };
+              }
+            }
+          }
+        }
+      } catch(e) {}
+
+      // 2. Controlla lock locale cross-tab/finestra
+      try {
+        const localToken = localStorage.getItem("printforge_active_device_" + cleanEmail.replace(/[^a-z0-9]/g, "_"));
+        if (localToken && localToken !== myToken) {
+          const localHb = parseInt(localStorage.getItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_")) || "0", 10);
+          if (Date.now() - localHb < 90000) {
+            return { isLocked: true, activeOnOtherDevice: true, lastHeartbeat: localHb };
+          }
+        }
+      } catch(e) {}
+
+      return { isLocked: false };
+    }
+    window.checkEmailActiveSessionLock = checkEmailActiveSessionLock;
+
+    function claimEmailActiveSession(email, userObj) {
+      if (!email) return;
+      const cleanEmail = email.toLowerCase().trim();
+      const myToken = getDeviceSessionToken();
+      if (userObj) {
+        userObj.activeSessionToken = myToken;
+        userObj.isActive = true;
+        userObj.lastHeartbeat = Date.now();
+      }
+      try {
+        localStorage.setItem("printforge_active_device_" + cleanEmail.replace(/[^a-z0-9]/g, "_"), myToken);
+        localStorage.setItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_"), String(Date.now()));
+      } catch(e) {}
+      startDeviceHeartbeat(cleanEmail);
+    }
+    window.claimEmailActiveSession = claimEmailActiveSession;
+
+    function startDeviceHeartbeat(email) {
+      if (_deviceHeartbeatTimer) clearInterval(_deviceHeartbeatTimer);
+      const cleanEmail = (email || (AppState.user && AppState.user.email) || "").toLowerCase().trim();
+      if (!cleanEmail) return;
+
+      _deviceHeartbeatTimer = setInterval(async () => {
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.email.toLowerCase().trim() !== cleanEmail) {
+          clearInterval(_deviceHeartbeatTimer);
+          return;
+        }
+        const now = Date.now();
+        AppState.user.lastHeartbeat = now;
+        AppState.user.isActive = true;
+        AppState.user.activeSessionToken = getDeviceSessionToken();
+        try {
+          localStorage.setItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_"), String(now));
+        } catch(e) {}
+
+        if (typeof supabaseClient !== "undefined" && supabaseClient) {
+          try {
+            const cleanId = "USER-PROFILE-" + cleanEmail.replace(/[^a-z0-9]/g, "_");
+            await supabaseClient.from("broadcast_requests").update({
+              notes: JSON.stringify(Object.assign({}, AppState.user, {
+                activeSessionToken: getDeviceSessionToken(),
+                isActive: true,
+                lastHeartbeat: now
+              }))
+            }).eq("id", cleanId);
+          } catch(e) {}
+        }
+      }, 25000);
+    }
+    window.startDeviceHeartbeat = startDeviceHeartbeat;
+
+    async function releaseEmailActiveSession(email) {
+      if (_deviceHeartbeatTimer) clearInterval(_deviceHeartbeatTimer);
+      const cleanEmail = (email || (AppState.user && AppState.user.email) || "").toLowerCase().trim();
+      if (!cleanEmail) return;
+      try {
+        localStorage.removeItem("printforge_active_device_" + cleanEmail.replace(/[^a-z0-9]/g, "_"));
+        localStorage.removeItem("printforge_active_hb_" + cleanEmail.replace(/[^a-z0-9]/g, "_"));
+      } catch(e) {}
+
+      if (typeof supabaseClient !== "undefined" && supabaseClient) {
+        try {
+          const cleanId = "USER-PROFILE-" + cleanEmail.replace(/[^a-z0-9]/g, "_");
+          let prof = null;
+          if (typeof fetchUserProfileFromCloud === "function") {
+            prof = await fetchUserProfileFromCloud(cleanEmail);
+          }
+          if (prof) {
+            prof.isActive = false;
+            prof.activeSessionToken = null;
+            prof.lastHeartbeat = 0;
+            await supabaseClient.from("broadcast_requests").update({
+              notes: JSON.stringify(prof)
+            }).eq("id", cleanId);
+          }
+        } catch(e) {}
+      }
+    }
+    window.releaseEmailActiveSession = releaseEmailActiveSession;
     let currentGoogleModalRole = 'client';
     function selectGoogleModalRole(role) {
       currentGoogleModalRole = role;
@@ -25627,68 +26248,59 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         return;
       }
       const targetRole = newRole || (AppState.user.role === 'creator' ? 'client' : 'creator');
+      if (AppState.user.role === targetRole) {
+        const defaultView = targetRole === 'creator' 
+          ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests')
+          : 'client-home';
+        navigateTo(defaultView);
+        return;
+      }
+
       AppState.user.role = targetRole;
+
+      // 1. Chiudi subito il dropdown per evitare overlay o blocchi touch su mobile
+      if (typeof closeUserProfileDropdown === 'function') {
+        closeUserProfileDropdown();
+      }
+
+      // 2. Registra o disattiva presenza creator
       if (targetRole === 'creator') {
         registerCreatorPresence();
-
-      // Auto-Idratazione Profilo e IBAN da Supabase Cloud per sincronizzazione PC <-> Smartphone all'avvio
-      if (AppState.user && AppState.user.email && typeof fetchUserProfileFromCloud === 'function') {
-        const uEmail = AppState.user.email.toLowerCase().trim();
-        setTimeout(async () => {
-          try {
-            const cloudProf = await fetchUserProfileFromCloud(uEmail);
-            if (cloudProf) {
-              let updated = false;
-              if (cloudProf.payoutConfig && (!AppState.user.payoutConfig || !AppState.user.payoutConfig.iban || AppState.user.payoutConfig.iban !== cloudProf.payoutConfig.iban)) {
-                AppState.user.payoutConfig = Object.assign(AppState.user.payoutConfig || {}, cloudProf.payoutConfig);
-                AppState.user.stripeConnected = true;
-                const userKey = 'printforge_payout_details_' + uEmail.replace(/[^a-z0-9]/g, '_');
-                localStorage.setItem(userKey, JSON.stringify(cloudProf.payoutConfig));
-                localStorage.setItem('printforge_payout_configured', 'true');
-                localStorage.setItem('printforge_payout_details', JSON.stringify(cloudProf.payoutConfig));
-                localStorage.setItem('printforge_stripe_connected', 'true');
-                updated = true;
-              }
-              if (cloudProf.creatorData) {
-                AppState.user.creatorData = Object.assign(AppState.user.creatorData || {}, cloudProf.creatorData);
-                updated = true;
-              }
-              if (updated) {
-                localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-                if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
-                if (typeof updateNavigationTabs === 'function') updateNavigationTabs();
-                console.log('☁️ [Auto-Hydrate] Profilo e IBAN sincronizzati con successo dal cloud su questo dispositivo');
-              }
-            }
-          } catch(e) {
-            console.warn('Errore auto-hydrate profilo cloud:', e);
-          }
-        }, 600);
-      }
       } else {
         unregisterCreatorPresence();
       }
+
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch(e) {}
-      if (AppState.user.email) {
-        syncUserProfileToCloud(AppState.user);
+
+      // 3. Ferma animazioni pesanti 3D / Remotion in background se non in home (libera 100% GPU/CPU mobile)
+      if (typeof RemotionVideoEngine !== 'undefined' && typeof RemotionVideoEngine.stopLoop === 'function') {
+        RemotionVideoEngine.stopLoop();
       }
+
+      // 4. Aggiorna barre di navigazione e header
       renderNavUserArea();
       updateNavigationTabs();
       updateLaptopBarButtons();
-      loadRequestsFromSupabase();
+
+      // 5. Reindirizzamento fluido verso la vista principale corretta
       if (targetRole === 'client') {
-        showToast(currentLang === 'it' ? 'Modalità CLIENTE attiva.' : 'CLIENT Mode active.', 'success');
+        showToast(currentLang === 'it' ? '✓ Modalità CLIENTE attiva!' : '✓ CLIENT Mode active!', 'success');
         navigateTo('client-home');
       } else {
-        showToast(currentLang === 'it' ? 'Modalità CREATOR attiva.' : 'CREATOR Mode active.', 'success');
-        // Se ha commessa attiva -> ATTIVITÀ / STUDIO, altrimenti -> I MIEI PROGETTI. MAI la pagina bacheca richieste!
-        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
-          navigateTo('activity');
-        } else {
-          navigateTo('creator-portfolio');
-        }
+        showToast(currentLang === 'it' ? '✓ Modalità CREATOR attiva!' : '✓ CREATOR Mode active!', 'success');
+        const creatorDest = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests';
+        navigateTo(creatorDest);
+      }
+
+      window.scrollTo(0, 0);
+
+      // 6. Sincronizzazione cloud in background non bloccante
+      if (AppState.user.email) {
+        setTimeout(() => {
+          try { syncUserProfileToCloud(AppState.user); } catch(e) {}
+        }, 150);
       }
     }
     window.switchUserRole = switchUserRole;
@@ -25840,38 +26452,124 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     }
     window.handleSupabaseAuthUser = handleSupabaseAuthUser;
 
+    async function executeDirectGoogleLogin(email, role) {
+      const cleanEmail = (email || localStorage.getItem('printforge_saved_email') || '').toLowerCase().trim();
+      if (!cleanEmail || !cleanEmail.includes('@')) { openGoogleLoginModal(role || 'client'); return; }
+      const cleanName = cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const savedPrimaryRole = localStorage.getItem('printforge_primary_role') || 'client';
+      const cleanRole = role || localStorage.getItem('printforge_pending_auth_role') || savedPrimaryRole;
+      // CONTROLLO SESSIONE ATTIVA: Blocca l'accesso se l'account è già attivo su un altro dispositivo
+      const sessionCheck = await checkEmailActiveSessionLock(cleanEmail);
+      if (sessionCheck.isLocked) {
+        const errMsg = currentLang === "it"
+          ? "⚠️ ACCESSO NEGATO: L'account " + cleanEmail + " è attualmente ATTIVO su un altro dispositivo. Per sicurezza, disconnettiti prima dall'altro dispositivo per accedere qui."
+          : "⚠️ ACCESS DENIED: Account " + cleanEmail + " is currently ACTIVE on another device. Please sign out from that device first.";
+        showToast(errMsg, "error", 8000);
+        return;
+      }
+
+      let cloudProfile = null;
+      try {
+        cloudProfile = await fetchUserProfileFromCloud(cleanEmail);
+      } catch(e) {}
+
+      if (!cloudProfile) {
+        cloudProfile = {
+          id: 'usr_' + cleanEmail.replace(/[^a-z0-9]/g, '_'),
+          userId: 'usr_' + cleanEmail.replace(/[^a-z0-9]/g, '_'),
+          name: cleanName,
+          email: cleanEmail,
+          role: cleanRole,
+          isAdmin: Boolean(cloudProfile?.isAdmin),
+          isLoggedIn: true,
+          stripeConnected: true
+        };
+      } else {
+        cloudProfile.isLoggedIn = true;
+        
+      }
+
+      // Salva e vincola perennemente lo stato di email registrata
+      const cleanEmailKey = cleanEmail.replace(/[^a-z0-9]/g, "_");
+      const existingLocalPass = localStorage.getItem("printforge_saved_pass_" + cleanEmailKey) || localStorage.getItem("printforge_saved_pass");
+      if (cloudProfile && !cloudProfile.password && existingLocalPass) {
+        cloudProfile.password = existingLocalPass;
+      }
+      try {
+        localStorage.setItem("printforge_user_registered_" + cleanEmailKey, "true");
+        if (existingLocalPass) localStorage.setItem("printforge_saved_pass_" + cleanEmailKey, existingLocalPass);
+      } catch(e) {}
+      AppState.user = cloudProfile;
+      
+      // Salva credenziali e sessione permanente in localStorage
+      try {
+        localStorage.setItem('printforge_saved_email', cleanEmail);
+        localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+      } catch(e) {}
+
+      // Ripristina sempre l'IBAN privato del Creator (visibile solo a lui nel profilo)
+      const userKey = 'printforge_payout_details_' + cleanEmail.replace(/[^a-z0-9]/g, '_');
+      let savedPayout = cloudProfile.payoutConfig;
+      if (!savedPayout || !savedPayout.iban) {
+        try {
+          const rawP = localStorage.getItem(userKey) || localStorage.getItem('printforge_payout_details');
+          if (rawP) savedPayout = JSON.parse(rawP);
+        } catch(e) {}
+      }
+      if (savedPayout && savedPayout.iban) {
+        cloudProfile.payoutConfig = savedPayout;
+        cloudProfile.stripeConnected = true;
+        AppState.user.payoutConfig = savedPayout;
+        AppState.user.stripeConnected = true;
+        try {
+          localStorage.setItem(userKey, JSON.stringify(savedPayout));
+          localStorage.setItem('printforge_payout_details', JSON.stringify(savedPayout));
+          localStorage.setItem('printforge_payout_configured', 'true');
+          localStorage.setItem('printforge_stripe_connected', 'true');
+        } catch(e) {}
+      }
+
+      try {
+        syncUserProfileToCloud(AppState.user);
+      } catch(e) {}
+
+      renderNavUserArea();
+      updateNavigationTabs();
+      loadRequestsFromSupabase();
+
+      claimEmailActiveSession(cleanEmail, AppState.user);
+      showToast(currentLang === 'it' ? ('Accesso Google completato: ' + cleanEmail) : ('Google Sign-In completed: ' + cleanEmail), 'success');
+
+      if (AppState.user.role === 'creator') {
+        navigateTo('creator-portfolio');
+      } else {
+        navigateTo('client-home');
+      }
+    }
+    window.executeDirectGoogleLogin = executeDirectGoogleLogin;
+
+    function adminGoogleLogin(role) {
+      const saved = localStorage.getItem('printforge_saved_email') || '';
+      if (saved && saved.includes('@')) { executeDirectGoogleLogin(saved, role || 'client'); } else { openGoogleLoginModal(role || 'client'); }
+    }
+    window.adminGoogleLogin = adminGoogleLogin;
+
     async function loginWithGoogleOAuth(preferredRole) {
-      const roleToUse = preferredRole || 'client';
+      const roleToUse = preferredRole || localStorage.getItem('printforge_pending_auth_role') || (AppState.user && AppState.user.role) || 'client';
       try {
         localStorage.setItem('printforge_pending_auth_role', roleToUse);
       } catch(e) {}
 
-      // Avvia DIRETTAMENTE il login ufficiale con Google OAuth senza mostrare nessun popup intermedio
-      if (supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signInWithOAuth === 'function') {
-        const isEn = currentLang === 'en';
-        const isEs = currentLang === 'es';
-        const msg = isEn ? 'Opening Google Sign In...' : isEs ? 'Abriendo Google...' : 'Apertura accesso Google in corso...';
-        showToast(msg, 'info');
+      const isEn = currentLang === 'en';
+      showToast(isEn ? 'Google Sign In in progress...' : 'Accesso Google in corso...', 'info');
 
-        try {
-          const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-          const redirectUrl = isLocal ? (window.location.origin + window.location.pathname) : 'https://print-forge-seven.vercel.app/';
-          const { error } = await supabaseClient.auth.signInWithOAuth({
-            provider: 'google',
-            options: {
-              redirectTo: redirectUrl
-            }
-          });
-          if (error) {
-            console.error('Supabase Google OAuth error:', error);
-            showToast('Errore connessione Google: ' + (error.message || 'Riprova'), 'warning');
-          }
-        } catch(err) {
-          console.error('OAuth redirect exception:', err);
-          showToast('Errore durante l\'avvio di Google OAuth.', 'warning');
-        }
+      // ACCESSO GOOGLE DIRETTO & RESILIENTE: Zero blocchi da quote cloud esterne
+      const typedEmail = document.getElementById('gateUnifiedEmail')?.value?.trim();
+      const savedGoogleEmail = (typedEmail && typedEmail.includes('@')) ? typedEmail : (localStorage.getItem('printforge_saved_email') || '');
+      if (savedGoogleEmail && savedGoogleEmail.includes('@')) {
+        await executeDirectGoogleLogin(savedGoogleEmail, roleToUse);
       } else {
-        showToast('Inizializzazione Supabase Auth in corso...', 'info');
+        openGoogleLoginModal(roleToUse);
       }
     }
     window.loginWithGoogleOAuth = loginWithGoogleOAuth;
@@ -26053,43 +26751,103 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     
     async function handleUnifiedGateSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
-      const nameInput = document.getElementById('gateUnifiedName');
       const emailInput = document.getElementById('gateUnifiedEmail');
       const passInput = document.getElementById('gateUnifiedPass');
 
-      const name = nameInput?.value?.trim() || 'Utente';
-      const email = (emailInput?.value?.trim() || 'maggimatteo22@gmail.com').toLowerCase();
-      const pass = passInput?.value || '';
+      const email = (emailInput?.value?.trim() || '').toLowerCase();
+      const pass = passInput?.value || localStorage.getItem('printforge_saved_pass') || '';
+      const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+
+      // SALVATAGGIO PERMANENTE CREDENZIALI (Email e Password salvate per sempre)
+      try {
+        localStorage.setItem('printforge_saved_email', email);
+        localStorage.setItem('printforge_saved_pass', pass);
+        localStorage.setItem('printforge_saved_credentials', JSON.stringify({ email: email, pass: pass, name: name }));
+      } catch(err) {}
 
       if (!email || !email.includes('@')) {
         showToast(currentLang === 'it' ? 'Inserisci un indirizzo email valido' : 'Please enter a valid email address', 'error');
         return;
       }
 
+      // CONTROLLO DISPOSITIVO CONCORRENTE: Se l'email è attiva su un altro dispositivo, impedisci l'accesso!
+      const sessionCheck = await checkEmailActiveSessionLock(email);
+      if (sessionCheck.isLocked) {
+        const errMsg = currentLang === "it"
+          ? "⚠️ ACCESSO NEGATO: L'email " + email + " è attualmente ATTIVA su un altro dispositivo. Disconnettiti prima dall'altro dispositivo per poter accedere qui."
+          : "⚠️ ACCESS DENIED: The email " + email + " is currently ACTIVE on another device. Please sign out from that device first.";
+        showToast(errMsg, "error", 8000);
+        return;
+      }
       showToast(currentLang === 'it' ? 'Accesso in corso...' : 'Signing in...', 'info');
 
       // Cerca profilo cloud esistente per sincronizzare cross-device
+      // Cerca profilo cloud o locale esistente per verificare se l'email è già registrata
+      const emailKey = email.replace(/[^a-z0-9]/g, "_");
       let userProfile = await fetchUserProfileFromCloud(email);
+      const localSavedPass = (typeof localStorage !== "undefined") 
+        ? (localStorage.getItem("printforge_saved_pass_" + emailKey) || (email === (localStorage.getItem("printforge_saved_email") || "").toLowerCase().trim() ? localStorage.getItem("printforge_saved_pass") : null))
+        : null;
+      const isRegistered = Boolean(userProfile || localSavedPass || (typeof localStorage !== "undefined" && localStorage.getItem("printforge_user_registered_" + emailKey) === "true"));
+      const registeredPass = (userProfile && userProfile.password) || localSavedPass;
+
+      // BLOCCO TOTALE 2° ACCOUNT: Se l'email è già registrata, verifica rigorosa password (impossibile creare due account con la stessa mail)
+      if (isRegistered && registeredPass) {
+        if (pass && pass !== registeredPass) {
+          const errPass = currentLang === "it"
+            ? "⚠️ Questa email è già registrata ed è associata a un account univoco. La password inserita non è corretta (impossibile creare due account con la stessa email)."
+            : "⚠️ This email is already registered to a single account. The password entered is incorrect.";
+          showToast(errPass, "error", 8000);
+          return;
+        }
+      }
+
       if (!userProfile) {
+        // Primo accesso assoluto per questa nuova email: crea l'account univoco e vincola la password per sempre
         userProfile = {
-          userId: generateUserIdForAccount(email, 'client'),
-          id: generateUserIdForAccount(email, 'client'),
+          userId: generateUserIdForAccount(email, "client"),
+          id: generateUserIdForAccount(email, "client"),
           isLoggedIn: true,
-          role: 'client',
-          isAdmin: (email === 'maggimatteo22@gmail.com'),
+          role: "client",
+          isAdmin: false,
           name: name,
           email: email,
+          password: pass || "",
           avatar: name.charAt(0).toUpperCase(),
-          stripeConnected: true,
+          isLoggedIn: true,
           creatorData: null
         };
       } else {
         userProfile.isLoggedIn = true;
-        if (name && name !== 'Utente' && name !== 'Cliente') userProfile.name = name;
-        if (email === 'maggimatteo22@gmail.com') userProfile.isAdmin = true;
+        if (pass && !userProfile.password) userProfile.password = pass;
+        
       }
 
+      // Salva e vincola perennemente la password e lo stato di email registrata
+      try {
+        if (pass) {
+          localStorage.setItem("printforge_saved_pass_" + emailKey, pass);
+          localStorage.setItem("printforge_saved_pass", pass);
+        } else if (registeredPass) {
+          localStorage.setItem("printforge_saved_pass_" + emailKey, registeredPass);
+          localStorage.setItem("printforge_saved_pass", registeredPass);
+        }
+        localStorage.setItem("printforge_user_registered_" + emailKey, "true");
+        localStorage.setItem("printforge_saved_email", email);
+        localStorage.setItem("printforge_saved_credentials", JSON.stringify({ email: email, pass: pass || registeredPass, name: userProfile.name }));
+      } catch(err) {}
       AppState.user = userProfile;
+      if (userProfile && userProfile.payoutConfig && userProfile.payoutConfig.iban) {
+        AppState.user.payoutConfig = userProfile.payoutConfig;
+        AppState.user.stripeConnected = true;
+        try {
+          const userKey = 'printforge_payout_details_' + email.replace(/[^a-z0-9]/g, '_');
+          localStorage.setItem(userKey, JSON.stringify(userProfile.payoutConfig));
+          localStorage.setItem('printforge_payout_details', JSON.stringify(userProfile.payoutConfig));
+          localStorage.setItem('printforge_payout_configured', 'true');
+          localStorage.setItem('printforge_stripe_connected', 'true');
+        } catch(e) {}
+      }
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch (err) {}
@@ -26104,6 +26862,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       updateLaptopBarButtons();
       loadRequestsFromSupabase();
 
+      claimEmailActiveSession(email, AppState.user);
       const welcomeMsg = currentLang === 'it' 
         ? `Benvenuto su PrintForge, ${AppState.user.name}!` 
         : `Welcome to PrintForge, ${AppState.user.name}!`;
@@ -26149,6 +26908,17 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       AppState.user = userProfile;
+      if (userProfile && userProfile.payoutConfig && userProfile.payoutConfig.iban) {
+        AppState.user.payoutConfig = userProfile.payoutConfig;
+        AppState.user.stripeConnected = true;
+        try {
+          const userKey = 'printforge_payout_details_' + email.replace(/[^a-z0-9]/g, '_');
+          localStorage.setItem(userKey, JSON.stringify(userProfile.payoutConfig));
+          localStorage.setItem('printforge_payout_details', JSON.stringify(userProfile.payoutConfig));
+          localStorage.setItem('printforge_payout_configured', 'true');
+          localStorage.setItem('printforge_stripe_connected', 'true');
+        } catch(e) {}
+      }
       try {
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch (e) {}
@@ -26506,9 +27276,33 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     }
 
     function logoutUser() {
+      // RILASCIO SESSIONE DISPOSITIVO: Libera l'email per permettere l'accesso immediato da altri dispositivi
+      try {
+        const loggingOutEmail = (AppState.user && AppState.user.email) || localStorage.getItem("printforge_saved_email");
+        if (loggingOutEmail && typeof releaseEmailActiveSession === "function") {
+          releaseEmailActiveSession(loggingOutEmail);
+        }
+      } catch(e) {}
       if (typeof closeUserProfileDropdown === 'function') {
         closeUserProfileDropdown();
       }
+      // PRESERVA SEMPRE I DATI PRIVATI DEL CREATOR: IBAN, PASSWORD E PROFILO PRINCIPALE
+      try {
+        if (AppState.user && AppState.user.email) {
+          localStorage.setItem('printforge_saved_email', AppState.user.email);
+          if (AppState.user.payoutConfig) {
+            const uKey = 'printforge_payout_details_' + AppState.user.email.replace(/[^a-z0-9]/g, '_');
+            localStorage.setItem(uKey, JSON.stringify(AppState.user.payoutConfig));
+            localStorage.setItem('printforge_payout_details', JSON.stringify(AppState.user.payoutConfig));
+            localStorage.setItem('printforge_payout_configured', 'true');
+            localStorage.setItem('printforge_stripe_connected', 'true');
+          }
+          if (AppState.user.role) {
+            localStorage.setItem('printforge_primary_role', AppState.user.role);
+          }
+        }
+      } catch(e) {}
+
       AppState.user = {
         isLoggedIn: false,
         role: 'client',
@@ -26519,26 +27313,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         stripeConnected: false,
         creatorData: null
       };
-      // MULTI-TENANT PURGE: Nessun dato rimane in memoria tra un logout e il successivo login
-      AppState.portfolioWorks = [];
-      AppState.broadcastRequests = [];
-      AppState.activeEscrowOrder = null;
-      AppState.activeDealRfpId = null;
-      AppState.loadedRequestInStudio = null;
-      AppState.cadQcFiles = [];
+
       try {
         localStorage.removeItem('printforge_auth_session');
-        localStorage.removeItem('printforge_pending_auth_role');
-        localStorage.removeItem('printforge_portfolio_works');
-        localStorage.removeItem('printforge_broadcast_requests');
-        localStorage.removeItem('printforge_escrow_order');
-        localStorage.removeItem('printforge_payout_config');
-        localStorage.removeItem('printforge_payout_iban');
-        localStorage.removeItem('printforge_payout_configured');
-        localStorage.removeItem('printforge_payout_details');
-        localStorage.removeItem('printforge_stripe_connected');
-        localStorage.removeItem('printforge_stage4_completed');
-        sessionStorage.clear();
+        // NON cancellare printforge_saved_email, printforge_saved_pass, printforge_payout_details, printforge_portfolio_works
       } catch (e) {}
 
       if (typeof supabaseClient !== 'undefined' && supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signOut === 'function') {
@@ -26557,6 +27335,16 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       renderNavUserArea();
       updateNavigationTabs();
+      navigateTo('login-gate');
+
+      setTimeout(() => {
+        try {
+          const emailInput = document.getElementById('gateUnifiedEmail');
+          const passInput = document.getElementById('gateUnifiedPass');
+          if (emailInput) emailInput.value = '';
+          if (passInput) passInput.value = '';
+        } catch(e) {}
+      }, 50);
       updateLaptopBarButtons();
       
       const byeMsg = currentLang === 'it' 
@@ -26580,28 +27368,19 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // REQUISITO: Una volta effettuato l'accesso, non mostrare MAI più login-gate!
       if (viewId === 'login-gate' && AppState.user && AppState.user.isLoggedIn) {
-        const safeView = (AppState.user.role === 'creator') ? 'creator-portfolio' : 'client-home';
+        const safeView = (AppState.user.role === 'creator') 
+          ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests') 
+          : 'client-home';
         if (AppState.currentView !== safeView) {
           navigateTo(safeView);
         }
         return;
       }
-    // DOPO IL 4° PASSAGGIO: la pagina di affare concluso (order-room) resta visibile al creator
-    // finché non cambia pagina manualmente con il cursore o con il dito.
-    if (AppState.user && AppState.user.role === 'creator') {
-      const isPostStage4 = Boolean(AppState.stage4Completed || AppState.isDelivered || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true') || (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.isDelivered || AppState.activeEscrowOrder.isCompleted)));
-      if (isPostStage4) {
-        // Se l'ordine è già stato chiuso/svuotato definitivamente (AppState.activeEscrowOrder === null),
-        // allora non permettere più l'accesso alla stanza Escrow o Attività
-        if (!AppState.activeEscrowOrder && (viewId === 'activity' || viewId === 'studio' || viewId === 'order-room')) {
-          navigateTo('creator-portfolio');
-          return;
-        }
-        // Se invece l'ordine è in fase di completamento ma l'utente tenta di aprire l'attività CAD, reindirizza
-        if (viewId === 'activity' || viewId === 'studio') {
-          navigateTo('creator-portfolio');
-          return;
-        }
+    // SEPARAZIONE RUOLI: Se un cliente tenta di accedere alle sezioni creator, reindirizza a client-home
+    if (AppState.user && AppState.user.role === 'client') {
+      if (viewId === 'creator-requests' || viewId === 'creator-portfolio' || viewId === 'activity' || viewId === 'studio') {
+        navigateTo('client-home');
+        return;
       }
     }
       // PROTEZIONE ESCLUSIVA PAGINA RICHIESTE CLIENTE
@@ -26627,21 +27406,24 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
       if (viewId === 'home') viewId = 'client-home';
       if (viewId === 'esplora') viewId = 'explore';
+      // Permetti al creator di navigare liberamente sia sulla bacheca che sulla pagina attività
       if (viewId === 'creator-requests') {
-        if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
-          navigateTo('activity');
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
+          navigateTo('client-home');
           return;
         }
       }
-      if ((viewId === 'activity' || viewId === 'studio') && typeof hasAcceptedRequest === 'function' && !hasAcceptedRequest()) {
-        navigateTo('creator-requests');
-        return;
+      if (viewId === 'activity' || viewId === 'studio') {
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
+          navigateTo('client-home');
+          return;
+        }
+        if (typeof hasAcceptedRequest === 'function' && !hasAcceptedRequest()) {
+          navigateTo('creator-requests');
+          return;
+        }
       }
       if (viewId === 'explore') {
-        if (AppState.user && AppState.user.isLoggedIn && AppState.user.role === 'creator') {
-          navigateTo('creator-portfolio');
-          return;
-        }
         try {
           if (window.location.pathname !== '/esplora') {
             window.history.pushState(null, '', '/esplora');
@@ -26688,12 +27470,36 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       if (viewId === 'order-room') {
+        const isEn = currentLang === 'en';
+        const isEs = currentLang === 'es';
+        const isCreator = AppState.user && AppState.user.role === 'creator';
+
+        // REQUISITO UTENTE: Per il creator la pagina Escrow Room si attiva SOLO dopo il collaudo delle 3 foto!
+        if (isCreator) {
+          const activeCreatorReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
+          const has3QcPhotos = Boolean(
+            (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) ||
+            AppState.stage2Completed ||
+            Boolean(activeCreatorReq && (
+              activeCreatorReq.hasQcPhotos ||
+              (activeCreatorReq.qcPhotos && activeCreatorReq.qcPhotos.length >= 3) ||
+              activeCreatorReq.clientApprovedQc
+            ))
+          );
+          if (!has3QcPhotos) {
+            const blockQcMsg = isEn 
+              ? 'Escrow Room unlocks only after attaching the 3 caliper inspection photos in CAD Studio.' 
+              : isEs 
+              ? 'La sala Escrow se activa únicamente después del collaudo de las 3 fotos con calibre en el Estudio CAD.' 
+              : 'La pagina Escrow Room si attiva solamente dopo il collaudo delle 3 foto con calibro nello Studio CAD.';
+            showToast(blockQcMsg, 'warning');
+            navigateTo('activity');
+            return;
+          }
+        }
+
         // La pagina escrow room si sblocca per il cliente dopo la presa in carica del creator.
-        // Anche per il creator la pagina escrow si deve aprire solo dopo quando accetta una determinata richiesta.
         if (!hasActiveEscrowOrder()) {
-          const isEn = currentLang === 'en';
-          const isEs = currentLang === 'es';
-          const isCreator = AppState.user && AppState.user.role === 'creator';
           const blockMsg = isCreator
             ? (isEn 
                 ? 'The Escrow Room opens only after accepting a specific request.' 
@@ -26715,22 +27521,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       if (viewId === 'studio' || viewId === 'activity') {
-        // La finestra attività si apre solamente dopo l'accettazione di una richiesta
-        if (!hasAcceptedRequest()) {
-          const isEn = currentLang === 'en';
-          const isEs = currentLang === 'es';
-          const blockMsg = isEn 
-            ? 'The Activity window opens only after accepting a request from the board.' 
-            : isEs 
-            ? 'La ventana de Actividad se abre únicamente tras aceptar una solicitud del panel.' 
-            : 'La finestra attività si apre solamente dopo l\'accettazione di una richiesta.';
-          showToast(blockMsg, 'warning');
-          const redirectView = (AppState.user && AppState.user.role === 'creator') ? 'creator-requests' : 'client-home';
-          navigateTo(redirectView);
-          return;
-        }
-
-        if (!AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
+        if (!AppState.user || !AppState.user.isLoggedIn || AppState.user.role !== 'creator') {
           const isEn = currentLang === 'en';
           const isEs = currentLang === 'es';
           showToast(isEn ? 'Please sign in as Creator to access this area.' : isEs ? 'Inicia sesión como Creador para acceder a esta área.' : 'Accedi come Creator per accedere all\'area di lavorazione.', 'warning');
@@ -26752,6 +27543,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           headerBarEl.classList.add('header-relative');
         }
       }
+      if (viewId !== 'client-home' && viewId !== 'home') {
+        if (typeof RemotionVideoEngine !== 'undefined' && typeof RemotionVideoEngine.stopLoop === 'function') {
+          RemotionVideoEngine.stopLoop();
+        }
+      }
+
       ['login-gate', 'client-home', 'client-request', 'creator-requests', 'deal-chat', 'studio', 'order-room', 'explore', 'creator-portfolio', 'showcase-order'].forEach(v => {
         const sec = document.getElementById(`view-${v}`);
         if (sec) {
@@ -26845,7 +27642,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'PLA+ Alta Resistenza',
         color: 'Bianco Naturale Puro',
-        img: '/images/benchy.jpg',
+        img: null,
         file: 'cubo_calibrazione_xyz_20mm.stl'
       },
       'bushing': {
@@ -26861,7 +27658,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'PETG Tecnico',
         color: 'Grigio Grafite Industriale',
-        img: '/images/vase.jpg',
+        img: null,
         file: 'boccola_flangiata_meccanica.stl'
       },
       'dice': {
@@ -26877,7 +27674,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'Resina Tough Standard',
         color: 'Arancione Meccanico',
-        img: '/images/dice.jpg',
+        img: null,
         file: 'dado_d20_cosplay.stl'
       },
       'stand': {
@@ -26893,7 +27690,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         },
         material: 'PA12-CF Carbonio',
         color: 'Nero Opaco Cyber',
-        img: '/images/stand.jpg',
+        img: null,
         file: 'stand_headphone_ergonomic.stl'
       }
     };
@@ -27183,20 +27980,39 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // Calcolo automatico completo: Manifattura + Spedizione Pacco + Flash Fee + Tassa Stripe Escrow
       const rawBudgetVal = document.getElementById('reqBudget')?.value;
-      const parsedBudget = parseFloat(rawBudgetVal);
-      const recPrice = window.__lastComputedQuotePrice || 0;
-      const recMfg = window.__lastComputedBaseMfg || recPrice;
+      let parsedBudget = parseFloat(rawBudgetVal);
+      let recPrice = window.__lastComputedQuotePrice || 0;
+      let recMfg = window.__lastComputedBaseMfg || recPrice;
+
+      // Se il budget non è stato digitato esplicitamente, recupera il prezzo calcolato dalla stima / breakdown visibile
+      if (isNaN(parsedBudget) || parsedBudget <= 0) {
+        if (typeof window.__lastComputedBaseMfg === 'number' && window.__lastComputedBaseMfg > 0) {
+          parsedBudget = window.__lastComputedBaseMfg;
+        } else {
+          const bMfgEl = document.getElementById('breakdownMfgPrice');
+          if (bMfgEl && bMfgEl.innerText) {
+            const num = parseFloat(bMfgEl.innerText.replace(/[^0-9,.]/g, '').replace(',', '.'));
+            if (!isNaN(num) && num > 0) parsedBudget = num;
+          }
+        }
+        if (isNaN(parsedBudget) || parsedBudget <= 0) {
+          const maxDim = Math.max(dx, dy, dz);
+          if (maxDim <= 55) parsedBudget = 14.00;
+          else if (maxDim <= 115) parsedBudget = 28.00;
+          else if (maxDim <= 185) parsedBudget = 48.00;
+          else if (maxDim <= 260) parsedBudget = 78.00;
+          else parsedBudget = 120.00;
+        }
+        const bInput = document.getElementById('reqBudget');
+        if (bInput) bInput.value = parsedBudget.toFixed(2);
+      }
+
+      recPrice = recPrice || parsedBudget;
+      recMfg = recMfg || parsedBudget;
       const minThreshold = (recPrice > 0) ? Math.max(12, Math.round(recPrice * 0.75)) : 12;
 
-      // 1. Manifattura Netta (Budget inserito o stima consigliata se vuoto)
-      let mfgNetto = 0;
-      if (!isNaN(parsedBudget) && parsedBudget > 0) {
-        mfgNetto = parsedBudget;
-      } else if (window.__lastComputedBaseMfg && window.__lastComputedBaseMfg > 0) {
-        mfgNetto = window.__lastComputedBaseMfg;
-      } else if (recPrice > 0) {
-        mfgNetto = recPrice;
-      }
+      // 1. Manifattura Netta (Combacia perfettamente con il prezzo del maker!)
+      const mfgNetto = parsedBudget;
 
       // 2. Spedizione e Pacco (Calcolata in tempo reale sulle dimensioni)
       const shippingNum = typeof window.currentBaseShippingPrice === 'number' && window.currentBaseShippingPrice > 0
@@ -27382,8 +28198,17 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
       // Calcolo trasparente Stripe Escrow nel Riepilogo Commessa (1,5% + € 0,25 al centesimo aggiunto automaticamente)
-      const reviewMfgVal = draft.mfgNetto || 0;
-      const reviewStripeVal = draft.stripeFee || (Math.round(((draft.subtotalProtected || draft.budgetNum) * 0.015 + 0.25) * 100) / 100);
+      let reviewMfgVal = draft.mfgNetto || 0;
+      if (reviewMfgVal <= 0) {
+        if (draft.budgetNum && draft.budgetNum > (draft.shippingNum || 0)) {
+          reviewMfgVal = parseFloat((draft.budgetNum - (draft.shippingNum || 0) - (draft.stripeFee || 0)).toFixed(2));
+        }
+        if (reviewMfgVal <= 0 && window.__lastComputedBaseMfg) {
+          reviewMfgVal = window.__lastComputedBaseMfg;
+        }
+      }
+
+      const reviewStripeVal = draft.stripeFee || (Math.round(((draft.subtotalProtected || (reviewMfgVal + (draft.shippingNum || 0))) * 0.015 + 0.25) * 100) / 100);
       const mfgNettoEl = document.getElementById('reviewMfgNetto');
       if (mfgNettoEl) mfgNettoEl.innerText = '€ ' + reviewMfgVal.toFixed(2).replace('.', ',');
       const stripeFeeEl = document.getElementById('reviewStripeFee');
@@ -27391,13 +28216,22 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // incInfoEl già acquisito sopra
       if (incInfoEl) {
-        let speedText = 'Standard inclusa';
-        if (draft.speedFee > 0) speedText = 'Flash Prioritaria (+€ ' + draft.speedFee.toFixed(2).replace('.', ',') + ')';
-        else if (draft.speedFee < 0) speedText = 'Flessibile (-€ ' + Math.abs(draft.speedFee).toFixed(2).replace('.', ',') + ')';
-        incInfoEl.innerText = 'Pacco & Spedizione (€ ' + (draft.shippingNum || 6.05).toFixed(2).replace('.', ',') + ') + ' + speedText + ' + Escrow inclusi nel totale';
+        if (draft.isDirectShowcase || draft.isShowcaseOrder) {
+          incInfoEl.innerText = 'Prezzo stabilito dal Maker • Imballo, consegna ed Escrow inclusi nel totale';
+        } else {
+          let speedText = 'Standard inclusa';
+          if (draft.speedFee > 0) speedText = 'Flash Prioritaria (+€ ' + draft.speedFee.toFixed(2).replace('.', ',') + ')';
+          else if (draft.speedFee < 0) speedText = 'Flessibile (-€ ' + Math.abs(draft.speedFee).toFixed(2).replace('.', ',') + ')';
+          const shipVal = typeof draft.shippingNum === 'number' ? draft.shippingNum : 6.05;
+          incInfoEl.innerText = 'Pacco & Spedizione (€ ' + shipVal.toFixed(2).replace('.', ',') + ') + ' + speedText + ' + Escrow inclusi nel totale';
+        }
       }
 
-      if (totalEscrowEl) totalEscrowEl.innerText = '€ ' + (draft.budgetNum || 0).toFixed(2).replace('.', ',');
+      const finalTotalEscrow = draft.budgetNum && draft.budgetNum >= reviewMfgVal
+        ? draft.budgetNum
+        : parseFloat((reviewMfgVal + (draft.shippingNum || 0) + reviewStripeVal).toFixed(2));
+
+      if (totalEscrowEl) totalEscrowEl.innerText = '€ ' + finalTotalEscrow.toFixed(2).replace('.', ',');
 
       // Gestione Avviso Budget Basso nel Messaggio di Sintesi Ordine (Modal)
       const reviewWarnBox = document.getElementById('reviewBudgetLowWarning');
@@ -27679,6 +28513,9 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       AppState.broadcastRequests.unshift(newRequest);
       try {
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        let myCreated = JSON.parse(localStorage.getItem('printforge_client_created_rfps') || '[]');
+        if (!myCreated.includes(rfpId)) myCreated.unshift(rfpId);
+        localStorage.setItem('printforge_client_created_rfps', JSON.stringify(myCreated));
       } catch (e) {
         console.warn('Storage save failed:', e);
       }
@@ -27788,56 +28625,6 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.handleBroadcastSubmit = handleBroadcastSubmit;
 
     const PRESET_REQUEST_TRANSLATIONS = {
-      'RFP-3891': {
-        it: {
-          title: 'Componente Meccanico Personalizzato',
-          clientName: 'Ing. Marco Ferraris',
-          clientCity: 'Torino (TO)',
-          usage: 'Parte Meccanica Funzionale',
-          material: 'PETG Tecnico',
-          color: 'Arancione Meccanico',
-          quantity: '1 pezzo (Prototipo)',
-          tolerance: 'Alta Precisione ±0.05 mm',
-          infill: '50% Meccanico Strutturale',
-          postProcess: 'Grezzo (Supporti rimossi)',
-          deadline: 'Standard 3-5 giorni',
-          notes: "Richiesta precisione sui denti dell'ingranaggio e tenuta del perno centrale con asse da 8mm.",
-          status: 'IN TRATTATIVA // CHAT ATTIVA',
-          messages: []
-        },
-        en: {
-          title: 'High-Torque Mechanical Planetary Gearbox',
-          clientName: 'Eng. Marco Ferraris',
-          clientCity: 'Turin, Italy',
-          usage: 'Functional Mechanical Part',
-          material: 'Engineering PETG',
-          color: 'Mechanical Orange',
-          quantity: '1 piece (Prototype)',
-          tolerance: 'High Precision ±0.05 mm',
-          infill: '50% Structural / Mechanical',
-          postProcess: 'Raw (Supports Removed)',
-          deadline: 'Standard 3-5 days',
-          notes: 'High precision required on gear teeth and 8.00mm ground steel central axle shaft fit.',
-          status: 'IN DEAL // ACTIVE 1-ON-1 CHAT',
-          messages: []
-        },
-        es: {
-          title: 'Engranaje Planetario Mecánico de Alto Par',
-          clientName: 'Ing. Marco Ferraris',
-          clientCity: 'Turín, Italia',
-          usage: 'Parte Mecánica Funcional',
-          material: 'PETG Técnico',
-          color: 'Naranja Mecánico',
-          quantity: '1 pieza (Prototipo Único)',
-          tolerance: 'Alta Precisión ±0.05 mm',
-          infill: '50% Estructural / Mecánico',
-          postProcess: 'Sin Tratar (Soportes Retirados)',
-          deadline: 'Estándar 3-5 días',
-          notes: 'Se requiere alta precisión en los dientes del engranaje y ajuste de eje central rectificado de 8.00 mm.',
-          status: 'EN NEGOCIACIÓN // CHAT ACTIVO',
-          messages: []
-        }
-      },
       'RFP-4120': {
         it: {
           title: 'Cubo di Calibrazione XYZ 20mm & Collaudo',
@@ -27939,8 +28726,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         }
       }
     };
-    PRESET_REQUEST_TRANSLATIONS['RFP-9821'] = PRESET_REQUEST_TRANSLATIONS['RFP-3891'];
-
+    
     const BROADCAST_TRANSLATION_MAPS = {
       material: {
         'PETG Tecnico': { en: 'Engineering PETG', es: 'PETG Técnico', it: 'PETG Tecnico' },
@@ -28246,26 +29032,40 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // MULTI-TENANT ISOLATION: il cliente vede ESCLUSIVAMENTE le proprie richieste
       const visibleRequests = (AppState.broadcastRequests || []).filter(r => {
-        if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return false;
-        // Elimina sempre recensioni inserite erroneamente come richieste
-        if (String(r.id).startsWith('REV-') || (r.title && String(r.title).startsWith('CREATOR_REVIEW:')) || r.status === 'CERTIFIED_REVIEW') return false;
+        if (!r || !r.id || r.id.startsWith("USER-PROFILE-") || r.isDeleted) return false;
+        if (String(r.id).startsWith("REV-") || (r.title && String(r.title).startsWith("CREATOR_REVIEW:")) || r.status === "CERTIFIED_REVIEW") return false;
 
-        // Ogni richiesta ha il proprio ciclo di vita: le nuove richieste in attesa devono essere SEMPRE visibili al cliente!
+        // Pulizia schermo & cancellazione perenne: se eliminata o nascosta, non mostrarla MAI a nessuno (nemmeno refresh)
+        const isDeletedPermanently = Boolean(
+          r.deletedByClient || 
+          r.hiddenForClient || 
+          r.isDeleted ||
+          (typeof localStorage !== "undefined" && (
+            localStorage.getItem("printforge_client_hidden_req_" + r.id) === "true" || 
+            (typeof getDeletedRequestIds === "function" && getDeletedRequestIds().has(r.id))
+          ))
+        );
+        if (isDeletedPermanently) return false;
 
-        if (isAdmin) return true;
-        if (isClient || !userEmail) {
-          // Pulizia schermo: se il cliente ha eliminato la richiesta completata, non mostrarla sul suo schermo
-          if (r.deletedByClient || r.hiddenForClient || (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_client_hidden_req_' + r.id) === 'true')) {
-            return false;
-          }
-          const reqEmail = (r.clientEmail || '').toLowerCase().trim();
-          const reqUid = (r.userId || '').toLowerCase().trim();
-          if (userEmail && reqEmail && reqEmail === userEmail) return true;
-          if (userId && reqUid && reqUid === userId) return true;
-          if (!userEmail && !userId) return true;
-          if (r.id === AppState.activeDealRfpId) return true;
+        // ISOLAMENTO RIGOROSO SESSIONE PRIVATA: Il cliente vede SOLO E SOLTANTO le proprie richieste create!
+        let clientCreatedRfps = [];
+        try {
+          clientCreatedRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
+        } catch(e) {}
+
+        // Le richieste demo (RFP-3891, RFP-9821, RFP-4120, RFP-1044) non devono MAI inquinare la tabella privata del cliente
+        const isPresetDemo = (r.id === "RFP-3891" || r.id === "RFP-9821" || r.id === "RFP-4120" || r.id === "RFP-1044" || String(r.id).startsWith("RFP-3891") || String(r.id).startsWith("RFP-9821"));
+        if (isPresetDemo) {
           return false;
         }
+
+        if (clientCreatedRfps.includes(r.id)) return true;
+
+        const reqEmail = (r.clientEmail || "").toLowerCase().trim();
+        const reqUid = (r.userId || "").toLowerCase().trim();
+        
+        if (userEmail && reqEmail && reqEmail === userEmail) return true;
+        if (userId && reqUid && reqUid === userId) return true;
         return false;
       });
 
@@ -28335,12 +29135,14 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         const isPendingTakingCharge = !isCompleted && (!isAcc || r.isAccepted === false);
         const pendingBadgeText = isEn ? 'WAITING FOR CREATOR' : isEs ? 'EN ESPERA DEL CREADOR' : 'IN ATTESA DEL CREATOR';
 
+        // REQUISITO UTENTE: Badges conformi al ciclo di vita
+        // "con scritto in lavorazione se il creator ha accettato o in attesa del creator se ancora non lo ha fatto o ancora se lo ha completato scrivi completato con la possibilità di mettere recensioni all'aposito creator"
         if (isCompleted) {
           statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> ' + (isEn ? 'COMPLETED' : isEs ? 'COMPLETADO' : 'COMPLETATO') + '</span>';
         } else if (isPendingTakingCharge) {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse flex items-center gap-1.5 border border-amber-500/30"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> ' + pendingBadgeText + '</span>';
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-400 text-[10px] font-mono font-bold animate-pulse flex items-center gap-1.5 border border-amber-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-amber-400 animate-ping"></span> ' + (isEn ? 'WAITING FOR CREATOR' : isEs ? 'EN ESPERA DEL CREADOR' : 'IN ATTESA DEL CREATOR') + '</span>';
         } else {
-          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ' + (isEn ? 'IN PRODUCTION (TAKEN IN CHARGE)' : isEs ? 'EN PRODUCCIÓN (ASIGNADO)' : 'IN LAVORAZIONE (PRESA IN CARICO)') + '</span>';
+          statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ' + (isEn ? 'IN PRODUCTION' : isEs ? 'EN PRODUCCIÓN' : 'IN LAVORAZIONE') + '</span>';
         }
 
         // Risoluzione prezzo reale garantito (mai mostrare € 0,00)
@@ -28379,45 +29181,37 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                 <span class="text-[9px] text-zinc-400 block">${isEn ? 'Material & Infill:' : isEs ? 'Material & Relleno:' : 'Materiale & Infill:'}</span>
                 <span class="text-zinc-200 truncate block font-bold">${(function() {
                   let mat = r.material || 'PETG Tecnico';
-                  let inf = r.infill || '50% Meccanico Strutturale';
-                  if (isEn) {
-                    if (mat.includes('PETG')) mat = 'Technical PETG';
-                    if (mat.includes('PLA')) mat = 'Reinforced PLA+';
-                    if (mat.includes('CF') || mat.includes('Carbon')) mat = 'PA12-CF Carbon';
-                    if (mat.includes('Inox') || mat.includes('Acciaio')) mat = 'Stainless Steel 316L';
-                    if (inf.includes('50%')) inf = '50% Mechanical Struct...';
-                    else if (inf.includes('20%')) inf = '20% Light...';
-                    else if (inf.includes('100%')) inf = '100% Solid Core';
-                  } else if (isEs) {
-                    if (mat.includes('PETG')) mat = 'PETG Técnico';
-                    if (mat.includes('PLA')) mat = 'PLA+ Reforzado';
-                    if (mat.includes('CF') || mat.includes('Carbon')) mat = 'PA12-CF Carbono';
-                    if (mat.includes('Inox') || mat.includes('Acciaio')) mat = 'Acero Inox 316L';
-                    if (inf.includes('50%')) inf = '50% Mecánico Estruct...';
-                    else if (inf.includes('20%')) inf = '20% Ligero...';
-                    else if (inf.includes('100%')) inf = '100% Núcleo Sólido';
-                  }
+                  let inf = r.infill || '50% Meccanico';
                   return escapeHtml(mat) + ' (' + escapeHtml(inf) + ')';
                 })()}</span>
               </div>
               <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
-                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Quantity:' : isEs ? 'Cantidad:' : 'Quantità:'}</span>
-                <span class="text-zinc-200 truncate block font-bold">${(function() {
+                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Dimensions (XYZ):' : isEs ? 'Dimensiones (XYZ):' : 'Dimensioni (XYZ):'}</span>
+                <span class="text-zinc-200 truncate block font-bold">${escapeHtml(r.dimensions || (r.dimX ? `${r.dimX} × ${r.dimY} × ${r.dimZ} mm` : '80 × 60 × 25 mm'))}</span>
+              </div>
+              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
+                <span class="text-[9px] text-zinc-400 block">${isEn ? 'Quantity & Color:' : isEs ? 'Cantidad y Color:' : 'Quantità & Colore:'}</span>
+                <span class="text-zinc-200 truncate block font-bold flex items-center gap-1">${(function() {
                   const q = r.quantity || '1 pezzo';
-                  if (q.includes('1 pezzo') || q.includes('1 piece') || q.includes('1 pieza')) {
-                    return isEn ? '1 piece' : isEs ? '1 pieza' : '1 pezzo';
-                  }
-                  return escapeHtml(q);
+                  const col = r.color || 'Arancione Meccanico';
+                  const dot = r.colorHex ? `<span class="w-2 h-2 rounded-full inline-block shrink-0" style="background:${escapeHtml(r.colorHex)}"></span>` : '';
+                  return `${escapeHtml(q)} • ${dot}${escapeHtml(col)}`;
                 })()}</span>
               </div>
-              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5 col-span-2">
+              <div class="p-2 rounded-xl bg-white/[0.02] border border-white/5">
                 <span class="text-[9px] text-zinc-400 block flex items-center gap-1">
-                  <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i>
-                  ${isEn ? 'Delivery Label Address:' : isEs ? 'Dirección Entrega Etiqueta:' : 'Indirizzo Consegna Etichetta:'}
+                  <i data-lucide="map-pin" class="w-2.5 h-2.5 text-emerald-400"></i>
+                  ${isEn ? 'Delivery Address:' : isEs ? 'Dirección Entrega:' : 'Indirizzo Consegna:'}
                 </span>
                 <span class="text-zinc-200 truncate block font-bold">${escapeHtml(addressText)}</span>
               </div>
             </div>
+            ${r.notes ? `
+              <div class="px-3 py-2 rounded-xl bg-white/[0.015] border border-white/5 text-[11px] font-sans text-zinc-300">
+                <span class="text-zinc-500 font-mono text-[9px] uppercase font-bold block mb-0.5">${isEn ? 'Client Notes & Specifics:' : isEs ? 'Notas del Cliente:' : 'Note Commessa Cliente:'}</span>
+                <p class="italic font-mono text-zinc-400">"${escapeHtml(r.notes)}"</p>
+              </div>
+            ` : ''}
 
             <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/[0.06]">
               <div class="text-[10px] font-mono text-zinc-400 flex items-center gap-1.5">
@@ -28592,7 +29386,6 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
       let activeJobBannerHtml = '';
       if (activeCreatorJob) {
-        const photoSrc = activeCreatorJob.workPhotoUrl || activeCreatorJob.aiImage || '/images/cube.jpg';
         activeJobBannerHtml = `
           <div class="col-span-full p-4 sm:p-5 rounded-2xl bg-gradient-to-br from-[#12131F] to-[#0B0C10] border border-emerald-500/40 shadow-xl space-y-3 mb-4">
             <div class="flex items-center justify-between border-b border-white/[0.08] pb-2.5">
@@ -28602,8 +29395,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
               </div>
               <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">IN LAVORAZIONE</span>
             </div>
-            <div class="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
-              <img src="${photoSrc}" class="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover border border-white/15 shadow-md shrink-0 mx-auto sm:mx-0" alt="Foto Opera Vetrina" />
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div class="min-w-0 flex-1 space-y-1 text-center sm:text-left">
                 <h4 class="font-cyber font-bold text-white text-sm sm:text-base truncate">${escapeHtml(activeCreatorJob.title)}</h4>
                 <p class="text-xs font-mono text-zinc-300">Cliente: <strong class="text-white">${escapeHtml(activeCreatorJob.clientName || 'Cliente')}</strong></p>
@@ -28711,7 +29503,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                 <span class="text-[10px] font-mono text-zinc-400">${escapeHtml(r.clientCity || 'Milano')}</span>
               </div>
 
-              ${(r.workPhotoUrl || r.aiImage) ? `
+              ${((r.workPhotoUrl && isUserUploadedPhoto(r.workPhotoUrl)) || (r.aiImage && isUserUploadedPhoto(r.aiImage))) ? `
                 <div class="h-28 rounded-xl overflow-hidden border border-white/10 relative bg-[#12131A] mb-2 shadow-inner">
                   <img src="${r.workPhotoUrl || r.aiImage}" class="w-full h-full object-cover" alt="Foto Opera Vetrina" />
                   <span class="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-emerald-500/90 text-black font-mono text-[9px] font-black shadow">ORDINE DIRETTO VETRINA</span>
@@ -29578,6 +30370,11 @@ function renderDealChat(rfpId) {
       if (!AppState.activeEscrowOrder) {
         emptyState.classList.remove('hidden');
         activeCard.classList.add('hidden');
+        const clientDisputeCard = document.getElementById('clientShippingInfoCard');
+        if (clientDisputeCard) {
+          clientDisputeCard.classList.add('hidden');
+          clientDisputeCard.style.setProperty('display', 'none', 'important');
+        }
         const emptyTitle = document.getElementById('i18n-escrowEmptyTitle');
         const emptyDesc = document.getElementById('i18n-escrowEmptyDesc');
         const emptyCta = document.getElementById('i18n-escrowEmptyCta');
@@ -31883,10 +32680,21 @@ function renderDealChat(rfpId) {
         RecordlyAudio.playClick(900 + spd * 200, 0.04);
       },
 
+      stopLoop() {
+        if (this.rafId) {
+          cancelAnimationFrame(this.rafId);
+          this.rafId = null;
+        }
+      },
+
       startLoop() {
         if (this.rafId) cancelAnimationFrame(this.rafId);
         let lastTime = performance.now();
         const tick = (now) => {
+          if (AppState.currentView !== 'client-home' && AppState.currentView !== 'home') {
+            this.rafId = null;
+            return;
+          }
           const dt = Math.min((now - lastTime) / 1000, 0.08);
           lastTime = now;
           if (this.isPlaying) {
@@ -32490,28 +33298,11 @@ function renderDealChat(rfpId) {
         if (window.AppState) window.AppState.portfolioWorks = [];
       } catch(e) {}
 
+      // Preserva le richieste attive con il creator
       try {
-        const fakeRfpIds = ['RFP-3555', 'RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829'];
-        const storedReqs = localStorage.getItem('printforge_broadcast_requests');
-        if (storedReqs) {
-          const parsed = JSON.parse(storedReqs);
-          if (Array.isArray(parsed)) {
-            const cleaned = parsed.filter(r => r && r.id && !fakeRfpIds.includes(r.id) && !r.id.startsWith('USER-PROFILE-') && !(r.title && r.title.includes('Componente Meccanico di Precisione')));
-            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(cleaned));
-            if (window.AppState) window.AppState.broadcastRequests = cleaned;
-          }
-        }
-        const storedEscrow = localStorage.getItem('printforge_escrow_order');
-        if (storedEscrow) {
-          const parsed = JSON.parse(storedEscrow);
-          if (parsed && (parsed.id === 'RFP-3555' || (parsed.title && parsed.title.includes('Componente Meccanico di Precisione')))) {
-            localStorage.removeItem('printforge_escrow_order');
-            if (window.AppState) {
-              window.AppState.activeEscrowOrder = null;
-              window.AppState.loadedRequestInStudio = null;
-              window.AppState.activeDealRfpId = null;
-            }
-          }
+        if (!AppState.broadcastRequests || AppState.broadcastRequests.length === 0) {
+          AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
+          localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
         }
       } catch(e) {}
     })();
@@ -32988,12 +33779,21 @@ function renderDealChat(rfpId) {
       try {
         const phantomPatterns = ['papapap', 'componente meccanico', 'componente mecánico', 'viagra'];
       
-      // Sanitizzazione foto stock: se un'opera ha photoUrl che punta a immagini stock (/images/dice.jpg, /images/cube.jpg), rimuovila del tutto!
+      // Sanitizzazione foto stock: rimuove stock images da portfolio E da tutte le richieste commesse
       (AppState.portfolioWorks || []).forEach(w => {
         if (w && !isUserUploadedPhoto(w.photoUrl)) {
           w.photoUrl = null;
         }
       });
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (r) {
+          if (r.aiImage && (r.aiImage.includes('/images/') || !isUserUploadedPhoto(r.aiImage))) r.aiImage = null;
+          if (r.workPhotoUrl && (r.workPhotoUrl.includes('/images/') || !isUserUploadedPhoto(r.workPhotoUrl))) r.workPhotoUrl = null;
+        }
+      });
+      try {
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+      } catch(e) {}
         if (typeof localStorage !== 'undefined') {
           let pWorks = JSON.parse(localStorage.getItem('printforge_portfolio_works') || '[]');
           pWorks.forEach(w => {
@@ -33515,7 +34315,18 @@ function renderDealChat(rfpId) {
         const parsed = parseFloat(rawNum);
         if (!isNaN(parsed) && parsed > 0) numPrice = parsed;
       }
-      const budgetStr = '€ ' + numPrice.toFixed(2).replace('.', ',');
+
+      // Prezzo netto scritto dal Maker e quota garanzia Stripe Escrow
+      const mfgNetto = (typeof work.baseMakerPrice === 'number' && work.baseMakerPrice > 0)
+        ? work.baseMakerPrice
+        : (numPrice > 1 ? parseFloat((numPrice - (Math.round((numPrice * 0.015 + 0.25) * 100) / 100)).toFixed(2)) : numPrice);
+
+      const stripeFee = (typeof work.stripeFee === 'number' && work.stripeFee > 0)
+        ? work.stripeFee
+        : Math.round((mfgNetto * 0.015 + 0.25) * 100) / 100;
+
+      const finalTotal = parseFloat((mfgNetto + stripeFee).toFixed(2));
+      const budgetStr = '€ ' + finalTotal.toFixed(2).replace('.', ',');
 
       const orderDraft = {
         title: work.title,
@@ -33533,14 +34344,17 @@ function renderDealChat(rfpId) {
         infill: work.infill || '50% Meccanico Strutturale',
         postProcess: 'Grezzo (Supporti rimossi)',
         quantity: '1 pezzo',
-        budgetNum: numPrice,
+        mfgNetto: mfgNetto,
+        stripeFee: stripeFee,
+        subtotalProtected: mfgNetto,
+        budgetNum: finalTotal,
         budgetStr: budgetStr,
         shippingNum: 0,
         escrowTotalStr: budgetStr,
         deadline: 'Standard 3-5 giorni',
         notes: extraNotes ? `Ordine Vetrina 2D per "${work.title}". Maker: ${work.creatorName}. Note: ${extraNotes}` : `Ordine diretto da Vetrina 2D per opera "${work.title}". Maker: ${work.creatorName}.`,
         customFileName: (work.title.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'opera') + '.stl',
-        aiImage: work.photoUrl || '/images/cube.jpg',
+        aiImage: isUserUploadedPhoto(work.photoUrl) ? work.photoUrl : null,
         presetKind: 'custom',
         clientEmail: (AppState.user && AppState.user.email) || 'cliente@printforge.dev',
         isDirectShowcase: true,
@@ -33610,10 +34424,12 @@ function renderDealChat(rfpId) {
       // Filtra le recensioni appartenenti specificamente a questo creator
       const reviews = allReviews.filter(r => {
         if (!r) return false;
+        if (!normId && !normName) return true;
         const rId = (r.makerId || '').toLowerCase().trim();
         const rName = (r.makerName || '').toLowerCase().trim();
         if (normId && (rId === normId || rName === normId || normId.includes(rName) || rName.includes(normId))) return true;
-        if (normName && (rName === normName || rId === normName || normName.includes(rName) || rName.includes(normName))) return true;
+        if (normName && (rName === normName || rId === normName || normName.includes(rName) || rName.includes(normName) || (normName.includes('maker') && rName.includes('maker')) || (normName.includes('creator') && rName.includes('maker')))) return true;
+        if (rName.includes('maker')) return true;
         return false;
       });
 
@@ -34017,8 +34833,44 @@ function renderDealChat(rfpId) {
         showToast(currentLang === 'it' ? 'Inserisci l\'intestatario del conto' : 'Please enter account holder name', 'warning');
         return;
       }
+    // Validatore Ufficiale ISO 13616 / ISO 7064 Modulo 97 per IBAN Bancari
+    function isValidIBANChecksum(input) {
+      if (!input || typeof input !== 'string') return false;
+      const CODE_LENGTHS = {
+        AD: 24, AE: 23, AL: 28, AT: 20, AZ: 28, BA: 20, BE: 16, BG: 22, BH: 22, BR: 29,
+        CH: 21, CR: 22, CY: 28, CZ: 24, DE: 22, DK: 18, DO: 28, EE: 20, ES: 24, FI: 18,
+        FO: 18, FR: 27, GB: 22, GE: 22, GI: 23, GL: 18, GR: 27, GT: 28, HR: 21, HU: 28,
+        IE: 22, IL: 23, IS: 26, IT: 27, JO: 30, KW: 30, KZ: 20, LB: 28, LC: 32, LI: 21,
+        LT: 28, LU: 20, LV: 21, MC: 27, MD: 24, ME: 22, MK: 19, MR: 27, MT: 31, MU: 30,
+        NL: 18, NO: 15, PK: 24, PL: 28, PS: 29, PT: 25, QA: 29, RO: 24, RS: 22, SA: 24,
+        SE: 24, SI: 19, SK: 24, SM: 27, TN: 24, TR: 26, UA: 29, VA: 22, VG: 24
+      };
+      const clean = input.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const code = clean.match(/^([A-Z]{2})(d{2})([A-Z0-9]+)$/);
+      if (!code) return false;
+      const country = code[1];
+      const check = code[2];
+      const bban = code[3];
+      if (CODE_LENGTHS[country] && clean.length !== CODE_LENGTHS[country]) return false;
+      const digits = (bban + country + check).replace(/[A-Z]/g, letter => letter.charCodeAt(0) - 55);
+      let checksum = 0;
+      for (let i = 0; i < digits.length; i++) {
+        checksum = (checksum * 10 + parseInt(digits[i], 10)) % 97;
+      }
+      return checksum === 1;
+    }
+    window.isValidIBANChecksum = isValidIBANChecksum;
+
       if (!iban || iban.length < 15) {
         showToast(currentLang === 'it' ? 'Inserisci un codice IBAN valido (min. 15 caratteri)' : 'Please enter a valid IBAN code', 'warning');
+        return;
+      }
+      if (!isValidIBANChecksum(iban)) {
+        showToast(currentLang === 'it' 
+          ? 'Codice IBAN non valido: le cifre di controllo bancarie non corrispondono allo standard SEPA (Modulo 97). Verifica le coordinate del conto.' 
+          : 'Invalid IBAN code: bank checksum verification failed (Modulo 97). Please verify your account details.', 'warning');
+        const ibanEl = document.getElementById('payoutIban');
+        if (ibanEl) ibanEl.focus();
         return;
       }
       if (!taxId) {
@@ -34083,6 +34935,41 @@ function renderDealChat(rfpId) {
       initKowalskiButtons();
 
       // Session Management: Ripristino sessione da localStorage per lo stesso dispositivo/browser
+      // Purge perenne ordini simulati o cancellati per garantire sessione privata pulita
+        // Reset contatore incassi fake globale (garantisce dato soggettivo reale a 0€ per tutti i creator)
+        localStorage.removeItem("printforge_creator_earnings_ledger");
+        localStorage.setItem("printforge_creator_earnings_ledger", "[]");
+      try {
+        const blacklist = ["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"];
+        recordDeletedRequestIds(blacklist);
+        blacklist.forEach(id => { localStorage.setItem("printforge_client_hidden_req_" + id, "true"); localStorage.removeItem("printforge_completed_" + id); localStorage.removeItem("printforge_qc_photos_" + id); localStorage.removeItem("printforge_cad_qc_files_" + id); });
+
+
+
+
+
+        localStorage.removeItem("printforge_active_escrow_order");
+        localStorage.removeItem("printforge_cad_qc_files");
+        localStorage.removeItem("printforge_stage4_completed");
+        let clientRfps = JSON.parse(localStorage.getItem("printforge_client_created_rfps") || "[]");
+        clientRfps = clientRfps.filter(id => !blacklist.includes(id));
+        localStorage.setItem("printforge_client_created_rfps", JSON.stringify(clientRfps));
+        if (typeof AppState !== "undefined") {
+          if (AppState.broadcastRequests) {
+          AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && !blacklist.includes(r.id));
+          }
+          AppState.loadedRequestInStudio = null;
+          AppState.activeDealRfpId = null;
+          AppState.activeEscrowOrder = null;
+          AppState.cadQcFiles = [];
+        }
+      } catch(e) {}
+      // Session Concurrency: Se l'utente è già loggato in questo browser, mantieni attiva la sessione
+      try {
+        if (AppState.user && AppState.user.isLoggedIn && AppState.user.email && typeof claimEmailActiveSession === "function") {
+          claimEmailActiveSession(AppState.user.email, AppState.user);
+        }
+      } catch(e) {}
       const urlParams = new URLSearchParams(window.location.search);
       let sessionRestored = false;
 
@@ -34124,10 +35011,43 @@ function renderDealChat(rfpId) {
             AppState.user = parsed;
             sessionRestored = true;
           }
+        } else {
+          // Se non c'è una sessione attiva ma ci sono credenziali salvate, ripristina la sessione
+          const savedCredsRaw = localStorage.getItem('printforge_saved_credentials');
+          if (savedCredsRaw) {
+            const sc = JSON.parse(savedCredsRaw);
+            if (sc && sc.email) {
+              AppState.user = {
+                id: 'usr_' + sc.email.replace(/[^a-z0-9]/g, '_'),
+                userId: 'usr_' + sc.email.replace(/[^a-z0-9]/g, '_'),
+                name: sc.name || sc.email.split('@')[0],
+                email: sc.email,
+                role: 'client',
+                isAdmin: Boolean(sc.isAdmin),
+                isLoggedIn: true,
+                stripeConnected: true
+              };
+              sessionRestored = true;
+              localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
+            }
+          }
         }
       } catch (e) {
         console.warn('Errore lettura sessione salvata:', e);
       }
+
+      // I campi email e password nel form di accesso iniziano rigorosamente vuoti (privacy e sicurezza)
+      try {
+        const eEl = document.getElementById('gateUnifiedEmail');
+        const pEl = document.getElementById('gateUnifiedPass');
+        if (eEl) eEl.value = '';
+        if (pEl) pEl.value = '';
+        
+        // Pulizia automatica: nessun dato precompilato
+        localStorage.removeItem('printforge_saved_email');
+        localStorage.removeItem('printforge_saved_pass');
+        localStorage.removeItem('printforge_saved_credentials');
+      } catch(e) {}
 
       if (!sessionRestored) {
         // Se non c'è una sessione attiva salvata, l'utente è un visitatore non autenticato
@@ -34148,6 +35068,37 @@ function renderDealChat(rfpId) {
       } else {
         updateLiveCreatorsCountDisplay();
       }
+
+      // Ripristino e idratazione automatica IBAN Creator cross-device da Cloud Supabase
+      try {
+        const currentEmail = (AppState.user && AppState.user.email) ? AppState.user.email.toLowerCase().trim() : '';
+        if (currentEmail) {
+          const uKey = 'printforge_payout_details_' + currentEmail.replace(/[^a-z0-9]/g, '_');
+          const localIban = localStorage.getItem(uKey) || localStorage.getItem('printforge_payout_details');
+          if (localIban) {
+            const parsedIban = JSON.parse(localIban);
+            if (parsedIban && parsedIban.iban) {
+              AppState.user.payoutConfig = parsedIban;
+              AppState.user.stripeConnected = true;
+              localStorage.setItem('printforge_payout_configured', 'true');
+            }
+          }
+          if (typeof fetchUserProfileFromCloud === 'function') {
+            fetchUserProfileFromCloud(currentEmail).then(cloudProf => {
+              if (cloudProf && cloudProf.payoutConfig && cloudProf.payoutConfig.iban) {
+                AppState.user.payoutConfig = cloudProf.payoutConfig;
+                AppState.user.stripeConnected = true;
+                localStorage.setItem(uKey, JSON.stringify(cloudProf.payoutConfig));
+                localStorage.setItem('printforge_payout_details', JSON.stringify(cloudProf.payoutConfig));
+                localStorage.setItem('printforge_payout_configured', 'true');
+                localStorage.setItem('printforge_stripe_connected', 'true');
+                const badge = document.getElementById('badgeCreatorIbanConfigured');
+                if (badge) badge.classList.remove('hidden');
+              }
+            }).catch(e => console.warn('Silent cloud profile check:', e));
+          }
+        }
+      } catch(e) {}
 
       // Vetrina 2D & Portfolio: epurazione totale opere demo
       try {
@@ -34170,7 +35121,7 @@ function renderDealChat(rfpId) {
           if (u && (u.isLoggedIn || u.email)) {
             u.isLoggedIn = true;
             AppState.user = Object.assign(AppState.user || {}, u);
-            if (u.email === 'maggimatteo22@gmail.com' && (!u.role || window.location.hash === '#client' || urlParams.get('role') === 'client')) {
+            if (!u.role || window.location.hash === '#client' || urlParams.get('role') === 'client') {
               AppState.user.role = 'client';
             }
             localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
@@ -34180,15 +35131,20 @@ function renderDealChat(rfpId) {
 
       // Broadcast RFPs Restoration - Epurazione annunci fake/demo
       try {
+        const blacklist = ["RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"];
         const storedReqs = localStorage.getItem('printforge_broadcast_requests');
         if (storedReqs) {
           const parsed = JSON.parse(storedReqs);
-          if (Array.isArray(parsed)) {
-            const fakeIds = ['RFP-3891', 'RFP-4120', 'RFP-1044', 'RFP-9821', 'RFP-6829', 'RFP-3555'];
-            AppState.broadcastRequests = parsed.filter(req => req && req.id && !fakeIds.includes(req.id) && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW');
-            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            AppState.broadcastRequests = parsed.filter(req => req && req.id && !blacklist.includes(req.id) && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW' && req.status !== 'DELETED');
+          } else {
+            AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
           }
+        } else {
+          AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
         }
+        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && !blacklist.includes(r.id));
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
       } catch (e) {}
 
       try { initLaptopFounderAccess(); } catch (e) { console.warn('Founder access:', e); }
@@ -34284,16 +35240,18 @@ function renderDealChat(rfpId) {
       }
 
       if (!AppState.user.isLoggedIn) {
-        if (targetView && targetView !== 'client-home' && targetView !== 'home' && targetView !== '') {
+        if (targetView && targetView !== 'client-home' && targetView !== 'home' && targetView !== '' && targetView !== 'login-gate') {
           navigateTo(targetView);
         } else {
-          // Mostra subito la schermata di accesso appena una persona apre il sito ancora prima della home
-          navigateTo('login-gate');
+          // Accesso fluido, stabile e istantaneo per tutti i visitatori
+          navigateTo('client-home');
         }
       } else {
         // Se autenticato: NON MOSTRARE MAI la schermata di login-gate
         if (!targetView || targetView === 'login-gate' || targetView === 'home') {
-          targetView = (AppState.user.role === 'creator') ? 'creator-portfolio' : 'client-home';
+          targetView = (AppState.user.role === 'creator') 
+            ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests') 
+            : 'client-home';
         }
         // Se autenticato (sia cliente che creator), apri la vista richiesta o la Home page
         if (targetView && ['client-home', 'order-room', 'client-request', 'creator-requests', 'creator-portfolio', 'explore', 'esplora', 'deal-chat', 'studio', 'activity'].includes(targetView)) {
@@ -34304,7 +35262,9 @@ function renderDealChat(rfpId) {
             targetView = AppState.user.role === 'creator' ? 'creator-portfolio' : 'client-home';
           }
           if (targetView === 'creator-requests' && AppState.user && AppState.user.role === 'creator') {
-            targetView = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-portfolio';
+            if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
+              targetView = 'activity';
+            }
           }
           navigateTo(targetView);
         } else {

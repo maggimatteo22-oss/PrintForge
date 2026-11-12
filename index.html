@@ -4007,13 +4007,13 @@
           <form onsubmit="handleUnifiedGateSubmit(event)" class="space-y-3.5 text-xs font-sans">
             <div class="space-y-1">
               <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedEmailLabel">Email o Account Google *</label>
-              <input type="email" id="gateUnifiedEmail" placeholder="maggimatteo22@gmail.com" required autocomplete="username" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
+              <input type="email" id="gateUnifiedEmail" placeholder="nome@esempio.com" required autocomplete="email" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
             </div>
 
             <div class="space-y-1">
               <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedPassLabel">Password *</label>
               <div class="relative">
-                <input type="password" id="gateUnifiedPass" placeholder="••••••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
+                <input type="password" id="gateUnifiedPass" placeholder="••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
                 <button type="button" onclick="togglePasswordVisibility('gateUnifiedPass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition">
                   <i data-lucide="eye" class="w-4 h-4"></i>
                 </button>
@@ -9331,7 +9331,7 @@
         if (uEarly && (uEarly.isLoggedIn || uEarly.email)) {
           uEarly.isLoggedIn = true;
           Object.assign(AppState.user, uEarly);
-          if (uEarly.email === 'maggimatteo22@gmail.com' && (!uEarly.role || (typeof window !== 'undefined' && window.location.hash === '#client'))) {
+          if (!uEarly.role || (typeof window !== 'undefined' && window.location.hash === '#client')) {
             AppState.user.role = 'client';
           }
         }
@@ -10026,7 +10026,7 @@
             }
           } else {
             try {
-              localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify(['maggimatteo22@gmail.com']));
+              localStorage.setItem('printforge_cloud_creators_registry', JSON.stringify([]));
             } catch(e) {}
           }
           if (typeof updateLiveCreatorsCountDisplay === 'function') {
@@ -10207,8 +10207,6 @@
           const isCreator = AppState.user && AppState.user.role === 'creator';
           const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
 
-          const isSpecialPrimary = (myEmail === 'maggimatteo22@gmail.com' || myEmail === 'matteomaggi22@gmail.com');
-
           // Sincronizza l'ID delle commesse create dal cliente in localStorage per vederle ovunque (PC e Mobile)
           try {
             let clientRfps = JSON.parse(localStorage.getItem('printforge_client_created_rfps') || '[]');
@@ -10216,7 +10214,7 @@
               if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || r.isDeleted) return;
               const reqEmail = (r.clientEmail || '').toLowerCase().trim();
               const reqUid = (r.userId || '').toLowerCase().trim();
-              const match = (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid) || (isSpecialPrimary && (reqEmail === 'maggimatteo22@gmail.com' || reqEmail === 'matteomaggi22@gmail.com'));
+              const match = (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid);
               if (match && !clientRfps.includes(r.id)) {
                 clientRfps.unshift(r.id);
               }
@@ -10232,14 +10230,12 @@
             if (isClient) {
               const reqEmail = (r.clientEmail || '').toLowerCase().trim();
               const reqUid = (r.userId || '').toLowerCase().trim();
-              if (isSpecialPrimary && (reqEmail === 'maggimatteo22@gmail.com' || reqEmail === 'matteomaggi22@gmail.com')) return true;
               return (myEmail && reqEmail === myEmail) || (myUid && reqUid === myUid);
             }
             if (isCreator) {
               const assigned = (r.maker || r.acceptedBy || '').toLowerCase().trim();
               const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
               const assignedUid = (r.makerUserId || '').toLowerCase().trim();
-              if (isSpecialPrimary && (assignedEmail === 'maggimatteo22@gmail.com' || assignedEmail === 'matteomaggi22@gmail.com' || assigned.includes('matteo') || assigned.includes('maggi'))) return true;
               return (assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
                      (assignedEmail && assignedEmail === myEmail) ||
                      (assignedUid && assignedUid === myUid);
@@ -10811,7 +10807,7 @@
         if (Array.isArray(list)) {
           list.forEach(k => {
             const keyStr = String(k || '').trim().toLowerCase();
-            if (keyStr && (creatorKeys.has(keyStr) || keyStr.includes('maggimatteo') || (AppState.user && (AppState.user.email || '').toLowerCase().trim() === keyStr))) {
+            if (keyStr && (creatorKeys.has(keyStr) || (AppState.user && (AppState.user.email || '').toLowerCase().trim() === keyStr))) {
               creatorKeys.add(keyStr);
             }
           });
@@ -10842,11 +10838,6 @@
           creatorKeys.add(mKey);
         }
       });
-
-      // Solo l'account del creator (fallback garantito minimo 1 creator attivo per il sistema)
-      if (creatorKeys.size === 0) {
-        creatorKeys.add('maggimatteo22@gmail.com');
-      }
 
       return creatorKeys.size;
     }
@@ -19670,8 +19661,6 @@ END-ISO-10303-21;`;
       const myMakerName = (AppState.user.name || '').toLowerCase().trim();
       const myMakerEmail = (AppState.user.email || '').toLowerCase().trim();
       const myMakerUid = ((AppState.user.userId || AppState.user.id) || '').toLowerCase().trim();
-      const isSpecialPrimary = (myMakerEmail === 'maggimatteo22@gmail.com' || myMakerEmail === 'matteomaggi22@gmail.com');
-
       const myAcceptedJob = (AppState.broadcastRequests || []).find(r => {
         if (!r || !r.id || String(r.id).startsWith('USER-PROFILE-') || ['RFP-3891', 'RFP-6482', 'RFP-9821', 'TEST-PING-1'].includes(r.id) || r.isDeleted || r.isRejected) return false;
         if (r.isCompleted || r.isClosed || r.isDelivered) return false;
@@ -19681,11 +19670,10 @@ END-ISO-10303-21;`;
         const assignedEmail = (r.makerEmail || r.creatorEmail || '').toLowerCase().trim();
         const assignedName = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
 
-        if (isSpecialPrimary) return true;
         if (myMakerUid && assignedUid && assignedUid === myMakerUid) return true;
         if (myMakerEmail && assignedEmail && assignedEmail === myMakerEmail) return true;
         if (myMakerName && assignedName && assignedName === myMakerName) return true;
-        return true;
+        return false;
       });
 
       if (myAcceptedJob) {
@@ -26465,10 +26453,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.handleSupabaseAuthUser = handleSupabaseAuthUser;
 
     async function executeDirectGoogleLogin(email, role) {
-      const cleanEmail = (email || localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com').toLowerCase().trim();
-      const isPrimaryUser = (cleanEmail === 'maggimatteo22@gmail.com');
-      const cleanName = isPrimaryUser ? 'Matteo Maggi' : cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-      const savedPrimaryRole = localStorage.getItem('printforge_primary_role') || (isPrimaryUser ? 'creator' : 'client');
+      const cleanEmail = (email || localStorage.getItem('printforge_saved_email') || '').toLowerCase().trim();
+      if (!cleanEmail || !cleanEmail.includes('@')) { openGoogleLoginModal(role || 'client'); return; }
+      const cleanName = cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const savedPrimaryRole = localStorage.getItem('printforge_primary_role') || 'client';
       const cleanRole = role || localStorage.getItem('printforge_pending_auth_role') || savedPrimaryRole;
       // CONTROLLO SESSIONE ATTIVA: Blocca l'accesso se l'account è già attivo su un altro dispositivo
       const sessionCheck = await checkEmailActiveSessionLock(cleanEmail);
@@ -26492,13 +26480,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           name: cleanName,
           email: cleanEmail,
           role: cleanRole,
-          isAdmin: (cleanEmail === 'maggimatteo22@gmail.com'),
+          isAdmin: Boolean(cloudProfile?.isAdmin),
           isLoggedIn: true,
           stripeConnected: true
         };
       } else {
         cloudProfile.isLoggedIn = true;
-        if (cleanEmail === 'maggimatteo22@gmail.com') cloudProfile.isAdmin = true;
+        
       }
 
       // Salva e vincola perennemente lo stato di email registrata
@@ -26561,7 +26549,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.executeDirectGoogleLogin = executeDirectGoogleLogin;
 
     function adminGoogleLogin(role) {
-      executeDirectGoogleLogin('maggimatteo22@gmail.com', role || 'client');
+      const saved = localStorage.getItem('printforge_saved_email') || '';
+      if (saved && saved.includes('@')) { executeDirectGoogleLogin(saved, role || 'client'); } else { openGoogleLoginModal(role || 'client'); }
     }
     window.adminGoogleLogin = adminGoogleLogin;
 
@@ -26576,8 +26565,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // ACCESSO GOOGLE DIRETTO & RESILIENTE: Zero blocchi da quote cloud esterne
       const typedEmail = document.getElementById('gateUnifiedEmail')?.value?.trim();
-      const savedGoogleEmail = typedEmail || localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com';
-      await executeDirectGoogleLogin(savedGoogleEmail, roleToUse);
+      const savedGoogleEmail = (typedEmail && typedEmail.includes('@')) ? typedEmail : (localStorage.getItem('printforge_saved_email') || '');
+      if (savedGoogleEmail && savedGoogleEmail.includes('@')) {
+        await executeDirectGoogleLogin(savedGoogleEmail, roleToUse);
+      } else {
+        openGoogleLoginModal(roleToUse);
+      }
     }
     window.loginWithGoogleOAuth = loginWithGoogleOAuth;
     window.simulateGoogleLogin = loginWithGoogleOAuth;
@@ -26761,7 +26754,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const emailInput = document.getElementById('gateUnifiedEmail');
       const passInput = document.getElementById('gateUnifiedPass');
 
-      const email = (emailInput?.value?.trim() || localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com').toLowerCase();
+      const email = (emailInput?.value?.trim() || '').toLowerCase();
       const pass = passInput?.value || localStorage.getItem('printforge_saved_pass') || '';
       const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
@@ -26811,14 +26804,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       if (!userProfile) {
         // Primo accesso assoluto per questa nuova email: crea l'account univoco e vincola la password per sempre
-        const isSpecialPrimary = (email === "maggimatteo22@gmail.com" || email === "matteomaggi22@gmail.com");
         userProfile = {
           userId: generateUserIdForAccount(email, "client"),
           id: generateUserIdForAccount(email, "client"),
           isLoggedIn: true,
           role: "client",
-          isAdmin: isSpecialPrimary,
-          name: isSpecialPrimary ? "Matteo Maggi" : name,
+          isAdmin: false,
+          name: name,
           email: email,
           password: pass || "",
           avatar: name.charAt(0).toUpperCase(),
@@ -26828,10 +26820,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       } else {
         userProfile.isLoggedIn = true;
         if (pass && !userProfile.password) userProfile.password = pass;
-        if (email === "maggimatteo22@gmail.com" || email === "matteomaggi22@gmail.com") {
-          userProfile.isAdmin = true;
-          userProfile.name = "Matteo Maggi";
-        }
+        
       }
 
       // Salva e vincola perennemente la password e lo stato di email registrata
@@ -27352,10 +27341,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         try {
           const emailInput = document.getElementById('gateUnifiedEmail');
           const passInput = document.getElementById('gateUnifiedPass');
-          const savedEmail = localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com';
-          const savedPass = localStorage.getItem('printforge_saved_pass') || '';
-          if (emailInput && !emailInput.value) emailInput.value = savedEmail;
-          if (passInput && !passInput.value && savedPass) passInput.value = savedPass;
+          if (emailInput) emailInput.value = '';
+          if (passInput) passInput.value = '';
         } catch(e) {}
       }, 50);
       updateLaptopBarButtons();
@@ -29076,8 +29063,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
         const reqEmail = (r.clientEmail || "").toLowerCase().trim();
         const reqUid = (r.userId || "").toLowerCase().trim();
-        const isSpecialPrimary = (userEmail === 'maggimatteo22@gmail.com' || userEmail === 'matteomaggi22@gmail.com');
-        if (isSpecialPrimary && (reqEmail === 'maggimatteo22@gmail.com' || reqEmail === 'matteomaggi22@gmail.com')) return true;
+        
         if (userEmail && reqEmail && reqEmail === userEmail) return true;
         if (userId && reqUid && reqUid === userId) return true;
         return false;
@@ -29362,8 +29348,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         const assigned = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
         const assignedEmail = (r.makerEmail || '').toLowerCase().trim();
         const assignedUid = (r.makerUserId || '').toLowerCase().trim();
-        return (isSpecialPrimary && (assignedEmail === 'maggimatteo22@gmail.com' || assignedEmail === 'matteomaggi22@gmail.com')) ||
-               (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
+        return (assigned && (assigned === myMakerName || assigned.includes(myMakerName) || myMakerName.includes(assigned))) ||
                (assignedEmail && assignedEmail === myMakerEmail) ||
                (assignedUid && assignedUid === myMakerUid);
       });
@@ -34442,9 +34427,9 @@ function renderDealChat(rfpId) {
         if (!normId && !normName) return true;
         const rId = (r.makerId || '').toLowerCase().trim();
         const rName = (r.makerName || '').toLowerCase().trim();
-        if (normId && (rId === normId || rName === normId || normId.includes(rName) || rName.includes(normId) || (normId.includes('maggimatteo') && rId.includes('maggimatteo')))) return true;
+        if (normId && (rId === normId || rName === normId || normId.includes(rName) || rName.includes(normId))) return true;
         if (normName && (rName === normName || rId === normName || normName.includes(rName) || rName.includes(normName) || (normName.includes('maker') && rName.includes('maker')) || (normName.includes('creator') && rName.includes('maker')))) return true;
-        if (rId.includes('maggimatteo') || rName.includes('maker')) return true;
+        if (rName.includes('maker')) return true;
         return false;
       });
 
@@ -35038,7 +35023,7 @@ function renderDealChat(rfpId) {
                 name: sc.name || sc.email.split('@')[0],
                 email: sc.email,
                 role: 'client',
-                isAdmin: (sc.email === 'maggimatteo22@gmail.com'),
+                isAdmin: Boolean(sc.isAdmin),
                 isLoggedIn: true,
                 stripeConnected: true
               };
@@ -35051,16 +35036,17 @@ function renderDealChat(rfpId) {
         console.warn('Errore lettura sessione salvata:', e);
       }
 
-      // Pre-compilazione permanente dei campi Email e Password nel gate
+      // I campi email e password nel form di accesso iniziano rigorosamente vuoti (privacy e sicurezza)
       try {
-        setTimeout(() => {
-          const sEmail = localStorage.getItem('printforge_saved_email') || 'maggimatteo22@gmail.com';
-          const sPass = localStorage.getItem('printforge_saved_pass') || '';
-          const eEl = document.getElementById('gateUnifiedEmail');
-          const pEl = document.getElementById('gateUnifiedPass');
-          if (eEl && !eEl.value && sEmail) eEl.value = sEmail;
-          if (pEl && !pEl.value && sPass) pEl.value = sPass;
-        }, 50);
+        const eEl = document.getElementById('gateUnifiedEmail');
+        const pEl = document.getElementById('gateUnifiedPass');
+        if (eEl) eEl.value = '';
+        if (pEl) pEl.value = '';
+        
+        // Pulizia automatica: nessun dato precompilato
+        localStorage.removeItem('printforge_saved_email');
+        localStorage.removeItem('printforge_saved_pass');
+        localStorage.removeItem('printforge_saved_credentials');
       } catch(e) {}
 
       if (!sessionRestored) {
@@ -35135,7 +35121,7 @@ function renderDealChat(rfpId) {
           if (u && (u.isLoggedIn || u.email)) {
             u.isLoggedIn = true;
             AppState.user = Object.assign(AppState.user || {}, u);
-            if (u.email === 'maggimatteo22@gmail.com' && (!u.role || window.location.hash === '#client' || urlParams.get('role') === 'client')) {
+            if (!u.role || window.location.hash === '#client' || urlParams.get('role') === 'client') {
               AppState.user.role = 'client';
             }
             localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
