@@ -9262,11 +9262,19 @@
           </div>
           <div class="pt-2 border-t border-white/[0.06] space-y-1 text-[10px] font-mono">
             <div class="flex items-center justify-between text-zinc-400">
-              <span>Manifattura 3D Netta Maker:</span>
+              <span id="i18n-reviewMfgLabel">Manifattura 3D Netta Maker:</span>
               <span id="reviewMfgNetto" class="text-zinc-200 font-bold">€ 0,00</span>
             </div>
             <div class="flex items-center justify-between text-zinc-400">
-              <span class="text-blue-400">🛡️ Protezione Stripe Escrow (1,5% + € 0,25):</span>
+              <span class="text-cyan-400 flex items-center gap-1"><span id="i18n-reviewShipLabel">📦 Pacco &amp; Spedizione Corriere:</span></span>
+              <span id="reviewShippingFee" class="text-zinc-200 font-bold">+ € 6,05</span>
+            </div>
+            <div class="flex items-center justify-between text-zinc-400" id="reviewSpeedRow" style="display: none;">
+              <span class="text-amber-400 flex items-center gap-1"><span id="i18n-reviewSpeedLabel">⚡ Tempistica Flash 24-48h:</span></span>
+              <span id="reviewSpeedFee" class="text-amber-300 font-bold">+ € 0,00</span>
+            </div>
+            <div class="flex items-center justify-between text-zinc-400">
+              <span class="text-blue-400" id="i18n-reviewStripeLabel">🛡️ Protezione Stripe Escrow (1,5% + € 0,25):</span>
               <span id="reviewStripeFee" class="text-blue-300 font-bold">+ € 0,00</span>
             </div>
           </div>
@@ -29815,22 +29823,40 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       recMfg = recMfg || exactOrderPrice;
       const minThreshold = (recPrice > 0) ? Math.max(12, Math.round(recPrice * 0.75)) : 12;
 
-      // 1. Manifattura Netta & Totale Esatto inserito dal cliente
+      // 1. Manifattura Netta & Spedizione & Tempistica
       const mfgNetto = exactOrderPrice;
       const shippingNum = typeof window.currentBaseShippingPrice === 'number' && window.currentBaseShippingPrice > 0
         ? window.currentBaseShippingPrice
-        : 6.05;
+        : (typeof window.__lastShipCost === 'number' && window.__lastShipCost > 0 ? window.__lastShipCost : 6.05);
 
       const deadline = document.getElementById('reqDeadline')?.value || 'Standard 3-5 giorni';
       let speedFee = 0;
+      if (deadline.includes('Urgente') || deadline.includes('Flash') || deadline.includes('24-48h') || deadline.includes('Prioritaria')) {
+        speedFee = mfgNetto > 0 ? Math.max(6.50, Math.round(mfgNetto * 0.30 * 100) / 100) : 6.50;
+      } else if (deadline.includes('Flessibile') || deadline.includes('7-10')) {
+        speedFee = mfgNetto > 0 ? -Math.round(mfgNetto * 0.10 * 100) / 100 : 0;
+      }
 
-      // Protezione Stripe Escrow trasparente
-      const stripeFee = Math.round((exactOrderPrice * 0.015 + 0.25) * 100) / 100;
+      // 2. Subtotale Protetto (Manifattura Netta + Spedizione + Tempistica)
+      const subtotalProtected = Math.max(0, mfgNetto + shippingNum + speedFee);
 
-      // Totale Esatto dell'ordine appena fatto
-      const budgetNum = parseFloat(exactOrderPrice.toFixed(2));
-      const budgetStr = formatEuroClean(budgetNum);
-      const escrowTotalStr = budgetStr;
+      // 3. Tassa Stripe Escrow Trasparente (1,5% + € 0,25 al centesimo)
+      const stripeFee = Math.round((subtotalProtected * 0.015 + 0.25) * 100) / 100;
+
+      // 4. Totale Finale da Congelare con Tutte le Tasse, Spedizione e Pacchi Inclusi
+      let totalAllInclusive = parseFloat((subtotalProtected + stripeFee).toFixed(2));
+      if (typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0 && Math.abs(window.__lastTotalCheckout - totalAllInclusive) < 1.0) {
+        totalAllInclusive = window.__lastTotalCheckout;
+      }
+
+      const totalCheckoutStr = formatEuroClean(totalAllInclusive);
+      const mfgNettoStr = formatEuroClean(mfgNetto);
+      const shippingStr = formatEuroClean(shippingNum);
+      const stripeFeeStr = formatEuroClean(stripeFee);
+
+      const budgetNum = totalAllInclusive;
+      const budgetStr = totalCheckoutStr;
+      const escrowTotalStr = totalCheckoutStr;
       const isCustomLowBudget = (recPrice > 0 && mfgNetto < minThreshold);
       const notes = document.getElementById('reqNotes')?.value || '';
       const clientFile = AppState.clientSelectedFile;
@@ -29877,15 +29903,22 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         infill: infill,
         postProcess: postProcess,
         quantity: quantity,
-        budgetNum: budgetNum,
-        budgetStr: budgetStr,
+        budgetNum: totalAllInclusive,
+        budgetStr: totalCheckoutStr,
+        totalCheckout: totalAllInclusive,
+        totalCheckoutStr: totalCheckoutStr,
         mfgNetto: mfgNetto,
+        mfgNettoStr: mfgNettoStr,
+        shippingNum: shippingNum,
+        shippingStr: shippingStr,
+        speedFee: speedFee,
+        subtotalProtected: subtotalProtected,
         stripeFee: stripeFee,
+        stripeFeeStr: stripeFeeStr,
         isCustomLowBudget: isCustomLowBudget,
         recPrice: recPrice,
         minThreshold: minThreshold,
-        shippingNum: shippingNum,
-        escrowTotalStr: escrowTotalStr,
+        escrowTotalStr: totalCheckoutStr,
         deadline: deadline,
         notes: notes,
         customFileName: customFileName,
@@ -29992,22 +30025,53 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       const totalEscrowEl = document.getElementById('reviewTotalEscrow');
-      // Calcolo trasparente Stripe Escrow nel Riepilogo Commessa (1,5% + € 0,25 al centesimo aggiunto automaticamente)
-      let reviewMfgVal = draft.mfgNetto || 0;
-      if (reviewMfgVal <= 0) {
-        if (draft.budgetNum && draft.budgetNum > (draft.shippingNum || 0)) {
-          reviewMfgVal = parseFloat((draft.budgetNum - (draft.shippingNum || 0) - (draft.stripeFee || 0)).toFixed(2));
-        }
-        if (reviewMfgVal <= 0 && window.__lastComputedBaseMfg) {
-          reviewMfgVal = window.__lastComputedBaseMfg;
+      const mfgNettoEl = document.getElementById('reviewMfgNetto');
+      const shippingFeeEl = document.getElementById('reviewShippingFee');
+      const stripeFeeEl = document.getElementById('reviewStripeFee');
+      const speedRow = document.getElementById('reviewSpeedRow');
+      const speedFeeEl = document.getElementById('reviewSpeedFee');
+
+      let reviewMfgVal = (typeof draft.mfgNetto === 'number' && draft.mfgNetto > 0)
+        ? draft.mfgNetto
+        : (parseFloat(draft.mfgNetto) || (window.__lastBaseMfg || 28.00));
+
+      let shipVal = typeof draft.shippingNum === 'number' && draft.shippingNum > 0
+        ? draft.shippingNum
+        : (typeof window.currentBaseShippingPrice === 'number' && window.currentBaseShippingPrice > 0 ? window.currentBaseShippingPrice : 6.05);
+
+      let speedVal = typeof draft.speedFee === 'number' ? draft.speedFee : 0;
+      const subProtected = Math.max(0, reviewMfgVal + shipVal + speedVal);
+      const reviewStripeVal = typeof draft.stripeFee === 'number' && draft.stripeFee > 0
+        ? draft.stripeFee
+        : (Math.round((subProtected * 0.015 + 0.25) * 100) / 100);
+
+      // TOTALE ESATTO CHE COMBACIA AL CENTESIMO CON TUTTE LE TASSE E SPEDIZIONE E PACCHI INCLUSI
+      let totalAllInclusive = (typeof draft.totalCheckout === 'number' && draft.totalCheckout > 0)
+        ? draft.totalCheckout
+        : ((typeof window.__lastTotalCheckout === 'number' && window.__lastTotalCheckout > 0)
+          ? window.__lastTotalCheckout
+          : parseFloat((subProtected + reviewStripeVal).toFixed(2)));
+
+      const totalStr = formatEuroClean(totalAllInclusive);
+      const mfgStr = formatEuroClean(reviewMfgVal);
+      const shipStr = formatEuroClean(shipVal);
+      const stripeStr = formatEuroClean(reviewStripeVal);
+
+      if (totalEscrowEl) totalEscrowEl.innerText = totalStr;
+      if (mfgNettoEl) mfgNettoEl.innerText = mfgStr;
+      if (shippingFeeEl) shippingFeeEl.innerText = '+ ' + shipStr;
+      if (stripeFeeEl) stripeFeeEl.innerText = '+ ' + stripeStr + ' (1,5% + € 0,25)';
+
+      if (speedRow) {
+        if (speedVal !== 0) {
+          speedRow.style.display = 'flex';
+          if (speedFeeEl) {
+            speedFeeEl.innerText = (speedVal > 0 ? '+ ' : '- ') + formatEuroClean(Math.abs(speedVal));
+          }
+        } else {
+          speedRow.style.display = 'none';
         }
       }
-
-      const reviewStripeVal = draft.stripeFee || (Math.round(((draft.subtotalProtected || (reviewMfgVal + (draft.shippingNum || 0))) * 0.015 + 0.25) * 100) / 100);
-      const mfgNettoEl = document.getElementById('reviewMfgNetto');
-      if (mfgNettoEl) mfgNettoEl.innerText = '€ ' + reviewMfgVal.toFixed(2).replace('.', ',');
-      const stripeFeeEl = document.getElementById('reviewStripeFee');
-      if (stripeFeeEl) stripeFeeEl.innerText = '+ € ' + reviewStripeVal.toFixed(2).replace('.', ',') + ' (1,5% + € 0,25)';
 
       // incInfoEl già acquisito sopra
       if (incInfoEl) {
@@ -30015,16 +30079,23 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           incInfoEl.innerText = 'Prezzo stabilito dal Maker • Imballo, consegna ed Escrow inclusi nel totale';
         } else {
           let speedText = 'Standard inclusa';
-          if (draft.speedFee > 0) speedText = 'Flash Prioritaria (+€ ' + draft.speedFee.toFixed(2).replace('.', ',') + ')';
-          else if (draft.speedFee < 0) speedText = 'Flessibile (-€ ' + Math.abs(draft.speedFee).toFixed(2).replace('.', ',') + ')';
-          const shipVal = typeof draft.shippingNum === 'number' ? draft.shippingNum : 6.05;
-          incInfoEl.innerText = 'Pacco & Spedizione (€ ' + shipVal.toFixed(2).replace('.', ',') + ') + ' + speedText + ' + Escrow inclusi nel totale';
+          if (speedVal > 0) speedText = 'Flash Prioritaria (+ ' + formatEuroClean(speedVal) + ')';
+          else if (speedVal < 0) speedText = 'Flessibile (- ' + formatEuroClean(Math.abs(speedVal)) + ')';
+          incInfoEl.innerText = 'Pacco & Spedizione (' + shipStr + ') + ' + speedText + ' + Escrow inclusi nel totale';
         }
       }
 
-      const exactReviewPriceStr = draft.budgetStr || formatEuroClean(draft.budgetNum || 0);
-      if (totalEscrowEl) totalEscrowEl.innerText = exactReviewPriceStr;
-      if (mfgNettoEl) mfgNettoEl.innerText = exactReviewPriceStr;
+      draft.totalCheckout = totalAllInclusive;
+      draft.totalCheckoutStr = totalStr;
+      draft.escrowTotalStr = totalStr;
+      draft.budgetStr = totalStr;
+      draft.budgetNum = totalAllInclusive;
+      draft.mfgNetto = reviewMfgVal;
+      draft.mfgNettoStr = mfgStr;
+      draft.shippingNum = shipVal;
+      draft.shippingStr = shipStr;
+      draft.stripeFee = reviewStripeVal;
+      draft.stripeFeeStr = stripeStr;
 
       // Gestione Avviso Budget Basso nel Messaggio di Sintesi Ordine (Modal)
       const reviewWarnBox = document.getElementById('reviewBudgetLowWarning');
