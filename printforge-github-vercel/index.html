@@ -7289,7 +7289,7 @@
           </button>
 
           <!-- Escrow Badge visible on mobile next to Back button -->
-          <div class="flex sm:hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#18191B] border border-emerald-500/30 text-[11px] font-mono text-emerald-400 shrink-0 shadow-sm">
+          <div id="dealChatMobileBudgetBadge" class="flex sm:hidden items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[#18191B] border border-emerald-500/30 text-[11px] font-mono text-emerald-400 shrink-0 shadow-sm">
             <i data-lucide="shield-check" class="w-3.5 h-3.5 shrink-0 text-emerald-400"></i>
             <span class="font-bold text-white whitespace-nowrap tabular-nums dealChatBudgetValueRef">€ 48,00</span>
             <span class="text-[9px] text-zinc-400 uppercase whitespace-nowrap shrink-0">Escrow</span>
@@ -9734,6 +9734,36 @@
           localStorage.removeItem('printforge_cad_qc_files_' + id);
           localStorage.removeItem('printforge_deal_agreed_' + id);
         });
+
+        // REQUISITO: Sincronizzazione commesse completate e azzeramento fondi mostrati
+        const stage4Done = (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_stage4_completed') === 'true');
+        if (Array.isArray(currentReqs)) {
+          currentReqs.forEach(r => {
+            if (!r) return;
+            const isCompletedOrder = Boolean(
+              r.isCompleted || r.isDelivered || r.isClosed ||
+              String(r.status || '').toUpperCase().includes('COMPLETAT') ||
+              (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true') ||
+              (r.id === 'RFP-4451' && stage4Done)
+            );
+            if (isCompletedOrder) {
+              r.isCompleted = true;
+              r.isDelivered = true;
+              r.isClosed = true;
+              r.status = 'COMPLETATO';
+              r.budget = '€ 0,00';
+              r.escrowTotal = '€ 0,00';
+              r.messages = [];
+              try {
+                localStorage.setItem('printforge_completed_' + r.id, 'true');
+                localStorage.removeItem('printforge_deal_messages_' + r.id);
+              } catch(e) {}
+            }
+          });
+          if (stage4Done) {
+            try { localStorage.removeItem('printforge_deal_messages_RFP-4451'); } catch(e) {}
+          }
+        }
         localStorage.removeItem('printforge_active_escrow_order');
         localStorage.removeItem('printforge_cad_qc_files');
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(currentReqs));
@@ -10443,22 +10473,54 @@
     /* ogni chat verrà ripristinata e non si potrà usare fino al prossimo      */
     /* contratto con un creator"                                                */
     /* ========================================================================= */
-    function hasActiveCreatorContract() {
+    function hasActiveCreatorContract(rfpToCheck) {
       if (!AppState.user || !AppState.user.isLoggedIn) return false;
 
-      // Se la fase 4 è segnata come completata a livello globale e non ci sono ordini in corso
+      // Se specificato un ID o oggetto commessa, verifica contrattualizzazione di quella specifica richiesta
+      if (rfpToCheck) {
+        const r = typeof rfpToCheck === 'object' ? rfpToCheck : (AppState.broadcastRequests || []).find(x => x && x.id === rfpToCheck);
+        if (!r) return false;
+        if (r.isCompleted || r.isDelivered || r.isClosed) return false;
+        try {
+          if (localStorage.getItem('printforge_completed_' + r.id) === 'true') return false;
+        } catch(e) {}
+        const st = String(r.status || '').toUpperCase();
+        if (st.includes('COMPLETAT') || st.includes('CONSEGNAT') || st.includes('ARCHIVIAT') || st.includes('FONDI SVINCOLATI')) return false;
+        if (typeof isUserChatParticipant === 'function' && !isUserChatParticipant(r)) return false;
+
+        const isAccepted = Boolean(
+          (r.isAccepted === true) ||
+          (r.acceptedBy && r.acceptedBy.trim().length > 0 && r.acceptedBy !== 'PrintForge Maker Pool') ||
+          (r.maker && r.maker.trim().length > 0 && r.maker !== 'PrintForge Maker Pool') ||
+          (r.makerEmail && r.makerEmail.trim().length > 0) ||
+          (r.makerUserId && r.makerUserId.trim().length > 0) ||
+          st.includes('LAVORAZIONE') ||
+          st.includes('PRODUZIONE') ||
+          st.includes('PRODUCTION') ||
+          st.includes('ACCETTAT')
+        );
+        return isAccepted;
+      }
+
+      // Controllo globale: esiste ALMENO una commessa con contratto attivo?
       const activeReq = (AppState.broadcastRequests || []).find(r => {
         if (!r) return false;
         if (r.isCompleted || r.isDelivered || r.isClosed) return false;
+        try {
+          if (localStorage.getItem('printforge_completed_' + r.id) === 'true') return false;
+        } catch(e) {}
         const st = String(r.status || '').toUpperCase();
-        if (st.includes('COMPLETAT') || st.includes('CONSEGNAT') || st.includes('ARCHIVIAT')) return false;
+        if (st.includes('COMPLETAT') || st.includes('CONSEGNAT') || st.includes('ARCHIVIAT') || st.includes('FONDI SVINCOLATI')) return false;
         if (typeof isUserChatParticipant === 'function' && !isUserChatParticipant(r)) return false;
 
-        // Deve esistere un contratto stipulato con un creator (accettato/preso in carico o in produzione)
+        // Le richieste demo (RFP-3891, RFP-9821, etc.) non contano come contratto reale
+        const isPresetDemo = (r.id === "RFP-3891" || r.id === "RFP-9821" || r.id === "RFP-4120" || r.id === "RFP-1044");
+        if (isPresetDemo && !r.isAccepted) return false;
+
         const isAccepted = Boolean(
-          r.isAccepted === true ||
-          r.acceptedBy ||
-          (r.maker && r.maker.trim().length > 0) ||
+          (r.isAccepted === true) ||
+          (r.acceptedBy && r.acceptedBy.trim().length > 0 && r.acceptedBy !== 'PrintForge Maker Pool') ||
+          (r.maker && r.maker.trim().length > 0 && r.maker !== 'PrintForge Maker Pool') ||
           (r.makerEmail && r.makerEmail.trim().length > 0) ||
           (r.makerUserId && r.makerUserId.trim().length > 0) ||
           st.includes('LAVORAZIONE') ||
@@ -10481,33 +10543,62 @@
       const photoBtn = document.querySelector('button[onclick="triggerDealPhotoUpload()"]');
       const statusSub = document.getElementById('dealChatStatusSub');
       const headTitle = document.getElementById('dealChatHeaderRfpTitle');
+      const creatorName = document.getElementById('dealChatCreatorName');
+      const mobBudgetBadge = document.getElementById('dealChatMobileBudgetBadge') || document.querySelector('.dealChatBudgetValueRef')?.closest('div');
+      const deskBudgetBadge = document.getElementById('dealChatBudgetBadge');
+      const mobBudgetVal = document.querySelector('.dealChatBudgetValueRef');
+      const deskBudgetVal = document.getElementById('dealChatBudgetValue');
+      const deskEscrowSub = document.getElementById('dealChatEscrowSub');
+
       const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
       const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
 
+      // 1. REQUISITO UTENTE CRITICO: Non mostrare mai i fondi bloccati dell'ordine precedente!
+      // Nascondi completamente i badge Escrow e imposta valore a € 0,00
+      if (mobBudgetBadge) mobBudgetBadge.classList.add('hidden');
+      if (deskBudgetBadge) deskBudgetBadge.classList.add('hidden');
+      if (mobBudgetVal) mobBudgetVal.innerText = '€ 0,00';
+      if (deskBudgetVal) deskBudgetVal.innerText = '€ 0,00';
+      if (deskEscrowSub) deskEscrowSub.innerText = isEn ? 'Funds Released' : isEs ? 'Fondos Liberados' : 'Fondi Svincolati';
+
       if (headTitle) {
-        headTitle.innerText = isEn ? '1-on-1 Chat // Standby' : isEs ? 'Chat 1-a-1 // En Espera' : 'Chat 1-1 // In Attesa di Contratto';
+        headTitle.innerText = isEn ? '// CONTRACT COMPLETED // 1-ON-1 CHAT LOCKED' : isEs ? '// CONTRATO COMPLETADO // CHAT BLOQUEADO' : '// CONTRATTO COMPLETATO // CHAT 1-1 BLOCCATA';
       }
 
       if (statusSub) {
-        statusSub.innerHTML = '<span class="text-amber-400 font-bold">🔒 CHAT DISATTIVATA // NESSUN CONTRATTO ATTIVO</span>';
+        statusSub.innerHTML = '<span class="text-amber-400 font-bold">🔒 CHAT DISATTIVATA // FONDI SVINCOLATI</span>';
+      }
+
+      if (creatorName) {
+        creatorName.innerText = isEn ? 'Awaiting New Creator...' : isEs ? 'Esperando Creador...' : 'In attesa di nuovo Creator...';
       }
 
       if (container) {
         container.innerHTML = `
-          <div class="h-full flex flex-col items-center justify-center text-center p-6 sm:p-8 space-y-3 font-mono">
-            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg">
-              <i data-lucide="lock" class="w-7 h-7"></i>
+          <div class="h-full flex flex-col items-center justify-center text-center p-6 sm:p-8 space-y-4 font-mono">
+            <div class="w-16 h-16 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-xl">
+              <i data-lucide="lock" class="w-8 h-8"></i>
             </div>
-            <p class="text-xs text-white font-cyber font-bold uppercase tracking-wider">
-              ${isEn ? '1-ON-1 CHAT LOCKED // NO ACTIVE CONTRACT' : isEs ? 'CHAT 1-A-1 BLOQUEADO // SIN CONTRATO ACTIVO' : 'CHAT 1-1 BLOCCATA // NESSUN CONTRATTO ATTIVO'}
-            </p>
-            <p class="text-[11px] text-zinc-400 font-sans max-w-sm leading-relaxed">
+            <div class="space-y-1">
+              <p class="text-sm text-white font-cyber font-bold uppercase tracking-wider">
+                ${isEn ? '1-ON-1 CHAT LOCKED // CONTRACT COMPLETED' : isEs ? 'CHAT 1-A-1 BLOQUEADO // CONTRATO COMPLETADO' : 'CHAT 1-1 BLOCCATA // CONTRATTO COMPLETATO'}
+              </p>
+              <p class="text-xs text-emerald-400 font-mono font-bold">
+                ${isEn ? '✔ Escrow funds released to Creator (€ 0.00 locked)' : isEs ? '✔ Fondos en Escrow liberados al Creador (€ 0,00 bloqueados)' : '✔ Fondi Escrow svincolati al Maker (€ 0,00 bloccati)'}
+              </p>
+            </div>
+            <p class="text-[11.5px] text-zinc-400 font-sans max-w-md leading-relaxed">
               ${isEn 
-                ? 'The 4th stage has been completed and previous chat history was reset. This private chat will automatically unlock as soon as a new contract with a Creator is started.' 
+                ? 'The 4th stage has been completed and escrow funds were released. All deal chats have been reset and are locked until a new contract with a Creator is accepted.' 
                 : isEs 
-                ? 'El 4° paso se ha completado y el historial fue restablecido. El chat privado se desbloqueará automáticamente al iniciar un nuevo contrato con un Creador.' 
-                : 'Il quarto passaggio è stato completato e ogni chat è stata ripristinata. Questa chat privata 1-1 si riattiverà automaticamente appena verrà avviato un nuovo contratto con un Creator.'}
+                ? 'El 4° paso se ha completado y los fondos de Escrow fueron liberados. Los chats fueron restablecidos y están bloqueados hasta el próximo contrato con un Creador.' 
+                : 'Il quarto passaggio è stato completato e i fondi in Escrow sono stati svincolati. La chat privata è stata ripristinata e rimarrà bloccata fino al prossimo contratto stipulato con un Creator.'}
             </p>
+            <div class="pt-2">
+              <button type="button" onclick="navigateTo('richieste')" class="btn-kowalski-primary py-2 px-4 rounded-xl text-xs font-mono font-bold shadow-md">
+                ${isEn ? 'BROWSE REQUESTS' : isEs ? 'VER SOLICITUDES' : 'VAI ALLE RICHIESTE'}
+              </button>
+            </div>
           </div>
         `;
         if (window.lucide && typeof window.lucide.createIcons === 'function') {
@@ -10542,34 +10633,64 @@
     function resetAndLockAllDealChatsAfterStage4(completedRfpId) {
       console.log('🔒 [Stage 4 Complete]: Resetting all deal chats and locking until next creator contract. Completed RFP:', completedRfpId);
 
-      const targetId = completedRfpId || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId;
+      const targetId = completedRfpId || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
 
-      // 1. Svuota messaggi dalla commessa completata
-      if (targetId) {
-        const targetRfp = (AppState.broadcastRequests || []).find(r => r && r.id === targetId);
-        if (targetRfp) {
-          targetRfp.messages = [];
-        }
-        try {
-          localStorage.removeItem('printforge_deal_messages_' + targetId);
-        } catch(e) {}
-      }
+      AppState.stage4Completed = true;
+      try {
+        localStorage.setItem('printforge_stage4_completed', 'true');
+      } catch(e) {}
 
-      // Svuota messaggi da tutte le richieste completate
+      // Aggiorna lo stato di completamento e azzera budget e messaggi
       (AppState.broadcastRequests || []).forEach(r => {
-        if (r && (r.isCompleted || r.isDelivered || r.isClosed || r.status === 'COMPLETATO' || r.id === targetId)) {
+        if (!r) return;
+        if (targetId && r.id === targetId) {
+          r.isCompleted = true;
+          r.isDelivered = true;
+          r.isClosed = true;
+          r.status = 'COMPLETATO';
+          r.budget = '€ 0,00';
+          r.escrowTotal = '€ 0,00';
           r.messages = [];
           try {
+            localStorage.setItem('printforge_completed_' + r.id, 'true');
+            localStorage.removeItem('printforge_deal_messages_' + r.id);
+          } catch(e) {}
+        } else if (r.isCompleted || r.isDelivered || r.isClosed || String(r.status || '').toUpperCase().includes('COMPLETAT')) {
+          r.isCompleted = true;
+          r.isDelivered = true;
+          r.isClosed = true;
+          r.status = 'COMPLETATO';
+          r.budget = '€ 0,00';
+          r.escrowTotal = '€ 0,00';
+          r.messages = [];
+          try {
+            localStorage.setItem('printforge_completed_' + r.id, 'true');
             localStorage.removeItem('printforge_deal_messages_' + r.id);
           } catch(e) {}
         }
       });
 
+      // Se non abbiamo targetId ma stage 4 è completato, garantisci reset di RFP-4451 o dell'ordine corrente
+      if (AppState.broadcastRequests) {
+        AppState.broadcastRequests.forEach(r => {
+          if (r && (r.id === 'RFP-4451' || r.isAccepted)) {
+            r.isCompleted = true;
+            r.status = 'COMPLETATO';
+            r.budget = '€ 0,00';
+            r.escrowTotal = '€ 0,00';
+            r.messages = [];
+            try {
+              localStorage.setItem('printforge_completed_' + r.id, 'true');
+              localStorage.removeItem('printforge_deal_messages_' + r.id);
+            } catch(e) {}
+          }
+        });
+      }
+
       try {
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
       } catch(e) {}
 
-      // 2. Azzera notifiche e contatori non letti
       AppState.unreadDealMessages = {};
       try {
         localStorage.removeItem('printforge_unread_deal_messages');
@@ -10578,25 +10699,24 @@
         updateChatNotificationBadges();
       }
 
-      // 3. Azzera deal RFP attivo
       AppState.activeDealRfpId = null;
 
-      // 4. Se la vista corrente è la chat o se gli elementi DOM esistono, blocca e ripristina l'interfaccia
+      // Blocca e azzera immediatamente l'interfaccia Deal Chat (senza mostrare fondi del vecchio ordine)
       if (typeof renderDealChatLockedState === 'function') {
         renderDealChatLockedState();
       }
 
-      // 5. Se su Supabase, azzera anche i messaggi nel cloud per la commessa completata
+      // Se su Supabase, azzera anche i messaggi nel cloud per la commessa completata
       if (targetId && typeof updateRequestInSupabase === 'function') {
         const rfp = (AppState.broadcastRequests || []).find(r => r && r.id === targetId);
         if (rfp && typeof buildNotesPayload === 'function') {
           updateRequestInSupabase(targetId, {
-            notes: buildNotesPayload(rfp, { messages: [] })
+            status: 'COMPLETATO',
+            notes: buildNotesPayload(rfp, { messages: [], isCompleted: true, budget: '€ 0,00' })
           });
         }
       }
 
-      // 6. Broadcast Realtime dell'evento di reset per sincronizzare istantaneamente l'altro dispositivo
       try {
         if (typeof broadcastRealtimeEvent === 'function') {
           broadcastRealtimeEvent('deal_chat_reset', {
@@ -30670,12 +30790,15 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         return;
       }
 
-      // REQUISITO: Se non c'è un contratto attivo con un Creator, la chat è bloccata fino al prossimo contratto
-      if (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract()) {
+      let targetRfp = rfpId ? (AppState.broadcastRequests || []).find(x => x && x.id === rfpId) : null;
+      const isRfpCompleted = targetRfp && (targetRfp.isCompleted || targetRfp.isDelivered || targetRfp.isClosed || String(targetRfp.status || '').toUpperCase().includes('COMPLETAT'));
+
+      // REQUISITO: Se non c'è un contratto attivo con un Creator per questa commessa o se è completata, la chat è bloccata
+      if (isRfpCompleted || (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract(rfpId))) {
         showToast(
           currentLang === 'it'
-            ? '🔒 Chat 1-1 non disponibile: il 4° passaggio è completato e la chat si riattiverà al prossimo contratto con un Creator.'
-            : '🔒 1-on-1 Chat unavailable: Stage 4 completed. Chat will reactivate on next contract with a Creator.',
+            ? '🔒 Chat 1-1 disattivata: contratto completato e fondi svincolati. La chat si riattiverà al prossimo contratto con un Creator.'
+            : '🔒 1-on-1 Chat locked: contract completed and funds released. Chat will reactivate on next contract with a Creator.',
           'info'
         );
         navigateTo('deal-chat');
@@ -30831,17 +30954,27 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 function renderDealChat(rfpId) {
       if (typeof startDealChatPolling === "function") startDealChatPolling();
 
-      // REQUISITO: Se non c'è un contratto attivo con un Creator, mostra subito lo stato bloccato
-      if (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract()) {
+      const activeContractExists = typeof hasActiveCreatorContract === 'function' ? hasActiveCreatorContract(rfpId) : false;
+
+      // REQUISITO: Se non c'è un contratto attivo con un Creator per questa commessa o se è già completata, mostra lo stato bloccato
+      if (!activeContractExists) {
         renderDealChatLockedState();
         return;
       }
 
-      const rawRfp = rfpId ? AppState.broadcastRequests.find(x => x.id === rfpId) : null;
+      const rawRfp = rfpId ? (AppState.broadcastRequests || []).find(x => x && x.id === rfpId) : null;
       if (!rawRfp || rawRfp.isCompleted || rawRfp.isDelivered || rawRfp.isClosed) {
         renderDealChatLockedState();
         return;
       }
+
+      // Mostra i badge Escrow se il contratto è attivo
+      const mobBudgetBadge = document.getElementById('dealChatMobileBudgetBadge') || document.querySelector('.dealChatBudgetValueRef')?.closest('div');
+      const deskBudgetBadge = document.getElementById('dealChatBudgetBadge');
+      if (mobBudgetBadge) mobBudgetBadge.classList.remove('hidden');
+      if (deskBudgetBadge) deskBudgetBadge.classList.remove('hidden');
+      const deskEscrowSub = document.getElementById('dealChatEscrowSub');
+      if (deskEscrowSub) deskEscrowSub.innerText = 'Escrow';
 
       // Sblocca input e pulsanti per il contratto attivo
       const chatInput = document.getElementById('dealChatInput');
@@ -30900,7 +31033,7 @@ function renderDealChat(rfpId) {
       if (mobBudgetVal) mobBudgetVal.innerText = formatEuroClean(rfp.budget);
       if (clientName) clientName.innerText = rfp.clientName || (currentLang === 'en' ? 'Client' : currentLang === 'es' ? 'Cliente' : 'Cliente');
       if (clientAvatar) clientAvatar.innerText = (rfp.clientName || 'C').charAt(0).toUpperCase();
-      if (creatorName) creatorName.innerText = rfp.creatorAssigned || 'PrintForge Hub Milano';
+      if (creatorName) creatorName.innerText = rfp.creatorAssigned || rfp.maker || 'In attesa di Creator...';
       if (creatorAvatar) creatorAvatar.innerText = (rfp.creatorAssigned || 'P').charAt(0).toUpperCase();
 
       // Update Spec Card
