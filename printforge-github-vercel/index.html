@@ -4262,7 +4262,8 @@
           </div>
           
           <div class="flex flex-wrap sm:flex-nowrap items-center gap-2">
-            <div class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-2 shadow-sm whitespace-nowrap shrink-0 flex-nowrap" style="white-space: nowrap !important; flex-shrink: 0 !important; min-width: max-content !important;">
+            <div onclick="openCreatorEarningsModal()" class="px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 inline-flex items-center gap-2 shadow-sm whitespace-nowrap shrink-0 flex-nowrap cursor-pointer hover:bg-emerald-500/15 transition active:scale-95" style="white-space: nowrap !important; flex-shrink: 0 !important; min-width: max-content !important;" title="Visualizza registro incassi privato (Stripe Connect)">
+              <i data-lucide="wallet" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
               <span class="text-[10px] font-mono text-zinc-400 uppercase select-none" style="white-space: nowrap !important; flex-shrink: 0 !important;" id="i18n-creatorEarnedTotalLabel">INCASSATO:</span>
               <span class="font-mono font-bold text-emerald-400 text-xs tabular-nums" style="white-space: nowrap !important; word-break: keep-all !important; flex-shrink: 0 !important; display: inline-block !important;" id="creatorEarnedTotalBadge">€&nbsp;0,00</span>
             </div>
@@ -8350,6 +8351,65 @@
       </div>
     </div>
 
+    <!-- MODALE REGISTRO INCASSI PRIVATO CREATOR (Calcolo matematico soggettivo e privato) -->
+    <div id="modalCreatorEarnings" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-2.5 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
+      <div class="cyber-card w-full max-w-lg bg-[#0D0D12] border border-white/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[88vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="flex items-start justify-between border-b border-white/10 pb-3">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold uppercase tracking-wider">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>ESTRATTO CONTO STRIPE CONNECT</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide">
+              Registro Incassi Privato
+            </h3>
+            <p class="text-xs text-zinc-400 font-sans">
+              Calcolato matematicamente sul tuo account per ogni commessa completata con successo.
+            </p>
+          </div>
+          <button type="button" onclick="closeCreatorEarningsModal()" class="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 text-zinc-400 hover:text-white flex items-center justify-center transition cursor-pointer">
+            <i data-lucide="x" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <!-- Big Total Card -->
+        <div class="p-4 rounded-2xl bg-black/50 border border-emerald-500/30 flex items-center justify-between gap-3 shadow-inner">
+          <div>
+            <span class="text-[10px] font-mono text-zinc-400 uppercase tracking-wider block">Totale Incassi Accreditati</span>
+            <span class="text-xs text-zinc-500 font-mono block">Payout IBAN Diretto</span>
+          </div>
+          <div class="text-right">
+            <span id="modalCreatorEarningsTotal" class="text-xl sm:text-2xl font-mono font-bold text-emerald-400 tabular-nums">€ 0,00</span>
+          </div>
+        </div>
+
+        <!-- List of Completed Orders -->
+        <div class="space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-mono text-zinc-400 px-1">
+            <span>Dettaglio Commesse Completate</span>
+            <span id="modalCreatorEarningsCount">0 commesse</span>
+          </div>
+          <div id="modalCreatorEarningsList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <!-- Dynamic items rendered by JS -->
+          </div>
+        </div>
+
+        <!-- Reassurance Footer -->
+        <div class="pt-2 border-t border-white/10 flex items-center justify-between gap-2 text-[10.5px] font-mono text-zinc-400">
+          <span class="flex items-center gap-1.5">
+            <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
+            <span>Dati rigorosamente privati e crittografati</span>
+          </span>
+          <button type="button" onclick="closeCreatorEarningsModal()" class="btn-kowalski-secondary px-3 py-1.5 rounded-xl text-white font-mono text-xs font-bold cursor-pointer">
+            Chiudi
+          </button>
+        </div>
+
+      </div>
+    </div>
+
     <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-2.5 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
       <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-3.5 sm:space-y-4 text-left relative max-h-[88vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
         
@@ -10640,28 +10700,40 @@
         localStorage.setItem('printforge_stage4_completed', 'true');
       } catch(e) {}
 
-      // Aggiorna lo stato di completamento e azzera budget e messaggi
+      // Aggiorna lo stato di completamento, preserva il prezzo reale della commessa e registra gli incassi creator
       (AppState.broadcastRequests || []).forEach(r => {
         if (!r) return;
         if (targetId && r.id === targetId) {
+          if (!r.originalBudget && r.budget && r.budget !== '€ 0,00' && r.budget !== '€ 0') {
+            r.originalBudget = r.budget;
+          }
           r.isCompleted = true;
           r.isDelivered = true;
           r.isClosed = true;
           r.status = 'COMPLETATO';
-          r.budget = '€ 0,00';
-          r.escrowTotal = '€ 0,00';
+          r.escrowReleased = true;
           r.messages = [];
           try {
             localStorage.setItem('printforge_completed_' + r.id, 'true');
             localStorage.removeItem('printforge_deal_messages_' + r.id);
           } catch(e) {}
+
+          // Calcolo matematico privato incasso per il Maker della commessa
+          const orderPrice = r.originalBudget || r.itemBudget || r.budget;
+          const makerEmail = r.makerEmail || (AppState.user && AppState.user.role === 'creator' ? AppState.user.email : '');
+          const makerUid = r.makerUserId || (AppState.user && AppState.user.role === 'creator' ? (AppState.user.userId || AppState.user.id) : '');
+          if (typeof recordCreatorEarningsPayout === 'function') {
+            recordCreatorEarningsPayout(r.id, orderPrice, makerEmail, makerUid, r.title, r.clientName);
+          }
         } else if (r.isCompleted || r.isDelivered || r.isClosed || String(r.status || '').toUpperCase().includes('COMPLETAT')) {
+          if (!r.originalBudget && r.budget && r.budget !== '€ 0,00' && r.budget !== '€ 0') {
+            r.originalBudget = r.budget;
+          }
           r.isCompleted = true;
           r.isDelivered = true;
           r.isClosed = true;
           r.status = 'COMPLETATO';
-          r.budget = '€ 0,00';
-          r.escrowTotal = '€ 0,00';
+          r.escrowReleased = true;
           r.messages = [];
           try {
             localStorage.setItem('printforge_completed_' + r.id, 'true');
@@ -10669,6 +10741,10 @@
           } catch(e) {}
         }
       });
+
+      if (typeof updateCreatorEarningsUI === 'function') {
+        updateCreatorEarningsUI();
+      }
 
       // Se non abbiamo targetId ma stage 4 è completato, garantisci reset di RFP-4451 o dell'ordine corrente
       if (AppState.broadcastRequests) {
@@ -11638,6 +11714,12 @@
         supabaseRealtimeChannel.on('broadcast', { event: 'order_completed_stage4' }, ({ payload }) => {
           if (typeof resetAndLockAllDealChatsAfterStage4 === 'function') {
             resetAndLockAllDealChatsAfterStage4(payload?.rfpId);
+          }
+          if (typeof recordCreatorEarningsPayout === 'function' && payload?.rfpId) {
+            recordCreatorEarningsPayout(payload.rfpId, payload.amount, payload.makerEmail, payload.makerId);
+          }
+          if (typeof updateCreatorEarningsUI === 'function') {
+            updateCreatorEarningsUI();
           }
           console.log('🏁 [Realtime Order Completed Stage 4]:', payload);
           if (!payload || !payload.rfpId) return;
@@ -19810,31 +19892,287 @@ END-ISO-10303-21;`;
       return matName;
     }
 
-    function getCreatorTotalEarnings() {
-      let total = 0;
-      const user = AppState.user;
+    function parseAmountClean(val) {
+      if (val === null || val === undefined) return 0;
+      if (typeof val === 'number') return isNaN(val) ? 0 : val;
+      const cleaned = String(val).replace(/€/g, '').replace(/&euro;/g, '').replace(/\s/g, '').trim();
+      if (!cleaned) return 0;
+      let numStr = cleaned;
+      if (numStr.includes(',') && numStr.includes('.')) {
+        numStr = numStr.replace(/\./g, '').replace(',', '.');
+      } else if (numStr.includes(',')) {
+        numStr = numStr.replace(',', '.');
+      }
+      const n = parseFloat(numStr);
+      return isNaN(n) ? 0 : n;
+    }
+    window.parseAmountClean = parseAmountClean;
+
+    /* REQUISITO: Gli incassi del Creator sono calcolati matematicamente per ogni creator, privati e soggettivi */
+    function getCreatorTotalEarnings(creatorUser) {
+      const user = creatorUser || AppState.user;
       if (!user || !user.isLoggedIn) return 0;
 
-      const myEmail = ((user.email) || "").toLowerCase().trim();
-      const myUid = ((user.userId || user.id) || "").toLowerCase().trim();
-      if (!myEmail && !myUid) return 0;
+      const myEmail = ((user.email) || '').toLowerCase().trim();
+      const myUid = ((user.userId || user.id) || '').toLowerCase().trim();
+      const myName = ((user.name) || '').toLowerCase().trim();
+      if (!myEmail && !myUid && !myName) return 0;
 
-      // Registro privato e soggettivo del singolo Creator: ogni utente vede ESCLUSIVAMENTE i propri incassi effettivi
-      const userKey = "printforge_creator_earnings_ledger_" + (myEmail || myUid).replace(/[^a-z0-9]/g, "_");
+      let total = 0;
+      const processedOrderIds = new Set();
+
+      // 1. Calcola dal registro privato locale del Creator
+      const creatorKey = (myEmail || myUid).replace(/[^a-z0-9]/g, '_');
+      const userKey = 'printforge_creator_earnings_ledger_' + creatorKey;
       try {
-        const ledger = JSON.parse(localStorage.getItem(userKey) || "[]");
+        const ledger = JSON.parse(localStorage.getItem(userKey) || '[]');
         if (Array.isArray(ledger)) {
           ledger.forEach(entry => {
-            if (!entry || !entry.price || entry.isFake || entry.isDemo) return;
-            if (entry.id === "RFP-9821" || entry.id === "RFP-3891" || entry.id === "RFP-4120" || entry.id === "RFP-1044" || String(entry.id).startsWith("RFP-")) return;
-            const num = parseFloat(String(entry.price).replace(/[^0-9,.]/g, "").replace(",", "."));
-            if (!isNaN(num) && num > 0) total += num;
+            if (!entry || !entry.id || processedOrderIds.has(entry.id)) return;
+            const amt = parseAmountClean(entry.amount || entry.price || entry.budget);
+            if (amt > 0) {
+              total += amt;
+              processedOrderIds.add(entry.id);
+            }
           });
         }
       } catch(e) {}
 
-      return total;
+      // 2. Calcola matematicamente da tutte le commesse COMPLETATE assegnate a QUESTO specifico creator
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (!r || !r.id || processedOrderIds.has(r.id)) return;
+
+        const isCompleted = Boolean(
+          r.isCompleted === true ||
+          r.isDelivered === true ||
+          r.isClosed === true ||
+          String(r.status || '').toUpperCase().includes('COMPLETAT') ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
+        );
+        if (!isCompleted) return;
+
+        // Escludi richieste demo fittizie
+        const isPresetDemo = (r.id === "RFP-9821" || r.id === "RFP-3891" || r.id === "RFP-4120");
+        if (isPresetDemo && !r.makerEmail && !r.makerUserId) return;
+
+        // Controllo PRIVATO: la commessa appartiene a QUESTO creator?
+        const rMakerEmail = (r.makerEmail || '').toLowerCase().trim();
+        const rMakerUid = (r.makerUserId || r.assigned_creator_id || '').toLowerCase().trim();
+        const rMakerName = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
+
+        const isMyJob = Boolean(
+          (myEmail && rMakerEmail && rMakerEmail === myEmail) ||
+          (myUid && rMakerUid && rMakerUid === myUid) ||
+          (myName && rMakerName && rMakerName === myName)
+        );
+
+        if (isMyJob) {
+          let orderVal = r.originalBudget || r.itemBudget || r.budget || r.escrowTotal;
+          if (!orderVal || orderVal === '€ 0,00' || orderVal === '€ 0' || orderVal === 0) {
+            if (r.showcaseWorkId && AppState.portfolioWorks) {
+              const w = AppState.portfolioWorks.find(x => x && x.id === r.showcaseWorkId);
+              if (w && w.price) orderVal = w.price;
+            }
+          }
+          const amt = parseAmountClean(orderVal);
+          if (amt > 0) {
+            total += amt;
+            processedOrderIds.add(r.id);
+          }
+        }
+      });
+
+      return Math.round(total * 100) / 100;
     }
+    window.getCreatorTotalEarnings = getCreatorTotalEarnings;
+
+    function getCreatorCompletedOrdersList(creatorUser) {
+      const user = creatorUser || AppState.user;
+      if (!user || !user.isLoggedIn) return [];
+
+      const myEmail = ((user.email) || '').toLowerCase().trim();
+      const myUid = ((user.userId || user.id) || '').toLowerCase().trim();
+      const myName = ((user.name) || '').toLowerCase().trim();
+      if (!myEmail && !myUid && !myName) return [];
+
+      const list = [];
+      const processed = new Set();
+
+      const creatorKey = (myEmail || myUid).replace(/[^a-z0-9]/g, '_');
+      const userKey = 'printforge_creator_earnings_ledger_' + creatorKey;
+      try {
+        const ledger = JSON.parse(localStorage.getItem(userKey) || '[]');
+        if (Array.isArray(ledger)) {
+          ledger.forEach(entry => {
+            if (!entry || !entry.id || processed.has(entry.id)) return;
+            const amt = parseAmountClean(entry.amount || entry.price || entry.budget);
+            if (amt > 0) {
+              list.push({
+                id: entry.id,
+                title: entry.orderTitle || entry.title || 'Componente 3D Personalizzato',
+                clientName: entry.clientName || 'Cliente Verificato',
+                amount: amt,
+                dateStr: entry.completedAt ? new Date(entry.completedAt).toLocaleDateString([], { day: '2-digit', month: '2-digit', year: 'numeric' }) : 'Completata'
+              });
+              processed.add(entry.id);
+            }
+          });
+        }
+      } catch(e) {}
+
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (!r || !r.id || processed.has(r.id)) return;
+        const isCompleted = Boolean(
+          r.isCompleted === true ||
+          r.isDelivered === true ||
+          r.isClosed === true ||
+          String(r.status || '').toUpperCase().includes('COMPLETAT') ||
+          (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + r.id) === 'true')
+        );
+        if (!isCompleted) return;
+
+        const isPresetDemo = (r.id === "RFP-9821" || r.id === "RFP-3891" || r.id === "RFP-4120");
+        if (isPresetDemo && !r.makerEmail && !r.makerUserId) return;
+
+        const rMakerEmail = (r.makerEmail || '').toLowerCase().trim();
+        const rMakerUid = (r.makerUserId || r.assigned_creator_id || '').toLowerCase().trim();
+        const rMakerName = (r.maker || r.maker_name || r.acceptedBy || '').toLowerCase().trim();
+
+        const isMyJob = Boolean(
+          (myEmail && rMakerEmail && rMakerEmail === myEmail) ||
+          (myUid && rMakerUid && rMakerUid === myUid) ||
+          (myName && rMakerName && rMakerName === myName)
+        );
+
+        if (isMyJob) {
+          let orderVal = r.originalBudget || r.itemBudget || r.budget || r.escrowTotal;
+          if (!orderVal || orderVal === '€ 0,00' || orderVal === '€ 0' || orderVal === 0) {
+            if (r.showcaseWorkId && AppState.portfolioWorks) {
+              const w = AppState.portfolioWorks.find(x => x && x.id === r.showcaseWorkId);
+              if (w && w.price) orderVal = w.price;
+            }
+          }
+          const amt = parseAmountClean(orderVal);
+          if (amt > 0) {
+            list.push({
+              id: r.id,
+              title: r.title || 'Componente 3D Personalizzato',
+              clientName: r.clientName || 'Cliente Verificato',
+              amount: amt,
+              dateStr: r.timestamp || 'Completata'
+            });
+            processed.add(r.id);
+          }
+        }
+      });
+
+      return list;
+    }
+    window.getCreatorCompletedOrdersList = getCreatorCompletedOrdersList;
+
+    function recordCreatorEarningsPayout(orderId, orderBudget, makerEmail, makerUid, orderTitle, clientName) {
+      const email = (makerEmail || (AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const uid = (makerUid || (AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+      if (!email && !uid) return;
+
+      const creatorKey = (email || uid).replace(/[^a-z0-9]/g, '_');
+      const userKey = 'printforge_creator_earnings_ledger_' + creatorKey;
+      const numAmt = parseAmountClean(orderBudget);
+      if (numAmt <= 0) return;
+
+      try {
+        let ledger = JSON.parse(localStorage.getItem(userKey) || '[]');
+        if (!Array.isArray(ledger)) ledger = [];
+        const exists = ledger.some(entry => entry && entry.id === orderId);
+        if (!exists) {
+          ledger.push({
+            id: orderId,
+            amount: numAmt,
+            price: '€ ' + numAmt.toFixed(2).replace('.', ','),
+            orderTitle: orderTitle || 'Commessa 3D',
+            clientName: clientName || 'Cliente',
+            completedAt: new Date().toISOString()
+          });
+          localStorage.setItem(userKey, JSON.stringify(ledger));
+          console.log('💰 [Creator Earnings Recorded]: Added', numAmt, 'to ledger', userKey);
+        }
+      } catch(e) {
+        console.warn('Error recording creator earnings:', e);
+      }
+    }
+    window.recordCreatorEarningsPayout = recordCreatorEarningsPayout;
+
+    function updateCreatorEarningsUI() {
+      const totalEarnedBadge = document.getElementById('creatorEarnedTotalBadge');
+      if (totalEarnedBadge) {
+        const tot = typeof getCreatorTotalEarnings === 'function' ? getCreatorTotalEarnings() : 0;
+        totalEarnedBadge.innerHTML = '<span style="white-space: nowrap !important; word-break: keep-all !important; display: inline-block !important;">€&nbsp;' + tot.toFixed(2).replace('.', ',') + '</span>';
+      }
+    }
+    window.updateCreatorEarningsUI = updateCreatorEarningsUI;
+
+    function openCreatorEarningsModal() {
+      const modal = document.getElementById('modalCreatorEarnings');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+
+      const totalEl = document.getElementById('modalCreatorEarningsTotal');
+      const countEl = document.getElementById('modalCreatorEarningsCount');
+      const listEl = document.getElementById('modalCreatorEarningsList');
+
+      const tot = typeof getCreatorTotalEarnings === 'function' ? getCreatorTotalEarnings() : 0;
+      if (totalEl) totalEl.innerText = '€ ' + tot.toFixed(2).replace('.', ',');
+
+      const items = typeof getCreatorCompletedOrdersList === 'function' ? getCreatorCompletedOrdersList() : [];
+      if (countEl) countEl.innerText = `${items.length} ${items.length === 1 ? 'commessa' : 'commesse'}`;
+
+      if (listEl) {
+        if (items.length === 0) {
+          listEl.innerHTML = `
+            <div class="p-4 rounded-xl bg-white/[0.02] border border-white/5 text-center text-zinc-500 font-mono text-xs space-y-1">
+              <i data-lucide="inbox" class="w-6 h-6 mx-auto text-zinc-600 mb-1"></i>
+              <p class="text-zinc-400 font-bold">Nessun incasso registrato al momento</p>
+              <p class="text-[10px] text-zinc-500">I compensi vengono accreditati automaticamente quando completi il 4° passaggio (Collaudo & Consegna) di una commessa.</p>
+            </div>
+          `;
+        } else {
+          listEl.innerHTML = items.map(item => `
+            <div class="p-2.5 rounded-xl bg-white/[0.03] border border-white/10 flex items-center justify-between gap-2 text-xs font-mono">
+              <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-1.5">
+                  <span class="px-1.5 py-0.5 rounded bg-white/5 text-[9px] text-zinc-400">#${escapeHtml(item.id)}</span>
+                  <strong class="text-white truncate text-[11px]">${escapeHtml(item.title || 'Componente 3D')}</strong>
+                </div>
+                <div class="text-[9.5px] text-zinc-500 flex items-center gap-2 mt-0.5">
+                  <span>Cliente: <strong class="text-zinc-400">${escapeHtml(item.clientName || 'Cliente')}</strong></span>
+                  <span>•</span>
+                  <span>${escapeHtml(item.dateStr || 'Completata')}</span>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <span class="text-emerald-400 font-bold font-mono text-xs block">+ € ${item.amount.toFixed(2).replace('.', ',')}</span>
+                <span class="text-[8.5px] text-zinc-500 uppercase block">Accreditato</span>
+              </div>
+            </div>
+          `).join('');
+        }
+      }
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+    window.openCreatorEarningsModal = openCreatorEarningsModal;
+
+    function closeCreatorEarningsModal() {
+      const modal = document.getElementById('modalCreatorEarnings');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
+    }
+    window.closeCreatorEarningsModal = closeCreatorEarningsModal;
 
     function getLocalizedColor(colName) {
       if (!colName) return currentLang === 'en' ? 'Cyber Matte Black' : currentLang === 'es' ? 'Negro Mate Cyber' : 'Nero Opaco Cyber';
@@ -25300,6 +25638,21 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       renderEscrowResolutionBanner();
       syncPipelineUI();
 
+      // REQUISITO: Registrazione matematica incassi per il Creator assegnato
+      const completedOrderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
+      const completedOrderAmount = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.originalBudget || AppState.activeEscrowOrder.itemBudget || AppState.activeEscrowOrder.budget)) || '€ 48,00';
+      const completedMakerEmail = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.makerEmail) || (AppState.user && AppState.user.role === 'creator' ? AppState.user.email : '');
+      const completedMakerUid = (AppState.activeEscrowOrder && (AppState.activeEscrowOrder.makerUserId || AppState.activeEscrowOrder.maker)) || (AppState.user && AppState.user.role === 'creator' ? (AppState.user.userId || AppState.user.id) : '');
+      const completedTitle = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.title) || 'Componente 3D Personalizzato';
+      const completedClient = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.clientName) || 'Cliente';
+
+      if (typeof recordCreatorEarningsPayout === 'function') {
+        recordCreatorEarningsPayout(completedOrderId, completedOrderAmount, completedMakerEmail, completedMakerUid, completedTitle, completedClient);
+      }
+      if (typeof updateCreatorEarningsUI === 'function') {
+        updateCreatorEarningsUI();
+      }
+
       // MODULO 5: TRIGGER STRIPE TRANSFER CON TAKE-RATE & RECENSIONE CERTIFICATA
       try {
         const orderId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id) || '';
@@ -27305,6 +27658,9 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       AppState.user.role = targetRole;
+      if (typeof updateCreatorEarningsUI === 'function') {
+        updateCreatorEarningsUI();
+      }
 
       // 1. Chiudi subito il dropdown per evitare overlay o blocchi touch su mobile
       if (typeof closeUserProfileDropdown === 'function') {
@@ -31027,10 +31383,18 @@ function renderDealChat(rfpId) {
       const creatorName = document.getElementById('dealChatCreatorName');
       const creatorAvatar = document.getElementById('dealChatCreatorAvatar');
 
+      // REQUISITO: I fondi nella chat bloccati devono combaciare SEMPRE con ogni ordine
+      let orderLockedBudget = rawRfp.originalBudget || rawRfp.budget || rawRfp.escrowTotal || rawRfp.itemBudget || '€ 0,00';
+      if ((!orderLockedBudget || orderLockedBudget === '€ 0,00' || orderLockedBudget === '€ 0' || orderLockedBudget === 0) && rawRfp.showcaseWorkId && AppState.portfolioWorks) {
+        const w = AppState.portfolioWorks.find(x => x && x.id === rawRfp.showcaseWorkId);
+        if (w && w.price) orderLockedBudget = w.price;
+      }
+      const formattedBudget = formatEuroClean(orderLockedBudget);
+
       if (headTitle) headTitle.innerText = `${rfp.id} // ${rfp.title}`;
-      if (budgetVal) budgetVal.innerText = formatEuroClean(rfp.budget);
+      if (budgetVal) budgetVal.innerText = formattedBudget;
       const mobBudgetVal = document.querySelector('.dealChatBudgetValueRef');
-      if (mobBudgetVal) mobBudgetVal.innerText = formatEuroClean(rfp.budget);
+      if (mobBudgetVal) mobBudgetVal.innerText = formattedBudget;
       if (clientName) clientName.innerText = rfp.clientName || (currentLang === 'en' ? 'Client' : currentLang === 'es' ? 'Cliente' : 'Cliente');
       if (clientAvatar) clientAvatar.innerText = (rfp.clientName || 'C').charAt(0).toUpperCase();
       if (creatorName) creatorName.innerText = rfp.creatorAssigned || rfp.maker || 'In attesa di Creator...';
