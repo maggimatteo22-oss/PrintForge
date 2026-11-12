@@ -8266,7 +8266,7 @@
         <!-- Header -->
         <div class="flex items-start justify-between border-b border-white/10 pb-3">
           <div class="space-y-1">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold uppercase tracking-wider">
+            <div id="creatorAddrBadgeStatus" class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold uppercase tracking-wider">
               <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i>
               <span>INDIRIZZO PRIVATO OFFICINA MAKER</span>
             </div>
@@ -8327,7 +8327,7 @@
           <div class="pt-2 flex items-center gap-2">
             <button type="submit" id="btnSaveCreatorAddress" class="btn-kowalski-primary flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-cyber font-bold text-[11px] sm:text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl active:scale-95 transition cursor-pointer">
               <i data-lucide="check" class="w-4 h-4 shrink-0"></i>
-              <span class="text-center leading-tight">SALVA INDIRIZZO E ACCEDI ALLA ESCROW ROOM &rarr;</span>
+              <span id="btnSaveCreatorAddressText" class="text-center leading-tight">SALVA INDIRIZZO E ACCEDI ALLA ESCROW ROOM &rarr;</span>
             </button>
           </div>
         </form>
@@ -10263,23 +10263,39 @@
     }
     window.playNotificationSound = playNotificationSound;
 
+    function getCreatorAccountKey() {
+      const u = AppState.user;
+      if (!u) return 'creator_primary';
+      const email = (u.email || '').toLowerCase().trim();
+      if (email) return email.replace(/[^a-z0-9]/g, '_');
+      const uid = (u.userId || u.id || '').toLowerCase().trim();
+      if (uid) return uid.replace(/[^a-z0-9]/g, '_');
+      const name = (u.name || '').toLowerCase().trim();
+      if (name) return name.replace(/[^a-z0-9]/g, '_');
+      return 'creator_primary';
+    }
+
     function getCreatorSavedAddress() {
       if (AppState.user && AppState.user.creatorAddress && AppState.user.creatorAddress.street) {
         return AppState.user.creatorAddress;
       }
-      const email = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
-      if (email) {
-        try {
-          const localStr = localStorage.getItem('printforge_creator_address_' + email);
-          if (localStr) {
-            const parsed = JSON.parse(localStr);
-            if (parsed && parsed.street) {
-              if (AppState.user) AppState.user.creatorAddress = parsed;
-              return parsed;
-            }
+      const accKey = getCreatorAccountKey();
+      try {
+        let localStr = localStorage.getItem('printforge_creator_address_' + accKey);
+        if (!localStr && AppState.user && AppState.user.email) {
+          localStr = localStorage.getItem('printforge_creator_address_' + AppState.user.email.toLowerCase().trim());
+        }
+        if (!localStr) {
+          localStr = localStorage.getItem('printforge_creator_saved_address');
+        }
+        if (localStr) {
+          const parsed = JSON.parse(localStr);
+          if (parsed && parsed.street) {
+            if (AppState.user) AppState.user.creatorAddress = parsed;
+            return parsed;
           }
-        } catch(e) {}
-      }
+        }
+      } catch(e) {}
       return null;
     }
     window.getCreatorSavedAddress = getCreatorSavedAddress;
@@ -10289,17 +10305,27 @@
       if (!AppState.user) AppState.user = {};
       AppState.user.creatorAddress = addrObj;
 
-      const email = (AppState.user.email || '').toLowerCase().trim();
-      if (email) {
-        try {
-          localStorage.setItem('printforge_creator_address_' + email, JSON.stringify(addrObj));
-        } catch(e) {}
-        if (typeof syncUserProfileToCloud === 'function') {
-          syncUserProfileToCloud(email, {
-            ...AppState.user,
-            creatorAddress: addrObj
-          });
+      const accKey = getCreatorAccountKey();
+      try {
+        localStorage.setItem('printforge_creator_address_' + accKey, JSON.stringify(addrObj));
+        if (AppState.user.email) {
+          localStorage.setItem('printforge_creator_address_' + AppState.user.email.toLowerCase().trim(), JSON.stringify(addrObj));
         }
+        localStorage.setItem('printforge_creator_saved_address', JSON.stringify(addrObj));
+
+        const sessionStr = localStorage.getItem('printforge_auth_session');
+        if (sessionStr) {
+          const sess = JSON.parse(sessionStr);
+          sess.creatorAddress = addrObj;
+          localStorage.setItem('printforge_auth_session', JSON.stringify(sess));
+        }
+      } catch(e) {}
+
+      if (typeof syncUserProfileToCloud === 'function' && AppState.user.email) {
+        syncUserProfileToCloud(AppState.user.email, {
+          ...AppState.user,
+          creatorAddress: addrObj
+        });
       }
       updateCreatorAddressUI();
     }
@@ -10332,12 +10358,26 @@
       const provInput = document.getElementById('creatorAddrProv');
       const phoneInput = document.getElementById('creatorAddrPhone');
 
-      if (nameInput) nameInput.value = addr.makerName || (AppState.user && AppState.user.name) || '';
+      if (nameInput) nameInput.value = addr.makerName || (AppState.user && AppState.user.name) || 'Officina Maker 3D';
       if (streetInput) streetInput.value = addr.street || '';
       if (cityInput) cityInput.value = addr.city || '';
       if (capInput) capInput.value = addr.cap || '';
       if (provInput) provInput.value = addr.prov || '';
       if (phoneInput) phoneInput.value = addr.phone || '';
+
+      const isSaved = Boolean(addr && addr.street && addr.city && addr.cap);
+      const btnTxt = document.getElementById('btnSaveCreatorAddressText');
+      if (btnTxt) {
+        btnTxt.innerHTML = isSaved
+          ? 'CONFERMA INDIRIZZO E ACCEDI ALLA ESCROW ROOM &rarr;'
+          : 'SALVA INDIRIZZO E ACCEDI ALLA ESCROW ROOM &rarr;';
+      }
+      const badgeStatus = document.getElementById('creatorAddrBadgeStatus');
+      if (badgeStatus) {
+        badgeStatus.innerHTML = isSaved
+          ? '<i data-lucide="check-circle" class="w-3 h-3 text-emerald-400"></i><span>INDIRIZZO PRIVATO OFFICINA // SALVATO PER QUESTO ACCOUNT</span>'
+          : '<i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i><span>INDIRIZZO PRIVATO OFFICINA MAKER</span>';
+      }
 
       modal.style.display = 'flex';
       modal.classList.remove('hidden');
@@ -10373,7 +10413,8 @@
       closeCreatorAddressModal();
       showToast(currentLang === 'it' ? '✓ Indirizzo officina salvato per la spedizione!' : '✓ Workshop address saved for shipping!', 'success');
 
-      // Entra subito nella Escrow Room
+      // Entra subito nella Escrow Room con bypass del modal
+      window._bypassCreatorAddressModalOnce = true;
       navigateTo('order-room');
     }
     window.handleCreatorAddressSubmit = handleCreatorAddressSubmit;
@@ -28248,14 +28289,6 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         const isEs = currentLang === 'es';
         const isCreator = AppState.user && AppState.user.role === 'creator';
 
-        // REQUISITO UTENTE: Per il creator la pagina Escrow Room si attiva SOLO dopo il collaudo delle 3 foto!
-        if (isCreator) {
-          const savedAddr = getCreatorSavedAddress();
-          if (!savedAddr || !savedAddr.street || !savedAddr.city || !savedAddr.cap) {
-            openCreatorAddressModal();
-            return;
-          }
-        }
         if (isCreator) {
           const activeCreatorReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
           const has3QcPhotos = Boolean(
@@ -28277,6 +28310,14 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
             navigateTo('activity');
             return;
           }
+
+          // REQUISITO UTENTE FONDAMENTALE:
+          // "devi inserire per tutti i creator una nuvoletta appena prima dell'apertura della pagina escrow dove inseriranno il loro indirizzo per l'etichetta.deve essere assolutamente privata. dopo averla inserita una volta salvala per quel determinato account. anche se riaggiorno la pagina dopo il salvataggio deve apparirgli sempre."
+          if (!window._bypassCreatorAddressModalOnce) {
+            openCreatorAddressModal();
+            return;
+          }
+          window._bypassCreatorAddressModalOnce = false;
         }
 
         // La pagina escrow room si sblocca dopo l'accettazione o dopo il collaudo fotografico delle 3 foto
@@ -36335,6 +36376,10 @@ function renderDealChat(rfpId) {
           setTimeout(() => RemotionVideoEngine.jumpToScene(s), 150);
         }
       }
+      try {
+        if (typeof updateCreatorAddressUI === 'function') updateCreatorAddressUI();
+      } catch(e) {}
+
       // Maintain professional SEO title based on selected language
       if (typeof setLanguage === 'function') {
         const savedLang = localStorage.getItem('printforge_lang') || 'it';
