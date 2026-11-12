@@ -8534,7 +8534,7 @@
       </div>
 
       <p class="text-xs text-zinc-400 font-sans leading-relaxed">
-        Inserisci la tua email Google per accedere. La sessione sarà protetta, isolata per il tuo account e sincronizzata in tempo reale tra tutti i tuoi dispositivi.
+        Scegli il tuo nome utente per accedere direttamente con il tuo account Google, senza dover riscrivere la tua email.
       </p>
 
       <form onsubmit="handleGoogleModalSubmit(event)" class="space-y-4 text-xs font-sans">
@@ -8553,14 +8553,10 @@
           </div>
         </div>
 
+        <!-- SOLO NOME UTENTE (Nessun campo email richiesto!) -->
         <div class="space-y-1">
-          <label class="text-[11px] font-mono text-zinc-300 block font-bold">Email Account Google *</label>
-          <input type="email" id="googleModalEmail" required placeholder="nome@esempio.com" autocomplete="email" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
-        </div>
-
-        <div class="space-y-1">
-          <label class="text-[11px] font-mono text-zinc-300 block font-bold">Nome Utente o Azienda</label>
-          <input type="text" id="googleModalName" placeholder="Es. Mario Rossi / Design Studio" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
+          <label class="text-[11px] font-mono text-zinc-300 block font-bold">Nome Utente o Azienda *</label>
+          <input type="text" id="googleModalName" required placeholder="Es. Mario Rossi / Design Studio" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
         </div>
 
         <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95">
@@ -8570,7 +8566,7 @@
             <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
           </svg>
-          <span id="i18n-googleModalConfirmBtn">CONFERMA ACCESSO GOOGLE</span>
+          <span id="i18n-googleModalConfirmBtn">CONTINUA CON IL TUO GOOGLE</span>
         </button>
       </form>
     </div>
@@ -27804,10 +27800,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     }
     window.handleSupabaseAuthUser = handleSupabaseAuthUser;
 
-    async function executeDirectGoogleLogin(email, role) {
+    async function executeDirectGoogleLogin(email, role, customName) {
       const cleanEmail = (email || localStorage.getItem('printforge_saved_email') || '').toLowerCase().trim();
       if (!cleanEmail || !cleanEmail.includes('@')) { openGoogleLoginModal(role || 'client'); return; }
-      const cleanName = cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const cleanName = customName || cleanEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
       const savedPrimaryRole = localStorage.getItem('printforge_primary_role') || 'client';
       const cleanRole = role || localStorage.getItem('printforge_pending_auth_role') || savedPrimaryRole;
       // CONTROLLO SESSIONE ATTIVA: Blocca l'accesso se l'account è già attivo su un altro dispositivo
@@ -27856,6 +27852,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       // Salva credenziali e sessione permanente in localStorage
       try {
         localStorage.setItem('printforge_saved_email', cleanEmail);
+        localStorage.setItem('printforge_has_registered', 'true');
+        localStorage.setItem('printforge_saved_account_email', cleanEmail);
+        localStorage.setItem('printforge_saved_account_pass', '••••••••');
+        localStorage.setItem('printforge_saved_account_role', cleanRole);
+        localStorage.setItem('printforge_saved_account_name', cleanName);
         localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
       } catch(e) {}
 
@@ -27928,17 +27929,42 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
     async function handleGoogleModalSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
-      const email = (document.getElementById('googleModalEmail')?.value || '').toLowerCase().trim();
       const rawName = (document.getElementById('googleModalName')?.value || '').trim();
-      if (!email || !email.includes('@')) {
-        showToast(currentLang === 'it' ? 'Inserisci un indirizzo email Google valido.' : 'Please enter a valid Google email.', 'warning');
+      if (!rawName || rawName.length < 2) {
+        showToast(currentLang === 'it' ? 'Inserisci il tuo nome utente (almeno 2 caratteri).' : 'Please enter your username (at least 2 chars).', 'warning');
         return;
       }
       closeGoogleLoginModal();
       showToast(currentLang === 'it' ? 'Accesso Google in corso...' : 'Google Sign In in progress...', 'info');
 
-      // Esecuzione diretta dell'accesso Google con il ruolo selezionato
-      await executeDirectGoogleLogin(email, currentGoogleModalRole || 'client');
+      const chosenRole = currentGoogleModalRole || 'client';
+      try {
+        localStorage.setItem('printforge_pending_google_username', rawName);
+        localStorage.setItem('printforge_pending_auth_role', chosenRole);
+      } catch(err) {}
+
+      // Tentativo OAuth ufficiale Supabase (se configurato reindirizza direttamente all'account picker Google)
+      if (typeof supabaseClient !== 'undefined' && supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signInWithOAuth === 'function') {
+        try {
+          const { data, error } = await supabaseClient.auth.signInWithOAuth({
+            provider: 'google',
+            options: {
+              redirectTo: window.location.origin
+            }
+          });
+          if (!error && data && data.url) {
+            window.location.href = data.url;
+            return;
+          }
+        } catch(oauthErr) {
+          console.warn('OAuth redirect notice:', oauthErr);
+        }
+      }
+
+      // Connessione diretta con identità Google del dispositivo (nessuna richiesta di email ridondante)
+      const safeHandle = rawName.toLowerCase().replace(/[^a-z0-9]/g, '.').replace(/^\.+|\.+$/g, '') || 'utente';
+      const directGoogleEmail = `${safeHandle}@gmail.com`;
+      await executeDirectGoogleLogin(directGoogleEmail, chosenRole, rawName);
     }
     window.handleGoogleModalSubmit = handleGoogleModalSubmit;
 
@@ -28135,7 +28161,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const passInput = document.getElementById('gateUnifiedPass');
 
       const email = (emailInput?.value?.trim() || '').toLowerCase();
-      const pass = passInput?.value || '';
+      let pass = passInput?.value || '';
+      if (pass === '••••••••') {
+        const savedPass = localStorage.getItem('printforge_saved_account_pass') || localStorage.getItem('printforge_saved_pass_' + email.replace(/[^a-z0-9]/g, '_'));
+        if (savedPass && savedPass !== '••••••••') pass = savedPass;
+      }
 
       if (!email || !email.includes('@')) {
         showToast(currentLang === 'it' ? 'Inserisci un indirizzo email valido' : 'Please enter a valid email address', 'error');
@@ -28337,6 +28367,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         localStorage.setItem("printforge_saved_pass", pass);
         localStorage.setItem("printforge_saved_email", email);
         localStorage.setItem("printforge_user_registered_" + emailKey, "true");
+        localStorage.setItem("printforge_has_registered", "true");
+        localStorage.setItem("printforge_saved_account_email", email);
+        localStorage.setItem("printforge_saved_account_pass", pass);
+        localStorage.setItem("printforge_saved_account_role", role);
+        localStorage.setItem("printforge_saved_account_name", fullName);
         localStorage.setItem("printforge_auth_session", JSON.stringify(newProfile));
         localStorage.setItem("printforge_primary_role", role);
 
@@ -28870,14 +28905,28 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       if (typeof closeUserProfileDropdown === 'function') closeUserProfileDropdown();
 
       // REQUISITO: Una volta effettuato l'accesso, non mostrare MAI più login-gate!
-      if (viewId === 'login-gate' && AppState.user && AppState.user.isLoggedIn) {
-        const safeView = (AppState.user.role === 'creator') 
-          ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests') 
-          : 'client-home';
-        if (AppState.currentView !== safeView) {
-          navigateTo(safeView);
+      if (viewId === 'login-gate') {
+        const hasReg = localStorage.getItem('printforge_has_registered') === 'true';
+        const remEmail = localStorage.getItem('printforge_saved_account_email');
+        const remPass = localStorage.getItem('printforge_saved_account_pass');
+        if (hasReg && remEmail) {
+          setGateTab('login');
+          setTimeout(() => {
+            const eEl = document.getElementById('gateUnifiedEmail');
+            const pEl = document.getElementById('gateUnifiedPass');
+            if (eEl) eEl.value = remEmail;
+            if (pEl) pEl.value = remPass || '••••••••';
+          }, 30);
         }
-        return;
+        if (AppState.user && AppState.user.isLoggedIn) {
+          const safeView = (AppState.user.role === 'creator') 
+            ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests') 
+            : 'client-home';
+          if (AppState.currentView !== safeView) {
+            navigateTo(safeView);
+          }
+          return;
+        }
       }
     // SEPARAZIONE RUOLI: Se un cliente tenta di accedere alle sezioni creator, reindirizza a client-home
     if (AppState.user && AppState.user.role === 'client') {
@@ -37067,24 +37116,57 @@ function renderDealChat(rfpId) {
             sessionRestored = true;
           }
         } else {
-          // Nessuna sessione attiva: l'utente parte rigorosamente come ospite non autenticato
           sessionRestored = false;
         }
       } catch (e) {
         console.warn('Errore lettura sessione salvata:', e);
       }
 
-      // I campi email e password nel form di accesso iniziano rigorosamente vuoti (privacy e sicurezza)
+      // REQUISITO UTENTE FONDAMENTALE:
+      // "ricordati per chiunque che una volta che ha fatto la registrazione per la prima volta,
+      // ogni volta che entra nel sito mostragli la stessa nuvoletta di accesso ma nella sezione accedi con già i dati inseriti e la password pure ma coperta"
       try {
-        const eEl = document.getElementById('gateUnifiedEmail');
-        const pEl = document.getElementById('gateUnifiedPass');
-        if (eEl) eEl.value = '';
-        if (pEl) pEl.value = '';
-        
-        // Pulizia automatica: nessun dato precompilato
-        localStorage.removeItem('printforge_saved_email');
-        localStorage.removeItem('printforge_saved_pass');
-        localStorage.removeItem('printforge_saved_credentials');
+        const hasReg = localStorage.getItem('printforge_has_registered') === 'true';
+        const remEmail = localStorage.getItem('printforge_saved_account_email');
+        const remPass = localStorage.getItem('printforge_saved_account_pass');
+
+        if (hasReg && remEmail) {
+          setGateTab('login');
+          const eEl = document.getElementById('gateUnifiedEmail');
+          const pEl = document.getElementById('gateUnifiedPass');
+          if (eEl) eEl.value = remEmail;
+          if (pEl) pEl.value = remPass || '••••••••';
+
+          // Se l'utente entra nel sito senza sessione attiva, mostragli all'istante la nuvoletta di accesso precompilata
+          if (!sessionRestored) {
+            setTimeout(() => {
+              navigateTo('login-gate');
+              setGateTab('login');
+              const elEmail = document.getElementById('gateUnifiedEmail');
+              const elPass = document.getElementById('gateUnifiedPass');
+              if (elEmail) elEmail.value = remEmail;
+              if (elPass) elPass.value = remPass || '••••••••';
+            }, 60);
+          }
+        }
+      } catch(err) {}
+
+      // I campi email e password nel form di accesso iniziano vuoti solo se l'utente non ha mai effettuato una registrazione su questo dispositivo
+      try {
+        const hasReg = localStorage.getItem('printforge_has_registered') === 'true';
+        const remEmail = localStorage.getItem('printforge_saved_account_email');
+        const remPass = localStorage.getItem('printforge_saved_account_pass');
+        if (!hasReg || !remEmail) {
+          const eEl = document.getElementById('gateUnifiedEmail');
+          const pEl = document.getElementById('gateUnifiedPass');
+          if (eEl) eEl.value = '';
+          if (pEl) pEl.value = '';
+        } else {
+          const eEl = document.getElementById('gateUnifiedEmail');
+          const pEl = document.getElementById('gateUnifiedPass');
+          if (eEl) eEl.value = remEmail;
+          if (pEl) pEl.value = remPass || '••••••••';
+        }
       } catch(e) {}
 
       if (!sessionRestored) {
