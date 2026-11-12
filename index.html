@@ -21463,7 +21463,12 @@ END-ISO-10303-21;`;
         // 3. BACHECA RICHIESTE & RICHIESTA ATTIVA (SPOSTATO AL 3° POSTO: dopo i progetti)
         // REQUISITO UTENTE: "appena il creator acceta la richiesta al suo posto si attiva la pagina rchiesta e dopo le 3 foto la pagina escroow room"
         const activeCreatorReq = (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? AppState.loadedRequestInStudio : null;
-        const pendingCount = (AppState.broadcastRequests || []).filter(r => !r.isAccepted && !r.isRejected && !r.isCompleted && !r.isClosed && !r.isDeleted).length;
+        const pendingCount = (AppState.broadcastRequests || []).filter(r => {
+          if (!r || !r.id || r.id.startsWith('USER-PROFILE-') || String(r.id).startsWith('REV-') || String(r.id).startsWith('WORK-')) return false;
+          if (["RFP-4120", "RFP-1044", "RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"].includes(r.id)) return false;
+          if (r.isAccepted || r.isRejected || r.isCompleted || r.isClosed || r.isDeleted || r.status === 'DELETED') return false;
+          return true;
+        }).length;
 
         // SOSTITUZIONE DIRETTA: ATTIVITÀ AL POSTO DELLE RICHIESTE SE C'È UN ORDINE ATTIVO
         if (activeCreatorReq) {
@@ -30229,7 +30234,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }, 750);
     }
 
-    function executeFinalBroadcastSubmit(draft) {
+    async function executeFinalBroadcastSubmit(draft) {
       if (!draft) return;
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
@@ -30389,7 +30394,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       AppState.activeDealRfpId = rfpId;
 
       // Sync insert to Supabase Cloud
-      saveRequestToSupabase(newRequest);
+      try {
+        await saveRequestToSupabase(newRequest);
+      } catch (saveErr) {
+        console.warn('⚠️ [Supabase Save Warning]:', saveErr);
+      }
       broadcastRealtimeEvent('request_created', { request: newRequest, isFlash: isFlashOrder });
 
       // Invia email notifica ai Creator: distinta tra offerta globale e richiesta diretta sul profilo/vetrina
