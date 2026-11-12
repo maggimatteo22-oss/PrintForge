@@ -9807,17 +9807,23 @@
               (r.id === 'RFP-4451' && stage4Done)
             );
             if (isCompletedOrder) {
+              const realCost = (typeof resolveOrderTrueCost === 'function') ? resolveOrderTrueCost(r) : (r.originalBudget || r.budget || '€ 48,00');
+              r.originalBudget = r.originalBudget || realCost;
+              r.budget = realCost;
               r.isCompleted = true;
               r.isDelivered = true;
               r.isClosed = true;
               r.status = 'COMPLETATO';
-              r.budget = '€ 0,00';
-              r.escrowTotal = '€ 0,00';
+              r.escrowReleased = true;
               r.messages = [];
               try {
                 localStorage.setItem('printforge_completed_' + r.id, 'true');
                 localStorage.removeItem('printforge_deal_messages_' + r.id);
               } catch(e) {}
+            } else if (!r.budget || r.budget === '€ 0,00' || r.budget === '0') {
+              const realCost = (typeof resolveOrderTrueCost === 'function') ? resolveOrderTrueCost(r) : '€ 48,00';
+              r.originalBudget = r.originalBudget || realCost;
+              r.budget = realCost;
             }
           });
           if (stage4Done) {
@@ -10750,10 +10756,12 @@
       if (AppState.broadcastRequests) {
         AppState.broadcastRequests.forEach(r => {
           if (r && (r.id === 'RFP-4451' || r.isAccepted)) {
+            const realCost = (typeof resolveOrderTrueCost === 'function') ? resolveOrderTrueCost(r) : (r.originalBudget || r.budget || '€ 48,00');
+            r.originalBudget = r.originalBudget || realCost;
+            r.budget = realCost;
             r.isCompleted = true;
             r.status = 'COMPLETATO';
-            r.budget = '€ 0,00';
-            r.escrowTotal = '€ 0,00';
+            r.escrowReleased = true;
             r.messages = [];
             try {
               localStorage.setItem('printforge_completed_' + r.id, 'true');
@@ -30592,6 +30600,72 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     }
     window.toggleMakerDropdown = toggleMakerDropdown;
 
+    
+    /* ========================================================================= */
+    /* RISOLUZIONE E GARANZIA COSTO REALE COMMESSA (MAI € 0,00 ANCHE SE COMPLETATA) */
+    /* ========================================================================= */
+    function resolveOrderTrueCost(r) {
+      if (!r) return '€ 0,00';
+      if (r.originalBudget && r.originalBudget !== '€ 0,00' && r.originalBudget !== '€ 0' && r.originalBudget !== '0') {
+        return formatEuroClean(r.originalBudget);
+      }
+      if (r.orderCost && r.orderCost !== '€ 0,00' && r.orderCost !== '€ 0' && r.orderCost !== '0') {
+        return formatEuroClean(r.orderCost);
+      }
+      if (r.budget && r.budget !== '€ 0,00' && r.budget !== '€ 0' && r.budget !== '0') {
+        return formatEuroClean(r.budget);
+      }
+      if (r.escrowTotal && r.escrowTotal !== '€ 0,00' && r.escrowTotal !== '€ 0' && r.escrowTotal !== '0') {
+        return formatEuroClean(r.escrowTotal);
+      }
+      if (r.itemBudget && r.itemBudget !== '€ 0,00' && r.itemBudget !== '€ 0' && r.itemBudget !== '0') {
+        return formatEuroClean(r.itemBudget);
+      }
+      if (r.showcaseWorkId && AppState.portfolioWorks) {
+        const w = AppState.portfolioWorks.find(x => x && x.id === r.showcaseWorkId);
+        if (w && w.price && w.price !== '€ 0,00' && w.price !== '€ 0') return formatEuroClean(w.price);
+      }
+
+      // Calcolo matematico deterministico dalle specifiche dimensionali del componente 3D
+      let dx = 80, dy = 60, dz = 25;
+      if (r.dimensions) {
+        const m = String(r.dimensions).match(/(\d+)\s*[×x*]\s*(\d+)\s*[×x*]\s*(\d+)/);
+        if (m) {
+          dx = parseFloat(m[1]) || 80;
+          dy = parseFloat(m[2]) || 60;
+          dz = parseFloat(m[3]) || 25;
+        }
+      }
+      if (r.dimX) dx = parseFloat(r.dimX) || dx;
+      if (r.dimY) dy = parseFloat(r.dimY) || dy;
+      if (r.dimZ) dz = parseFloat(r.dimZ) || dz;
+
+      const mat = String(r.material || 'PETG Tecnico');
+      const qty = String(r.quantity || '1 pezzo');
+      const inf = String(r.infill || '50%');
+
+      const volCm3 = (dx * dy * dz) / 1000;
+      let baseRate = 0.08;
+      if (mat.includes('Carbonio') || mat.includes('PA12')) baseRate = 0.22;
+      else if (mat.includes('PETG')) baseRate = 0.10;
+      else if (mat.includes('TPU')) baseRate = 0.14;
+      else if (mat.includes('ABS')) baseRate = 0.09;
+
+      let infRatio = 0.50;
+      if (inf.includes('100%')) infRatio = 1.0;
+      else if (inf.includes('40%')) infRatio = 0.40;
+      else if (inf.includes('20%')) infRatio = 0.20;
+
+      let qNum = 1;
+      const qm = qty.match(/(\d+)/);
+      if (qm) qNum = Math.max(1, parseInt(qm[1], 10));
+
+      const calcPart = Math.max(22, Math.round((16 + (volCm3 * infRatio * baseRate * 6.5)) * 100) / 100);
+      const totalEur = Math.round(calcPart * qNum * 100) / 100;
+      return formatEuroClean(totalEur);
+    }
+    window.resolveOrderTrueCost = resolveOrderTrueCost;
+
     function renderBroadcastTable() {
       const container = document.getElementById('broadcastTableContainer');
       const countBadge = document.getElementById('broadcastCountBadge');
@@ -30719,16 +30793,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           statusBadge = '<span class="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-[10px] font-mono font-bold flex items-center gap-1.5 border border-emerald-500/30 shadow-sm"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> ' + (isEn ? 'IN PRODUCTION' : isEs ? 'EN PRODUCCIÓN' : 'IN LAVORAZIONE') + '</span>';
         }
 
-        // Risoluzione prezzo reale garantito (mai mostrare € 0,00)
-        let resolvedPrice = r.budget;
-        if (!resolvedPrice || resolvedPrice === '€ 0,00' || resolvedPrice === '€ 0' || resolvedPrice === '0') {
-          if (r.showcaseWorkId && AppState.portfolioWorks) {
-            const w = AppState.portfolioWorks.find(x => x && x.id === r.showcaseWorkId);
-            if (w && w.price) resolvedPrice = w.price;
-          }
-          if (!resolvedPrice || resolvedPrice === '€ 0,00') {
-            resolvedPrice = r.budget || r.escrowTotal || r.itemBudget || '€ 0,00';
-          }
+        // Risoluzione prezzo reale garantito (mai mostrare € 0,00 anche se completato)
+        let resolvedPrice = resolveOrderTrueCost(r);
+        r.originalBudget = r.originalBudget || resolvedPrice;
+        if (!r.budget || r.budget === '€ 0,00' || r.budget === '€ 0' || r.budget === '0') {
           r.budget = resolvedPrice;
         }
 
@@ -30825,11 +30893,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
               <div class="flex items-center gap-2">
                 ${isCompleted ? `
-                  <button type="button" onclick="openCreatorReviewsModal('${realMakerUid}', '${realMakerName}')" class="px-3.5 py-1.5 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/30 text-amber-300 font-mono text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-sm">
-                    <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400 fill-amber-400"></i>
+                  <button type="button" onclick="event.stopPropagation(); openCreatorReviewsModal('${realMakerUid}', '${realMakerName}');" class="px-3.5 py-2 rounded-xl bg-amber-400/10 hover:bg-amber-400/20 border border-amber-400/35 text-amber-300 font-mono text-xs font-bold flex items-center gap-1.5 transition active:scale-95 shadow-md cursor-pointer relative z-20" title="Visualizza tutte le recensioni del Creator">
+                    <i data-lucide="star" class="w-3.5 h-3.5 text-amber-400 fill-amber-400 shrink-0"></i>
                     <span>${isEn ? 'Creator Reviews' : isEs ? 'Reseñas Creador' : 'Recensioni Creator'}</span>
                   </button>
-                  <button type="button" onclick="openLeaveReviewModal('${safeId}', '${realMakerUid}', '${realMakerName}')" class="px-3 py-1.5 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition active:scale-95 shadow-sm">
+                  <button type="button" onclick="event.stopPropagation(); openLeaveReviewModal('${safeId}', '${realMakerUid}', '${realMakerName}');" class="px-3.5 py-2 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition active:scale-95 shadow-md cursor-pointer relative z-20" title="Lascia una recensione certificata per questo Maker">
                     <span>★ ${isEn ? 'Leave Review' : isEs ? 'Dejar Reseña' : 'Lascia Recensione'}</span>
                   </button>
                 ` : isAcc ? `
@@ -36313,10 +36381,13 @@ function renderDealChat(rfpId) {
       if (mIdEl) mIdEl.value = makerId || '';
       const mNameEl = document.getElementById('reviewMakerName');
       if (mNameEl) mNameEl.value = makerName || '';
-      setReviewRating('general', 5);
-      setReviewRating('quality', 5);
-      setReviewRating('comms', 5);
-      setReviewRating('speed', 5);
+      if (typeof setReviewRating === 'function') {
+        setReviewRating('general', 5);
+        setReviewRating('quality', 5);
+        setReviewRating('comms', 5);
+        setReviewRating('speed', 5);
+      }
+      modal.style.display = 'flex';
       modal.classList.remove('hidden');
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
@@ -36324,7 +36395,10 @@ function renderDealChat(rfpId) {
 
     function closeLeaveReviewModal() {
       const modal = document.getElementById('modalLeaveReview');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
     }
     window.closeLeaveReviewModal = closeLeaveReviewModal;
 
@@ -36506,6 +36580,7 @@ function renderDealChat(rfpId) {
         }
       }
 
+      modal.style.display = 'flex';
       modal.classList.remove('hidden');
       if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
     }
@@ -36513,7 +36588,10 @@ function renderDealChat(rfpId) {
 
     function closeCreatorReviewsModal() {
       const modal = document.getElementById('modalCreatorReviews');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
     }
     window.closeCreatorReviewsModal = closeCreatorReviewsModal;
 
