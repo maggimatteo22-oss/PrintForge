@@ -8303,7 +8303,7 @@
   <!-- ===================================================================== -->
   <!-- MODALE ACCESSO GOOGLE (DIRETTO, ISOLATO E SENZA CRASH OAUTH)          -->
   <!-- ===================================================================== -->
-  <div id="modalGoogleLogin" style="display: none !important;" class="hidden fixed inset-0 z-[99999] bg-[#070709]/95 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-5">
+  <div id="modalGoogleLogin" style="display: none;" class="hidden fixed inset-0 z-[99999] bg-[#070709]/95 backdrop-blur-md flex items-center justify-center p-3 sm:p-5">
     <div class="w-full max-w-md bg-[#0E0E12] border border-white/15 rounded-3xl p-6 sm:p-7 shadow-2xl space-y-5 animate-in fade-in zoom-in-95 duration-200">
       <div class="flex items-center justify-between border-b border-white/[0.08] pb-3">
         <div class="flex items-center gap-2.5">
@@ -8350,7 +8350,7 @@
           <input type="text" id="googleModalName" placeholder="Es. Mario Rossi / Design Studio" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
         </div>
 
-        <button type="button" onclick="loginWithGoogleOAuth(currentGoogleModalRole)" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95">
+        <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95">
           <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
             <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
             <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
@@ -19842,25 +19842,30 @@ END-ISO-10303-21;`;
       if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) {
         const ord = AppState.activeEscrowOrder;
         if (ord.isDelivered || ord.isCompleted || ord.isClosed) return false;
-        if (ord.isAccepted !== true) return false;
         if (typeof ord.status === 'string' && (ord.status.includes('CONSEGNAT') || ord.status.includes('SVINCOLAT') || ord.status.includes('ARCHIVIAT') || ord.status.includes('COMPLETAT'))) {
           return false;
         }
         if (isCreator) {
-          const assigned = (ord.maker || ord.maker_name || ord.acceptedBy || '').toLowerCase().trim();
-          const assignedEmail = (ord.makerEmail || '').toLowerCase().trim();
-          const assignedUid = (ord.makerUserId || '').toLowerCase().trim();
-          if ((assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
-              (assignedEmail && assignedEmail === myEmail) ||
-              (assignedUid && assignedUid === myUid)) {
-            return true;
+          if (AppState.stage2Completed) return true;
+          if (ord.isAccepted === true) {
+            const assigned = (ord.maker || ord.maker_name || ord.acceptedBy || '').toLowerCase().trim();
+            const assignedEmail = (ord.makerEmail || '').toLowerCase().trim();
+            const assignedUid = (ord.makerUserId || '').toLowerCase().trim();
+            if (!assigned && !assignedEmail && !assignedUid) return true;
+            if ((assigned && (assigned === myName || assigned.includes(myName) || myName.includes(assigned))) ||
+                (assignedEmail && assignedEmail === myEmail) ||
+                (assignedUid && assignedUid === myUid)) {
+              return true;
+            }
           }
         } else {
-          const ordEmail = (ord.clientEmail || '').toLowerCase().trim();
-          const ordUid = (ord.userId || '').toLowerCase().trim();
-          const ordClient = (ord.clientName || '').toLowerCase().trim();
-          if ((myEmail && ordEmail === myEmail) || (myUid && ordUid === myUid) || (myName && ordClient === myName)) {
-            return true;
+          if (ord.isAccepted === true) {
+            const ordEmail = (ord.clientEmail || '').toLowerCase().trim();
+            const ordUid = (ord.userId || '').toLowerCase().trim();
+            const ordClient = (ord.clientName || '').toLowerCase().trim();
+            if ((myEmail && ordEmail === myEmail) || (myUid && ordUid === myUid) || (myName && ordClient === myName)) {
+              return true;
+            }
           }
         }
       }
@@ -26426,10 +26431,20 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     });
 
 
-    function openGoogleLoginModal() {
+    function openGoogleLoginModal(role) {
       const modal = document.getElementById('modalGoogleLogin');
       if (modal) {
+        modal.style.display = 'flex';
         modal.classList.remove('hidden');
+        if (role && typeof selectGoogleModalRole === 'function') {
+          selectGoogleModalRole(role);
+        }
+        const emailInput = document.getElementById('googleModalEmail');
+        if (emailInput) {
+          const typed = document.getElementById('gateUnifiedEmail')?.value?.trim();
+          if (typed && typed.includes('@')) emailInput.value = typed;
+          setTimeout(() => emailInput.focus(), 80);
+        }
         if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
       }
     }
@@ -26437,7 +26452,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
     function closeGoogleLoginModal() {
       const modal = document.getElementById('modalGoogleLogin');
-      if (modal) modal.classList.add('hidden');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
     }
     window.closeGoogleLoginModal = closeGoogleLoginModal;
 
@@ -26629,17 +26647,16 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         localStorage.setItem('printforge_pending_auth_role', roleToUse);
       } catch(e) {}
 
-      const isEn = currentLang === 'en';
-      showToast(isEn ? 'Google Sign In in progress...' : 'Accesso Google in corso...', 'info');
-
-      // ACCESSO GOOGLE DIRETTO & RESILIENTE: Zero blocchi da quote cloud esterne
+      // Se l'utente ha già digitato l'email nel campo della login gate, effettua l'accesso diretto
       const typedEmail = document.getElementById('gateUnifiedEmail')?.value?.trim();
-      const savedGoogleEmail = (typedEmail && typedEmail.includes('@')) ? typedEmail : (localStorage.getItem('printforge_saved_email') || '');
-      if (savedGoogleEmail && savedGoogleEmail.includes('@')) {
-        await executeDirectGoogleLogin(savedGoogleEmail, roleToUse);
-      } else {
-        openGoogleLoginModal(roleToUse);
+      if (typedEmail && typedEmail.includes('@')) {
+        showToast(currentLang === 'it' ? 'Accesso Google in corso...' : 'Google Sign In in progress...', 'info');
+        await executeDirectGoogleLogin(typedEmail, roleToUse);
+        return;
       }
+
+      // Altrimenti apri istantaneamente il modale di autenticazione Google
+      openGoogleLoginModal(roleToUse);
     }
     window.loginWithGoogleOAuth = loginWithGoogleOAuth;
     window.simulateGoogleLogin = loginWithGoogleOAuth;
@@ -26649,60 +26666,14 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const email = (document.getElementById('googleModalEmail')?.value || '').toLowerCase().trim();
       const rawName = (document.getElementById('googleModalName')?.value || '').trim();
       if (!email || !email.includes('@')) {
-        showToast('Inserisci un indirizzo email valido.', 'warning');
+        showToast(currentLang === 'it' ? 'Inserisci un indirizzo email Google valido.' : 'Please enter a valid Google email.', 'warning');
         return;
       }
       closeGoogleLoginModal();
+      showToast(currentLang === 'it' ? 'Accesso Google in corso...' : 'Google Sign In in progress...', 'info');
 
-      const userId = 'goog_' + email.replace(/[^a-z0-9]/g, '_');
-      const name = rawName || email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-      // Cerca profilo salvato in cloud
-      const cloudProfile = await fetchUserProfileFromCloud(email);
-
-      if (cloudProfile && cloudProfile.role && (cloudProfile.role === 'client' || cloudProfile.role === 'creator')) {
-        AppState.user = {
-          userId: userId,
-          id: userId,
-          isLoggedIn: true,
-          role: currentGoogleModalRole || cloudProfile.role || 'client',
-          isAdmin: Boolean(cloudProfile.isAdmin),
-          name: cloudProfile.name || name,
-          email: email,
-          avatar: (cloudProfile.name || name).charAt(0).toUpperCase(),
-          stripeConnected: true,
-          creatorData: cloudProfile.creatorData || null
-        };
-        try {
-          localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-        } catch(e) {}
-        renderNavUserArea();
-        updateNavigationTabs();
-        loadRequestsFromSupabase();
-
-        showToast('Accesso Google eseguito con successo!', 'success');
-        if (cloudProfile.role === 'creator') {
-          registerCreatorPresence();
-          navigateTo('creator-portfolio');
-        } else {
-          unregisterCreatorPresence();
-          navigateTo('esplora');
-        }
-      } else {
-        // Primo login assoluto: apri il modale di Onboarding bloccante
-        window._pendingOnboardingUser = {
-          userId: userId,
-          id: userId,
-          email: email,
-          name: name,
-          avatar: name.charAt(0).toUpperCase()
-        };
-        const modal = document.getElementById('roleOnboardingModal');
-        if (modal) {
-          modal.classList.remove('hidden');
-          if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
-        }
-      }
+      // Esecuzione diretta dell'accesso Google con il ruolo selezionato
+      await executeDirectGoogleLogin(email, currentGoogleModalRole || 'client');
     }
     window.handleGoogleModalSubmit = handleGoogleModalSubmit;
 
@@ -27751,8 +27722,8 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           }
         }
 
-        // La pagina escrow room si sblocca per il cliente dopo la presa in carica del creator.
-        if (!hasActiveEscrowOrder()) {
+        // La pagina escrow room si sblocca dopo l'accettazione o dopo il collaudo fotografico delle 3 foto
+        if (!hasActiveEscrowOrder() && !AppState.stage2Completed) {
           const blockMsg = isCreator
             ? (isEn 
                 ? 'The Escrow Room opens only after accepting a specific request.' 
@@ -31160,23 +31131,59 @@ function renderDealChat(rfpId) {
         return;
       }
 
-      // Assicura che esista un ordine escrow attivo
-      const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
-      if (activeReq && !AppState.activeEscrowOrder) {
-        AppState.activeEscrowOrder = {
-          id: activeReq.id,
-          title: activeReq.title,
-          budget: activeReq.budget,
-          itemBudget: activeReq.itemBudget || activeReq.budget,
-          maker: AppState.user?.name || (currentLang === 'en' ? 'PrintForge Certified Maker' : currentLang === 'es' ? 'Creador Certificado PrintForge' : 'Maker Certificato PrintForge'),
-          clientName: activeReq.clientName || 'Cliente Verificato',
-          carrier: activeReq.shippingCarrier || 'UPS Standard',
-          trackingNumber: activeReq.trackingNumber || `PF-UPS-${Math.floor(100000 + Math.random() * 900000)}`,
-          status: 'IN PRODUCTION'
+      // Recupera o crea la commessa attiva in lavorazione
+      let activeReq = AppState.loadedRequestInStudio;
+      if (!activeReq && AppState.broadcastRequests && AppState.broadcastRequests.length > 0) {
+        activeReq = AppState.broadcastRequests.find(r => r.isAccepted) || AppState.broadcastRequests[0];
+      }
+      if (!activeReq) {
+        activeReq = {
+          id: 'RFP-' + Math.floor(1000 + Math.random() * 9000),
+          title: 'Componente Meccanico In Lavorazione',
+          budget: '€ 48,00',
+          itemBudget: '€ 48,00',
+          material: 'PETG Tecnico',
+          color: 'Arancione Meccanico'
         };
       }
 
+      const myMakerName = AppState.user?.name || 'Creator PrintForge';
+      const myMakerEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const myMakerUid = (((AppState.user && (AppState.user.userId || AppState.user.id))) || '').toLowerCase().trim();
+
+      activeReq.isAccepted = true;
+      activeReq.status = 'IN PRODUCTION (QC CONVALIDATO)';
+      activeReq.maker = myMakerName;
+      activeReq.makerEmail = myMakerEmail;
+      activeReq.makerUserId = myMakerUid;
+      activeReq.hasQcPhotos = true;
+      activeReq.qcPhotos = AppState.cadQcFiles;
+      AppState.loadedRequestInStudio = activeReq;
+
+      AppState.activeEscrowOrder = {
+        id: activeReq.id,
+        title: activeReq.title || 'Componente 3D Personalizzato',
+        budget: activeReq.budget || '€ 48,00',
+        itemBudget: activeReq.itemBudget || activeReq.budget || '€ 48,00',
+        isAccepted: true,
+        maker: myMakerName,
+        makerEmail: myMakerEmail,
+        makerUserId: myMakerUid,
+        clientName: activeReq.clientName || 'Cliente Verificato',
+        clientEmail: activeReq.clientEmail || '',
+        carrier: activeReq.shippingCarrier || 'UPS Standard',
+        trackingNumber: activeReq.trackingNumber || `PF-UPS-${Math.floor(100000 + Math.random() * 900000)}`,
+        status: 'IN PRODUCTION (QC CONVALIDATO)',
+        hasQcPhotos: true,
+        qcPhotos: AppState.cadQcFiles
+      };
+
       AppState.stage2Completed = true;
+      try {
+        localStorage.setItem('printforge_stage2_completed', 'true');
+        localStorage.setItem('printforge_qc_completed_' + activeReq.id, 'true');
+      } catch(e) {}
+
       updateCadQcStatusUI();
       syncPipelineUI();
 
@@ -31186,16 +31193,14 @@ function renderDealChat(rfpId) {
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
       const toastProof = isEn 
-        ? '3 QC photos verified! Stage 2 complete. Redirecting to Escrow Room...' 
+        ? '3 QC photos verified! Opening Escrow Room...' 
         : isEs 
-        ? '¡3 Fotos de control validadas! Fase 2 completada. Redirigiendo a Escrow Room...' 
-        : '3 Foto di collaudo convalidate! Fase 2 completata. Reindirizzamento in Escrow Room...';
+        ? '¡3 Fotos de control validadas! Abriendo Escrow Room...' 
+        : '3 Foto di collaudo convalidate! Apertura Escrow Room in corso...';
       showToast(toastProof, 'success');
 
-      // Reindirizzamento automatico alla pagina Escrow Room come richiesto dall'utente
-      setTimeout(() => {
-        navigateTo('order-room');
-      }, 350);
+      // Reindirizzamento IMMEDIATO alla pagina Escrow Room
+      navigateTo('order-room');
     }
     window.completeJobAndUploadProof = completeJobAndUploadProof;
 
