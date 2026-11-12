@@ -3856,6 +3856,19 @@
       <!-- Right Controls: Notifications, Founder Bar, Vertical Flag Switcher & CTA -->
       <div class="flex items-center gap-1 sm:gap-1.5 md:gap-2 shrink-0">
 
+        <!-- Nuvoletta Chat 1-1 Header Button con Badge Notifiche -->
+        <div class="shrink-0 relative" id="navDealChatContainer">
+          <button type="button" 
+                  id="btnNavDealChat"
+                  onclick="openActiveDealChat()" 
+                  class="btn-kowalski-secondary relative h-8 sm:h-9 px-2.5 sm:px-3 rounded-full text-zinc-300 hover:text-white flex items-center gap-1.5 cursor-pointer text-[11px] font-mono transition" 
+                  title="Chat 1-1 Privata Commessa">
+            <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
+            <span class="hidden md:inline text-white font-medium">CHAT 1-1</span>
+            <span id="navChatCountBadge" class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white font-mono font-bold text-[10px] flex items-center justify-center border-2 border-[#0E0F14] shadow-md animate-pulse">0</span>
+          </button>
+        </div>
+
         <!-- Email Connessa & Notifiche Transazionali Mail (Al posto della campanella) -->
         <div class="hidden shrink-0" id="navEmailConnectedContainer" style="display: none !important;">
           <button type="button" 
@@ -7350,6 +7363,16 @@
           </div>
 
           <!-- Message & Photo Input Area -->
+          <!-- Realtime Typing Indicator -->
+          <div id="dealChatTypingIndicator" class="hidden px-4 py-1.5 bg-[#141519]/90 border-t border-white/[0.04] text-emerald-400 font-mono text-[11px] flex items-center gap-2 transition-all">
+            <span class="flex gap-1 items-center">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 0ms"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 150ms"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce" style="animation-delay: 300ms"></span>
+            </span>
+            <span id="dealChatTypingText" class="text-zinc-400 font-mono text-[11px]">L'altra parte sta scrivendo...</span>
+          </div>
+
           <form id="dealChatForm" onsubmit="handleSendDealMessage(event)" class="p-3 bg-[#141519] border-t border-white/[0.08] flex items-center gap-2 shrink-0">
             <!-- Hidden file input for real photo upload -->
             <input type="file" id="dealChatPhotoInput" accept="image/png, image/jpeg, image/webp, image/gif, image/svg+xml" class="hidden" onchange="handleDealPhotoSelected(event)" />
@@ -7358,7 +7381,7 @@
               <i data-lucide="camera" class="w-4 h-4 text-white"></i>
             </button>
 
-            <input type="text" id="dealChatInput" placeholder="Scrivi un messaggio o incolla uno screenshot con Ctrl+V..." autocomplete="off" class="flex-1 bg-[#0A0B0E] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/30" />
+            <input type="text" id="dealChatInput" oninput="handleDealChatTyping(this)" placeholder="Scrivi un messaggio o incolla uno screenshot con Ctrl+V..." autocomplete="off" class="flex-1 bg-[#0A0B0E] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/30" />
 
             <button type="submit" class="btn-kowalski-primary px-5 py-2.5 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center gap-2 shadow-lg">
               <i data-lucide="send" class="w-3.5 h-3.5"></i>
@@ -7806,9 +7829,10 @@
 
             <!-- Pulsanti Azione: Chat 1-on-1 & Collaudo 3 Foto QC (Entrambi a Larghezza Intera) -->
             <div class="space-y-2.5 pt-1">
-              <button onclick="openDealChatFromStudio()" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
+              <button o<button onclick="openDealChatFromStudio()" id="btnOpenDealChatStudio" class="btn-kowalski-primary relative w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider transition shadow-lg flex items-center justify-center gap-2">
                 <i data-lucide="message-square" class="w-4 h-4"></i>
                 <span id="i18n-cadOpenChatBtn">APRI TRATTATIVA 1-ON-1 CON IL CLIENTE</span>
+                <span id="chatBadgeStudio" class="hidden absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white font-mono font-bold text-[11px] flex items-center justify-center border-2 border-[#0E0F14] shadow-lg animate-pulse">0</span>
               </button>
               <button onclick="completeJobAndUploadProof()" class="btn-kowalski-secondary w-full py-3 px-4 rounded-xl text-white font-cyber font-bold text-xs uppercase transition flex items-center justify-center gap-2 border border-white/15 hover:border-emerald-500/40 shadow-md active:scale-95">
                 <i data-lucide="camera" class="w-4 h-4 text-emerald-400"></i>
@@ -7902,9 +7926,10 @@
             <h3 class="font-cyber font-bold text-white text-base sm:text-lg md:text-xl tracking-wide break-words leading-tight" id="escrowOrderTitle">Componente Personalizzato</h3>
             <span class="text-[11px] sm:text-xs font-mono text-zinc-300 block truncate" id="escrowOrderMaker">Maker: Rete Hub Verificata // In Assegnazione</span>
             <div class="pt-2 flex items-center gap-2 flex-wrap">
-              <button type="button" onclick="openDealChatFromEscrow()" class="btn-kowalski-secondary py-1.5 px-3 rounded-lg text-white font-mono text-[11px] font-bold flex items-center gap-1.5 hover:border-emerald-400 hover:text-emerald-300 transition active:scale-95 shadow-sm">
+              <button ty<button type="button" id="btnOpenDealChatEscrow" onclick="openDealChatFromEscrow()" class="btn-kowalski-secondary relative py-1.5 px-3 rounded-lg text-white font-mono text-[11px] font-bold flex items-center gap-1.5 hover:border-emerald-400 hover:text-emerald-300 transition active:scale-95 shadow-sm">
                 <i data-lucide="message-square" class="w-3.5 h-3.5 text-emerald-400"></i>
-                <span id="escrowBtnOpenChat">APRI CHAT 1-1 CON IL MAKER &amp; FOTO</span>
+                <span id="escrowBtnOpenChat">APRI CHAT 1-1 CON...</span>
+                <span id="chatBadgeEscrow" class="hidden absolute -top-2 -right-2 min-w-[20px] h-5 px-1.5 rounded-full bg-red-500 text-white font-mono font-bold text-[10px] flex items-center justify-center border-2 border-[#0E0F14] shadow-lg animate-pulse">0</span>
               </button>
             </div>
           </div>
@@ -10060,6 +10085,235 @@
 
     let supabaseRealtimeChannel = null;
 
+    function isUserChatParticipant(rfp) {
+      if (!rfp) return false;
+      if (!AppState.user || !AppState.user.isLoggedIn) return false;
+
+      const currentEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const currentId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+      const currentName = ((AppState.user && AppState.user.name) || '').toLowerCase().trim();
+      const currentRole = ((AppState.user && AppState.user.role) || '').toLowerCase().trim();
+      const isAdmin = Boolean(AppState.user && AppState.user.isAdmin);
+
+      if (isAdmin) return true;
+
+      // 1. Is Client?
+      const clientEmail = (rfp.clientEmail || rfp.client_email || '').toLowerCase().trim();
+      const clientUserId = (rfp.userId || rfp.user_id || '').toLowerCase().trim();
+      const clientName = (rfp.clientName || rfp.client_name || '').toLowerCase().trim();
+
+      const isClient = (
+        (currentEmail && clientEmail && currentEmail === clientEmail) ||
+        (currentId && clientUserId && currentId === clientUserId) ||
+        (currentEmail && clientUserId && currentEmail === clientUserId) ||
+        (currentRole === 'client' && currentName && clientName && currentName === clientName)
+      );
+      if (isClient) return true;
+
+      // 2. Is Assigned Maker / Creator?
+      const makerEmail = (rfp.makerEmail || rfp.maker_email || '').toLowerCase().trim();
+      const makerUserId = (rfp.makerUserId || rfp.assigned_creator_id || '').toLowerCase().trim();
+      const makerName = (rfp.maker || rfp.maker_name || rfp.acceptedBy || rfp.creatorAssigned || '').toLowerCase().trim();
+
+      const isMaker = (
+        (currentEmail && makerEmail && currentEmail === makerEmail) ||
+        (currentId && makerUserId && currentId === makerUserId) ||
+        (currentEmail && makerUserId && currentEmail === makerUserId) ||
+        (currentRole === 'creator' && currentName && (currentName === makerName || makerName.includes(currentName) || currentName.includes(makerName)))
+      );
+      if (isMaker) return true;
+
+      return false;
+    }
+    window.isUserChatParticipant = isUserChatParticipant;
+
+    function playNotificationSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        if (ctx.state === 'suspended') {
+          ctx.resume().catch(() => {});
+        }
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.12);
+        gain.gain.setValueAtTime(0.08, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.15);
+      } catch(e) {}
+    }
+    window.playNotificationSound = playNotificationSound;
+
+    function updateChatNotificationBadges() {
+      if (!AppState.unreadDealMessages) {
+        try {
+          AppState.unreadDealMessages = JSON.parse(localStorage.getItem('printforge_unread_deal_messages') || '{}');
+        } catch(e) {
+          AppState.unreadDealMessages = {};
+        }
+      }
+      const unreadMap = AppState.unreadDealMessages || {};
+      let totalUnread = 0;
+      
+      // Calcola unread solo per le richieste dove l'utente è un partecipante autorizzato (Privacy)
+      Object.keys(unreadMap).forEach(rfpId => {
+        const rfp = (AppState.broadcastRequests || []).find(r => r.id === rfpId);
+        if (rfp && isUserChatParticipant(rfp)) {
+          totalUnread += (unreadMap[rfpId] || 0);
+        }
+      });
+
+      try {
+        localStorage.setItem('printforge_unread_deal_messages', JSON.stringify(unreadMap));
+      } catch(e) {}
+
+      // 1. Badge Nuvoletta Chat 1-1 nell'Header
+      const navBadge = document.getElementById('navChatCountBadge');
+      if (navBadge) {
+        if (totalUnread > 0) {
+          navBadge.innerText = totalUnread > 99 ? '99+' : String(totalUnread);
+          navBadge.classList.remove('hidden');
+        } else {
+          navBadge.classList.add('hidden');
+        }
+      }
+
+      // 2. Badge Studio CAD Nuvoletta Chat
+      const studioBadge = document.getElementById('chatBadgeStudio');
+      if (studioBadge) {
+        const activeReq = AppState.loadedRequestInStudio || AppState.activeEscrowOrder || (AppState.broadcastRequests || []).find(r => r.id === AppState.activeDealRfpId) || (AppState.broadcastRequests || []).find(r => r.isAccepted);
+        const count = (activeReq && unreadMap[activeReq.id]) || 0;
+        if (count > 0 && isUserChatParticipant(activeReq)) {
+          studioBadge.innerText = count > 99 ? '99+' : String(count);
+          studioBadge.classList.remove('hidden');
+        } else {
+          studioBadge.classList.add('hidden');
+        }
+      }
+
+      // 3. Badge Escrow Room Nuvoletta Chat
+      const escrowBadge = document.getElementById('chatBadgeEscrow');
+      if (escrowBadge) {
+        const activeReq = AppState.activeEscrowOrder || (AppState.broadcastRequests || []).find(r => r.id === AppState.activeDealRfpId) || (AppState.broadcastRequests || []).find(r => r.isAccepted);
+        const count = (activeReq && unreadMap[activeReq.id]) || 0;
+        if (count > 0 && isUserChatParticipant(activeReq)) {
+          escrowBadge.innerText = count > 99 ? '99+' : String(count);
+          escrowBadge.classList.remove('hidden');
+        } else {
+          escrowBadge.classList.add('hidden');
+        }
+      }
+
+      if (typeof lucide !== 'undefined' && lucide.createIcons) {
+        lucide.createIcons();
+      }
+    }
+    window.updateChatNotificationBadges = updateChatNotificationBadges;
+
+    function openActiveDealChat() {
+      if (!AppState.user || !AppState.user.isLoggedIn) {
+        showToast(currentLang === 'it' ? 'Effettua il login per accedere alla Chat 1-1' : 'Log in to access 1-on-1 Chat', 'warning');
+        navigateTo('login-gate');
+        return;
+      }
+
+      const unreadMap = AppState.unreadDealMessages || {};
+      const unreadRfpId = Object.keys(unreadMap).find(id => {
+        if (unreadMap[id] <= 0) return false;
+        const r = (AppState.broadcastRequests || []).find(x => x.id === id);
+        return r && isUserChatParticipant(r);
+      });
+      if (unreadRfpId) {
+        openDealChat(unreadRfpId);
+        return;
+      }
+
+      if (AppState.activeDealRfpId) {
+        const r = (AppState.broadcastRequests || []).find(x => x.id === AppState.activeDealRfpId);
+        if (r && isUserChatParticipant(r)) {
+          openDealChat(AppState.activeDealRfpId);
+          return;
+        }
+      }
+
+      if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) {
+        const r = (AppState.broadcastRequests || []).find(x => x.id === AppState.activeEscrowOrder.id);
+        if (r && isUserChatParticipant(r)) {
+          openDealChat(AppState.activeEscrowOrder.id);
+          return;
+        }
+      }
+
+      const myAcceptedRfp = (AppState.broadcastRequests || []).find(r => isUserChatParticipant(r) && r.isAccepted);
+      if (myAcceptedRfp) {
+        openDealChat(myAcceptedRfp.id);
+        return;
+      }
+
+      const myAnyRfp = (AppState.broadcastRequests || []).find(r => isUserChatParticipant(r));
+      if (myAnyRfp) {
+        openDealChat(myAnyRfp.id);
+        return;
+      }
+
+      showToast(
+        currentLang === 'it'
+          ? 'Nessuna chat 1-1 attiva. Accetta una commessa o attendi che un Creator prenda in carico la tua richiesta.'
+          : 'No active 1-on-1 deal chat available.',
+        'info'
+      );
+    }
+    window.openActiveDealChat = openActiveDealChat;
+
+    let dealTypingTimeout = null;
+    let isBroadcastingTyping = false;
+
+    function handleDealChatTyping(inputEl) {
+      const rfpId = AppState.activeDealRfpId || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id);
+      if (!rfpId) return;
+
+      const currentRole = (AppState.user && AppState.user.isLoggedIn) ? AppState.user.role : 'client';
+      const senderName = (AppState.user && AppState.user.name) || (currentRole === 'creator' ? 'Maker' : 'Cliente');
+      const senderEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      const senderUserId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+
+      if (!isBroadcastingTyping) {
+        isBroadcastingTyping = true;
+        if (typeof broadcastRealtimeEvent === 'function') {
+          broadcastRealtimeEvent('deal_chat_typing', {
+            rfpId: rfpId,
+            senderRole: currentRole,
+            senderName: senderName,
+            senderEmail: senderEmail,
+            senderUserId: senderUserId,
+            isTyping: true
+          });
+        }
+      }
+
+      if (dealTypingTimeout) clearTimeout(dealTypingTimeout);
+      dealTypingTimeout = setTimeout(() => {
+        isBroadcastingTyping = false;
+        if (typeof broadcastRealtimeEvent === 'function') {
+          broadcastRealtimeEvent('deal_chat_typing', {
+            rfpId: rfpId,
+            senderRole: currentRole,
+            senderName: senderName,
+            senderEmail: senderEmail,
+            senderUserId: senderUserId,
+            isTyping: false
+          });
+        }
+      }, 2200);
+    }
+    window.handleDealChatTyping = handleDealChatTyping;
+
     function broadcastRealtimeEvent(event, payload) {
       if (supabaseRealtimeChannel && typeof supabaseRealtimeChannel.send === 'function') {
         try {
@@ -10448,20 +10702,79 @@
         });
 
         // 1. Ascolto broadcast realtime per Chat 1-1 e Foto tra dispositivi
+        // 1a. Ascolto broadcast realtime Digitazione Chat 1-1 (Typing Indicator - Privata)
+        supabaseRealtimeChannel.on('broadcast', { event: 'deal_chat_typing' }, ({ payload }) => {
+          if (!payload || !payload.rfpId) return;
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (!rfp || !isUserChatParticipant(rfp)) return; // PRIVACY: Solo i 2 interessati!
+
+          // Ignora la digitazione di se stessi
+          const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+          const myId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+          if (payload.senderEmail && myEmail && payload.senderEmail.toLowerCase().trim() === myEmail) return;
+          if (payload.senderUserId && myId && payload.senderUserId.toLowerCase().trim() === myId) return;
+
+          // Se l'utente è attualmente nella schermata della chat di questo RFP
+          if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId === payload.rfpId) {
+            const typingIndicator = document.getElementById('dealChatTypingIndicator');
+            const typingText = document.getElementById('dealChatTypingText');
+            if (typingIndicator && typingText) {
+              if (payload.isTyping) {
+                const sName = payload.senderName || (payload.senderRole === 'creator' ? 'Il Maker' : 'Il Cliente');
+                typingText.innerText = `${sName} sta scrivendo...`;
+                typingIndicator.classList.remove('hidden');
+                const container = document.getElementById('dealChatMessagesContainer');
+                if (container) {
+                  const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 120;
+                  if (isNearBottom) {
+                    container.scrollTop = container.scrollHeight;
+                  }
+                }
+              } else {
+                typingIndicator.classList.add('hidden');
+              }
+            }
+          }
+        });
+
+        // 1b. Ascolto broadcast realtime per Chat 1-1 e Foto tra dispositivi (Privata)
         supabaseRealtimeChannel.on('broadcast', { event: 'deal_chat_msg' }, ({ payload }) => {
           console.log('💬 [Realtime Chat Msg]:', payload);
           if (!payload || !payload.rfpId || !payload.message) return;
-          const rfp = AppState.broadcastRequests.find(r => r.id === payload.rfpId);
-          if (rfp) {
-            if (!rfp.messages) rfp.messages = [];
-            if (!rfp.messages.some(m => m.id === payload.message.id)) {
-              rfp.messages.push(payload.message);
-              if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId === payload.rfpId) {
-                renderDealChatMessages(rfp);
+          const rfp = (AppState.broadcastRequests || []).find(r => r.id === payload.rfpId);
+          if (!rfp || !isUserChatParticipant(rfp)) return; // PRIVACY STRETTA: Solo i 2 interessati vedono o ricevono!
+
+          // Ignora se stesso
+          const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+          const myId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+          const isSelf = (payload.message.senderEmail && myEmail && payload.message.senderEmail.toLowerCase().trim() === myEmail) ||
+                         (payload.message.senderUserId && myId && payload.message.senderUserId.toLowerCase().trim() === myId);
+          if (isSelf) return;
+
+          if (!rfp.messages) rfp.messages = [];
+          if (!rfp.messages.some(m => m.id === payload.message.id)) {
+            rfp.messages.push(payload.message);
+
+            // Nascondi indicatore di digitazione appena arriva il messaggio
+            const typingIndicator = document.getElementById('dealChatTypingIndicator');
+            if (typingIndicator) typingIndicator.classList.add('hidden');
+
+            if (AppState.currentView === 'deal-chat' && AppState.activeDealRfpId === payload.rfpId) {
+              renderDealChatMessages(rfp);
+              if (AppState.unreadDealMessages) {
+                delete AppState.unreadDealMessages[payload.rfpId];
               }
-              if (payload.message.senderRole !== AppState.user?.role) {
-                showToast(`💬 ${payload.message.senderName}: "${(payload.message.text || 'Foto allegata').slice(0, 30)}..."`);
-              }
+              updateChatNotificationBadges();
+            } else {
+              // Notifica e incremento badge sulla nuvoletta per il ricevente
+              if (!AppState.unreadDealMessages) AppState.unreadDealMessages = {};
+              AppState.unreadDealMessages[payload.rfpId] = (AppState.unreadDealMessages[payload.rfpId] || 0) + 1;
+              updateChatNotificationBadges();
+
+              const sender = payload.message.senderName || (payload.message.senderRole === 'creator' ? 'Maker' : 'Cliente');
+              const snippet = (payload.message.text || '📷 Foto allegata').slice(0, 35);
+              showToast(`💬 ${sender}: "${snippet}"`);
+              playNotificationSound();
             }
           }
         });
@@ -19926,6 +20239,7 @@ END-ISO-10303-21;`;
     window.navigateCreatorActiveWork = navigateCreatorActiveWork;
 
     function updateNavigationTabs() {
+      if (typeof updateChatNotificationBadges === 'function') updateChatNotificationBadges();
       const nav = document.getElementById('mainNavBar');
       const mobileNav = document.getElementById('mobileNavBar');
       if (!nav && !mobileNav) return;
@@ -29483,9 +29797,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                     <span>★ ${isEn ? 'Leave Review' : isEs ? 'Dejar Reseña' : 'Lascia Recensione'}</span>
                   </button>
                 ` : isAcc ? `
-                  <button type="button" onclick="openDealChat('${safeId}')" class="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 transition active:scale-95">
+                  <button type="button" onclick="openDealChat('${safeId}')" class="relative px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 font-mono text-xs flex items-center gap-1.5 transition active:scale-95">
                     <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
                     <span>${isEn ? '1-on-1 Chat & Photos' : isEs ? 'Chat 1-1 & Fotos' : 'Chat 1-1 & Foto'}</span>
+                    ${(AppState.unreadDealMessages && AppState.unreadDealMessages[safeId]) ? `<span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white font-mono font-bold text-[10px] flex items-center justify-center border-2 border-[#0E0F14] shadow animate-pulse">${AppState.unreadDealMessages[safeId]}</span>` : ''}
                   </button>
                   <button type="button" onclick="navigateTo('order-room')" class="px-3 py-1.5 rounded-xl bg-white text-black font-cyber font-bold text-xs flex items-center gap-1.5 hover:bg-zinc-200 transition active:scale-95">
                     <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
@@ -29632,9 +29947,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                 </div>
               </div>
               <div class="flex sm:flex-col items-center justify-center gap-2 pt-2 sm:pt-0 sm:border-l sm:border-white/10 sm:pl-4 shrink-0">
-                <button type="button" onclick="openDealChat('${escapeHtml(activeCreatorJob.id)}')" class="btn-kowalski-secondary w-full px-3 py-1.5 rounded-xl text-xs font-mono flex items-center justify-center gap-1.5">
+                <button type="button" onclick="openDealChat('${escapeHtml(activeCreatorJob.id)}')" class="btn-kowalski-secondary relative w-full px-3 py-1.5 rounded-xl text-xs font-mono flex items-center justify-center gap-1.5">
                   <i data-lucide="message-square" class="w-3.5 h-3.5"></i>
                   <span>Chat 1-1</span>
+                  ${(AppState.unreadDealMessages && AppState.unreadDealMessages[activeCreatorJob.id]) ? `<span class="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-500 text-white font-mono font-bold text-[10px] flex items-center justify-center border-2 border-[#0E0F14] shadow animate-pulse">${AppState.unreadDealMessages[activeCreatorJob.id]}</span>` : ''}
                 </button>
                 <button type="button" onclick="navigateTo('activity')" class="btn-kowalski-primary w-full px-3.5 py-2 rounded-xl text-xs font-cyber font-bold flex items-center justify-center gap-1.5 shadow-md">
                   <i data-lucide="cpu" class="w-3.5 h-3.5 text-black"></i>
@@ -29874,6 +30190,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       AppState.activeDealRfpId = rfp.id;
+      if (AppState.unreadDealMessages) {
+        delete AppState.unreadDealMessages[rfp.id];
+      }
+      updateChatNotificationBadges();
       renderDealChat(rfp.id);
       navigateTo('deal-chat');
     }
@@ -30272,7 +30592,11 @@ function renderDealChat(rfpId) {
           `;
         }
 
-        const isMe = m.senderRole === currentRole;
+        const myUserEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+        const myUserId = ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim();
+        const isMe = (m.senderEmail && myUserEmail && m.senderEmail.toLowerCase().trim() === myUserEmail) ||
+                     (m.senderUserId && myUserId && m.senderUserId.toLowerCase().trim() === myUserId) ||
+                     (m.senderRole === currentRole);
         const isClient = m.senderRole === 'client';
         const roleBadge = isClient 
           ? (currentLang === 'it' ? 'CLIENTE' : currentLang === 'es' ? 'CLIENTE' : 'CLIENT') 
@@ -30363,6 +30687,8 @@ function renderDealChat(rfpId) {
         id: 'msg-' + Date.now() + '-' + Math.floor(Math.random()*1000),
         senderRole: currentRole,
         senderName: senderName,
+        senderEmail: ((AppState.user && AppState.user.email) || '').toLowerCase().trim(),
+        senderUserId: ((AppState.user && (AppState.user.userId || AppState.user.id)) || '').toLowerCase().trim(),
         time: timeStr,
         text: text
       };
@@ -30390,6 +30716,21 @@ function renderDealChat(rfpId) {
       broadcastRealtimeEvent('deal_chat_msg', {
         rfpId: rfp.id,
         message: msgObj
+      });
+
+      // Stop typing broadcast
+      if (dealTypingTimeout) {
+        clearTimeout(dealTypingTimeout);
+        dealTypingTimeout = null;
+      }
+      isBroadcastingTyping = false;
+      broadcastRealtimeEvent('deal_chat_typing', {
+        rfpId: rfp.id,
+        senderRole: currentRole,
+        senderName: senderName,
+        senderEmail: msgObj.senderEmail,
+        senderUserId: msgObj.senderUserId,
+        isTyping: false
       });
     }
 
