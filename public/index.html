@@ -10413,9 +10413,12 @@
       closeCreatorAddressModal();
       showToast(currentLang === 'it' ? '✓ Indirizzo officina salvato per la spedizione!' : '✓ Workshop address saved for shipping!', 'success');
 
-      // Entra subito nella Escrow Room con bypass del modal
-      window._bypassCreatorAddressModalOnce = true;
-      navigateTo('order-room');
+      // Entra subito nella Escrow Room se non già presente
+      if (AppState.currentView !== 'order-room') {
+        navigateTo('order-room');
+      } else {
+        updateCreatorAddressUI();
+      }
     }
     window.handleCreatorAddressSubmit = handleCreatorAddressSubmit;
 
@@ -28347,13 +28350,15 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
             return;
           }
 
-          // REQUISITO UTENTE FONDAMENTALE:
-          // "devi inserire per tutti i creator una nuvoletta appena prima dell'apertura della pagina escrow dove inseriranno il loro indirizzo per l'etichetta.deve essere assolutamente privata. dopo averla inserita una volta salvala per quel determinato account. anche se riaggiorno la pagina dopo il salvataggio deve apparirgli sempre."
-          if (!window._bypassCreatorAddressModalOnce) {
+          // REQUISITO UTENTE:
+          // L'indirizzo per il creator deve essere chiesto solamente UNA volta (la prima volta).
+          // Se l'indirizzo è già stato salvato per questo account, NON richiederlo ogni volta che entra nell'escrow room.
+          const savedCreatorAddr = typeof getCreatorSavedAddress === 'function' ? getCreatorSavedAddress() : null;
+          const hasSavedAddr = Boolean(savedCreatorAddr && savedCreatorAddr.street && savedCreatorAddr.city && savedCreatorAddr.cap);
+          if (!hasSavedAddr) {
             openCreatorAddressModal();
             return;
           }
-          window._bypassCreatorAddressModalOnce = false;
         }
 
         // La pagina escrow room si sblocca dopo l'accettazione o dopo il collaudo fotografico delle 3 foto
