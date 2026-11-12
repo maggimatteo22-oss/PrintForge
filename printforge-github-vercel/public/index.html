@@ -3976,9 +3976,9 @@
           </div>
 
           <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white hero-title">
-            <span id="i18n-gateTitle">Accedi a PrintForge</span>
+            <span id="gateHeaderTitle">Accedi a PrintForge</span>
           </h1>
-          <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto font-sans" id="i18n-gateSubtitle">
+          <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto font-sans" id="gateHeaderSubtitle">
             Accedi direttamente con la tua email per commissionare componenti 3D o produrre come Creator certificato.
           </p>
         </div>
@@ -3986,53 +3986,166 @@
         <!-- Unified Card Container -->
         <div class="cyber-card p-5 sm:p-7 bg-[#0A0A0C] border border-white/10 shadow-2xl rounded-2xl space-y-5">
           
-          <!-- 1. TASTO CONTINUA CON GOOGLE (FUNZIONANTE AL 100%) -->
-          <button type="button" onclick="loginWithGoogleOAuth()" class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-3 transition active:scale-95 shadow-xl cursor-pointer">
-            <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-            </svg>
-            <span id="i18n-btnGoogleLoginDirect">Continua con Google</span>
-          </button>
-
-          <div class="flex items-center gap-3 my-2 text-zinc-500 text-[10px] font-mono uppercase">
-            <div class="flex-1 h-px bg-white/10"></div>
-            <span>oppure con email e password</span>
-            <div class="flex-1 h-px bg-white/10"></div>
+          <!-- SUB-TABS: ACCEDI vs REGISTRATI -->
+          <div class="grid grid-cols-2 p-1 rounded-xl bg-white/5 border border-white/10 shadow-inner">
+            <button type="button" id="tabBtnLogin" onclick="setGateTab('login')" class="py-2.5 rounded-lg text-xs font-cyber font-bold transition flex items-center justify-center gap-1.5 btn-kowalski-primary text-black shadow-md cursor-pointer">
+              <i data-lucide="log-in" class="w-3.5 h-3.5"></i>
+              <span>ACCEDI</span>
+            </button>
+            <button type="button" id="tabBtnRegister" onclick="setGateTab('register')" class="py-2.5 rounded-lg text-xs font-cyber font-bold transition flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white cursor-pointer">
+              <i data-lucide="user-plus" class="w-3.5 h-3.5"></i>
+              <span>REGISTRATI</span>
+            </button>
           </div>
 
-          <!-- 2. FORM EMAIL E PASSWORD (SENZA CAMPO ID/NICKNAME) -->
-          <form onsubmit="handleUnifiedGateSubmit(event)" class="space-y-3.5 text-xs font-sans">
-            <div class="space-y-1">
-              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedEmailLabel">Email o Account Google *</label>
-              <input type="email" id="gateUnifiedEmail" placeholder="nome@esempio.com" required autocomplete="email" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
+          <!-- ================= PANEL 1: ACCEDI ================= -->
+          <div id="gateLoginContainer" class="space-y-4">
+            <!-- 1. TASTO CONTINUA CON GOOGLE -->
+            <button type="button" onclick="loginWithGoogleOAuth()" class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-3 transition active:scale-95 shadow-xl cursor-pointer">
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span id="i18n-btnGoogleLoginDirect">Continua con Google</span>
+            </button>
+
+            <div class="flex items-center gap-3 my-2 text-zinc-500 text-[10px] font-mono uppercase">
+              <div class="flex-1 h-px bg-white/10"></div>
+              <span>oppure con email e password</span>
+              <div class="flex-1 h-px bg-white/10"></div>
             </div>
 
-            <div class="space-y-1">
-              <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedPassLabel">Password *</label>
-              <div class="relative">
-                <input type="password" id="gateUnifiedPass" placeholder="••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
-                <button type="button" onclick="togglePasswordVisibility('gateUnifiedPass')" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition">
-                  <i data-lucide="eye" class="w-4 h-4"></i>
+            <!-- FORM LOGIN -->
+            <form onsubmit="handleUnifiedGateSubmit(event)" class="space-y-3.5 text-xs font-sans">
+              <div class="space-y-1">
+                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedEmailLabel">Email o Account Google *</label>
+                <input type="email" id="gateUnifiedEmail" placeholder="nome@esempio.com" required autocomplete="email" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none transition" />
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-mono text-zinc-400 block" id="i18n-gateUnifiedPassLabel">Password *</label>
+                <div class="relative">
+                  <input type="password" id="gateUnifiedPass" placeholder="••••••••" required autocomplete="current-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2.5 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
+                  <button type="button" onclick="togglePasswordVisibility('gateUnifiedPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
+                  <span id="i18n-gateSubmitBtn">ENTRA IN PRINTFORGE</span>
+                  <i data-lucide="arrow-right" class="w-4 h-4 text-black"></i>
                 </button>
               </div>
-            </div>
+            </form>
 
-            <div class="pt-2">
-              <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
-                <span id="i18n-gateSubmitBtn">ENTRA IN PRINTFORGE</span>
-                <i data-lucide="arrow-right" class="w-4 h-4 text-black"></i>
+            <div class="text-center pt-2">
+              <span class="text-zinc-400 text-xs">Non hai ancora un account? </span>
+              <button type="button" onclick="setGateTab('register')" class="text-emerald-400 hover:text-emerald-300 font-bold underline transition cursor-pointer text-xs">
+                Registrati a PrintForge
               </button>
             </div>
-          </form>
+          </div>
+
+          <!-- ================= PANEL 2: REGISTRATI ================= -->
+          <div id="gateRegisterContainer" class="space-y-4 hidden">
+            <!-- Google OAuth Button for Registration -->
+            <button type="button" onclick="loginWithGoogleOAuth()" class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-100 text-black font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-3 transition active:scale-95 shadow-xl cursor-pointer">
+              <svg class="w-4 h-4 shrink-0" viewBox="0 0 24 24">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+              </svg>
+              <span>Registrati con Google</span>
+            </button>
+
+            <div class="flex items-center gap-3 my-2 text-zinc-500 text-[10px] font-mono uppercase">
+              <div class="flex-1 h-px bg-white/10"></div>
+              <span>oppure crea un account</span>
+              <div class="flex-1 h-px bg-white/10"></div>
+            </div>
+
+            <!-- FORM REGISTRAZIONE -->
+            <form onsubmit="handleUnifiedRegisterSubmit(event)" class="space-y-3 text-xs font-sans">
+              <!-- Nome e Cognome -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="space-y-1">
+                  <label class="text-[11px] font-mono text-zinc-400 block">Nome *</label>
+                  <input type="text" id="gateRegFirstName" placeholder="es. Marco" required autocomplete="given-name" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white font-sans text-xs focus:border-white outline-none transition" />
+                </div>
+                <div class="space-y-1">
+                  <label class="text-[11px] font-mono text-zinc-400 block">Cognome *</label>
+                  <input type="text" id="gateRegLastName" placeholder="es. Rossi" required autocomplete="family-name" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3 py-2 text-white font-sans text-xs focus:border-white outline-none transition" />
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="space-y-1">
+                <label class="text-[11px] font-mono text-zinc-400 block">Email personale *</label>
+                <input type="email" id="gateRegEmail" placeholder="nome@esempio.com" required autocomplete="email" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2 text-white font-sans text-xs focus:border-white outline-none transition" />
+              </div>
+
+              <!-- Password e Conferma Password -->
+              <div class="space-y-1">
+                <label class="text-[11px] font-mono text-zinc-400 block">Password (min. 6 caratteri) *</label>
+                <div class="relative">
+                  <input type="password" id="gateRegPass" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
+                  <button type="button" onclick="togglePasswordVisibility('gateRegPass', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="space-y-1">
+                <label class="text-[11px] font-mono text-zinc-400 block">Conferma Password *</label>
+                <div class="relative">
+                  <input type="password" id="gateRegPassConfirm" placeholder="••••••••" required autocomplete="new-password" class="w-full bg-[#121215] border border-white/10 rounded-xl px-3.5 py-2 pr-10 text-white text-xs focus:border-white outline-none transition password-input" />
+                  <button type="button" onclick="togglePasswordVisibility('gateRegPassConfirm', this)" class="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white transition">
+                    <i data-lucide="eye" class="w-4 h-4"></i>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Ruolo: Cliente vs Creator -->
+              <div class="space-y-1 pt-1">
+                <label class="text-[11px] font-mono text-zinc-400 block">Come utilizzerai PrintForge? *</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <button type="button" id="btnRegRoleClient" onclick="setRegRole('client')" class="btn-kowalski-primary py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm text-black cursor-pointer">
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    <span>Cliente (Ordini)</span>
+                  </button>
+                  <button type="button" id="btnRegRoleCreator" onclick="setRegRole('creator')" class="btn-kowalski-secondary py-2 px-2.5 rounded-xl text-zinc-400 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                    <i data-lucide="cpu" class="w-3.5 h-3.5"></i>
+                    <span>Creator (Maker)</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="pt-2">
+                <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition active:scale-95 cursor-pointer">
+                  <i data-lucide="user-check" class="w-4 h-4 text-black"></i>
+                  <span>CREA ACCOUNT &amp; ENTRA</span>
+                </button>
+              </div>
+            </form>
+
+            <div class="text-center pt-2">
+              <span class="text-zinc-400 text-xs">Hai già un account? </span>
+              <button type="button" onclick="setGateTab('login')" class="text-cyan-400 hover:text-cyan-300 font-bold underline transition cursor-pointer text-xs">
+                Accedi subito
+              </button>
+            </div>
+          </div>
 
           <!-- Trust Footnote -->
           <div class="p-3 rounded-xl bg-white/[0.03] border border-white/[0.06] text-[11px] text-zinc-400 flex items-start gap-2.5 leading-relaxed">
             <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5"></i>
             <span id="i18n-gateUnifiedNote">
-              Account permanente e protetto. Le tue credenziali rimangono salvate per accedere sempre senza riscriverle.
+              Account personale isolato. La tua sessione e i tuoi dati rimangono salvati per sempre su questo dispositivo.
             </span>
           </div>
 
@@ -26704,137 +26817,321 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
 
     
+    let currentGateTab = 'login';
+    let currentRegRole = 'client';
+
+    function setGateTab(tab) {
+      currentGateTab = tab;
+      const loginCard = document.getElementById('gateLoginContainer');
+      const regCard = document.getElementById('gateRegisterContainer');
+      const tabBtnLogin = document.getElementById('tabBtnLogin');
+      const tabBtnRegister = document.getElementById('tabBtnRegister');
+      const titleEl = document.getElementById('gateHeaderTitle');
+      const subtitleEl = document.getElementById('gateHeaderSubtitle');
+
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+
+      if (tab === 'register') {
+        if (loginCard) loginCard.classList.add('hidden');
+        if (regCard) regCard.classList.remove('hidden');
+        if (tabBtnLogin) {
+          tabBtnLogin.className = "py-2.5 rounded-lg text-xs font-cyber font-bold transition flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white cursor-pointer";
+        }
+        if (tabBtnRegister) {
+          tabBtnRegister.className = "py-2.5 rounded-lg text-xs font-cyber font-bold transition flex items-center justify-center gap-1.5 btn-kowalski-primary text-black shadow-md cursor-pointer";
+        }
+        if (titleEl) titleEl.innerText = isEn ? 'Create your PrintForge Account' : isEs ? 'Crea tu Cuenta PrintForge' : 'Registrati a PrintForge';
+        if (subtitleEl) subtitleEl.innerText = isEn 
+          ? 'Sign up once: your personal session will remain securely saved on this device.'
+          : isEs
+          ? 'Regístrate una vez: tu sesión personal se guardará para siempre en este dispositivo.'
+          : 'Compila i tuoi dati: la tua sessione personale rimarrà salvata su questo dispositivo per sempre.';
+      } else {
+        if (loginCard) loginCard.classList.remove('hidden');
+        if (regCard) regCard.classList.add('hidden');
+        if (tabBtnLogin) {
+          tabBtnLogin.className = "py-2.5 rounded-lg text-xs font-cyber font-bold transition flex items-center justify-center gap-1.5 btn-kowalski-primary text-black shadow-md cursor-pointer";
+        }
+        if (tabBtnRegister) {
+          tabBtnRegister.className = "py-2.5 rounded-lg text-xs font-cyber font-bold transition flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white cursor-pointer";
+        }
+        if (titleEl) titleEl.innerText = isEn ? 'Sign in to PrintForge' : isEs ? 'Inicia sesión en PrintForge' : 'Accedi a PrintForge';
+        if (subtitleEl) subtitleEl.innerText = isEn
+          ? 'Sign in with your email and password to manage your 3D orders and jobs.'
+          : isEs
+          ? 'Inicia sesión con tu correo y contraseña para gestionar tus pedidos e incarichi 3D.'
+          : 'Accedi direttamente con la tua email per commissionare componenti 3D o produrre come Creator certificato.';
+      }
+      if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+    window.setGateTab = setGateTab;
+
+    function setRegRole(role) {
+      currentRegRole = role;
+      const bCli = document.getElementById('btnRegRoleClient');
+      const bCre = document.getElementById('btnRegRoleCreator');
+      if (role === 'creator') {
+        if (bCre) bCre.className = "btn-kowalski-primary py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm text-black cursor-pointer";
+        if (bCli) bCli.className = "btn-kowalski-secondary py-2 px-2.5 rounded-xl text-zinc-400 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer";
+      } else {
+        if (bCli) bCli.className = "btn-kowalski-primary py-2 px-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm text-black cursor-pointer";
+        if (bCre) bCre.className = "btn-kowalski-secondary py-2 px-2.5 rounded-xl text-zinc-400 hover:text-white font-bold text-xs flex items-center justify-center gap-1.5 cursor-pointer";
+      }
+      if (typeof lucide !== 'undefined' && typeof lucide.createIcons === 'function') {
+        lucide.createIcons();
+      }
+    }
+    window.setRegRole = setRegRole;
+
     async function handleUnifiedGateSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
       const emailInput = document.getElementById('gateUnifiedEmail');
       const passInput = document.getElementById('gateUnifiedPass');
 
       const email = (emailInput?.value?.trim() || '').toLowerCase();
-      const pass = passInput?.value || localStorage.getItem('printforge_saved_pass') || '';
-      const name = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-
-      // SALVATAGGIO PERMANENTE CREDENZIALI (Email e Password salvate per sempre)
-      try {
-        localStorage.setItem('printforge_saved_email', email);
-        localStorage.setItem('printforge_saved_pass', pass);
-        localStorage.setItem('printforge_saved_credentials', JSON.stringify({ email: email, pass: pass, name: name }));
-      } catch(err) {}
+      const pass = passInput?.value || '';
 
       if (!email || !email.includes('@')) {
         showToast(currentLang === 'it' ? 'Inserisci un indirizzo email valido' : 'Please enter a valid email address', 'error');
+        if (emailInput) emailInput.focus();
+        return;
+      }
+      if (!pass || pass.trim().length === 0) {
+        showToast(currentLang === 'it' ? 'Inserisci la tua password per accedere' : 'Please enter your password', 'error');
+        if (passInput) passInput.focus();
         return;
       }
 
-      // CONTROLLO DISPOSITIVO CONCORRENTE: Se l'email è attiva su un altro dispositivo, impedisci l'accesso!
-      const sessionCheck = await checkEmailActiveSessionLock(email);
-      if (sessionCheck.isLocked) {
-        const errMsg = currentLang === "it"
-          ? "⚠️ ACCESSO NEGATO: L'email " + email + " è attualmente ATTIVA su un altro dispositivo. Disconnettiti prima dall'altro dispositivo per poter accedere qui."
-          : "⚠️ ACCESS DENIED: The email " + email + " is currently ACTIVE on another device. Please sign out from that device first.";
-        showToast(errMsg, "error", 8000);
-        return;
-      }
-      showToast(currentLang === 'it' ? 'Accesso in corso...' : 'Signing in...', 'info');
+      showToast(currentLang === 'it' ? 'Verifica credenziali in corso...' : 'Verifying credentials...', 'info');
 
-      // Cerca profilo cloud esistente per sincronizzare cross-device
-      // Cerca profilo cloud o locale esistente per verificare se l'email è già registrata
+      // CONTROLLO DISPOSITIVO CONCORRENTE
+      try {
+        const sessionCheck = await checkEmailActiveSessionLock(email);
+        if (sessionCheck.isLocked) {
+          const errMsg = currentLang === "it"
+            ? "⚠️ ACCESSO NEGATO: L'email " + email + " è attualmente ATTIVA su un altro dispositivo. Disconnettiti prima dall'altro dispositivo per poter accedere qui."
+            : "⚠️ ACCESS DENIED: The email " + email + " is currently ACTIVE on another device. Please sign out from that device first.";
+          showToast(errMsg, "error", 8000);
+          return;
+        }
+      } catch(err) {}
+
       const emailKey = email.replace(/[^a-z0-9]/g, "_");
       let userProfile = await fetchUserProfileFromCloud(email);
       const localSavedPass = (typeof localStorage !== "undefined") 
         ? (localStorage.getItem("printforge_saved_pass_" + emailKey) || (email === (localStorage.getItem("printforge_saved_email") || "").toLowerCase().trim() ? localStorage.getItem("printforge_saved_pass") : null))
         : null;
       const isRegistered = Boolean(userProfile || localSavedPass || (typeof localStorage !== "undefined" && localStorage.getItem("printforge_user_registered_" + emailKey) === "true"));
-      const registeredPass = (userProfile && userProfile.password) || localSavedPass;
 
-      // BLOCCO TOTALE 2° ACCOUNT: Se l'email è già registrata, verifica rigorosa password (impossibile creare due account con la stessa mail)
-      if (isRegistered && registeredPass) {
-        if (pass && pass !== registeredPass) {
-          const errPass = currentLang === "it"
-            ? "⚠️ Questa email è già registrata ed è associata a un account univoco. La password inserita non è corretta (impossibile creare due account con la stessa email)."
-            : "⚠️ This email is already registered to a single account. The password entered is incorrect.";
-          showToast(errPass, "error", 8000);
-          return;
-        }
+      // REQUISITO UTENTE FONDAMENTALE:
+      // "chi non lo ha mai fatto e prova ad accedere senza credenziali o senza aver creato l'account non permetterglielo"
+      if (!isRegistered && !userProfile) {
+        const notFoundMsg = currentLang === 'it'
+          ? '⚠️ Nessun account trovato con questa email. Clicca su "Registrati a PrintForge" per creare il tuo account.'
+          : '⚠️ No account found with this email. Please register first.';
+        showToast(notFoundMsg, 'warning', 7000);
+        setGateTab('register');
+        const regEmailInput = document.getElementById('gateRegEmail');
+        if (regEmailInput) regEmailInput.value = email;
+        const regFirst = document.getElementById('gateRegFirstName');
+        if (regFirst) regFirst.focus();
+        return;
       }
 
+      const registeredPass = (userProfile && userProfile.password) || localSavedPass;
+      if (registeredPass && pass !== registeredPass) {
+        const errPass = currentLang === "it"
+          ? "⚠️ Password errata per questo account. Verifica e riprova."
+          : "⚠️ Incorrect password. Please try again.";
+        showToast(errPass, "error", 6000);
+        if (passInput) passInput.focus();
+        return;
+      }
+
+      // Account verificato con successo
       if (!userProfile) {
-        // Primo accesso assoluto per questa nuova email: crea l'account univoco e vincola la password per sempre
         userProfile = {
           userId: generateUserIdForAccount(email, "client"),
           id: generateUserIdForAccount(email, "client"),
           isLoggedIn: true,
           role: "client",
           isAdmin: false,
-          name: name,
+          name: email.split('@')[0],
           email: email,
-          password: pass || "",
-          avatar: name.charAt(0).toUpperCase(),
-          isLoggedIn: true,
-          creatorData: null
+          password: pass,
+          avatar: email.charAt(0).toUpperCase()
         };
       } else {
         userProfile.isLoggedIn = true;
         if (pass && !userProfile.password) userProfile.password = pass;
-        
       }
 
-      // Salva e vincola perennemente la password e lo stato di email registrata
       try {
-        if (pass) {
-          localStorage.setItem("printforge_saved_pass_" + emailKey, pass);
-          localStorage.setItem("printforge_saved_pass", pass);
-        } else if (registeredPass) {
-          localStorage.setItem("printforge_saved_pass_" + emailKey, registeredPass);
-          localStorage.setItem("printforge_saved_pass", registeredPass);
-        }
-        localStorage.setItem("printforge_user_registered_" + emailKey, "true");
+        localStorage.setItem("printforge_saved_pass_" + emailKey, pass);
+        localStorage.setItem("printforge_saved_pass", pass);
         localStorage.setItem("printforge_saved_email", email);
-        localStorage.setItem("printforge_saved_credentials", JSON.stringify({ email: email, pass: pass || registeredPass, name: userProfile.name }));
-      } catch(err) {}
-      AppState.user = userProfile;
-      if (userProfile && userProfile.payoutConfig && userProfile.payoutConfig.iban) {
-        AppState.user.payoutConfig = userProfile.payoutConfig;
-        AppState.user.stripeConnected = true;
-        try {
-          const userKey = 'printforge_payout_details_' + email.replace(/[^a-z0-9]/g, '_');
-          localStorage.setItem(userKey, JSON.stringify(userProfile.payoutConfig));
-          localStorage.setItem('printforge_payout_details', JSON.stringify(userProfile.payoutConfig));
-          localStorage.setItem('printforge_payout_configured', 'true');
-          localStorage.setItem('printforge_stripe_connected', 'true');
-        } catch(e) {}
-      }
-      try {
-        localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
-      } catch (err) {}
+        localStorage.setItem("printforge_user_registered_" + emailKey, "true");
+        localStorage.setItem("printforge_auth_session", JSON.stringify(userProfile));
+      } catch(e) {}
 
-      // Sincronizza nel cloud Supabase per lo smartphone
-      try {
-        syncUserProfileToCloud(AppState.user, pass);
-      } catch (err) {}
+      AppState.user = userProfile;
+      claimEmailActiveSession(email, AppState.user);
 
       renderNavUserArea();
       updateNavigationTabs();
       updateLaptopBarButtons();
       loadRequestsFromSupabase();
 
-      claimEmailActiveSession(email, AppState.user);
       const welcomeMsg = currentLang === 'it' 
-        ? `Benvenuto su PrintForge, ${AppState.user.name}!` 
-        : `Welcome to PrintForge, ${AppState.user.name}!`;
+        ? `✓ Bentornato su PrintForge, ${AppState.user.name}!` 
+        : `✓ Welcome back to PrintForge, ${AppState.user.name}!`;
       showToast(welcomeMsg, 'success');
 
-      // Reindirizza alla Home o vista appropriata
       if (AppState.user.role === 'creator') {
         if (typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) {
           navigateTo('activity');
         } else {
-          navigateTo('creator-portfolio');
+          navigateTo('creator-requests');
         }
       } else {
         navigateTo('client-home');
       }
     }
     window.handleUnifiedGateSubmit = handleUnifiedGateSubmit;
+
+    async function handleUnifiedRegisterSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const firstInput = document.getElementById('gateRegFirstName');
+      const lastInput = document.getElementById('gateRegLastName');
+      const emailInput = document.getElementById('gateRegEmail');
+      const passInput = document.getElementById('gateRegPass');
+      const confirmInput = document.getElementById('gateRegPassConfirm');
+
+      const firstName = (firstInput?.value?.trim() || '');
+      const lastName = (lastInput?.value?.trim() || '');
+      const email = (emailInput?.value?.trim() || '').toLowerCase();
+      const pass = passInput?.value || '';
+      const passConfirm = confirmInput?.value || '';
+      const role = currentRegRole || 'client';
+
+      if (!firstName || firstName.length < 2) {
+        showToast(currentLang === 'it' ? 'Inserisci il tuo nome (almeno 2 caratteri)' : 'Please enter your first name', 'error');
+        if (firstInput) firstInput.focus();
+        return;
+      }
+      if (!lastName || lastName.length < 2) {
+        showToast(currentLang === 'it' ? 'Inserisci il tuo cognome (almeno 2 caratteri)' : 'Please enter your last name', 'error');
+        if (lastInput) lastInput.focus();
+        return;
+      }
+      if (!email || !email.includes('@') || !email.includes('.')) {
+        showToast(currentLang === 'it' ? 'Inserisci un indirizzo email valido' : 'Please enter a valid email address', 'error');
+        if (emailInput) emailInput.focus();
+        return;
+      }
+      if (!pass || pass.length < 6) {
+        showToast(currentLang === 'it' ? 'La password deve contenere almeno 6 caratteri' : 'Password must be at least 6 characters', 'error');
+        if (passInput) passInput.focus();
+        return;
+      }
+      if (pass !== passConfirm) {
+        showToast(currentLang === 'it' ? 'Le due password non coincidono. Riprova.' : 'Passwords do not match. Please retry.', 'error');
+        if (confirmInput) confirmInput.focus();
+        return;
+      }
+
+      showToast(currentLang === 'it' ? 'Creazione account in corso...' : 'Creating account...', 'info');
+
+      const emailKey = email.replace(/[^a-z0-9]/g, "_");
+      let existingProfile = await fetchUserProfileFromCloud(email);
+      const isAlreadyReg = Boolean(existingProfile || (typeof localStorage !== "undefined" && (localStorage.getItem("printforge_user_registered_" + emailKey) === "true" || localStorage.getItem("printforge_saved_pass_" + emailKey))));
+
+      if (isAlreadyReg) {
+        const existMsg = currentLang === 'it'
+          ? '⚠️ Questa email è già registrata! Inserisci la tua password nella scheda Accedi per entrare.'
+          : '⚠️ This email is already registered! Please sign in.';
+        showToast(existMsg, 'warning', 7000);
+        setGateTab('login');
+        const logEmail = document.getElementById('gateUnifiedEmail');
+        if (logEmail) logEmail.value = email;
+        const logPass = document.getElementById('gateUnifiedPass');
+        if (logPass) logPass.focus();
+        return;
+      }
+
+      // Crea il nuovo profilo permanente
+      const fullName = `${firstName} ${lastName}`.trim();
+      const userId = generateUserIdForAccount(email, role);
+      const newProfile = {
+        userId: userId,
+        id: userId,
+        name: fullName,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        role: role,
+        isAdmin: false,
+        password: pass,
+        avatar: firstName.charAt(0).toUpperCase() || 'U',
+        isLoggedIn: true,
+        registeredAt: new Date().toISOString()
+      };
+
+      // Salva nel cloud Supabase
+      try {
+        await syncUserProfileToCloud(newProfile, pass);
+      } catch(err) {
+        console.warn('Sync profile to cloud error:', err);
+      }
+
+      // REQUISITO UTENTE FONDAMENTALE:
+      // "le cose che mette una persona in questo riquadro devi salvarle per sempre sulla sua sessione senza fargli fare l'accesso subito,anche se si riaggiorna la pagina o altro."
+      try {
+        localStorage.setItem("printforge_saved_pass_" + emailKey, pass);
+        localStorage.setItem("printforge_saved_pass", pass);
+        localStorage.setItem("printforge_saved_email", email);
+        localStorage.setItem("printforge_user_registered_" + emailKey, "true");
+        localStorage.setItem("printforge_auth_session", JSON.stringify(newProfile));
+        localStorage.setItem("printforge_primary_role", role);
+
+        let regUsers = JSON.parse(localStorage.getItem('printforge_registered_users') || '[]');
+        if (Array.isArray(regUsers) && !regUsers.includes(email)) {
+          regUsers.push(email);
+          localStorage.setItem('printforge_registered_users', JSON.stringify(regUsers));
+        }
+      } catch(err) {
+        console.warn('LocalStorage save error:', err);
+      }
+
+      AppState.user = newProfile;
+      claimEmailActiveSession(email, AppState.user);
+
+      // Invia email di benvenuto
+      try {
+        sendRegistrationWelcomeEmail(newProfile);
+      } catch(e) {}
+
+      renderNavUserArea();
+      updateNavigationTabs();
+      updateLaptopBarButtons();
+      loadRequestsFromSupabase();
+
+      const successToast = currentLang === 'it'
+        ? `✓ Account creato con successo! Benvenuto in PrintForge, ${firstName}!`
+        : `✓ Account created successfully! Welcome to PrintForge, ${firstName}!`;
+      showToast(successToast, 'success', 6000);
+
+      // Entra direttamente nella piattaforma SENZA chiedere di fare login di nuovo
+      if (role === 'creator') {
+        navigateTo('creator-requests');
+      } else {
+        navigateTo('client-home');
+      }
+    }
+    window.handleUnifiedRegisterSubmit = handleUnifiedRegisterSubmit;
 
     async function handleGateClientSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
