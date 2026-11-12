@@ -5083,7 +5083,7 @@
           </div>
 
           <!-- Video Viewport & Playback Stage (Pure Autonomous Viewable Video Showcase - Zero Interaction) -->
-          <div class="relative w-full h-[370px] sm:h-[400px] md:h-[415px] overflow-hidden bg-[#060608] flex items-center justify-center select-none transition-[box-shadow] duration-500 cursor-pointer" id="videoViewportContainer" onclick="if (typeof RemotionVideoEngine !== 'undefined') RemotionVideoEngine.togglePlay()">
+          <div class="relative w-full h-[370px] sm:h-[400px] md:h-[415px] overflow-hidden rounded-xl bg-[#060608] flex items-center justify-center select-none shadow-[inset_0_1px_0_0_rgba(255,255,255,0.08),0_20px_50px_-10px_rgba(0,0,0,0.9)] transition-[box-shadow] duration-500 cursor-default" id="videoViewportContainer" onclick="if (typeof RemotionVideoEngine !== 'undefined' && !RemotionVideoEngine.isPlaying) RemotionVideoEngine.play()">
             <div id="mobileVideoScaler" class="w-full h-full relative">
 
             <!-- RECORDLY VIRTUAL CURSOR LAYER (CLEAN, NO BLUE SQUARE, NO CLICK RIPPLES) -->
@@ -29166,7 +29166,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
           if (!scene) init3DStudio();
           if (typeof initRemotion3D === 'function') initRemotion3D();
           if (typeof RemotionVideoEngine !== 'undefined' && typeof RemotionVideoEngine.play === 'function') {
-            if (!RemotionVideoEngine.isPlaying) RemotionVideoEngine.play();
+            RemotionVideoEngine.play();
           }
           if (typeof initHero3DLogo === 'function') initHero3DLogo();
         }, 60);
@@ -34541,7 +34541,11 @@ function renderDealChat(rfpId) {
               this.computeTimeline();
             }
             this.currentFrame = (this.currentFrame + (this.speed || 1) * (dt * this.fps)) % (this.totalDurationFrames || 1440);
-            this.renderFrame(this.currentFrame);
+            try {
+              this.renderFrame(this.currentFrame);
+            } catch (err) {
+              console.warn('Video render error handled gracefully:', err);
+            }
           }
           this.rafId = requestAnimationFrame(tick);
         };
@@ -35123,6 +35127,48 @@ function renderDealChat(rfpId) {
 
     // Alias for backward compatibility
     const VideoDemoPlayer = RemotionVideoEngine;
+
+    // =========================================================================
+    // REQUISITO: Il video nella Home deve andare SEMPRE automaticamente
+    // (Zero necessità di cliccarci sopra, auto-restart garantito e continuo)
+    // =========================================================================
+    (function initContinuousHomeVideoWatchdog() {
+      function ensureHomeVideoPlaying() {
+        const isHome = !AppState.currentView || AppState.currentView === 'client-home' || AppState.currentView === 'home';
+        if (isHome && typeof RemotionVideoEngine !== 'undefined') {
+          if (!RemotionVideoEngine.rafId || !RemotionVideoEngine.isPlaying) {
+            RemotionVideoEngine.play();
+          }
+        }
+      }
+
+      // 1. Avvio immediato e verifiche scaglionate post-idratazione
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', ensureHomeVideoPlaying);
+      } else {
+        ensureHomeVideoPlaying();
+      }
+      window.addEventListener('load', ensureHomeVideoPlaying);
+      setTimeout(ensureHomeVideoPlaying, 100);
+      setTimeout(ensureHomeVideoPlaying, 400);
+      setTimeout(ensureHomeVideoPlaying, 900);
+      setTimeout(ensureHomeVideoPlaying, 1800);
+
+      // 2. Risveglio istantaneo quando l'utente torna sulla scheda browser
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+          ensureHomeVideoPlaying();
+        }
+      });
+
+      // 3. Risveglio al tocco/scroll (non ferma mai il video, ma garantisce che stia girando)
+      ['touchstart', 'pointerdown', 'scroll'].forEach(function(evt) {
+        window.addEventListener(evt, ensureHomeVideoPlaying, { passive: true });
+      });
+
+      // 4. Watchdog continuo ogni 1.2s: se siamo in home e il video è fermo, lo riavvia subito
+      setInterval(ensureHomeVideoPlaying, 1200);
+    })();
 
     /* ========================================================================= */
     /* MODULO 4: VETRINA CREATOR, UPLOAD LAVORI & REALTIME SHOWCASE              */
