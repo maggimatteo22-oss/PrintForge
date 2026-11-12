@@ -10422,6 +10422,177 @@
     }
     window.handleCreatorAddressSubmit = handleCreatorAddressSubmit;
 
+    /* ========================================================================= */
+    /* GESTIONE STATO CONTRATTO ATTIVO & BLOCCO/RIPRISTINO CHAT 1-1             */
+    /* REQUISITO: "ogni volta che il quarto passaggio verrà completato          */
+    /* ogni chat verrà ripristinata e non si potrà usare fino al prossimo      */
+    /* contratto con un creator"                                                */
+    /* ========================================================================= */
+    function hasActiveCreatorContract() {
+      if (!AppState.user || !AppState.user.isLoggedIn) return false;
+
+      // Se la fase 4 è segnata come completata a livello globale e non ci sono ordini in corso
+      const activeReq = (AppState.broadcastRequests || []).find(r => {
+        if (!r) return false;
+        if (r.isCompleted || r.isDelivered || r.isClosed) return false;
+        const st = String(r.status || '').toUpperCase();
+        if (st.includes('COMPLETAT') || st.includes('CONSEGNAT') || st.includes('ARCHIVIAT')) return false;
+        if (typeof isUserChatParticipant === 'function' && !isUserChatParticipant(r)) return false;
+
+        // Deve esistere un contratto stipulato con un creator (accettato/preso in carico o in produzione)
+        const isAccepted = Boolean(
+          r.isAccepted === true ||
+          r.acceptedBy ||
+          (r.maker && r.maker.trim().length > 0) ||
+          (r.makerEmail && r.makerEmail.trim().length > 0) ||
+          (r.makerUserId && r.makerUserId.trim().length > 0) ||
+          st.includes('LAVORAZIONE') ||
+          st.includes('PRODUZIONE') ||
+          st.includes('PRODUCTION') ||
+          st.includes('ACCETTAT')
+        );
+
+        return isAccepted;
+      });
+
+      return Boolean(activeReq);
+    }
+    window.hasActiveCreatorContract = hasActiveCreatorContract;
+
+    function renderDealChatLockedState() {
+      const container = document.getElementById('dealChatMessagesContainer');
+      const input = document.getElementById('dealChatInput');
+      const sendBtn = document.getElementById('dealChatSendBtn');
+      const photoBtn = document.querySelector('button[onclick="triggerDealPhotoUpload()"]');
+      const statusSub = document.getElementById('dealChatStatusSub');
+      const headTitle = document.getElementById('dealChatHeaderRfpTitle');
+      const isEn = typeof currentLang !== 'undefined' && currentLang === 'en';
+      const isEs = typeof currentLang !== 'undefined' && currentLang === 'es';
+
+      if (headTitle) {
+        headTitle.innerText = isEn ? '1-on-1 Chat // Standby' : isEs ? 'Chat 1-a-1 // En Espera' : 'Chat 1-1 // In Attesa di Contratto';
+      }
+
+      if (statusSub) {
+        statusSub.innerHTML = '<span class="text-amber-400 font-bold">🔒 CHAT DISATTIVATA // NESSUN CONTRATTO ATTIVO</span>';
+      }
+
+      if (container) {
+        container.innerHTML = `
+          <div class="h-full flex flex-col items-center justify-center text-center p-6 sm:p-8 space-y-3 font-mono">
+            <div class="w-14 h-14 rounded-2xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 shadow-lg">
+              <i data-lucide="lock" class="w-7 h-7"></i>
+            </div>
+            <p class="text-xs text-white font-cyber font-bold uppercase tracking-wider">
+              ${isEn ? '1-ON-1 CHAT LOCKED // NO ACTIVE CONTRACT' : isEs ? 'CHAT 1-A-1 BLOQUEADO // SIN CONTRATO ACTIVO' : 'CHAT 1-1 BLOCCATA // NESSUN CONTRATTO ATTIVO'}
+            </p>
+            <p class="text-[11px] text-zinc-400 font-sans max-w-sm leading-relaxed">
+              ${isEn 
+                ? 'The 4th stage has been completed and previous chat history was reset. This private chat will automatically unlock as soon as a new contract with a Creator is started.' 
+                : isEs 
+                ? 'El 4° paso se ha completado y el historial fue restablecido. El chat privado se desbloqueará automáticamente al iniciar un nuevo contrato con un Creador.' 
+                : 'Il quarto passaggio è stato completato e ogni chat è stata ripristinata. Questa chat privata 1-1 si riattiverà automaticamente appena verrà avviato un nuovo contratto con un Creator.'}
+            </p>
+          </div>
+        `;
+        if (window.lucide && typeof window.lucide.createIcons === 'function') {
+          window.lucide.createIcons();
+        }
+      }
+
+      if (input) {
+        input.value = '';
+        input.disabled = true;
+        input.readOnly = true;
+        input.placeholder = isEn 
+          ? 'Chat locked. Reactivates on the next contract with a Creator...' 
+          : isEs 
+          ? 'Chat bloqueado. Se reactiva con el próximo contrato...' 
+          : 'Chat bloccata. Si riattiverà al prossimo contratto con un Creator...';
+        input.classList.add('opacity-50', 'cursor-not-allowed');
+      }
+
+      if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      }
+
+      if (photoBtn) {
+        photoBtn.disabled = true;
+        photoBtn.classList.add('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      }
+    }
+    window.renderDealChatLockedState = renderDealChatLockedState;
+
+    function resetAndLockAllDealChatsAfterStage4(completedRfpId) {
+      console.log('🔒 [Stage 4 Complete]: Resetting all deal chats and locking until next creator contract. Completed RFP:', completedRfpId);
+
+      const targetId = completedRfpId || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId;
+
+      // 1. Svuota messaggi dalla commessa completata
+      if (targetId) {
+        const targetRfp = (AppState.broadcastRequests || []).find(r => r && r.id === targetId);
+        if (targetRfp) {
+          targetRfp.messages = [];
+        }
+        try {
+          localStorage.removeItem('printforge_deal_messages_' + targetId);
+        } catch(e) {}
+      }
+
+      // Svuota messaggi da tutte le richieste completate
+      (AppState.broadcastRequests || []).forEach(r => {
+        if (r && (r.isCompleted || r.isDelivered || r.isClosed || r.status === 'COMPLETATO' || r.id === targetId)) {
+          r.messages = [];
+          try {
+            localStorage.removeItem('printforge_deal_messages_' + r.id);
+          } catch(e) {}
+        }
+      });
+
+      try {
+        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+      } catch(e) {}
+
+      // 2. Azzera notifiche e contatori non letti
+      AppState.unreadDealMessages = {};
+      try {
+        localStorage.removeItem('printforge_unread_deal_messages');
+      } catch(e) {}
+      if (typeof updateChatNotificationBadges === 'function') {
+        updateChatNotificationBadges();
+      }
+
+      // 3. Azzera deal RFP attivo
+      AppState.activeDealRfpId = null;
+
+      // 4. Se la vista corrente è la chat o se gli elementi DOM esistono, blocca e ripristina l'interfaccia
+      if (typeof renderDealChatLockedState === 'function') {
+        renderDealChatLockedState();
+      }
+
+      // 5. Se su Supabase, azzera anche i messaggi nel cloud per la commessa completata
+      if (targetId && typeof updateRequestInSupabase === 'function') {
+        const rfp = (AppState.broadcastRequests || []).find(r => r && r.id === targetId);
+        if (rfp && typeof buildNotesPayload === 'function') {
+          updateRequestInSupabase(targetId, {
+            notes: buildNotesPayload(rfp, { messages: [] })
+          });
+        }
+      }
+
+      // 6. Broadcast Realtime dell'evento di reset per sincronizzare istantaneamente l'altro dispositivo
+      try {
+        if (typeof broadcastRealtimeEvent === 'function') {
+          broadcastRealtimeEvent('deal_chat_reset', {
+            completedRfpId: targetId,
+            timestamp: new Date().toISOString()
+          });
+        }
+      } catch(e) {}
+    }
+    window.resetAndLockAllDealChatsAfterStage4 = resetAndLockAllDealChatsAfterStage4;
+
     function updateChatNotificationBadges() {
       if (!AppState.unreadDealMessages) {
         try {
@@ -10495,11 +10666,26 @@
         return;
       }
 
+      // REQUISITO: Se non c'è un contratto attivo con un Creator, la chat è bloccata fino al prossimo contratto
+      if (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract()) {
+        showToast(
+          currentLang === 'it'
+            ? '🔒 Chat 1-1 non disponibile: si riattiverà automaticamente con il prossimo contratto attivo con un Creator.'
+            : '🔒 1-on-1 Chat unavailable: it will reactivate automatically with the next active contract with a Creator.',
+          'info'
+        );
+        navigateTo('deal-chat');
+        if (typeof renderDealChatLockedState === 'function') {
+          renderDealChatLockedState();
+        }
+        return;
+      }
+
       const unreadMap = AppState.unreadDealMessages || {};
       const unreadRfpId = Object.keys(unreadMap).find(id => {
         if (unreadMap[id] <= 0) return false;
         const r = (AppState.broadcastRequests || []).find(x => x.id === id);
-        return r && isUserChatParticipant(r);
+        return r && !r.isCompleted && !r.isDelivered && !r.isClosed && isUserChatParticipant(r);
       });
       if (unreadRfpId) {
         openDealChat(unreadRfpId);
@@ -10508,7 +10694,7 @@
 
       if (AppState.activeDealRfpId) {
         const r = (AppState.broadcastRequests || []).find(x => x.id === AppState.activeDealRfpId);
-        if (r && isUserChatParticipant(r)) {
+        if (r && !r.isCompleted && !r.isDelivered && !r.isClosed && isUserChatParticipant(r)) {
           openDealChat(AppState.activeDealRfpId);
           return;
         }
@@ -10516,30 +10702,28 @@
 
       if (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) {
         const r = (AppState.broadcastRequests || []).find(x => x.id === AppState.activeEscrowOrder.id);
-        if (r && isUserChatParticipant(r)) {
+        if (r && !r.isCompleted && !r.isDelivered && !r.isClosed && isUserChatParticipant(r)) {
           openDealChat(AppState.activeEscrowOrder.id);
           return;
         }
       }
 
-      const myAcceptedRfp = (AppState.broadcastRequests || []).find(r => isUserChatParticipant(r) && r.isAccepted);
+      const myAcceptedRfp = (AppState.broadcastRequests || []).find(r => isUserChatParticipant(r) && r.isAccepted && !r.isCompleted && !r.isDelivered && !r.isClosed);
       if (myAcceptedRfp) {
         openDealChat(myAcceptedRfp.id);
         return;
       }
 
-      const myAnyRfp = (AppState.broadcastRequests || []).find(r => isUserChatParticipant(r));
-      if (myAnyRfp) {
-        openDealChat(myAnyRfp.id);
-        return;
-      }
-
       showToast(
         currentLang === 'it'
-          ? 'Nessuna chat 1-1 attiva. Accetta una commessa o attendi che un Creator prenda in carico la tua richiesta.'
-          : 'No active 1-on-1 deal chat available.',
+          ? '🔒 Chat 1-1 non disponibile: si riattiverà automaticamente con il prossimo contratto attivo con un Creator.'
+          : '🔒 1-on-1 Chat unavailable: it will automatically reactivate with the next active contract with a Creator.',
         'info'
       );
+      navigateTo('deal-chat');
+      if (typeof renderDealChatLockedState === 'function') {
+        renderDealChatLockedState();
+      }
     }
     window.openActiveDealChat = openActiveDealChat;
 
@@ -10547,6 +10731,7 @@
     let isBroadcastingTyping = false;
 
     function handleDealChatTyping(inputEl) {
+      if (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract()) return;
       const rfpId = AppState.activeDealRfpId || (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id);
       if (!rfpId) return;
 
@@ -11316,6 +11501,9 @@
 
         // 4e. Ascolto COMPLETAMENTO 4° PASSAGGIO (Svincolo Escrow, Recensione Cliente e Modal Creator)
         supabaseRealtimeChannel.on('broadcast', { event: 'order_completed_stage4' }, ({ payload }) => {
+          if (typeof resetAndLockAllDealChatsAfterStage4 === 'function') {
+            resetAndLockAllDealChatsAfterStage4(payload?.rfpId);
+          }
           console.log('🏁 [Realtime Order Completed Stage 4]:', payload);
           if (!payload || !payload.rfpId) return;
 
@@ -11361,6 +11549,14 @@
         });
 
         // 4f. Ascolto SINCRONIZZAZIONE PROFILO & IBAN IN TEMPO REALE TRA PC E SMARTPHONE
+        // 4g. Ascolto RIPRISTINO CHAT 1-1 DOPO COMPLETAMENTO 4° PASSAGGIO
+        supabaseRealtimeChannel.on('broadcast', { event: 'deal_chat_reset' }, ({ payload }) => {
+          console.log('🔒 [Realtime Deal Chat Reset]:', payload);
+          if (typeof resetAndLockAllDealChatsAfterStage4 === 'function') {
+            resetAndLockAllDealChatsAfterStage4(payload?.completedRfpId);
+          }
+        });
+
         supabaseRealtimeChannel.on('broadcast', { event: 'user_profile_updated' }, ({ payload }) => {
           console.log('👤 [Realtime User Profile Sync]:', payload);
           if (!payload || !payload.email) return;
@@ -24859,6 +25055,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     /* ========================================================================= */
     function concludeAndResetAfterDelivery() {
       const isEn = currentLang === 'en';
+      const cId = (AppState.activeEscrowOrder && AppState.activeEscrowOrder.id) || AppState.activeDealRfpId || (AppState.loadedRequestInStudio && AppState.loadedRequestInStudio.id);
+      if (typeof resetAndLockAllDealChatsAfterStage4 === 'function') {
+        resetAndLockAllDealChatsAfterStage4(cId);
+      }
       const isEs = currentLang === 'es';
       const isCreator = AppState.user && AppState.user.role === 'creator';
 
@@ -25030,6 +25230,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         ? '✓ ¡Escáner verificado! Fase 4 completada: fondos liberados (€ 0,00).' 
         : '✓ Scansione corriere verificata! Fase 4 completata: pacco consegnato e fondi Escrow svincolati (€ 0,00)!';
       showToast(toastDelivery, 'success');
+
+      // REQUISITO: Ripristino di ogni chat e blocco fino al prossimo contratto con un creator
+      if (typeof resetAndLockAllDealChatsAfterStage4 === 'function') {
+        resetAndLockAllDealChatsAfterStage4(completedReqId);
+      }
 
       // Notifica Realtime di completamento Fase 4 e rilascio Escrow tra dispositivi
       try {
@@ -25901,6 +26106,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
     function closeActivityAfterStage4() {
       const modal = document.getElementById('stage4CompletionModal');
+      const actReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      if (typeof resetAndLockAllDealChatsAfterStage4 === 'function') {
+        resetAndLockAllDealChatsAfterStage4(actReq ? actReq.id : null);
+      }
       if (modal) modal.classList.add('hidden');
 
       const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
@@ -30446,6 +30655,21 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         return;
       }
 
+      // REQUISITO: Se non c'è un contratto attivo con un Creator, la chat è bloccata fino al prossimo contratto
+      if (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract()) {
+        showToast(
+          currentLang === 'it'
+            ? '🔒 Chat 1-1 non disponibile: il 4° passaggio è completato e la chat si riattiverà al prossimo contratto con un Creator.'
+            : '🔒 1-on-1 Chat unavailable: Stage 4 completed. Chat will reactivate on next contract with a Creator.',
+          'info'
+        );
+        navigateTo('deal-chat');
+        if (typeof renderDealChatLockedState === 'function') {
+          renderDealChatLockedState();
+        }
+        return;
+      }
+
       let rfp = AppState.broadcastRequests.find(x => x.id === rfpId);
       if (!rfp && rfpId) {
         showToast(currentLang === 'it' ? 'Richiesta non trovata.' : 'Request not found.', 'warning');
@@ -30591,7 +30815,44 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
 function renderDealChat(rfpId) {
       if (typeof startDealChatPolling === "function") startDealChatPolling();
+
+      // REQUISITO: Se non c'è un contratto attivo con un Creator, mostra subito lo stato bloccato
+      if (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract()) {
+        renderDealChatLockedState();
+        return;
+      }
+
       const rawRfp = rfpId ? AppState.broadcastRequests.find(x => x.id === rfpId) : null;
+      if (!rawRfp || rawRfp.isCompleted || rawRfp.isDelivered || rawRfp.isClosed) {
+        renderDealChatLockedState();
+        return;
+      }
+
+      // Sblocca input e pulsanti per il contratto attivo
+      const chatInput = document.getElementById('dealChatInput');
+      const chatSendBtn = document.getElementById('dealChatSendBtn');
+      const chatPhotoBtn = document.querySelector('button[onclick="triggerDealPhotoUpload()"]');
+      const chatStatusSub = document.getElementById('dealChatStatusSub');
+      if (chatInput) {
+        chatInput.disabled = false;
+        chatInput.readOnly = false;
+        chatInput.classList.remove('opacity-50', 'cursor-not-allowed');
+        chatInput.placeholder = (typeof currentLang !== 'undefined' && currentLang === 'en')
+          ? 'Type a message or paste a screenshot with Ctrl+V...' 
+          : 'Scrivi un messaggio o incolla uno screenshot con Ctrl+V...';
+      }
+      if (chatSendBtn) {
+        chatSendBtn.disabled = false;
+        chatSendBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      }
+      if (chatPhotoBtn) {
+        chatPhotoBtn.disabled = false;
+        chatPhotoBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'pointer-events-none');
+      }
+      if (chatStatusSub) {
+        chatStatusSub.innerHTML = '<span class="text-emerald-400 font-bold">● CANALE PRIVATO CRITTOGRAFATO E2E</span>';
+      }
+
       if (!rawRfp) {
         const headTitle = document.getElementById('dealChatHeaderRfpTitle');
         if (headTitle) headTitle.innerText = currentLang === 'en' ? 'No Active Deal Selected' : currentLang === 'es' ? 'Ningún Trato Activo' : 'Nessuna Trattativa Attiva';
@@ -31014,6 +31275,18 @@ function renderDealChat(rfpId) {
 
     async function handleSendDealMessage(event) {
       if (event) event.preventDefault();
+
+      // REQUISITO: La chat non si può usare fino al prossimo contratto con un creator
+      if (typeof hasActiveCreatorContract === 'function' && !hasActiveCreatorContract()) {
+        showToast(
+          (typeof currentLang !== 'undefined' && currentLang === 'en')
+            ? '🔒 1-on-1 Chat is disabled until the next contract with a Creator.'
+            : '🔒 La chat 1-1 è disattivata fino al prossimo contratto attivo con un Creator.',
+          'warning'
+        );
+        return;
+      }
+
       const input = document.getElementById('dealChatInput');
       const text = input ? input.value.trim() : '';
 
