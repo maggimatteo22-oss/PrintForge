@@ -9471,7 +9471,7 @@
   <!-- ========================================================================= -->
   <!-- MODALE: RUOTA CROMATICA INTERATTIVA STUDIO 3D                             -->
   <!-- ========================================================================= -->
-  <div id="stylishColorWheelModal" class="fixed inset-0 z-50 bg-[#08090D]/90 backdrop-blur-md hidden flex items-center justify-center p-3 sm:p-4">
+  <div id="stylishColorWheelModal" style="display: none;" class="fixed inset-0 z-50 bg-[#08090D]/90 backdrop-blur-md items-center justify-center p-3 sm:p-4" onclick="if(event.target === this) closeStylishColorWheelModal()">
     <div class="w-full max-w-sm rounded-3xl bg-[#0F1017] border border-white/20 p-5 sm:p-6 space-y-4 shadow-2xl modal-spring-enter text-white relative">
       
       <!-- Modal Header -->
@@ -18363,7 +18363,18 @@ END-ISO-10303-21;`;
     function onColorWheelChange(hexVal) {
       if (!hexVal) return;
       const preview = document.getElementById('activeColorDotPreview');
-      if (preview) preview.style.backgroundColor = hexVal;
+      if (preview) {
+        preview.style.backgroundColor = hexVal;
+        preview.style.borderColor = '#ffffff';
+      }
+
+      const hexHeader = document.getElementById('colorHexDisplay');
+      if (hexHeader) {
+        hexHeader.innerText = hexVal.toUpperCase();
+        hexHeader.style.backgroundColor = `${hexVal}25`;
+        hexHeader.style.borderColor = `${hexVal}70`;
+        hexHeader.style.color = hexVal;
+      }
 
       const txtInp = document.getElementById('customColorTextInput');
       if (txtInp && (!txtInp.value || txtInp.value.startsWith('#'))) {
@@ -18434,13 +18445,36 @@ END-ISO-10303-21;`;
       if (picker) picker.value = hexVal;
 
       const preview = document.getElementById('activeColorDotPreview');
-      if (preview) preview.style.backgroundColor = hexVal;
+      if (preview) {
+        preview.style.backgroundColor = hexVal;
+        preview.style.borderColor = '#ffffff';
+        preview.style.boxShadow = `0 0 12px ${hexVal}aa`;
+      }
 
       const txtInp = document.getElementById('customColorTextInput');
       if (txtInp) txtInp.value = name;
 
       const display = document.getElementById('colorSelectedNameDisplay');
       if (display) display.innerText = name;
+
+      const hexHeader = document.getElementById('colorHexDisplay');
+      if (hexHeader) {
+        hexHeader.innerText = hexVal.toUpperCase();
+        hexHeader.style.backgroundColor = `${hexVal}25`;
+        hexHeader.style.borderColor = `${hexVal}70`;
+        hexHeader.style.color = hexVal;
+      }
+
+      const btnText = document.getElementById('i18n-colorWheelBtnText');
+      if (btnText) {
+        btnText.innerHTML = `<span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5 shrink-0 border border-white/70 shadow-sm" style="background-color: ${hexVal}"></span>${name}`;
+      }
+
+      const spectrumBadge = document.getElementById('i18n-spectrumBadgeText');
+      if (spectrumBadge) {
+        spectrumBadge.innerHTML = `✓ ${hexVal.toUpperCase()}`;
+        spectrumBadge.className = "text-[10px] font-mono text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30 font-bold shrink-0 ml-1 flex items-center";
+      }
 
       const cSel = document.getElementById('reqColor');
       if (cSel) {
@@ -18651,6 +18685,7 @@ END-ISO-10303-21;`;
       stylishWheelState.target = target;
       const modal = document.getElementById('stylishColorWheelModal');
       if (!modal) return;
+      modal.style.display = 'flex';
       modal.classList.remove('hidden');
       modal.classList.add('flex');
 
@@ -18687,6 +18722,7 @@ END-ISO-10303-21;`;
     function closeStylishColorWheelModal() {
       const modal = document.getElementById('stylishColorWheelModal');
       if (!modal) return;
+      modal.style.display = 'none';
       modal.classList.add('hidden');
       modal.classList.remove('flex');
     }
@@ -18737,36 +18773,91 @@ END-ISO-10303-21;`;
       const finalHex = stylishWheelState.currentHex || '#F97316';
       const finalName = `${stylishWheelState.colorName} ${stylishWheelState.finish}`.trim();
 
+      // Chiudi subito la ruota dei colori
+      closeStylishColorWheelModal();
+
       if (stylishWheelState.target === 'portfolio') {
+        // --- 1. BACHECA PORTFOLIO / AGGIUNTA LAVORI CREATOR ---
         const pDot = document.getElementById('portfolioColorDotPreview');
-        if (pDot) pDot.style.backgroundColor = finalHex;
+        if (pDot) {
+          pDot.style.backgroundColor = finalHex;
+          pDot.style.borderColor = '#ffffff';
+          pDot.style.boxShadow = `0 0 10px ${finalHex}aa`;
+        }
         const pName = document.getElementById('portfolioColorNameDisplay');
-        if (pName) pName.innerText = finalName;
+        if (pName) {
+          pName.innerText = finalName;
+          pName.style.color = '#ffffff';
+        }
         const pHex = document.getElementById('portfolioColorHexDisplay');
-        if (pHex) pHex.innerText = finalHex.toUpperCase();
+        if (pHex) {
+          pHex.innerText = finalHex.toUpperCase();
+          pHex.style.backgroundColor = `${finalHex}25`;
+          pHex.style.borderColor = `${finalHex}70`;
+          pHex.style.color = finalHex;
+        }
         const pInput = document.getElementById('portfolioColor');
         if (pInput) pInput.value = finalName;
-        closeStylishColorWheelModal();
+
+        const pBadge = document.getElementById('i18n-portfolioWheelBtnBadge');
+        if (pBadge) {
+          pBadge.innerHTML = `<span class="inline-block w-2.5 h-2.5 rounded-full mr-1 shrink-0 border border-white/60 shadow-sm" style="background-color: ${finalHex}"></span>✓ ${finalHex.toUpperCase()}`;
+          pBadge.className = "text-[10px] font-mono text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30 font-bold shrink-0 ml-1 flex items-center";
+        }
+
         const msg = currentLang === 'en' ? 'Color applied: ' + finalName : currentLang === 'es' ? 'Color aplicado: ' + finalName : 'Colore applicato: ' + finalName;
         showToast(msg, 'success');
         stylishWheelState.target = 'request';
         return;
       }
 
+      // --- 2. RICHIESTA CLIENTE (STEP 2: COLORE & FINITURA) ---
       const picker = document.getElementById('nativeColorPicker');
       if (picker) picker.value = finalHex;
+
       const dot = document.getElementById('activeColorDotPreview');
-      if (dot) dot.style.backgroundColor = finalHex;
+      if (dot) {
+        dot.style.backgroundColor = finalHex;
+        dot.style.borderColor = '#ffffff';
+        dot.style.boxShadow = `0 0 12px ${finalHex}aa`;
+      }
+
       const nameDisp = document.getElementById('colorSelectedNameDisplay');
       if (nameDisp) nameDisp.innerText = finalName;
+
+      const hexHeader = document.getElementById('colorHexDisplay');
+      if (hexHeader) {
+        hexHeader.innerText = finalHex.toUpperCase();
+        hexHeader.style.backgroundColor = `${finalHex}25`;
+        hexHeader.style.borderColor = `${finalHex}70`;
+        hexHeader.style.color = finalHex;
+      }
+
       const hexBadge = document.getElementById('colorSelectedHexBadge');
-      if (hexBadge) hexBadge.innerText = finalHex.toUpperCase();
+      if (hexBadge) {
+        hexBadge.innerText = finalHex.toUpperCase();
+        hexBadge.style.backgroundColor = `${finalHex}25`;
+        hexBadge.style.borderColor = `${finalHex}70`;
+        hexBadge.style.color = finalHex;
+      }
+
       const txtInp = document.getElementById('customColorTextInput');
       if (txtInp) txtInp.value = finalName;
 
+      // Aggiorna etichetta e badge del bottone per mostrare visivamente il colore scelto
+      const btnText = document.getElementById('i18n-colorWheelBtnText');
+      if (btnText) {
+        btnText.innerHTML = `<span class="inline-block w-2.5 h-2.5 rounded-full mr-1.5 shrink-0 border border-white/70 shadow-sm" style="background-color: ${finalHex}"></span>${finalName}`;
+      }
+
+      const spectrumBadge = document.getElementById('i18n-spectrumBadgeText');
+      if (spectrumBadge) {
+        spectrumBadge.innerHTML = `✓ ${finalHex.toUpperCase()}`;
+        spectrumBadge.className = "text-[10px] font-mono text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-500/30 font-bold shrink-0 ml-1 flex items-center";
+      }
+
       onColorWheelChange(finalHex);
-      closeStylishColorWheelModal();
-      showToast(`Colore applicato: ${finalName} (${finalHex})`);
+      showToast(`Colore applicato: ${finalName} (${finalHex})`, 'success');
     }
     window.applyStylishColorAndClose = applyStylishColorAndClose;
 
