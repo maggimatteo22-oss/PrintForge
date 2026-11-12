@@ -30248,19 +30248,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     window.confirmEscrowAndDispatch = confirmEscrowAndDispatch;
     window.executeFinalBroadcastSubmit = executeFinalBroadcastSubmit;
     window.handleBroadcastSubmit = handleBroadcastSubmit;
-    // Assicura che il tasto Trova il Maker sia sempre cliccabile
+    // Assicura che il tasto Trova il Maker sia sempre cliccabile (senza listener duplicato)
     document.addEventListener('DOMContentLoaded', function() {
       const b = document.getElementById('btnSubmitRfpForm');
       if (b) {
         b.disabled = false;
         b.removeAttribute('disabled');
         b.classList.remove('pointer-events-none', 'opacity-50', 'cursor-not-allowed');
-        b.addEventListener('click', function(e) {
-          if (e && e.preventDefault) e.preventDefault();
-          if (typeof handleBroadcastSubmit === 'function') {
-            handleBroadcastSubmit(e);
-          }
-        });
       }
     });
 
