@@ -10022,7 +10022,7 @@
         window.__printforge_global_poll_started = true;
         // Polling rapido ogni 2 secondi per sincronizzazione fluida telefono <-> pc
         setInterval(() => {
-          if (supabaseClient && typeof loadRequestsFromSupabase === 'function') {
+          if (typeof loadRequestsFromSupabase === 'function') {
             loadRequestsFromSupabase();
           }
         }, 2000);
