@@ -8197,7 +8197,7 @@
 
     <!-- MINI RIQUADRO: CONFIGURAZIONE DATI INCASSO IBAN PER IL CREATOR        -->
     <!-- ===================================================================== -->
-    <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important;; display: none;">
+    <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
       <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
         
         <!-- Header -->
@@ -8245,13 +8245,15 @@
                      placeholder="IT60X0542811101000000123456" 
                      required 
                      maxlength="34"
-                     oninput="this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');" 
+                     oninput="onIbanLiveInput(this)" 
+                     onblur="onIbanLiveBlur(this)"
                      class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase tracking-wider" />
               <div class="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1 text-emerald-400 font-mono text-[10px] font-bold">
                 <i data-lucide="shield-check" class="w-3.5 h-3.5 text-emerald-400"></i>
                 <span>SEPA</span>
               </div>
             </div>
+            <div id="payoutIbanLiveFeedback" class="hidden mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 transition-all"></div>
             <span class="text-[10px] text-zinc-500 font-mono block">Valido per qualsiasi banca o carta ricaricabile con IBAN (es. Revolut, PostePay Evolution, Intesa, ecc.)</span>
             
             <!-- Messaggio di Garanzia nel Pannello Incassi -->
@@ -8263,15 +8265,14 @@
             </div>
           </div>
 
-          <!-- Codice Fiscale o P.IVA -->
+          <!-- Codice Fiscale o P.IVA (Opzionale) -->
           <div class="space-y-1">
             <label class="text-[11px] font-mono text-zinc-300 block font-bold">
-              Codice Fiscale o Partita IVA *
+              Codice Fiscale o Partita IVA <span class="text-zinc-500 font-normal text-[10px] block sm:inline">(Opzionale - necessario solo ai fini di fatturazione o sopra le soglie fiscali)</span>
             </label>
             <input type="text" 
                    id="payoutTaxId" 
-                   placeholder="RSSMRA80A01H501U oppure Partita IVA" 
-                   required 
+                   placeholder="Es. RSSMRA80A01H501U o Partita IVA (Opzionale)" 
                    class="w-full bg-[#14141A] border border-white/15 rounded-xl px-3.5 py-2.5 text-white font-mono text-xs focus:border-emerald-400 outline-none transition uppercase" />
           </div>
 
@@ -34081,12 +34082,17 @@ function renderDealChat(rfpId) {
       const lockedBanner = document.getElementById('creatorUploadLockedBanner');
       const submitBtn = document.getElementById('btnPublishPortfolioSubmit');
       if (isConfigured) {
-        if (stripeBtn) { stripeBtn.style.display = 'none'; stripeBtn.classList.add('hidden'); }
+        if (stripeBtn) {
+          stripeBtn.style.display = 'inline-flex';
+          stripeBtn.classList.remove('hidden');
+          const stripeBtnText = document.getElementById('i18n-creatorStripeBtn');
+          if (stripeBtnText) stripeBtnText.innerText = 'Modifica IBAN / Coordinate';
+        }
         if (ibanBadge) {
           ibanBadge.classList.remove('hidden');
           const ibanText = document.getElementById('badgeCreatorIbanText');
           if (ibanText && typeof getPayoutMaskedIban === 'function') {
-            ibanText.innerText = `IBAN COLLEGATO (${getPayoutMaskedIban()}) ✓`;
+            ibanText.innerText = `IBAN: ${getPayoutMaskedIban()} ✓`;
           }
         }
         if (lockedBanner) lockedBanner.classList.add('hidden');
@@ -34096,13 +34102,18 @@ function renderDealChat(rfpId) {
           if (txtSpan) txtSpan.innerText = 'Aggiungi al Portfolio & Vetrina';
         }
       } else {
-        if (stripeBtn) { stripeBtn.style.display = 'inline-flex'; stripeBtn.classList.remove('hidden'); }
+        if (stripeBtn) {
+          stripeBtn.style.display = 'inline-flex';
+          stripeBtn.classList.remove('hidden');
+          const stripeBtnText = document.getElementById('i18n-creatorStripeBtn');
+          if (stripeBtnText) stripeBtnText.innerText = 'Collega IBAN Ricezione';
+        }
         if (ibanBadge) { ibanBadge.classList.add('hidden'); }
         if (lockedBanner) lockedBanner.classList.remove('hidden');
         if (submitBtn) {
           submitBtn.classList.add('opacity-60');
           const txtSpan = document.getElementById('i18n-btnPublishPortfolioText');
-          if (txtSpan) txtSpan.innerText = '🔒 Collega IBAN / Stripe per Pubblicare';
+          if (txtSpan) txtSpan.innerText = '🔒 Collega IBAN per Pubblicare';
         }
       }
       if (stripeBtn) {
@@ -34982,7 +34993,7 @@ function renderDealChat(rfpId) {
           if (AppState.user) localStorage.setItem('printforge_auth_session', JSON.stringify(AppState.user));
         } catch(err) {}
         const sBtn = document.getElementById('btnCreatorConnectStripe');
-        if (sBtn) { sBtn.style.display = 'none'; sBtn.classList.add('hidden'); }
+        if (sBtn) { sBtn.style.display = 'inline-flex'; sBtn.classList.remove('hidden'); const t = document.getElementById('i18n-creatorStripeBtn'); if (t) t.innerText = 'Modifica IBAN / Coordinate'; }
         showToast('Collegamento Stripe simulato con successo.', 'success');
       }
     }
@@ -35031,60 +35042,6 @@ function renderDealChat(rfpId) {
     }
     window.getPayoutMaskedIban = getPayoutMaskedIban;
 
-    function openPayoutConfigModal() {
-      const modal = document.getElementById('modalPayoutConfig');
-      if (!modal) return;
-      const topHeader = document.getElementById('mainAppHeader');
-      if (topHeader) topHeader.style.display = 'none';
-      try {
-        const holderInput = document.getElementById('payoutAccountHolder');
-        const ibanInput = document.getElementById('payoutIban');
-        const taxIdInput = document.getElementById('payoutTaxId');
-        if (holderInput) holderInput.value = '';
-        if (ibanInput) ibanInput.value = '';
-        if (taxIdInput) taxIdInput.value = '';
-
-        const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
-        const userKey = myEmail ? ('printforge_payout_details_' + myEmail.replace(/[^a-z0-9]/g, '_')) : null;
-        const stored = userKey ? localStorage.getItem(userKey) : null;
-        let config = AppState.user?.payoutConfig;
-        if (!config && stored) {
-          try { config = JSON.parse(stored); } catch(e) {}
-        }
-
-        if (config) {
-          if (holderInput && config.accountHolder) holderInput.value = config.accountHolder;
-          if (ibanInput && config.iban) ibanInput.value = config.iban;
-          if (taxIdInput && config.taxId) taxIdInput.value = config.taxId;
-        } else if (AppState.user && AppState.user.name) {
-          if (holderInput) holderInput.value = AppState.user.name;
-        }
-      } catch(e) {}
-      modal.classList.remove('hidden');
-      if (window.lucide && typeof window.lucide.createIcons === 'function') {
-        window.lucide.createIcons();
-      }
-    }
-    window.openPayoutConfigModal = openPayoutConfigModal;
-
-    function closePayoutConfigModal() {
-      const modal = document.getElementById('modalPayoutConfig');
-      if (modal) modal.classList.add('hidden');
-      const topHeader = document.getElementById('mainAppHeader');
-      if (topHeader) topHeader.style.display = '';
-    }
-    window.closePayoutConfigModal = closePayoutConfigModal;
-
-    async function handlePayoutConfigSubmit(e) {
-      if (e && e.preventDefault) e.preventDefault();
-      const holder = document.getElementById('payoutAccountHolder')?.value?.trim() || '';
-      const iban = (document.getElementById('payoutIban')?.value?.trim() || '').toUpperCase().replace(/\s+/g, '');
-      const taxId = (document.getElementById('payoutTaxId')?.value?.trim() || '').toUpperCase();
-
-      if (!holder) {
-        showToast(currentLang === 'it' ? 'Inserisci l\'intestatario del conto' : 'Please enter account holder name', 'warning');
-        return;
-      }
     // Validatore Ufficiale ISO 13616 / ISO 7064 Modulo 97 per IBAN Bancari
     function isValidIBANChecksum(input) {
       if (!input || typeof input !== 'string') return false;
@@ -35098,7 +35055,7 @@ function renderDealChat(rfpId) {
         SE: 24, SI: 19, SK: 24, SM: 27, TN: 24, TR: 26, UA: 29, VA: 22, VG: 24
       };
       const clean = input.toUpperCase().replace(/[^A-Z0-9]/g, '');
-      const code = clean.match(/^([A-Z]{2})(d{2})([A-Z0-9]+)$/);
+      const code = clean.match(/^([A-Z]{2})([0-9]{2})([A-Z0-9]+)$/);
       if (!code) return false;
       const country = code[1];
       const check = code[2];
@@ -35113,27 +35070,211 @@ function renderDealChat(rfpId) {
     }
     window.isValidIBANChecksum = isValidIBANChecksum;
 
-      if (!iban || iban.length < 15) {
-        showToast(currentLang === 'it' ? 'Inserisci un codice IBAN valido (min. 15 caratteri)' : 'Please enter a valid IBAN code', 'warning');
+    // Feedback visivo immediato durante la digitazione dell'IBAN
+    function onIbanLiveInput(inputEl) {
+      if (!inputEl) return;
+      const clean = inputEl.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (inputEl.value !== clean) {
+        inputEl.value = clean;
+      }
+      const feedbackEl = document.getElementById('payoutIbanLiveFeedback');
+      if (!feedbackEl) return;
+
+      if (!clean || clean.length === 0) {
+        feedbackEl.classList.add('hidden');
+        feedbackEl.innerHTML = '';
+        inputEl.classList.remove('border-red-500', 'border-emerald-400');
+        inputEl.classList.add('border-white/15');
         return;
       }
+
+      feedbackEl.classList.remove('hidden');
+
+      const country = clean.substring(0, 2);
+      const isCountryLetters = /^[A-Z]{2}$/.test(country);
+
+      if (clean.length < 4) {
+        feedbackEl.className = 'mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 bg-blue-500/10 border border-blue-500/25 text-blue-300';
+        feedbackEl.innerHTML = '<i data-lucide="info" class="w-3.5 h-3.5 shrink-0 text-blue-400"></i><span>Inserisci il prefisso paese (es. IT) e il codice conto...</span>';
+        inputEl.classList.remove('border-red-500', 'border-emerald-400');
+        inputEl.classList.add('border-white/15');
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
+      const CODE_LENGTHS = {
+        AD: 24, AE: 23, AL: 28, AT: 20, AZ: 28, BA: 20, BE: 16, BG: 22, BH: 22, BR: 29,
+        CH: 21, CR: 22, CY: 28, CZ: 24, DE: 22, DK: 18, DO: 28, EE: 20, ES: 24, FI: 18,
+        FO: 18, FR: 27, GB: 22, GE: 22, GI: 23, GL: 18, GR: 27, GT: 28, HR: 21, HU: 28,
+        IE: 22, IL: 23, IS: 26, IT: 27, JO: 30, KW: 30, KZ: 20, LB: 28, LC: 32, LI: 21,
+        LT: 28, LU: 20, LV: 21, MC: 27, MD: 24, ME: 22, MK: 19, MR: 27, MT: 31, MU: 30,
+        NL: 18, NO: 15, PK: 24, PL: 28, PS: 29, PT: 25, QA: 29, RO: 24, RS: 22, SA: 24,
+        SE: 24, SI: 19, SK: 24, SM: 27, TN: 24, TR: 26, UA: 29, VA: 22, VG: 24
+      };
+
+      const expectedLen = CODE_LENGTHS[country];
+
+      if (!isCountryLetters || !expectedLen) {
+        feedbackEl.className = 'mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-300';
+        feedbackEl.innerHTML = '<i data-lucide="alert-triangle" class="w-3.5 h-3.5 shrink-0 text-red-400"></i><span>⚠️ Prefisso nazione non valido ("' + country + '"). Usa un codice bancario SEPA (es. IT, DE, FR, ES).</span>';
+        inputEl.classList.remove('border-white/15', 'border-emerald-400');
+        inputEl.classList.add('border-red-500');
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
+      if (clean.length < expectedLen) {
+        feedbackEl.className = 'mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 bg-amber-500/10 border border-amber-500/25 text-amber-300';
+        feedbackEl.innerHTML = '<i data-lucide="clock" class="w-3.5 h-3.5 shrink-0 text-amber-400"></i><span>IBAN ' + country + ' in digitazione: inseriti ' + clean.length + ' di ' + expectedLen + ' caratteri previsti...</span>';
+        inputEl.classList.remove('border-red-500', 'border-emerald-400');
+        inputEl.classList.add('border-white/15');
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
+      if (clean.length > expectedLen) {
+        feedbackEl.className = 'mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-300';
+        feedbackEl.innerHTML = '<i data-lucide="alert-circle" class="w-3.5 h-3.5 shrink-0 text-red-400"></i><span>⚠️ IBAN troppo lungo: per ' + country + ' sono previsti esattamente ' + expectedLen + ' caratteri (ne hai inseriti ' + clean.length + ').</span>';
+        inputEl.classList.remove('border-white/15', 'border-emerald-400');
+        inputEl.classList.add('border-red-500');
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+        return;
+      }
+
+      // Lunghezza esatta raggiunta: calcolo Modulo 97
+      const valid = isValidIBANChecksum(clean);
+      if (valid) {
+        feedbackEl.className = 'mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/40 text-emerald-300';
+        feedbackEl.innerHTML = '<i data-lucide="check-circle" class="w-3.5 h-3.5 shrink-0 text-emerald-400"></i><span>✓ IBAN valido: formato SEPA e cifre di controllo Modulo 97 verificate!</span>';
+        inputEl.classList.remove('border-white/15', 'border-red-500');
+        inputEl.classList.add('border-emerald-400');
+      } else {
+        feedbackEl.className = 'mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-300';
+        feedbackEl.innerHTML = '<i data-lucide="alert-triangle" class="w-3.5 h-3.5 shrink-0 text-red-400"></i><span>⚠️ IBAN non valido: le cifre di controllo bancarie o il codice del conto non risultano corretti.</span>';
+        inputEl.classList.remove('border-white/15', 'border-emerald-400');
+        inputEl.classList.add('border-red-500');
+      }
+      if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+    }
+    window.onIbanLiveInput = onIbanLiveInput;
+
+    function onIbanLiveBlur(inputEl) {
+      if (!inputEl) return;
+      const clean = (inputEl.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (clean.length > 0 && !isValidIBANChecksum(clean)) {
+        const feedbackEl = document.getElementById('payoutIbanLiveFeedback');
+        if (feedbackEl) {
+          feedbackEl.classList.remove('hidden');
+          feedbackEl.className = 'mt-1.5 p-2 rounded-xl text-[10.5px] font-mono flex items-center gap-2 bg-red-500/10 border border-red-500/30 text-red-300';
+          feedbackEl.innerHTML = '<i data-lucide="alert-triangle" class="w-3.5 h-3.5 shrink-0 text-red-400"></i><span>⚠️ IBAN non valido: verifica le coordinate bancarie prima di salvare.</span>';
+        }
+        inputEl.classList.remove('border-white/15', 'border-emerald-400');
+        inputEl.classList.add('border-red-500');
+        if (window.lucide && typeof window.lucide.createIcons === 'function') window.lucide.createIcons();
+      }
+    }
+    window.onIbanLiveBlur = onIbanLiveBlur;
+
+    function openPayoutConfigModal() {
+      const modal = document.getElementById('modalPayoutConfig');
+      if (!modal) return;
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+      const topHeader = document.getElementById('mainAppHeader');
+      if (topHeader) topHeader.style.display = 'none';
+
+      const feedbackEl = document.getElementById('payoutIbanLiveFeedback');
+      if (feedbackEl) {
+        feedbackEl.classList.add('hidden');
+        feedbackEl.innerHTML = '';
+      }
+
+      try {
+        const holderInput = document.getElementById('payoutAccountHolder');
+        const ibanInput = document.getElementById('payoutIban');
+        const taxIdInput = document.getElementById('payoutTaxId');
+        if (holderInput) holderInput.value = '';
+        if (ibanInput) {
+          ibanInput.value = '';
+          ibanInput.classList.remove('border-red-500', 'border-emerald-400');
+          ibanInput.classList.add('border-white/15');
+        }
+        if (taxIdInput) taxIdInput.value = '';
+
+        const myEmail = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+        const userKey = myEmail ? ('printforge_payout_details_' + myEmail.replace(/[^a-z0-9]/g, '_')) : null;
+        const stored = userKey ? localStorage.getItem(userKey) : null;
+        let config = AppState.user?.payoutConfig;
+        if (!config && stored) {
+          try { config = JSON.parse(stored); } catch(e) {}
+        }
+
+        if (config) {
+          if (holderInput && config.accountHolder) holderInput.value = config.accountHolder;
+          if (ibanInput && config.iban) {
+            ibanInput.value = config.iban;
+            onIbanLiveInput(ibanInput);
+          }
+          if (taxIdInput && config.taxId) taxIdInput.value = config.taxId;
+        } else if (AppState.user && AppState.user.name) {
+          if (holderInput) holderInput.value = AppState.user.name;
+        }
+      } catch(e) {}
+
+      if (window.lucide && typeof window.lucide.createIcons === 'function') {
+        window.lucide.createIcons();
+      }
+    }
+    window.openPayoutConfigModal = openPayoutConfigModal;
+
+    function closePayoutConfigModal() {
+      const modal = document.getElementById('modalPayoutConfig');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.style.display = 'none';
+      }
+      const topHeader = document.getElementById('mainAppHeader');
+      if (topHeader) topHeader.style.display = '';
+    }
+    window.closePayoutConfigModal = closePayoutConfigModal;
+
+    async function handlePayoutConfigSubmit(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      const holder = document.getElementById('payoutAccountHolder')?.value?.trim() || '';
+      const iban = (document.getElementById('payoutIban')?.value?.trim() || '').toUpperCase().replace(/\s+/g, '');
+      const taxId = (document.getElementById('payoutTaxId')?.value?.trim() || '').toUpperCase();
+
+      if (!holder) {
+        showToast(currentLang === 'it' ? 'Inserisci l\'intestatario del conto' : 'Please enter account holder name', 'warning');
+        const holderEl = document.getElementById('payoutAccountHolder');
+        if (holderEl) holderEl.focus();
+        return;
+      }
+
+      if (!iban || iban.length < 15) {
+        showToast(currentLang === 'it' ? 'Inserisci un codice IBAN valido' : 'Please enter a valid IBAN code', 'warning');
+        const ibanEl = document.getElementById('payoutIban');
+        if (ibanEl) ibanEl.focus();
+        return;
+      }
+
       if (!isValidIBANChecksum(iban)) {
         showToast(currentLang === 'it' 
           ? 'Codice IBAN non valido: le cifre di controllo bancarie non corrispondono allo standard SEPA (Modulo 97). Verifica le coordinate del conto.' 
           : 'Invalid IBAN code: bank checksum verification failed (Modulo 97). Please verify your account details.', 'warning');
         const ibanEl = document.getElementById('payoutIban');
-        if (ibanEl) ibanEl.focus();
-        return;
-      }
-      if (!taxId) {
-        showToast(currentLang === 'it' ? 'Inserisci il Codice Fiscale o la P.IVA' : 'Please enter Tax ID / VAT', 'warning');
+        if (ibanEl) {
+          ibanEl.focus();
+          onIbanLiveInput(ibanEl);
+        }
         return;
       }
 
+      // Codice Fiscale / Partita IVA è facoltativo (Opzione 1)
       const payoutData = {
         accountHolder: holder,
         iban: iban,
-        taxId: taxId,
+        taxId: taxId || null,
         configuredAt: new Date().toISOString()
       };
 
@@ -35159,8 +35300,8 @@ function renderDealChat(rfpId) {
         } catch(err) {}
       }
 
-      closePayoutConfigModal(); const topHeader = document.getElementById('mainAppHeader'); if (topHeader) topHeader.style.display = '';
-      showToast(currentLang === 'it' ? 'Coordinate IBAN salvate! I bonifici automatici sono ora attivi.' : 'Payout IBAN saved! Automated payouts are now active.', 'success');
+      closePayoutConfigModal();
+      showToast(currentLang === 'it' ? 'Coordinate IBAN salvate con successo! I compensi verranno accreditati qui.' : 'Payout IBAN saved! Payouts will be transferred here.', 'success');
 
       // 1. Posto 1: Aggiorna e nasconde istantaneamente l'avviso nella Escrow Room
       const payoutNotice = document.getElementById('escrowCreatorPayoutNotice');
