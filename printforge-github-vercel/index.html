@@ -3864,7 +3864,7 @@
                   class="btn-kowalski-secondary h-8 sm:h-9 px-2.5 sm:px-3 rounded-full text-zinc-300 hover:text-white flex items-center gap-1.5 cursor-pointer text-[11px] font-mono transition" 
                   title="Email Collegata & Notifiche Transazionali">
             <i data-lucide="mail" class="w-3.5 h-3.5 text-white shrink-0"></i>
-            <span id="navConnectedEmailText" class="hidden sm:inline max-w-[130px] md:max-w-[170px] truncate text-white font-medium">matteo@printforge.dev</span>
+            <span id="navConnectedEmailText" class="hidden sm:inline max-w-[130px] md:max-w-[170px] truncate text-white font-medium"></span>
             <span id="navEmailCountBadge" class="hidden min-w-[16px] h-4 px-1 rounded-full bg-emerald-500 text-black font-mono font-bold text-[9px] flex items-center justify-center shadow-md">0</span>
           </button>
         </div>
@@ -10158,7 +10158,7 @@
               title: dbR.title,
               clientName: dbR.client_name || 'Cliente Verificato',
               clientCity: dbR.client_city || 'Italia',
-              clientEmail: dbR.client_email || 'cliente@printforge.dev',
+              clientEmail: dbR.client_email || dbR.clientEmail || '',
               material: dbR.material || 'PETG',
               color: dbR.color || 'Nero Opaco',
               colorHex: dbR.color_hex || '#FFFFFF',
@@ -11088,7 +11088,7 @@
 
       const emBadge = document.getElementById('rfpSuccessEmailBadge');
       if (emBadge) {
-        emBadge.innerText = req.clientEmail || AppState.user.email || 'matteo@printforge.dev';
+        emBadge.innerText = req.clientEmail || (AppState.user && AppState.user.email) || '';
       }
       const emLabel = document.getElementById('rfpSuccessEmailLabel');
       if (emLabel) {
@@ -19312,7 +19312,7 @@ END-ISO-10303-21;`;
       if (titleEl) titleEl.innerText = displayTitle;
       if (clientNameEl) clientNameEl.innerText = r.clientName || (isEn ? 'Client' : 'Cliente');
       if (clientCityEl) clientCityEl.innerText = r.clientCity || (isEn ? 'Milan, Italy' : isEs ? 'Milán, Italia' : 'Milano (MI)');
-      if (clientEmailEl) clientEmailEl.innerText = r.clientEmail || 'cliente@printforge.dev';
+      if (clientEmailEl) clientEmailEl.innerText = r.clientEmail || '-';
       if (clientAvatarEl) {
         clientAvatarEl.innerText = (r.clientName || 'C').charAt(0).toUpperCase();
       }
@@ -20681,12 +20681,15 @@ END-ISO-10303-21;`;
       }
       const emailText = document.getElementById('navConnectedEmailText');
       const countBadge = document.getElementById('navEmailCountBadge');
-      const emailVal = AppState.user?.email || 'matteo@printforge.dev';
+      const userEmail = (AppState.user && AppState.user.isLoggedIn && AppState.user.email) ? AppState.user.email.trim() : '';
       if (emailText) {
-        emailText.innerText = emailVal;
+        emailText.innerText = userEmail;
       }
       if (countBadge) {
-        const count = (AppState.sentEmails || []).length;
+        const userEmails = userEmail 
+          ? (AppState.sentEmails || []).filter(e => (e.to && e.to.toLowerCase() === userEmail.toLowerCase()) || (e.from && e.from.toLowerCase() === userEmail.toLowerCase()))
+          : [];
+        const count = userEmails.length;
         if (count > 0) {
           countBadge.innerText = count > 99 ? '99+' : count;
           countBadge.classList.remove('hidden');
@@ -20695,8 +20698,10 @@ END-ISO-10303-21;`;
         }
       }
       const reqEmailInput = document.getElementById('reqClientEmail');
-      if (reqEmailInput && !reqEmailInput.value) {
-        reqEmailInput.value = emailVal;
+      if (reqEmailInput) {
+        if (userEmail && !reqEmailInput.value) {
+          reqEmailInput.value = userEmail;
+        }
       }
     }
     window.updateNavEmailStatus = updateNavEmailStatus;
@@ -20944,8 +20949,12 @@ END-ISO-10303-21;`;
       const isEn = lang === 'en';
       const isEs = lang === 'es';
 
+      const clientEmail = (req && req.clientEmail) || (AppState.user && AppState.user.role === 'client' && AppState.user.email) || '';
+      if (!clientEmail || !clientEmail.includes('@')) {
+        console.log('Skipping client submission email: no valid recipient email');
+        return;
+      }
       const clientName = req.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
-      const clientEmail = req.clientEmail || AppState.user?.email || 'matteo@printforge.dev';
       const partTitle = req.title || (isEn ? 'Custom Component' : 'Componente Meccanico');
       const budgetStr = formatEuroClean(req.escrowTotal || req.budget);
 
@@ -21051,8 +21060,12 @@ END-ISO-10303-21;`;
       const isEn = lang === 'en';
       const isEs = lang === 'es';
 
+      const clientEmail = (req && req.clientEmail) || '';
+      if (!clientEmail || !clientEmail.includes('@')) {
+        console.log('Skipping project accepted email: no valid client email');
+        return;
+      }
       const clientName = req.clientName || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
-      const clientEmail = req.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : 'matteo@printforge.dev');
       const makerName = req.acceptedBy || AppState.user?.name || (isEn ? 'PrintForge Certified Maker' : isEs ? 'Creador Certificado PrintForge' : 'Maker Certificato PrintForge');
       const partTitle = req.title || (isEn ? 'Custom Component' : 'Componente Meccanico');
       const budgetStr = formatEuroClean(req.escrowTotal || req.budget);
@@ -21208,8 +21221,12 @@ END-ISO-10303-21;`;
       const isEs = lang === 'es';
 
       const activeReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => r.isAccepted));
+      const clientEmail = (order && order.clientEmail) || (activeReq && activeReq.clientEmail) || '';
+      if (!clientEmail || !clientEmail.includes('@')) {
+        console.log('Skipping QC photos ready email: no valid client email');
+        return;
+      }
       const clientName = order.clientName || activeReq?.clientName || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
-      const clientEmail = order.clientEmail || activeReq?.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : null) || 'matteo@printforge.dev';
       const makerName = order.maker || AppState.user?.name || (isEn ? 'PrintForge Certified Maker' : isEs ? 'Creador Certificado PrintForge' : 'Maker Certificato PrintForge');
       const partTitle = order.title || activeReq?.title || (isEn ? 'Custom Component' : 'Componente Meccanico');
       const orderId = order.id || activeReq?.id || 'PF-ORD-1';
@@ -21356,8 +21373,9 @@ END-ISO-10303-21;`;
       const isEn = lang === 'en';
       const isEs = lang === 'es';
 
+      const clientEmail = (req && req.clientEmail) || (AppState.user && AppState.user.role === 'client' && AppState.user.email) || '';
+      if (!clientEmail || !clientEmail.includes('@')) return;
       const clientName = req.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
-      const clientEmail = req.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : 'matteo@printforge.dev');
       const makerName = req.acceptedBy || req.maker || (isEn ? 'PrintForge Master Artisan' : 'Creator d\'Autore PrintForge');
       const partTitle = req.title || (isEn ? 'Artisan Showcase Creation' : 'Opera d\'Autore da Vetrina');
       const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
@@ -21471,8 +21489,12 @@ END-ISO-10303-21;`;
       const isEn = lang === 'en';
       const isEs = lang === 'es';
 
+      const clientEmail = (order && order.clientEmail) || '';
+      if (!clientEmail || !clientEmail.includes('@')) {
+        console.log('Skipping parcel shipped email: no valid client email');
+        return;
+      }
       const clientName = order.clientName || AppState.user?.name || (isEn ? 'Client' : 'Cliente');
-      const clientEmail = order.clientEmail || (AppState.user?.role === 'client' ? AppState.user.email : 'matteo@printforge.dev');
       const makerName = order.maker || order.acceptedBy || 'Maker Certificato PrintForge';
       const partTitle = order.title || 'Componente 3D';
       const trackingCode = order.trackingNumber || 'PF-UPS-892104';
@@ -21571,113 +21593,10 @@ END-ISO-10303-21;`;
 
     // 3. PER CREATOR: Nuova Offerta Online Globale nel Sito (Global Network Broadcast)
     function sendGlobalBroadcastRequestEmailToCreator(req) {
+      // PRIVACY & NO-SPAM: le richieste aperte appaiono esclusivamente nella bacheca condivisa del marketplace
+      // Non vengono inviate email a caselle personali finché un maker non accetta la commessa.
       if (!req) return;
-      const lang = (typeof currentLang !== 'undefined' && currentLang) || 'it';
-      const isEn = lang === 'en';
-      const isEs = lang === 'es';
-
-      // Recupera tutti i creator attivi registrati o usa l'email creator attuale
-      const creatorEmails = new Set();
-      if (AppState.user && AppState.user.role === 'creator' && AppState.user.email) {
-        creatorEmails.add(AppState.user.email.toLowerCase().trim());
-      }
-      try {
-        const reg = JSON.parse(localStorage.getItem('printforge_accessed_creators_registry') || '[]');
-        if (Array.isArray(reg)) {
-          reg.forEach(em => { if (em && em.includes('@')) creatorEmails.add(em.toLowerCase().trim()); });
-        }
-      } catch(e) {}
-      if (creatorEmails.size === 0) creatorEmails.add('maker@printforge.dev');
-
-      const clientName = req.clientName || 'Cliente Verificato';
-      const partTitle = req.title || 'Componente 3D su Misura';
-      const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
-      const budgetNum = parseFloat(String(req.budget).replace(/[^0-9.]/g, '')) || 0;
-      const mfgValStr = budgetNum > 0 ? ('€ ' + Math.max(0, Math.round(((budgetNum - 0.25)/1.015)*100)/100).toFixed(2).replace('.', ',')) : budgetStr;
-
-      let subject = '';
-      let summary = '';
-      let body = '';
-
-      if (isEn) {
-        subject = '📢 New Global Request Available on Network: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
-        summary = 'A client posted a new open manufacturing request: "' + partTitle + '". Net Maker Payout: ' + mfgValStr + '. Accept it first!';
-        body = [
-          'Hello Maker,',
-          '',
-          'A client has just published a new GLOBAL MANUFACTURING COMMISION on the PrintForge decentralized network:',
-          '',
-          '📋 PROJECT SPECIFICATIONS:',
-          '• Component Title: ' + partTitle,
-          '• Request ID: #' + req.id,
-          '• Material & Precision: ' + (req.material || 'PETG') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
-          '• Dimensions & Infill: ' + (req.dimensions || '~85×85×42 mm') + ' • ' + (req.infill || '50%'),
-          '• Quantity: ' + (req.quantity || '1 pcs'),
-          '• Guaranteed Net Maker Payout: ' + mfgValStr + ' (Stripe Escrow Pre-Auth)',
-          '',
-          '⚡ TAKE CHARGE:',
-          'Commissions on the open board are assigned on a first-come, first-served basis with certified quality standards.',
-          'Review technical files and claim the job: https://print-forge-seven.vercel.app/#requests',
-          '',
-          'PrintForge Global Dispatch',
-          'dispatch@printforge.dev'
-        ].join('\n');
-      } else if (isEs) {
-        subject = '📢 Nueva Solicitud Global en la Red: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
-        summary = 'Un cliente ha publicado un nuevo pedido: "' + partTitle + '". Pago neto Maker: ' + mfgValStr + '.';
-        body = [
-          'Hola Creador,',
-          '',
-          'Se ha publicado un nuevo pedido global en la red PrintForge:',
-          '• Pieza: ' + partTitle,
-          '• Presupuesto neto para el Maker: ' + mfgValStr,
-          '• Revisa y acepta el pedido en: https://print-forge-seven.vercel.app/#requests',
-          '',
-          'PrintForge Global Dispatch'
-        ].join('\n');
-      } else {
-        subject = '📢 Nuova Commessa Globale nel Network: #' + req.id + ' — ' + partTitle + ' (' + budgetStr + ')';
-        summary = 'Un cliente ha appena pubblicato una nuova richiesta aperta nel network: "' + partTitle + '". Compenso netto Maker: ' + mfgValStr + '. Prendi in carico per primo!';
-        body = [
-          'Gentile Creator & Officina Certificata,',
-          '',
-          'Un cliente ha appena inviato e pubblicato una NUOVA COMMESSA ONLINE GLOBALE sulla rete distribuita PrintForge:',
-          '',
-          '📋 SPECIFICHE TECNICHE DELLA COMMESSA:',
-          '• Titolo Componente: ' + partTitle,
-          '• ID Commessa: #' + req.id,
-          '• Richiedente: ' + clientName,
-          '• Materiale & Tolleranza: ' + (req.material || 'PETG Tecnico') + ' (' + (req.color || 'Standard') + ') • ' + (req.tolerance || '±0.05 mm'),
-          '• Dimensioni Ingombro & Infill: ' + (req.dimensions || '~85×85×42 mm') + ' • ' + (req.infill || '50% Meccanico'),
-          '• Quantità Richiesta: ' + (req.quantity || '1 pezzo') + '',
-          '• Tempistica Richiesta: ' + (req.deadline || 'Standard (3-5 gg)') + '',
-          '• COMPENSO NETTO MAKER: ' + mfgValStr + ' (Fondi pre-autorizzati in garanzia fiduciaria Stripe Escrow)',
-          '',
-          '⚡ PRESA IN CARICO IMMEDIATA:',
-          'Le commesse pubblicate sulla bacheca aperta sono disponibili per tutti i Maker verificati della rete: il primo che accetta la commessa blocca l\'assegnazione esclusiva!',
-          '',
-          'Visiona i file tecnici CAD/STL e prendi in carico il lavoro:',
-          'https://print-forge-seven.vercel.app/#requests',
-          '',
-          'Cordiali saluti,',
-          'Il Network Dispatch di PrintForge P2P',
-          'dispatch@printforge.dev'
-        ].join('\n');
-      }
-
-      creatorEmails.forEach(toEmail => {
-        recordSentEmail({
-          to: toEmail,
-          from: 'dispatch@printforge.dev',
-          senderName: 'PrintForge Global Network Dispatch',
-          subject: subject,
-          summary: summary,
-          body: body,
-          type: 'creator_global_request',
-          requestId: req.id,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        });
-      });
+      console.log('📢 [PrintForge Bacheca] Nuova richiesta aperta pubblicata sulla bacheca: #' + req.id);
     }
     window.sendGlobalBroadcastRequestEmailToCreator = sendGlobalBroadcastRequestEmailToCreator;
 
@@ -21688,7 +21607,11 @@ END-ISO-10303-21;`;
       const isEn = lang === 'en';
       const isEs = lang === 'es';
 
-      const destEmail = targetCreatorEmail || req.targetCreatorEmail || req.makerEmail || (AppState.user?.role === 'creator' ? AppState.user.email : 'maker@printforge.dev');
+      const destEmail = targetCreatorEmail || (req && (req.targetCreatorEmail || req.makerEmail));
+      if (!destEmail || !destEmail.includes('@')) {
+        console.log('Skipping direct offer email: no valid targeted creator email');
+        return;
+      }
       const clientName = req.clientName || 'Cliente';
       const partTitle = req.title || 'Componente Riservato';
       const budgetStr = formatEuroClean(req.escrowTotal || req.budget || '€ 0,00');
@@ -21995,11 +21918,21 @@ END-ISO-10303-21;`;
       const container = document.getElementById('emailHistoryListContainer');
       const countInfo = document.getElementById('modalEmailCountInfo');
       const emailValEl = document.getElementById('modalEmailConnectedValue');
-      if (emailValEl) emailValEl.innerText = AppState.user?.email || 'matteo@printforge.dev';
+      const myEmail = (AppState.user && AppState.user.isLoggedIn && AppState.user.email) ? AppState.user.email.toLowerCase().trim() : '';
+      if (emailValEl) emailValEl.innerText = myEmail || (currentLang === 'it' ? 'Nessun account connesso' : 'No account connected');
 
       if (!container) return;
 
-      const emails = AppState.sentEmails || [];
+      // ISOLAMENTO PRIVACY RIGOROSO:
+      // Mostra SOLO le email indirizzate all'utente loggato o inviate da lui.
+      // Se l'utente non è loggato (ospite), non vede MAI email di altri.
+      const emails = myEmail 
+        ? (AppState.sentEmails || []).filter(em => {
+            const to = (em.to || '').toLowerCase().trim();
+            const from = (em.from || '').toLowerCase().trim();
+            return to === myEmail || from === myEmail;
+          })
+        : [];
       const isEn = currentLang === 'en';
       const isEs = currentLang === 'es';
 
@@ -24536,7 +24469,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const partTitle = order.title || (isEn ? 'Custom Component' : isEs ? 'Pieza Personalizada' : 'Componente Personalizzato');
       const clientName = order.clientName || AppState.user?.name || (isEn ? 'Client' : isEs ? 'Cliente' : 'Cliente');
       const makerName = order.maker || (isEn ? 'Certified Maker' : isEs ? 'Creador Certificado' : 'Maker Certificato');
-      const makerEmail = order.makerEmail || (AppState.user?.role === 'creator' ? AppState.user.email : null) || 'maker@printforge.dev';
+      const makerEmail = (order && order.makerEmail) || '';
+      if (!makerEmail || !makerEmail.includes('@')) {
+        console.log('Skipping QC decision email: no valid maker recipient');
+        return;
+      }
 
       let subject = '';
       let body = '';
@@ -27953,7 +27890,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       if (!AppState.user || !AppState.user.isLoggedIn) {
         AppState.user = {
           id: 'usr_' + Date.now(),
-          email: document.getElementById('reqClientEmail')?.value?.trim() || 'cliente@printforge.dev',
+          email: document.getElementById('reqClientEmail')?.value?.trim() || (AppState.user && AppState.user.email) || '',
           name: 'Cliente PrintForge',
           role: 'client',
           isLoggedIn: true
@@ -28080,7 +28017,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const cap = document.getElementById('reqShippingCap')?.value?.trim() || '20121';
       const prov = (document.getElementById('reqShippingProv')?.value?.trim() || 'MI').toUpperCase();
       const shippingFull = street ? `${street}, ${cap} ${city} (${prov})` : `${city} (${prov})`;
-      const clientEmail = AppState.user?.email || document.getElementById('reqClientEmail')?.value?.trim() || 'matteo@printforge.dev';
+      const clientEmail = (AppState.user && AppState.user.email) || document.getElementById('reqClientEmail')?.value?.trim() || '';
 
       // Bozza Commessa per il Modal di Riepilogo
       const orderDraft = {
@@ -34374,7 +34311,7 @@ function renderDealChat(rfpId) {
         customFileName: (work.title.toLowerCase().replace(/[^a-z0-9]/g, '_') || 'opera') + '.stl',
         aiImage: isUserUploadedPhoto(work.photoUrl) ? work.photoUrl : null,
         presetKind: 'custom',
-        clientEmail: (AppState.user && AppState.user.email) || 'cliente@printforge.dev',
+        clientEmail: (AppState.user && AppState.user.email) || document.getElementById('reqClientEmail')?.value?.trim() || '',
         isDirectShowcase: true,
         isShowcaseOrder: true,
         showcaseWorkId: work.id
@@ -34954,7 +34891,20 @@ function renderDealChat(rfpId) {
 
       // Session Management: Ripristino sessione da localStorage per lo stesso dispositivo/browser
       // Purge perenne ordini simulati o cancellati per garantire sessione privata pulita
-        // Reset contatore incassi fake globale (garantisce dato soggettivo reale a 0€ per tutti i creator)
+        // Epurazione permanente email di test o indirizzi fake da localStorage
+      try {
+        const storedEmails = localStorage.getItem('printforge_sent_emails');
+        if (storedEmails) {
+          let list = JSON.parse(storedEmails);
+          if (Array.isArray(list)) {
+            list = list.filter(e => e && e.to !== 'matteo@printforge.dev' && e.to !== 'maker@printforge.dev' && e.to !== 'cliente@printforge.dev' && !String(e.to).includes('printforge.dev'));
+            localStorage.setItem('printforge_sent_emails', JSON.stringify(list));
+            if (typeof AppState !== 'undefined') AppState.sentEmails = list;
+          }
+        }
+      } catch(e) {}
+
+      // Reset contatore incassi fake globale (garantisce dato soggettivo reale a 0€ per tutti i creator)
         localStorage.removeItem("printforge_creator_earnings_ledger");
         localStorage.setItem("printforge_creator_earnings_ledger", "[]");
       try {
