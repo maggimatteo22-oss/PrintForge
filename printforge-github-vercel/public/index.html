@@ -943,6 +943,21 @@
     .nav-live-hud-sep {
       background-color: rgba(255, 255, 255, 0.20) !important;
     }
+    /* CYBER LIME ACCENTS (PROVA VISIVA RICHIESTA UTENTE) */
+    .cyber-lime-badge {
+      color: #CCFF00 !important;
+      background-color: rgba(204, 255, 0, 0.12) !important;
+      border: 1px solid rgba(204, 255, 0, 0.35) !important;
+      box-shadow: 0 0 10px rgba(204, 255, 0, 0.20) !important;
+    }
+    .cyber-lime-dot {
+      background-color: #CCFF00 !important;
+      box-shadow: 0 0 8px #CCFF00 !important;
+    }
+    .cyber-lime-text {
+      color: #CCFF00 !important;
+    }
+
     /* LIVE REQUESTS IN DARK THEME: PURE WHITE AS REQUESTED */
     #navLiveRequestsCount,
     .nav-live-req-count {
@@ -7484,7 +7499,7 @@
           <div class="p-3 rounded-xl bg-[#090A0C] border border-white/10 space-y-1.5 text-[10px] font-mono">
             <div class="flex items-center justify-between text-white font-bold">
               <span class="flex items-center gap-1.5"><i data-lucide="shield-check" class="w-3.5 h-3.5 text-white"></i> <span id="dealEscrowGuaranteeTitle">PROTOCOLLO DI GARANZIA &amp; COLLAUDO ESCROW</span></span>
-              <span class="text-[9px] px-1.5 py-0.5 rounded bg-white/10 text-white border border-white/20 font-bold" id="dealProtectedBadge">100% PROTETTO</span>
+              <span class="text-[9px] px-2 py-0.5 rounded-md cyber-lime-badge font-bold" id="dealProtectedBadge">100% PROTETTO ESCROW</span>
             </div>
             <p class="text-zinc-400 font-sans text-[10px] leading-relaxed" id="dealEscrowGuaranteeDesc">
               I fondi restano vincolati fino al controllo delle 3 foto collaudo con calibro centesimale e alla consegna del pacco. In caso di quote non conformi, scatta la ristampa gratuita a carico del Maker o il rimborso integrale al cliente.
@@ -7927,8 +7942,8 @@
         <div class="p-3.5 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl bg-gradient-to-r from-[#12131A] via-[#161722] to-[#12131A] border border-white/15 shadow-2xl flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-5">
           <div class="space-y-1 sm:space-y-1.5 min-w-0 flex-1">
             <div class="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span class="text-[9px] sm:text-[10px] font-mono text-emerald-400 font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-emerald-500/10 border border-emerald-500/25" id="escrowOrderRfp">
+              <span class="w-2 h-2 rounded-full cyber-lime-dot animate-pulse"></span>
+              <span class="text-[9px] sm:text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md cyber-lime-badge" id="escrowOrderRfp">
                 COMMESSA ESCROW // IN CUSTODIA
               </span>
               <span class="text-[9px] sm:text-[10px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-white/5 border border-white/10 hidden sm:inline-block">STRIPE VAULT</span>
@@ -30477,7 +30492,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                 <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
                 <span class="text-xs font-mono font-bold text-emerald-400 uppercase">COMMESSA PRESA IN CARICO // #${escapeHtml(activeCreatorJob.id)}</span>
               </div>
-              <span class="px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono text-[10px] font-bold">IN LAVORAZIONE</span>
+              <span class="cyber-lime-badge px-2.5 py-0.5 rounded-full font-mono text-[10px] font-bold">● IN LAVORAZIONE</span>
             </div>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
               <div class="min-w-0 flex-1 space-y-1 text-center sm:text-left">
@@ -30488,7 +30503,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.color || 'Nero')}</span>
                   <span class="px-2 py-0.5 rounded bg-white/5 border border-white/10">${escapeHtml(activeCreatorJob.quantity || '1 pezzo')}</span>
                   <span class="text-emerald-400 font-bold">${escapeHtml(activeCreatorJob.budget || '€ 35,00')}</span>
-                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">STRIPE ESCROW (1,5% + €0,25)</span>
+                  <span class="cyber-lime-badge px-2 py-0.5 rounded-full text-[8.5px] font-mono font-bold flex items-center gap-1 shrink-0"><span class="w-1.5 h-1.5 rounded-full cyber-lime-dot animate-pulse"></span>STRIPE ESCROW (1,5% + €0,25)</span>
                 </div>
               </div>
               <div class="flex sm:flex-col items-center justify-center gap-2 pt-2 sm:pt-0 sm:border-l sm:border-white/10 sm:pl-4 shrink-0">
@@ -31906,7 +31921,7 @@ function renderDealChat(rfpId) {
 
       if (count >= 3) {
         if (countBadge) {
-          countBadge.className = "text-[9px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold";
+          countBadge.className = "text-[9px] font-mono px-2 py-0.5 rounded-full cyber-lime-badge font-bold";
           countBadge.innerText = isEn ? '3/3 VERIFIED ✓' : isEs ? '3/3 VERIFICADAS ✓' : '3/3 VERIFICATE ✓';
         }
         if (uploadBtnLabel) {
@@ -31919,12 +31934,12 @@ function renderDealChat(rfpId) {
         if (p2) p2.classList.add('hidden');
         if (p3) p3.classList.add('hidden');
 
-        if (d1) d1.className = "w-2 h-2 rounded-full bg-emerald-400 shrink-0";
-        if (d2) d2.className = "w-2 h-2 rounded-full bg-emerald-400 shrink-0";
-        if (d3) d3.className = "w-2 h-2 rounded-full bg-emerald-400 shrink-0";
+        if (d1) d1.className = "w-2 h-2 rounded-full cyber-lime-dot shrink-0";
+        if (d2) d2.className = "w-2 h-2 rounded-full cyber-lime-dot shrink-0";
+        if (d3) d3.className = "w-2 h-2 rounded-full cyber-lime-dot shrink-0";
 
         if (escrowBadge) {
-          escrowBadge.className = "text-[9px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full font-bold";
+          escrowBadge.className = "text-[9px] font-mono cyber-lime-badge px-2.5 py-0.5 rounded-full font-bold";
           escrowBadge.innerText = isEn ? '3/3 PHOTOS VERIFIED ✓' : isEs ? '3/3 FOTOS VERIFICADAS ✓' : '3/3 FOTO VERIFICATE ✓';
         }
       } else {
