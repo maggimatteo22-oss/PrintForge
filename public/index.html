@@ -3978,26 +3978,26 @@
     <!-- ===================================================================== -->
     <!-- VISTA 0: LOGIN GATE DEDICATA (MOBILE & DESKTOP // CLIENTE & CREATOR) -->
     <!-- ===================================================================== -->
-    <section id="view-login-gate" class="py-6 sm:py-12 hidden">
-      <div class="max-w-md mx-auto space-y-6 px-3 sm:px-0">
+    <section id="view-login-gate" class="py-4 sm:py-12 hidden">
+      <div class="max-w-md mx-auto space-y-4 sm:space-y-6 px-2.5 sm:px-0">
         
         <!-- Brand Header with Security Shield -->
-        <div class="text-center space-y-3">
-          <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#121215] border border-white/10 text-xs text-zinc-300 shadow-sm">
+        <div class="text-center space-y-2.5 sm:space-y-3">
+          <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121215] border border-white/10 text-xs text-zinc-300 shadow-sm">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span class="font-mono text-[10px] uppercase tracking-wider text-white font-bold" id="i18n-gateSecurityBadge">SECURITY GATE // ACCESSO SICURO</span>
+            <span class="font-mono text-[9.5px] sm:text-[10px] uppercase tracking-wider text-white font-bold" id="i18n-gateSecurityBadge">SECURITY GATE // ACCESSO SICURO</span>
           </div>
 
-          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-white hero-title">
+          <h1 class="text-xl sm:text-3xl font-bold tracking-tight text-white hero-title">
             <span id="gateHeaderTitle">Accedi a PrintForge</span>
           </h1>
-          <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto font-sans" id="gateHeaderSubtitle">
+          <p class="text-xs sm:text-sm text-zinc-400 max-w-sm mx-auto font-sans leading-relaxed" id="gateHeaderSubtitle">
             Accedi direttamente con la tua email per commissionare componenti 3D o produrre come Creator certificato.
           </p>
         </div>
 
         <!-- Unified Card Container -->
-        <div class="cyber-card p-5 sm:p-7 bg-[#0A0A0C] border border-white/10 shadow-2xl rounded-2xl space-y-5">
+        <div class="cyber-card p-4 sm:p-7 bg-[#0A0A0C] border border-white/10 shadow-2xl rounded-2xl space-y-4 sm:space-y-5">
           
           <!-- SUB-TABS: ACCEDI vs REGISTRATI -->
           <div class="grid grid-cols-2 p-1 rounded-xl bg-white/5 border border-white/10 shadow-inner">
@@ -5019,19 +5019,20 @@
               </div>
             </div>
 
-            <div class="flex items-center gap-2 select-none pointer-events-none shrink-0">
+            <div class="flex items-center gap-1.5 sm:gap-2 select-none shrink-0 pointer-events-auto">
               <!-- Non-Interactive Pipeline Indicator -->
-              <div class="pipeline-live-pill flex items-center gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[8px] sm:text-[9px] font-mono text-cyan-400 font-bold tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.25)]">
+              <div class="pipeline-live-pill flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full bg-cyan-500/10 border border-cyan-500/30 text-[8px] sm:text-[9px] font-mono text-cyan-400 font-bold tracking-wider shadow-[0_0_15px_rgba(6,182,212,0.25)]">
                 <span class="relative flex h-1.5 w-1.5">
                   <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75"></span>
                   <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-cyan-500"></span>
                 </span>
-                <span id="videoLiveStreamBadge">60 FPS 4K // PROCESSO DIRETTO</span>
+                <span id="videoLiveStreamBadge" class="hidden xs:inline">60 FPS 4K // PROCESSO DIRETTO</span>
+                <span class="xs:hidden">60 FPS</span>
               </div>
               <!-- Play / Pause Interactive Button -->
-              <button type="button" id="btnVideoTogglePlay" onclick="RemotionVideoEngine.togglePlay()" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-[9px] font-bold cursor-pointer transition active:scale-95 shadow-sm">
+              <button type="button" id="btnVideoTogglePlay" onclick="RemotionVideoEngine.togglePlay()" class="pointer-events-auto flex items-center gap-1 sm:gap-1.5 px-2 sm:px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-[8.5px] sm:text-[9px] font-bold cursor-pointer transition active:scale-95 shadow-sm">
                 <i data-lucide="pause" class="w-3 h-3 text-white"></i>
-                <span class="text-[9px] font-mono font-bold text-white">PAUSA</span>
+                <span class="font-mono font-bold text-white">PAUSA</span>
               </button>
             </div>
           </div>
@@ -7564,16 +7565,16 @@
           <span class="px-2.5 py-1 rounded text-xs font-mono font-extrabold bg-zinc-800 text-zinc-400 border border-white/10 shadow-sm" id="studioLoadedRichiestaBadge">STANDBY</span>
           <div class="min-w-0">
             <h2 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide truncate" id="cadLockedTitle">In Attesa di Nuovo Incarico</h2>
-            <div class="flex items-center gap-2 text-xs font-mono flex-wrap">
-              <span class="text-zinc-300 font-bold flex items-center gap-1.5 cursor-default select-text">
+            <div class="flex items-center gap-1.5 sm:gap-2 text-[10.5px] sm:text-xs font-mono flex-wrap">
+              <span class="text-zinc-300 font-bold flex items-center gap-1.5 cursor-default select-text min-w-0">
                 <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
-                <span>Commissionato da:</span>
-                <strong class="text-white" id="cadLockedClientName">-</strong>
+                <span class="shrink-0">Commissionato da:</span>
+                <strong class="text-white truncate max-w-[130px] sm:max-w-none" id="cadLockedClientName">-</strong>
               </span>
               <span class="text-zinc-500">•</span>
-              <span class="text-zinc-400" id="cadLockedClientCity">-</span>
+              <span class="text-zinc-400 truncate max-w-[90px] sm:max-w-none" id="cadLockedClientCity">-</span>
               <span class="text-zinc-500">•</span>
-              <span class="text-zinc-400" id="cadLockedStatusBadge">BACHECA RICHIESTE</span>
+              <span class="text-zinc-400 shrink-0" id="cadLockedStatusBadge">BACHECA RICHIESTE</span>
             </div>
           </div>
         </div>
@@ -7933,14 +7934,14 @@
               <span class="text-[9px] sm:text-[10px] font-mono text-zinc-400 px-2 py-0.5 rounded bg-white/5 border border-white/10 hidden sm:inline-block">STRIPE VAULT</span>
             </div>
             <h3 class="font-cyber font-bold text-white text-base sm:text-lg md:text-xl tracking-wide break-words leading-tight" id="escrowOrderTitle">Componente Personalizzato</h3>
-            <div class="flex items-center gap-2.5 flex-wrap text-[11px] sm:text-xs font-mono text-zinc-300 pt-0.5">
-              <span class="flex items-center gap-1.5 cursor-default select-text">
+            <div class="flex items-center gap-2 sm:gap-2.5 flex-wrap text-[10.5px] sm:text-xs font-mono text-zinc-300 pt-0.5">
+              <span class="flex items-center gap-1.5 cursor-default select-text min-w-0">
                 <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
-                <span>Cliente:</span>
-                <strong class="text-white font-bold" id="escrowClientNameDisplay">Cliente Verificato</strong>
+                <span class="shrink-0">Cliente:</span>
+                <strong class="text-white font-bold truncate max-w-[130px] sm:max-w-none" id="escrowClientNameDisplay">Cliente Verificato</strong>
               </span>
               <span class="text-zinc-600">•</span>
-              <span id="escrowOrderMaker" class="truncate">Maker: Rete Hub Verificata // In Assegnazione</span>
+              <span id="escrowOrderMaker" class="truncate max-w-[180px] sm:max-w-none">Maker: Rete Hub Verificata // In Assegnazione</span>
             </div>
             <div class="pt-2 flex items-center gap-2 flex-wrap">
               <button ty<button type="button" id="btnOpenDealChatEscrow" onclick="openDealChatFromEscrow()" class="btn-kowalski-secondary relative py-1.5 px-3 rounded-lg text-white font-mono text-[11px] font-bold flex items-center gap-1.5 hover:border-emerald-400 hover:text-emerald-300 transition active:scale-95 shadow-sm">
@@ -8259,8 +8260,8 @@
     <!-- ===================================================================== -->
     <!-- MODAL NUVOLETTA INDIRIZZO OFFICINA // MITTENTE ETICHETTA SPEDIZIONE   -->
     <!-- ===================================================================== -->
-    <div id="modalCreatorAddress" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
-      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+    <div id="modalCreatorAddress" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-2.5 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
+      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-3.5 sm:space-y-4 text-left relative max-h-[88vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
         
         <!-- Header -->
         <div class="flex items-start justify-between border-b border-white/10 pb-3">
@@ -8324,9 +8325,9 @@
 
           <!-- Submit Button -->
           <div class="pt-2 flex items-center gap-2">
-            <button type="submit" id="btnSaveCreatorAddress" class="btn-kowalski-primary flex-1 py-3 px-4 rounded-xl font-cyber font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl active:scale-95 transition">
-              <i data-lucide="check" class="w-4 h-4"></i>
-              <span>SALVA INDIRIZZO E ACCEDI ALLA ESCROW ROOM &rarr;</span>
+            <button type="submit" id="btnSaveCreatorAddress" class="btn-kowalski-primary flex-1 py-2.5 sm:py-3 px-3 sm:px-4 rounded-xl font-cyber font-bold text-[11px] sm:text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl active:scale-95 transition cursor-pointer">
+              <i data-lucide="check" class="w-4 h-4 shrink-0"></i>
+              <span class="text-center leading-tight">SALVA INDIRIZZO E ACCEDI ALLA ESCROW ROOM &rarr;</span>
             </button>
           </div>
         </form>
@@ -8334,8 +8335,8 @@
       </div>
     </div>
 
-    <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
-      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+    <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-2.5 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
+      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-3.5 sm:space-y-4 text-left relative max-h-[88vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
         
         <!-- Header -->
         <div class="flex items-start justify-between border-b border-white/10 pb-3">
@@ -9012,7 +9013,7 @@
   <!-- ========================================================================= -->
   <!-- SONNER TOAST (EMIL KOWALSKI COMPONENT)                                    -->
   <!-- ========================================================================= -->
-  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 sonner-toast rounded-2xl px-4 py-3 text-xs flex items-center gap-3 transform translate-y-20 opacity-0 pointer-events-none">
+  <div id="toastNotification" class="fixed bottom-5 right-4 sm:right-5 left-4 sm:left-auto max-w-[calc(100vw-32px)] sm:max-w-md z-50 sonner-toast rounded-2xl px-4 py-3 text-xs flex items-center gap-3 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300">
     <div class="w-6 h-6 rounded-full bg-[#FFFFFF]/15 border border-[#FFFFFF]/40 flex items-center justify-center shrink-0">
       <span class="w-2 h-2 rounded-full bg-[#FFFFFF] shadow-[0_0_10px_#FFFFFF] animate-pulse"></span>
     </div>
@@ -30274,20 +30275,20 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         const lblQty = isEn ? 'Qty' : isEs ? 'Cant' : 'Qtà';
 
         return `
-          <div class="p-4 sm:p-5 rounded-2xl bg-[#0D0D12] border border-white/10 hover:border-white/20 transition space-y-4 flex flex-col justify-between">
-            <div class="space-y-3">
-              <div class="flex items-center justify-between border-b border-white/[0.06] pb-3">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="px-2 py-0.5 rounded-md bg-white/5 text-[10px] font-mono text-zinc-400">#${safeId}</span>
-                  <span class="text-xs font-mono text-emerald-400 font-bold">${escapeHtml(displayBudget)}</span>
-                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[8.5px] font-mono font-bold">STRIPE ESCROW (1,5% + €0,25)</span>
+          <div class="p-3.5 sm:p-5 rounded-2xl bg-[#0D0D12] border border-white/10 hover:border-white/20 transition space-y-3 sm:space-y-4 flex flex-col justify-between">
+            <div class="space-y-2.5 sm:space-y-3">
+              <div class="flex items-start justify-between gap-1.5 sm:gap-2 border-b border-white/[0.06] pb-2.5 sm:pb-3">
+                <div class="min-w-0 flex-1 flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                  <span class="px-1.5 sm:px-2 py-0.5 rounded-md bg-white/5 text-[9.5px] sm:text-[10px] font-mono text-zinc-400 shrink-0">#${safeId}</span>
+                  <span class="text-xs font-mono text-emerald-400 font-bold shrink-0">${escapeHtml(displayBudget)}</span>
+                  <span class="px-1.5 py-0.5 rounded bg-blue-500/15 text-blue-300 border border-blue-500/30 text-[7.5px] sm:text-[8.5px] font-mono font-bold shrink-0">STRIPE ESCROW (1,5% + €0,25)</span>
                 </div>
-                <div class="text-right shrink-0 select-none">
-                  <div class="flex items-center justify-end gap-1.5 text-zinc-200 font-mono text-[11px] font-bold cursor-default select-text">
-                    <i data-lucide="user" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
-                    <span class="truncate max-w-[130px] sm:max-w-[170px]" title="Account Ordinante">${escapeHtml(r.clientName || 'Cliente Verificato')}</span>
+                <div class="text-right shrink-0 select-none max-w-[46%] sm:max-w-none">
+                  <div class="flex items-center justify-end gap-1 text-zinc-200 font-mono text-[10px] sm:text-[11px] font-bold cursor-default select-text">
+                    <i data-lucide="user" class="w-3 h-3 sm:w-3.5 sm:h-3.5 text-emerald-400 shrink-0"></i>
+                    <span class="truncate max-w-[95px] xs:max-w-[125px] sm:max-w-[170px]" title="Account Ordinante">${escapeHtml(r.clientName || 'Cliente Verificato')}</span>
                   </div>
-                  <span class="text-[9.5px] font-mono text-zinc-400 block">${escapeHtml(r.clientCity || 'Italia')}</span>
+                  <span class="text-[8.5px] sm:text-[9.5px] font-mono text-zinc-400 block truncate">${escapeHtml(r.clientCity || 'Italia')}</span>
                 </div>
               </div>
 
@@ -30298,10 +30299,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
                 </div>
               ` : ''}
               <h4 class="text-sm font-cyber font-bold text-white line-clamp-1">${escapeHtml(r.title)}</h4>
-              <div class="flex items-center gap-1.5 text-[11px] font-mono text-zinc-400 pt-0.5 pb-0.5 select-none">
+              <div class="flex items-center gap-1.5 text-[10.5px] sm:text-[11px] font-mono text-zinc-400 pt-0.5 pb-0.5 select-none min-w-0">
                 <i data-lucide="user-check" class="w-3.5 h-3.5 text-emerald-400 shrink-0"></i>
-                <span class="text-zinc-500">Commissionato da:</span>
-                <strong class="text-zinc-200 font-bold cursor-default select-text">${escapeHtml(r.clientName || 'Cliente Verificato')}</strong>
+                <span class="text-zinc-500 shrink-0">Commissionato da:</span>
+                <strong class="text-zinc-200 font-bold cursor-default select-text truncate max-w-[150px] sm:max-w-none">${escapeHtml(r.clientName || 'Cliente Verificato')}</strong>
               </div>
 
               <div class="grid grid-cols-2 gap-2 text-xs font-mono">
@@ -30327,11 +30328,11 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
             </div>
 
             <!-- CHAT 1-1 COMPLETAMENTE NASCOSTA PER RICHIESTE IN ATTESA: SOLO BOTTONE ACCETTA E RIFIUTA -->
-            <div class="pt-3 border-t border-white/[0.06] flex items-center gap-2">
-              <button type="button" onclick="acceptCreatorRequest('${safeId}')" class="flex-1 py-2 px-3 rounded-xl bg-white text-black font-cyber font-bold text-xs hover:bg-zinc-200 transition text-center shadow active:scale-95" title="${titleAccept}">
+            <div class="pt-2.5 sm:pt-3 border-t border-white/[0.06] flex items-center gap-2">
+              <button type="button" onclick="acceptCreatorRequest('${safeId}')" class="flex-1 py-2.5 px-3 rounded-xl bg-white text-black font-cyber font-bold text-xs hover:bg-zinc-200 transition text-center shadow active:scale-95 cursor-pointer" title="${titleAccept}">
                 ${btnAccept}
               </button>
-              <button type="button" onclick="rejectCreatorRequest('${safeId}')" class="p-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition" title="${titleReject}">
+              <button type="button" onclick="rejectCreatorRequest('${safeId}')" class="p-2.5 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-400 transition cursor-pointer flex items-center justify-center shrink-0" title="${titleReject}">
                 <i data-lucide="x" class="w-4 h-4"></i>
               </button>
             </div>
