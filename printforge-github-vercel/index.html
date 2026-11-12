@@ -19279,6 +19279,11 @@ END-ISO-10303-21;`;
     window.updateCalculatedDimensionMetrics = updateCalculatedDimensionMetrics;
 
     function resetRequestSpecifications(silent = false) {
+      // Garantisci SEMPRE il ritorno al Passo 1 del Wizard richieste cliente
+      if (typeof goToClientWizardStep === 'function') {
+        goToClientWizardStep(1);
+      }
+
       // Garantisci SEMPRE il testo originale per la pagina richieste in-app del cliente
       const reqSubmitSpan = document.getElementById('i18n-btnSubmitRfp');
       if (reqSubmitSpan) {
@@ -19312,67 +19317,93 @@ END-ISO-10303-21;`;
       window._currentShowcaseWorkOrder = null;
       window._directAssignedCreator = null;
 
+      // 1. Reset Campi Testuali & Note
       const reqTitle = document.getElementById('reqTitle');
       if (reqTitle) reqTitle.value = '';
-
-      ['reqUsage', 'reqMaterial', 'reqColor', 'reqQuantity', 'reqTolerance', 'reqInfill', 'reqPostProcess', 'reqDeadline'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) {
-          el.value = '';
-          el.selectedIndex = 0;
-        }
-      });
-
       const notes = document.getElementById('reqNotes');
       if (notes) notes.value = '';
+      const budget = document.getElementById('reqBudget');
+      if (budget) budget.value = '';
 
-      ['dimX', 'dimY', 'dimZ'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.value = '';
-      });
-      const dBadge = document.getElementById('dimensionSourceBadge');
-      if (dBadge) {
-        dBadge.innerText = 'RILEVAMENTO DA CAD O MANUALE';
-        dBadge.className = 'text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded border border-cyan-500/20';
+      // 2. Ripristino Opzioni Default Step 1 (Uso, Materiale, Dimensioni Taglia S, File)
+      const reqUsageEl = document.getElementById('reqUsage');
+      if (reqUsageEl) reqUsageEl.value = 'Parte Meccanica Funzionale';
+
+      const reqMatEl = document.getElementById('reqMaterial');
+      if (reqMatEl) reqMatEl.value = 'PETG Tecnico';
+
+      // Dimensioni Taglia S (80 × 60 × 25 mm) di default
+      const sCard = document.getElementById('sizeCard_S');
+      if (typeof selectPartSizePreset === 'function') {
+        selectPartSizePreset('S', 80, 60, 25, sCard);
+      } else {
+        const dx = document.getElementById('dimX'); if (dx) dx.value = '80';
+        const dy = document.getElementById('dimY'); if (dy) dy.value = '60';
+        const dz = document.getElementById('dimZ'); if (dz) dz.value = '25';
+        const dBadge = document.getElementById('dimensionSourceBadge');
+        if (dBadge) {
+          dBadge.innerText = 'TAGLIA S // PICCOLO (~8 CM)';
+          dBadge.className = 'text-[8px] sm:text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-2 py-0.5 rounded-full border border-cyan-500/20 font-bold shrink-0';
+        }
       }
-      const recapDims = document.getElementById('recapBadgeDims');
-      if (recapDims) recapDims.innerText = '-- mm';
 
+      // Reset File Upload
       const fileLbl = document.getElementById('labelUploadedFile');
       if (fileLbl) {
         fileLbl.innerText = 'Nessun file selezionato (.STEP, .STL, .3MF)';
         fileLbl.className = 'truncate text-zinc-400';
         delete fileLbl.dataset.custom;
       }
-
       const fileInp = document.getElementById('reqFileInput');
       if (fileInp) fileInp.value = '';
+      const clientUploadInp = document.getElementById('clientVisualUploadInput');
+      if (clientUploadInp) clientUploadInp.value = '';
 
       if (typeof removeClientAttachedFile === 'function') {
         removeClientAttachedFile(silent);
       }
 
-      const budget = document.getElementById('reqBudget');
-      if (budget) budget.value = '';
-
-      const customQty = document.getElementById('reqCustomQtyInput');
-      if (customQty) customQty.value = '1';
-      const qtyBadge = document.getElementById('quantityLiveBadge');
-      if (qtyBadge) qtyBadge.innerText = '1 pezzo';
-
+      // 3. Ripristino Opzioni Default Step 2 (Colore, Quantità, Infill)
+      const reqColorEl = document.getElementById('reqColor');
+      if (reqColorEl) reqColorEl.value = 'Arancione Meccanico';
       const customColorTxt = document.getElementById('customColorTextInput');
       if (customColorTxt) customColorTxt.value = '';
       const colorWheel = document.getElementById('nativeColorPicker');
       if (colorWheel) colorWheel.value = '#F97316';
       const colorPreview = document.getElementById('activeColorDotPreview');
       if (colorPreview) colorPreview.style.backgroundColor = '#F97316';
+      const colorPreview2 = document.getElementById('clientColorDotPreview');
+      if (colorPreview2) colorPreview2.style.backgroundColor = '#F97316';
       const colorDisp = document.getElementById('colorSelectedNameDisplay');
-      if (colorDisp) colorDisp.innerText = 'Seleziona finitura...';
+      if (colorDisp) colorDisp.innerText = 'Arancione Meccanico';
+      const colorDisp2 = document.getElementById('clientColorNameDisplay');
+      if (colorDisp2) colorDisp2.innerText = 'Arancione Meccanico';
+      const colorHexDisp = document.getElementById('clientColorHexDisplay');
+      if (colorHexDisp) colorHexDisp.innerText = '#F97316';
 
-      const ddlDisp = document.getElementById('deadlineSelectedNameDisplay');
-      if (ddlDisp) ddlDisp.innerText = '3-5 gg';
+      const reqQuantityEl = document.getElementById('reqQuantity');
+      if (reqQuantityEl) reqQuantityEl.value = '1 pezzo (Prototipo)';
+      const customQty = document.getElementById('reqCustomQtyInput');
+      if (customQty) customQty.value = '1';
+      const qtyBadge = document.getElementById('quantityLiveBadge');
+      if (qtyBadge) qtyBadge.innerText = '1 pezzo';
+
+      const reqInfillEl = document.getElementById('reqInfill');
+      if (reqInfillEl) reqInfillEl.value = '50% Meccanico Strutturale';
       const infillDisp = document.getElementById('infillSelectedNameDisplay');
       if (infillDisp) infillDisp.innerText = '50%';
+      const infillDisp2 = document.getElementById('clientInfillDisplayText');
+      if (infillDisp2) infillDisp2.innerText = '50% Meccanico Strutturale';
+
+      // 4. Ripristino Opzioni Default Step 3 (Tolleranza, Post-process, Tempistiche)
+      const reqTolEl = document.getElementById('reqTolerance');
+      if (reqTolEl) reqTolEl.value = 'Standard ±0.20 mm';
+      const reqPostEl = document.getElementById('reqPostProcess');
+      if (reqPostEl) reqPostEl.value = 'Grezzo (Rimozione supporti standard)';
+      const reqDeadlineEl = document.getElementById('reqDeadline');
+      if (reqDeadlineEl) reqDeadlineEl.value = 'Standard 3-5 giorni';
+      const ddlDisp = document.getElementById('deadlineSelectedNameDisplay');
+      if (ddlDisp) ddlDisp.innerText = '3-5 gg';
       const ddlPills = document.querySelectorAll('.deadline-pill');
       ddlPills.forEach((p, idx) => {
         if (idx === 1) {
@@ -19384,9 +19415,11 @@ END-ISO-10303-21;`;
         }
       });
 
-      // Reset Instant Quote Widget & Badges
+      // Reset Quote Widget & Badges
+      const recapDims = document.getElementById('recapBadgeDims');
+      if (recapDims) recapDims.innerText = '80 × 60 × 25 mm';
       const cBbox = document.getElementById('calcBbox');
-      if (cBbox) cBbox.innerText = '-- × -- × -- mm';
+      if (cBbox) cBbox.innerText = '80 × 60 × 25 mm';
       const cWeight = document.getElementById('calcWeight');
       if (cWeight) cWeight.innerText = '-- cm³ • 0 g';
       const cHours = document.getElementById('calcHours');
@@ -19412,14 +19445,17 @@ END-ISO-10303-21;`;
         CustomSelectEngine.refreshAll();
       }
 
+      if (typeof recalculateInstantQuote === 'function') {
+        recalculateInstantQuote();
+      }
       updateLiveRequestSummary();
       calculateVolumetricShipping();
       if (!silent) {
-        showToast('Specifiche della richiesta azzerate con successo.');
+        showToast('Specifiche della richiesta ripristinate ai valori predefiniti.');
       }
     }
 
-        function getLocalizedMaterial(matName) {
+    function getLocalizedMaterial(matName) {
       if (!matName) return currentLang === 'en' ? 'Technical PETG' : currentLang === 'es' ? 'PETG Técnico' : 'PETG Tecnico';
       const low = String(matName).toLowerCase();
       if (low.includes('petg')) return currentLang === 'en' ? 'Technical PETG' : currentLang === 'es' ? 'PETG Técnico' : 'PETG Tecnico';
@@ -28926,6 +28962,14 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       AppState.pendingOrderDraft = orderDraft;
       openOrderReviewModal(orderDraft);
+
+      // Subito dopo aver aperto il riepilogo commessa, la schermata richieste torna al Passo 1 con tutte le opzioni di default
+      if (typeof resetRequestSpecifications === 'function') {
+        resetRequestSpecifications(true);
+      }
+      if (typeof goToClientWizardStep === 'function') {
+        goToClientWizardStep(1);
+      }
     }
 
     function openOrderReviewModal(draft) {
@@ -29398,9 +29442,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       // Invia email di conferma transazionale al cliente per presa in carico e deposito escrow
       sendRequestSubmittedEmailToClient(newRequest);
 
-      // Reset automatico completo di tutte le specifiche dopo l'invio dell'ordine
+      // Reset automatico completo di tutte le specifiche dopo l'invio dell'ordine e ritorno a Passo 1
       if (typeof resetRequestSpecifications === 'function') {
         resetRequestSpecifications(true);
+      }
+      if (typeof goToClientWizardStep === 'function') {
+        goToClientWizardStep(1);
       }
 
       const methodLabel = currentSelectedPaymentMethod === 'apple_pay' ? 'Apple Pay' : currentSelectedPaymentMethod === 'google_pay' ? 'Google Pay' : currentSelectedPaymentMethod === 'klarna' ? 'Klarna' : 'Carta di Credito';
@@ -34454,38 +34501,69 @@ function renderDealChat(rfpId) {
       // TRASMISSIONE REALTIME A TUTTI I CLIENTI CONNESSI
       broadcastRealtimeEvent('portfolio_work_created', workObj);
 
-      // Reset form
-      updateCreatorPriceWithStripe();
-      document.getElementById('portfolioTitle').value = '';
-      document.getElementById('portfolioDesc').value = '';
-      document.getElementById('portfolioDimensions').value = '';
+      // Ripristino completo di tutti i parametri di scelta di default per il Creator
+      const pTitle = document.getElementById('portfolioTitle');
+      if (pTitle) pTitle.value = '';
+      const pDesc = document.getElementById('portfolioDesc');
+      if (pDesc) pDesc.value = '';
+      const pPrice = document.getElementById('portfolioPrice');
+      if (pPrice) pPrice.value = '';
+
+      // Categoria default: Meccanica & Ricambi (mechanics)
+      const pCat = document.getElementById('portfolioCategory');
+      if (pCat) pCat.value = 'mechanics';
+
+      // Materiale default: PETG Tecnico
+      const pMat = document.getElementById('portfolioMaterial');
+      if (pMat) pMat.value = 'PETG Tecnico';
+
+      // Colore default: Arancione Meccanico (#F97316)
+      const pCol = document.getElementById('portfolioColor');
+      if (pCol) pCol.value = 'Arancione Meccanico';
+      const pHex = document.getElementById('portfolioColorHexDisplay');
+      if (pHex) pHex.innerText = '#F97316';
+      const pColName = document.getElementById('portfolioColorNameDisplay');
+      if (pColName) pColName.innerText = 'Arancione Meccanico';
+      const pDot = document.getElementById('portfolioColorDotPreview');
+      if (pDot) pDot.style.backgroundColor = '#F97316';
+
+      // Dimensioni Taglia S (~8 cm, 80 × 60 × 25 mm) default
+      const pSizeCardS = document.getElementById('portfolioSizeCard_S');
+      if (typeof selectPortfolioSizePreset === 'function') {
+        selectPortfolioSizePreset('S', 80, 60, 25, pSizeCardS);
+      } else {
+        const pDims = document.getElementById('portfolioDimensions');
+        if (pDims) pDims.value = '80 × 60 × 25 mm';
+      }
+      const pDimBadge = document.getElementById('portfolioDimensionSourceBadge');
+      if (pDimBadge) pDimBadge.innerText = 'TAGLIA S // PICCOLO (~8 CM)';
+
+      // Quantità default: 1 pezzo (Opera Unica)
+      const pQty = document.getElementById('portfolioQuantity');
+      if (pQty) pQty.value = '1 pezzo (Opera Unica)';
+
+      // Riempimento default: 50% Meccanico Strutturale
+      const pInfill = document.getElementById('portfolioInfill');
+      if (pInfill) pInfill.value = '50% Meccanico Strutturale';
+      if (typeof onPortfolioInfillChange === 'function') {
+        onPortfolioInfillChange('50% Meccanico Strutturale');
+      }
+      const pInfillDisp = document.getElementById('portfolioInfillDisplayText');
+      if (pInfillDisp) pInfillDisp.innerText = '50% Meccanico Strutturale';
+
+      // Reset Foto e preview
       window._currentPortfolioPhotoDataUrl = null;
+      const pPhotoInput = document.getElementById('portfolioPhotoInput');
+      if (pPhotoInput) pPhotoInput.value = '';
       const previewImgEl = document.getElementById('portfolioPhotoPreviewImg');
       const previewBoxEl = document.getElementById('portfolioPhotoPreviewBox');
       if (previewImgEl) { previewImgEl.src = ''; previewImgEl.classList.add('hidden'); }
       if (previewBoxEl) { previewBoxEl.classList.remove('hidden'); }
-      const photoInputEl = document.getElementById('portfolioPhoto');
-      if (photoInputEl) photoInputEl.value = '';
-      document.getElementById('portfolioPrice').value = '';
-      if (document.getElementById('portfolioQuantity')) {
-        document.getElementById('portfolioQuantity').value = '1 pezzo (Opera Unica)';
-        if (typeof CustomSelectEngine !== 'undefined' && CustomSelectEngine.syncTrigger) {
-          CustomSelectEngine.syncTrigger('portfolioQuantity');
-        }
-      }
-      if (document.getElementById('portfolioInfill')) {
-        document.getElementById('portfolioInfill').value = '50% Meccanico Strutturale';
-        if (typeof CustomSelectEngine !== 'undefined' && CustomSelectEngine.syncTrigger) {
-          CustomSelectEngine.syncTrigger('portfolioInfill');
-        }
-      }
-      window._currentPortfolioPhotoDataUrl = null;
-      const pImg = document.getElementById('portfolioPhotoPreviewImg');
-      const pBox = document.getElementById('portfolioPhotoPreviewBox');
-      if (pImg && pBox) {
-        pImg.src = '';
-        pImg.classList.add('hidden');
-        pBox.classList.remove('hidden');
+
+      // Aggiorna calcolo commissione Stripe e rinfresca tendine personalizzate
+      updateCreatorPriceWithStripe();
+      if (typeof CustomSelectEngine !== 'undefined' && CustomSelectEngine.refreshAll) {
+        CustomSelectEngine.refreshAll();
       }
 
       renderCreatorPortfolioView();
