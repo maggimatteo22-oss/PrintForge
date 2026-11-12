@@ -30269,16 +30269,16 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         qcStatus: 'in_attesa_collaudo',
         hasQcPhotos: false,
         qcPhotos: [],
-        userId: (AppState.user && (AppState.user.userId || AppState.user.id)) || generateUserIdForAccount(draft.clientEmail || (AppState.user && AppState.user.email), 'client'),
+        userId: (AppState.user && AppState.user.isLoggedIn && (AppState.user.userId || AppState.user.id)) || (draft.clientEmail ? generateUserIdForAccount(draft.clientEmail, 'client') : ('cli_' + Math.random().toString(36).substring(2, 9))),
         title: draft.title,
-        clientName: (AppState.user && AppState.user.name) || (isEn ? 'Client' : 'Cliente'),
+        clientName: (AppState.user && AppState.user.isLoggedIn && AppState.user.name) || draft.clientName || (isEn ? 'Client' : 'Cliente'),
         clientCity: draft.shippingCity ? `${draft.shippingCity} (${draft.shippingProv || 'IT'})` : 'Milano (MI)',
         shippingStreet: draft.shippingStreet || '',
         shippingCity: draft.shippingCity || 'Milano',
         shippingCap: draft.shippingCap || '20121',
         shippingProv: draft.shippingProv || 'MI',
         shippingFull: draft.shippingFull || (draft.shippingStreet ? `${draft.shippingStreet}, ${draft.shippingCap || '20121'} ${draft.shippingCity || 'Milano'} (${draft.shippingProv || 'MI'})` : 'Via Roma 14, 20121 Milano (MI)'),
-        clientEmail: draft.clientEmail || (AppState.user && AppState.user.email) || (typeof localStorage !== 'undefined' ? (localStorage.getItem('printforge_saved_email') || localStorage.getItem('printforge_saved_account_email')) : '') || '',
+        clientEmail: draft.clientEmail || (AppState.user && AppState.user.isLoggedIn ? AppState.user.email : '') || '',
         usage: draft.usage,
         material: draft.material,
         color: draft.color,
@@ -31273,17 +31273,16 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         if (r.id.startsWith('USER-PROFILE-') || String(r.id).startsWith('REV-') || String(r.title || '').startsWith('CREATOR_REVIEW:') || r.status === 'CERTIFIED_REVIEW') return false;
         if (r.isRejected || r.isDeleted || r.isCompleted || r.isClosed || r.isDelivered) return false;
 
-        // REQUISITO CRITICO: Esclusione delle proprie richieste dalla Bacheca pubblica
-        // Se l'utente è un Client, non deve vedere le proprie richieste nella bacheca creator.
-        // MA se l'utente accede come Creator (o sta effettuando test multi-dispositivo con lo stesso account),
-        // deve poter vedere e collaudare le richieste aperte in tempo reale!
+        // REQUISITO CRITICO: Esclusione assoluta delle proprie richieste dalla Bacheca Creator
+        // Se il cliente (es. Marco Rossi) fa la richiesta e poi passa a modalità creator,
+        // NON deve vedere la sua richiesta, mentre TUTTI GLI ALTRI CREATOR devono vederla!
         const reqClientEmail = (r.clientEmail || r.client_email || '').toLowerCase().trim();
         const reqClientId = (r.userId || r.client_id || '').toLowerCase().trim();
         const isSelfOrder = Boolean(
           (myMakerEmail && reqClientEmail && reqClientEmail === myMakerEmail) ||
           (myMakerUid && reqClientId && reqClientId === myMakerUid)
         );
-        if (isSelfOrder && AppState.user && AppState.user.role === 'client') return false;
+        if (isSelfOrder) return false;
 
         // REQUISITO CRITICO: Sparizione immediata appena un creator accetta
         // "La Bacheca pubblica deve mostrare SOLO ed ESCLUSIVAMENTE gli ordini con status === 'open' e maker_id === null"
