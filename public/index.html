@@ -12534,6 +12534,7 @@
         } catch(e) {}
         try {
           rawSupabaseRest("broadcast_requests?id=eq." + encodeURIComponent(requestId), 'DELETE');
+          rawSupabaseRest("broadcast_requests?id=eq." + encodeURIComponent(requestId), 'PATCH', { status: 'DELETED' });
         } catch(e) {}
         if (supabaseClient && typeof supabaseClient.from === 'function') {
           try {
@@ -12556,6 +12557,7 @@
       // CASO STANDARD: Eliminazione bozza non presa in carico da nessun maker
       try {
         await rawSupabaseRest("broadcast_requests?id=eq." + encodeURIComponent(requestId), 'DELETE');
+        await rawSupabaseRest("broadcast_requests?id=eq." + encodeURIComponent(requestId), 'PATCH', { status: 'DELETED' });
       } catch(e) {}
       if (supabaseClient && typeof supabaseClient.from === 'function') {
         try {
