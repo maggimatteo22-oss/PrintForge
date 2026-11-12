@@ -5028,6 +5028,11 @@
                 </span>
                 <span id="videoLiveStreamBadge">60 FPS 4K // PROCESSO DIRETTO</span>
               </div>
+              <!-- Play / Pause Interactive Button -->
+              <button type="button" id="btnVideoTogglePlay" onclick="RemotionVideoEngine.togglePlay()" class="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-white/10 hover:bg-white/20 border border-white/20 text-white font-mono text-[9px] font-bold cursor-pointer transition active:scale-95 shadow-sm">
+                <i data-lucide="pause" class="w-3 h-3 text-white"></i>
+                <span class="text-[9px] font-mono font-bold text-white">PAUSA</span>
+              </button>
             </div>
           </div>
 
@@ -5061,7 +5066,7 @@
           </div>
 
           <!-- Video Viewport & Playback Stage (Pure Autonomous Viewable Video Showcase - Zero Interaction) -->
-          <div class="relative w-full h-[370px] sm:h-[400px] md:h-[415px] overflow-hidden bg-[#060608] flex items-center justify-center pointer-events-none select-none transition-[box-shadow] duration-500" id="videoViewportContainer">
+          <div class="relative w-full h-[370px] sm:h-[400px] md:h-[415px] overflow-hidden bg-[#060608] flex items-center justify-center select-none transition-[box-shadow] duration-500 cursor-pointer" id="videoViewportContainer" onclick="if (typeof RemotionVideoEngine !== 'undefined') RemotionVideoEngine.togglePlay()">
             <div id="mobileVideoScaler" class="w-full h-full relative">
 
             <!-- RECORDLY VIRTUAL CURSOR LAYER (CLEAN, NO BLUE SQUARE, NO CLICK RIPPLES) -->
@@ -8110,6 +8115,23 @@
                 </div>
               </div>
 
+              <!-- Indirizzo Mittente Officina Maker Salvato & Modificabile -->
+              <div id="creatorSavedAddressBox" class="p-3 sm:p-3.5 rounded-xl bg-[#14151C] border border-white/10 space-y-1.5 text-xs font-mono">
+                <div class="flex items-center justify-between border-b border-white/[0.06] pb-1.5">
+                  <div class="flex items-center gap-1.5 text-emerald-400 font-bold text-[10.5px]">
+                    <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                    <span id="labelCreatorSavedAddrTitle">INDIRIZZO OFFICINA MITTENTE:</span>
+                  </div>
+                  <button type="button" onclick="openCreatorAddressModal(true)" class="text-[10px] text-zinc-400 hover:text-white flex items-center gap-1 underline cursor-pointer">
+                    <i data-lucide="edit-2" class="w-3 h-3"></i>
+                    <span>Modifica Indirizzo</span>
+                  </button>
+                </div>
+                <div id="creatorSavedAddressDisplay" class="text-zinc-200 text-[11px] leading-snug pt-0.5">
+                  <!-- Popolato automaticamente in JS -->
+                </div>
+              </div>
+
               <!-- Riga Essenziale: Corriere & Tracking Cliccabile -->
               <div class="p-3 sm:p-3.5 rounded-xl bg-[#14151C] border border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-3 text-xs font-mono">
                 <div class="flex items-center justify-between sm:justify-start gap-2">
@@ -8222,6 +8244,84 @@
 
     <!-- MINI RIQUADRO: CONFIGURAZIONE DATI INCASSO IBAN PER IL CREATOR        -->
     <!-- ===================================================================== -->
+    <!-- ===================================================================== -->
+    <!-- MODAL NUVOLETTA INDIRIZZO OFFICINA // MITTENTE ETICHETTA SPEDIZIONE   -->
+    <!-- ===================================================================== -->
+    <div id="modalCreatorAddress" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
+      <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
+        
+        <!-- Header -->
+        <div class="flex items-start justify-between border-b border-white/10 pb-3">
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 font-mono text-[9px] font-bold uppercase tracking-wider">
+              <i data-lucide="map-pin" class="w-3 h-3 text-emerald-400"></i>
+              <span>INDIRIZZO PRIVATO OFFICINA MAKER</span>
+            </div>
+            <h3 class="text-base sm:text-lg font-cyber font-bold text-white tracking-wide">
+              Indirizzo per Etichetta di Spedizione
+            </h3>
+            <p class="text-xs text-zinc-400 font-sans">
+              Inserisci i dati della tua sede o officina: verranno stampati come <strong class="text-white">MITTENTE</strong> sull'etichetta del pacco.
+            </p>
+          </div>
+          <button type="button" onclick="closeCreatorAddressModal()" class="text-zinc-500 hover:text-white p-1 rounded-lg transition" title="Chiudi">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <form id="creatorAddressForm" onsubmit="handleCreatorAddressSubmit(event)" class="space-y-3.5 font-sans">
+          <!-- Nome Officina / Maker -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 font-medium">Nome Officina / Maker *</label>
+            <input type="text" id="creatorAddrMakerName" required placeholder="Es. Officina Meccanica Rossi // Maker 3D" class="w-full bg-[#14151C] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400 font-sans" />
+          </div>
+
+          <!-- Indirizzo e Numero Civico -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 font-medium">Indirizzo e Numero Civico *</label>
+            <input type="text" id="creatorAddrStreet" required placeholder="Es. Via Roma 42 / Zona Artigianale" class="w-full bg-[#14151C] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400 font-sans" />
+          </div>
+
+          <!-- CAP, Città, Provincia in riga -->
+          <div class="grid grid-cols-12 gap-2">
+            <div class="col-span-4 space-y-1">
+              <label class="text-[11px] font-mono text-zinc-300 font-medium">CAP *</label>
+              <input type="text" id="creatorAddrCap" required placeholder="20121" maxlength="5" class="w-full bg-[#14151C] border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400 font-mono" />
+            </div>
+            <div class="col-span-5 space-y-1">
+              <label class="text-[11px] font-mono text-zinc-300 font-medium">Città *</label>
+              <input type="text" id="creatorAddrCity" required placeholder="Milano" class="w-full bg-[#14151C] border border-white/15 rounded-xl px-3 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400 font-sans" />
+            </div>
+            <div class="col-span-3 space-y-1">
+              <label class="text-[11px] font-mono text-zinc-300 font-medium">Prov *</label>
+              <input type="text" id="creatorAddrProv" required placeholder="MI" maxlength="2" class="w-full bg-[#14151C] border border-white/15 rounded-xl px-2.5 py-2.5 text-xs text-white uppercase placeholder-zinc-500 focus:outline-none focus:border-emerald-400 font-mono text-center" />
+            </div>
+          </div>
+
+          <!-- Telefono per Corriere (Opzionale) -->
+          <div class="space-y-1">
+            <label class="text-[11px] font-mono text-zinc-300 font-medium">Telefono per il Corriere (Opzionale)</label>
+            <input type="tel" id="creatorAddrPhone" placeholder="Es. +39 340 1234567" class="w-full bg-[#14151C] border border-white/15 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-400 font-mono" />
+          </div>
+
+          <!-- Privacy Box -->
+          <div class="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-[10.5px] text-emerald-300/90 font-mono leading-relaxed flex items-start gap-2">
+            <i data-lucide="shield-check" class="w-4 h-4 shrink-0 text-emerald-400 mt-0.5"></i>
+            <span>Dati salvati in modo permanente e privato sul tuo account Creator. Nessun utente esterno vedrà il tuo indirizzo: viene usato solo per l'etichetta del pacco.</span>
+          </div>
+
+          <!-- Submit Button -->
+          <div class="pt-2 flex items-center gap-2">
+            <button type="submit" id="btnSaveCreatorAddress" class="btn-kowalski-primary flex-1 py-3 px-4 rounded-xl font-cyber font-bold text-xs uppercase tracking-wide flex items-center justify-center gap-2 shadow-xl active:scale-95 transition">
+              <i data-lucide="check" class="w-4 h-4"></i>
+              <span>SALVA INDIRIZZO E ACCEDI ALLA ESCROW ROOM &rarr;</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+
     <div id="modalPayoutConfig" class="fixed inset-0 z-[99999999] bg-[#070709]/98 hidden flex items-center justify-center p-3 sm:p-5 select-none" style="z-index: 99999999 !important; isolation: isolate !important; display: none;">
       <div class="cyber-card w-full max-w-md bg-[#0D0D12] border border-white/20 p-5 sm:p-6 rounded-3xl shadow-[0_25px_70px_rgba(0,0,0,0.95)] space-y-4 text-left relative max-h-[92vh] overflow-y-auto animate-in fade-in zoom-in-95 duration-200">
         
@@ -10149,6 +10249,121 @@
       } catch(e) {}
     }
     window.playNotificationSound = playNotificationSound;
+
+    function getCreatorSavedAddress() {
+      if (AppState.user && AppState.user.creatorAddress && AppState.user.creatorAddress.street) {
+        return AppState.user.creatorAddress;
+      }
+      const email = ((AppState.user && AppState.user.email) || '').toLowerCase().trim();
+      if (email) {
+        try {
+          const localStr = localStorage.getItem('printforge_creator_address_' + email);
+          if (localStr) {
+            const parsed = JSON.parse(localStr);
+            if (parsed && parsed.street) {
+              if (AppState.user) AppState.user.creatorAddress = parsed;
+              return parsed;
+            }
+          }
+        } catch(e) {}
+      }
+      return null;
+    }
+    window.getCreatorSavedAddress = getCreatorSavedAddress;
+
+    function saveCreatorAddress(addrObj) {
+      if (!addrObj) return;
+      if (!AppState.user) AppState.user = {};
+      AppState.user.creatorAddress = addrObj;
+
+      const email = (AppState.user.email || '').toLowerCase().trim();
+      if (email) {
+        try {
+          localStorage.setItem('printforge_creator_address_' + email, JSON.stringify(addrObj));
+        } catch(e) {}
+        if (typeof syncUserProfileToCloud === 'function') {
+          syncUserProfileToCloud(email, {
+            ...AppState.user,
+            creatorAddress: addrObj
+          });
+        }
+      }
+      updateCreatorAddressUI();
+    }
+    window.saveCreatorAddress = saveCreatorAddress;
+
+    function updateCreatorAddressUI() {
+      const addr = getCreatorSavedAddress();
+      const disp = document.getElementById('creatorSavedAddressDisplay');
+      if (disp) {
+        if (addr && addr.street) {
+          disp.innerHTML = '<strong>' + escapeHtml(addr.makerName || (AppState.user && AppState.user.name) || 'Officina Maker') + '</strong><br>' +
+            escapeHtml(addr.street) + ', ' + escapeHtml(addr.cap) + ' ' + escapeHtml(addr.city) + ' (' + escapeHtml(addr.prov || 'IT') + ')' +
+            (addr.phone ? '<br><span class="text-zinc-400 text-[10px]">Tel: ' + escapeHtml(addr.phone) + '</span>' : '');
+        } else {
+          disp.innerHTML = '<span class="text-amber-400 font-medium">Nessun indirizzo mittente salvato. Clicca "Modifica Indirizzo" per impostarlo.</span>';
+        }
+      }
+    }
+    window.updateCreatorAddressUI = updateCreatorAddressUI;
+
+    function openCreatorAddressModal(isEdit) {
+      const modal = document.getElementById('modalCreatorAddress');
+      if (!modal) return;
+      const addr = getCreatorSavedAddress() || {};
+
+      const nameInput = document.getElementById('creatorAddrMakerName');
+      const streetInput = document.getElementById('creatorAddrStreet');
+      const cityInput = document.getElementById('creatorAddrCity');
+      const capInput = document.getElementById('creatorAddrCap');
+      const provInput = document.getElementById('creatorAddrProv');
+      const phoneInput = document.getElementById('creatorAddrPhone');
+
+      if (nameInput) nameInput.value = addr.makerName || (AppState.user && AppState.user.name) || '';
+      if (streetInput) streetInput.value = addr.street || '';
+      if (cityInput) cityInput.value = addr.city || '';
+      if (capInput) capInput.value = addr.cap || '';
+      if (provInput) provInput.value = addr.prov || '';
+      if (phoneInput) phoneInput.value = addr.phone || '';
+
+      modal.style.display = 'flex';
+      modal.classList.remove('hidden');
+      if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+    }
+    window.openCreatorAddressModal = openCreatorAddressModal;
+
+    function closeCreatorAddressModal() {
+      const modal = document.getElementById('modalCreatorAddress');
+      if (modal) {
+        modal.style.display = 'none';
+        modal.classList.add('hidden');
+      }
+    }
+    window.closeCreatorAddressModal = closeCreatorAddressModal;
+
+    function handleCreatorAddressSubmit(e) {
+      if (e) e.preventDefault();
+      const makerName = document.getElementById('creatorAddrMakerName')?.value.trim() || (AppState.user && AppState.user.name) || 'Officina Maker';
+      const street = document.getElementById('creatorAddrStreet')?.value.trim();
+      const city = document.getElementById('creatorAddrCity')?.value.trim();
+      const cap = document.getElementById('creatorAddrCap')?.value.trim();
+      const prov = document.getElementById('creatorAddrProv')?.value.trim().toUpperCase();
+      const phone = document.getElementById('creatorAddrPhone')?.value.trim() || '';
+
+      if (!street || !city || !cap) {
+        showToast(currentLang === 'it' ? 'Compila indirizzo, città e CAP della tua officina' : 'Please fill in street, city and postal code', 'warning');
+        return;
+      }
+
+      const addrObj = { makerName, street, city, cap, prov, phone };
+      saveCreatorAddress(addrObj);
+      closeCreatorAddressModal();
+      showToast(currentLang === 'it' ? '✓ Indirizzo officina salvato per la spedizione!' : '✓ Workshop address saved for shipping!', 'success');
+
+      // Entra subito nella Escrow Room
+      navigateTo('order-room');
+    }
+    window.handleCreatorAddressSubmit = handleCreatorAddressSubmit;
 
     function updateChatNotificationBadges() {
       if (!AppState.unreadDealMessages) {
@@ -23806,6 +24021,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       const clientEmail = order.clientEmail || 'cliente@printforge.it';
       const fullAddress = order.shippingFull || (order.shippingStreet ? `${order.shippingStreet}, ${order.shippingCap || '20121'} ${order.shippingCity || 'Milano'} (${order.shippingProv || 'MI'})` : 'Via Dante 18, 20121 Milano (MI)');
       const makerName = order.maker || AppState.user.name || 'Maker Hub 3D';
+      const cAddr = (typeof getCreatorSavedAddress === 'function') ? getCreatorSavedAddress() : null;
+      const senderName = (cAddr && cAddr.makerName) || makerName;
+      const senderStreet = (cAddr && cAddr.street) || 'PrintForge Hub Maker';
+      const senderCap = (cAddr && cAddr.cap) || '20121';
+      const senderCity = (cAddr && cAddr.city) || 'Milano';
+      const senderProv = (cAddr && cAddr.prov) || 'MI';
+      const senderPhone = (cAddr && cAddr.phone) || '';
       const orderTitle = order.title || 'Componente Meccanico 3D';
 
       const labelHtml = `<!DOCTYPE html>
@@ -23946,11 +24168,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       <div class="address-block" style="font-size: 10px;">
         <div class="section-title">MITTENTE (SHIPPER / ORIGIN):</div>
-        ${senderHtmlBlock}
+        <strong>${escapeHtml(senderName)}</strong><br>
+        ${escapeHtml(senderStreet)}<br>
+        ${escapeHtml(senderCap)} ${escapeHtml(senderCity)} (${escapeHtml(senderProv)}) - ITALIA (IT)<br>
+        ${senderPhone ? '<span style="font-size: 9.5px; color: #333;">Tel: ' + escapeHtml(senderPhone) + '<br></span>' : ''}
+        <span style="font-size: 9.5px; color: #333;">PrintForge Certified Maker Hub</span>
       </div>
-        <strong>${escapeHtml(makerName)}</strong><br>
-        PrintForge Certified Maker Hub // Officina Additiva<br>
-        Piattaforma P2P Manifattura 3D - Italia
       </div>
 
       <div class="address-block">
@@ -28014,6 +28237,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
         // REQUISITO UTENTE: Per il creator la pagina Escrow Room si attiva SOLO dopo il collaudo delle 3 foto!
         if (isCreator) {
+          const savedAddr = getCreatorSavedAddress();
+          if (!savedAddr || !savedAddr.street || !savedAddr.city || !savedAddr.cap) {
+            openCreatorAddressModal();
+            return;
+          }
+        }
+        if (isCreator) {
           const activeCreatorReq = AppState.loadedRequestInStudio || (AppState.broadcastRequests && AppState.broadcastRequests.find(r => (r.isAccepted === true || (typeof r.status === 'string' && (r.status.includes('LAVORAZION') || r.status.includes('APPROVAT')))) && !r.isCompleted && !r.isClosed && !r.isDeleted));
           const has3QcPhotos = Boolean(
             (AppState.cadQcFiles && AppState.cadQcFiles.length >= 3) ||
@@ -30910,6 +31140,7 @@ function renderDealChat(rfpId) {
     }
 
     function updateEscrowRoom() {
+      if (typeof updateCreatorAddressUI === "function") updateCreatorAddressUI();
       const emptyState = document.getElementById('escrowEmptyState');
       const activeCard = document.getElementById('escrowActiveOrderCard');
       if (!emptyState || !activeCard) return;
@@ -33228,8 +33459,46 @@ function renderDealChat(rfpId) {
       init() {
         adjustMobileVideoScale();
         this.computeTimeline();
-        initRemotion3D();
+        if (typeof initRemotion3D === 'function') initRemotion3D();
+        this.play();
+      },
+
+      play() {
+        this.isPlaying = true;
+        if (!this.timeline || this.timeline.length === 0) {
+          this.computeTimeline();
+        }
         this.startLoop();
+        this.updatePlayBtnUI();
+      },
+
+      pause() {
+        this.isPlaying = false;
+        this.stopLoop();
+        this.updatePlayBtnUI();
+      },
+
+      togglePlay() {
+        if (this.isPlaying && this.rafId) {
+          this.pause();
+        } else {
+          this.play();
+        }
+      },
+
+      restart() {
+        this.currentFrame = 0;
+        this.play();
+      },
+
+      updatePlayBtnUI() {
+        const btn = document.getElementById('btnVideoTogglePlay');
+        if (btn) {
+          btn.innerHTML = (this.isPlaying && this.rafId) 
+            ? '<i data-lucide="pause" class="w-3 h-3 text-white"></i><span class="text-[9px] font-mono font-bold text-white">PAUSA</span>' 
+            : '<i data-lucide="play" class="w-3 h-3 text-emerald-400"></i><span class="text-[9px] font-mono font-bold text-emerald-400">PLAY</span>';
+          if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+        }
       },
 
       computeTimeline() {
@@ -33290,19 +33559,24 @@ function renderDealChat(rfpId) {
         if (this.rafId) cancelAnimationFrame(this.rafId);
         let lastTime = performance.now();
         const tick = (now) => {
-          if (AppState.currentView !== 'client-home' && AppState.currentView !== 'home') {
+          const isHome = !AppState.currentView || AppState.currentView === 'client-home' || AppState.currentView === 'home';
+          if (!isHome) {
             this.rafId = null;
             return;
           }
           const dt = Math.min((now - lastTime) / 1000, 0.08);
           lastTime = now;
           if (this.isPlaying) {
-            this.currentFrame = (this.currentFrame + (this.speed || 1) * (dt * this.fps)) % this.totalDurationFrames;
+            if (!this.totalDurationFrames || this.totalDurationFrames <= 0) {
+              this.computeTimeline();
+            }
+            this.currentFrame = (this.currentFrame + (this.speed || 1) * (dt * this.fps)) % (this.totalDurationFrames || 1440);
             this.renderFrame(this.currentFrame);
           }
           this.rafId = requestAnimationFrame(tick);
         };
         this.rafId = requestAnimationFrame(tick);
+        this.updatePlayBtnUI();
       },
 
       renderFrame(frame) {
@@ -35976,7 +36250,13 @@ function renderDealChat(rfpId) {
         }
       });
 
-      try { VideoDemoPlayer.init(); } catch (e) { console.warn('VideoDemoPlayer:', e); }
+      try { 
+          if (typeof RemotionVideoEngine !== 'undefined') {
+            RemotionVideoEngine.init();
+          } else if (typeof VideoDemoPlayer !== 'undefined' && VideoDemoPlayer.init) {
+            VideoDemoPlayer.init();
+          }
+        } catch (e) { console.warn('VideoDemoPlayer init:', e); }
       
       let targetView = urlParams.get('view') || (window.location.hash ? window.location.hash.replace('#', '') : '');
       if (!targetView || targetView === 'home') targetView = 'client-home';
