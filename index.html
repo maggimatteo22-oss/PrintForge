@@ -9787,19 +9787,13 @@
 
     function getSupabaseCredentials() {
       const cfg = window.PRINTFORGE_CONFIG || {};
-      
-      // Auto-migrate legacy Supabase URL in user browser localStorage
       try {
-        const storedUrl = localStorage.getItem('printforge_supabase_url');
-        if (storedUrl && (storedUrl.includes('oxvfrbpmelcpryksfcpz') || storedUrl.includes('ztcuxpddwfromqcprjad'))) {
-          localStorage.setItem('printforge_supabase_url', 'https://wlmnddsoyilgweegvswo.supabase.co');
-          localStorage.setItem('printforge_supabase_anon_key', 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2');
-        }
+        localStorage.removeItem('printforge_supabase_url');
+        localStorage.removeItem('printforge_supabase_anon_key');
       } catch(e) {}
-
-      const url = cfg.SUPABASE_URL || localStorage.getItem('printforge_supabase_url') || 'https://wlmnddsoyilgweegvswo.supabase.co';
-      const key = cfg.SUPABASE_ANON_KEY || localStorage.getItem('printforge_supabase_anon_key') || 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2';
-      return { url: url.trim(), key: key.trim() };
+      const url = (cfg.SUPABASE_URL || 'https://wlmnddsoyilgweegvswo.supabase.co').trim();
+      const key = (cfg.SUPABASE_ANON_KEY || 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2').trim();
+      return { url, key };
     }
 
     /* Direct High-Speed Native Supabase REST Engine (Zero Dependencies, Works on Mobile & PC) */
@@ -11387,15 +11381,8 @@
           }
 
           renderBroadcastTable();
-      const pTitle = document.getElementById('portfolioTitle');
-      if (pTitle && t.portfolioTitlePlaceholder) pTitle.placeholder = t.portfolioTitlePlaceholder;
-      const pDesc = document.getElementById('portfolioDesc');
-      if (pDesc && t.portfolioDescPlaceholder) pDesc.placeholder = t.portfolioDescPlaceholder;
-      const pMatDef = document.getElementById('i18n-portfolioMatDefault');
-      if (pMatDef && t.portfolioMatDefault) pMatDef.innerText = t.portfolioMatDefault;
-      if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
-      if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
-
+          if (typeof renderExploreShowcase === 'function') renderExploreShowcase();
+          if (typeof renderCreatorPortfolioView === 'function') renderCreatorPortfolioView();
           renderCreatorRequestsFeed();
           updateEscrowRoom();
           updateCadQcStatusUI();
