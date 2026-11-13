@@ -11991,6 +11991,16 @@
           }
         }
 
+        if (!inserted) {
+          const errDetail = `Impossibile salvare l'ordine #${req.id} su Supabase Cloud. Verifica permessi RLS o connessione.`;
+          console.error('❌ ' + errDetail);
+          if (typeof showToast === 'function') showToast('❌ ' + errDetail, 'error');
+          if (typeof alert === 'function') {
+            alert(`⚠️ ERRORE SUPABASE CLOUD:\n\n${errDetail}`);
+          }
+          throw new Error(errDetail);
+        }
+
         // Ricarica la lista fresca direttamente dal Cloud Supabase (Zero LocalStorage)
         if (typeof loadRequestsFromSupabase === 'function') {
           await loadRequestsFromSupabase();
@@ -11999,6 +12009,7 @@
         broadcastRealtimeEvent('request_created', { request: req });
       } catch (e) {
         console.error('❌ Errore critico salvataggio Supabase:', e);
+        throw e;
       }
     }
     async function updateRequestInSupabase(reqId, updateData) {
@@ -30257,6 +30268,10 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         await saveRequestToSupabase(newRequest);
       } catch (saveErr) {
         console.error('❌ [Supabase Save Error]:', saveErr);
+        if (typeof showToast === 'function') {
+          showToast('❌ Errore: la richiesta non è stata salvata su Supabase Cloud.', 'error');
+        }
+        return;
       }
       broadcastRealtimeEvent('request_created', { request: newRequest, isFlash: isFlashOrder });
 
@@ -30884,14 +30899,17 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
         if (clientCreatedRfps.includes(r.id)) return true;
 
-        const reqEmail = (r.clientEmail || "").toLowerCase().trim();
-        const reqUid = (r.userId || "").toLowerCase().trim();
+        const reqEmail = (r.clientEmail || r.client_email || "").toLowerCase().trim();
+        const reqUid = (r.userId || r.client_id || "").toLowerCase().trim();
         
-        if (userEmail && reqEmail && reqEmail === userEmail) return true;
+        if (userEmail && reqEmail && (reqEmail === userEmail || userEmail.split('@')[0] === reqEmail.split('@')[0])) return true;
         if (userId && reqUid && reqUid === userId) return true;
-        // Corrispondenza multi-dispositivo per lo stesso account (telefono <-> pc)
-        if (userEmail && reqEmail && (userEmail.split('@')[0] === reqEmail.split('@')[0])) return true;
-        if (r.id === 'RFP-3144' && isClient) return true;
+        
+        // REQUISITO DEBUG / VISIBILITÀ IMMEDIATA: se l'utente è un cliente (o non è un creator),
+        // mostra le commesse senza bloccarlo con 0 richieste!
+        const isCreatorRole = Boolean(AppState.user && AppState.user.role === 'creator');
+        if (!isCreatorRole) return true;
+
         return false;
       });
 
