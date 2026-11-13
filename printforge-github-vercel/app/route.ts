@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import fs from 'fs';
 import path from 'path';
-import { fallbackHtml } from '@/lib/indexHtml';
+import { fallbackHtml, indexHtml } from '@/lib/indexHtml';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,11 +12,11 @@ export async function GET() {
     if (fs.existsSync(filePath)) {
       html = fs.readFileSync(filePath, 'utf-8');
     } else {
-      html = fallbackHtml;
+      html = fallbackHtml || indexHtml;
     }
   } catch (err) {
     console.error('Error reading public/index.html:', err);
-    html = fallbackHtml;
+    html = fallbackHtml || indexHtml;
   }
 
   return new NextResponse(html, {

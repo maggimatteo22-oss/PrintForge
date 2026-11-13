@@ -1,4 +1,4 @@
-﻿const fs = require('fs');
+const fs = require('fs');
 const path = require('path');
 
 const root = __dirname;
@@ -26,7 +26,7 @@ const tsFiles = [
   path.join(root, 'printforge-github-vercel', 'lib', 'indexHtml.ts')
 ];
 
-const tsContent = `export const indexHtml = ${JSON.stringify(indexHtmlContent)};\n`;
+const tsContent = `export const indexHtml = ${JSON.stringify(indexHtmlContent)};\nexport const fallbackHtml = indexHtml;\nexport default indexHtml;\n`;
 
 tsFiles.forEach(dst => {
   if (fs.existsSync(path.dirname(dst))) {
