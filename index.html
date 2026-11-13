@@ -11922,77 +11922,89 @@
             })
           : (req.notes || '');
 
-        const dbPayload = {
-          id: req.id,
-          title: req.title || 'Componente 3D',
-          client_name: resolvedClientName,
-          client_city: req.clientCity || 'Milano (MI)',
-          client_email: resolvedClientEmail,
-          material: req.material || 'PETG Tecnico',
-          color: req.color || 'Arancione Meccanico',
-          color_hex: typeof req.colorHex === 'number' ? '#' + req.colorHex.toString(16).padStart(6, '0') : (req.colorHex || '#ff6600'),
-          tolerance: req.tolerance || 'Standard ±0.2 mm',
-          infill: req.infill || '50% Meccanico Strutturale',
-          quantity: req.quantity || '1 pezzo',
-          dimensions: req.dimensions || '80 × 60 × 25 mm',
-          budget: req.budget || '€ 34,81',
-          notes: payloadNotes,
-          status: 'open',
-          maker_name: null,
-          file_name: req.fileName || 'part.stl'
+        const notesStr = typeof payloadNotes === 'string' ? payloadNotes : JSON.stringify(payloadNotes || {});
+        let colorHexStr = '#ff6600';
+        if (typeof req.colorHex === 'number') {
+          colorHexStr = '#' + req.colorHex.toString(16).padStart(6, '0');
+        } else if (typeof req.colorHex === 'string' && req.colorHex.trim()) {
+          colorHexStr = req.colorHex.trim();
+        }
+
+        // Whitelist rigorosa: invia solo ed esclusivamente le 17 colonne verificate di public.broadcast_requests
+        // Nessun campo undefined o colonna inesistente (es. client_id, maker_id) che causerebbe errori PostgREST PGRST204
+        const cleanPayload = {
+          id: String(req.id || ('RFP-' + Math.floor(1000 + Math.random() * 9000))).trim(),
+          title: String(req.title || 'Componente 3D').trim(),
+          client_name: String(resolvedClientName || 'Cliente').trim(),
+          client_city: String(req.clientCity || req.shippingCity || 'Milano (MI)').trim(),
+          client_email: String(resolvedClientEmail || '').trim(),
+          material: String(req.material || 'PETG Tecnico').trim(),
+          color: String(req.color || 'Arancione Meccanico').trim(),
+          color_hex: colorHexStr,
+          tolerance: String(req.tolerance || 'Standard ±0.2 mm').trim(),
+          infill: String(req.infill || '50% Meccanico Strutturale').trim(),
+          quantity: String(req.quantity || '1 pezzo').trim(),
+          dimensions: String(req.dimensions || '80 × 60 × 25 mm').trim(),
+          budget: String(req.budget || '€ 34,81').trim(),
+          notes: notesStr,
+          status: String(req.status || 'open').trim(),
+          file_name: String(req.fileName || 'part.stl').trim(),
+          maker_name: req.maker_name ? String(req.maker_name).trim() : null
         };
 
         const creds = getSupabaseCredentials();
         let inserted = false;
+        let lastErrorMsg = '';
 
-        // 1. Primary: Direct supabase.from('broadcast_requests').insert(...)
-        if (typeof window.supabase !== 'undefined') {
+        // 1. Direct Native REST (Usa apikey e Bearer anon key: bypassa sessioni utente scadute e problemi RLS su anon)
+        try {
+          const restRes = await fetch(`${creds.url}/rest/v1/broadcast_requests`, {
+            method: 'POST',
+            headers: {
+              'apikey': creds.key,
+              'Authorization': 'Bearer ' + creds.key,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify(cleanPayload)
+          });
+          if (restRes.ok || restRes.status === 201 || restRes.status === 200 || restRes.status === 204) {
+            inserted = true;
+            console.log('✅ [Supabase REST Direct] Inserito con successo su Supabase Cloud:', cleanPayload.id);
+          } else {
+            const errBody = await restRes.text().catch(() => '');
+            lastErrorMsg = `REST HTTP ${restRes.status}: ${errBody}`;
+            console.warn('⚠️ [Supabase REST Direct Warning]:', restRes.status, errBody);
+          }
+        } catch(restErr) {
+          lastErrorMsg = restErr && restErr.message ? restErr.message : String(restErr);
+          console.warn('⚠️ [Supabase REST Direct Exception]:', restErr);
+        }
+
+        // 2. Secondary fallback via Supabase SDK (senza .select() per non fallire su policy SELECT RLS)
+        if (!inserted && typeof window.supabase !== 'undefined') {
           try {
             if (!supabaseClient || typeof supabaseClient.from !== 'function') {
               supabaseClient = window.supabase.createClient(creds.url, creds.key);
             }
-            const { data, error } = await supabaseClient
+            const { error } = await supabaseClient
               .from('broadcast_requests')
-              .insert([dbPayload])
-              .select();
-            if (!error && data && data.length > 0) {
+              .insert([cleanPayload]);
+            if (!error) {
               inserted = true;
-              console.log('✅ [Supabase SDK Insert] Inserito con successo su Supabase Cloud:', req.id);
-            } else if (error) {
-              console.warn('⚠️ [Supabase SDK Insert Warning]:', error.message || error);
+              console.log('✅ [Supabase SDK Insert] Inserito con successo su Supabase Cloud:', cleanPayload.id);
+            } else {
+              lastErrorMsg = error.message || JSON.stringify(error);
+              console.warn('⚠️ [Supabase SDK Insert Warning]:', lastErrorMsg);
             }
           } catch(sdkErr) {
+            lastErrorMsg = sdkErr && sdkErr.message ? sdkErr.message : String(sdkErr);
             console.warn('⚠️ [Supabase SDK Insert Exception]:', sdkErr);
           }
         }
 
-        // 2. Direct Native REST Fallback (Funziona ovunque, 100% cloud garantito)
         if (!inserted) {
-          try {
-            const restRes = await fetch(`${creds.url}/rest/v1/broadcast_requests`, {
-              method: 'POST',
-              headers: {
-                'apikey': creds.key,
-                'Authorization': 'Bearer ' + creds.key,
-                'Content-Type': 'application/json',
-                'Prefer': 'return=representation'
-              },
-              body: JSON.stringify(dbPayload)
-            });
-            if (restRes.ok) {
-              inserted = true;
-              console.log('✅ [Supabase REST Direct] Inserito con successo su Supabase Cloud:', req.id);
-            } else {
-              const errBody = await restRes.text().catch(() => '');
-              console.error('❌ [Supabase REST Direct Error]:', restRes.status, errBody);
-            }
-          } catch(restErr) {
-            console.error('❌ [Supabase REST Direct Exception]:', restErr);
-          }
-        }
-
-        if (!inserted) {
-          const errDetail = `Impossibile salvare l'ordine #${req.id} su Supabase Cloud. Verifica permessi RLS o connessione.`;
+          const errDetail = `Impossibile salvare l'ordine #${cleanPayload.id} su Supabase Cloud. Dettaglio: ${lastErrorMsg || 'Verifica permessi RLS o connessione'}`;
           console.error('❌ ' + errDetail);
           if (typeof showToast === 'function') showToast('❌ ' + errDetail, 'error');
           if (typeof alert === 'function') {
@@ -12012,26 +12024,52 @@
         throw e;
       }
     }
+
     async function updateRequestInSupabase(reqId, updateData) {
-      if (!reqId) return;
+      if (!reqId || !updateData) return;
       try {
+        const ALLOWED_DB_COLS = [
+          'id', 'title', 'client_name', 'client_city', 'client_email',
+          'material', 'color', 'color_hex', 'tolerance', 'infill',
+          'quantity', 'dimensions', 'budget', 'notes', 'status',
+          'file_name', 'maker_name'
+        ];
+        const cleanUpdate = {};
+        const extraData = {};
+        for (const [k, v] of Object.entries(updateData)) {
+          if (ALLOWED_DB_COLS.includes(k)) {
+            cleanUpdate[k] = v;
+          } else {
+            extraData[k] = v;
+          }
+        }
+        // Se ci sono proprietà extra (es. is_completed, tracking_number), le includiamo in notes
+        if (Object.keys(extraData).length > 0) {
+          const currentRfp = (AppState.broadcastRequests || []).find(r => r && r.id === reqId);
+          let currentNotesObj = {};
+          try {
+            if (cleanUpdate.notes) {
+              currentNotesObj = JSON.parse(cleanUpdate.notes);
+            } else if (currentRfp && currentRfp.notes && typeof currentRfp.notes === 'string') {
+              currentNotesObj = JSON.parse(currentRfp.notes);
+            }
+          } catch(e) {}
+          Object.assign(currentNotesObj, extraData);
+          cleanUpdate.notes = JSON.stringify(currentNotesObj);
+        }
+
+        const creds = getSupabaseCredentials();
+
         // 1. Direct native REST patch to Supabase Cloud
-        await rawSupabaseRest(`broadcast_requests?id=eq.${encodeURIComponent(reqId)}`, 'PATCH', updateData);
+        await rawSupabaseRest(`broadcast_requests?id=eq.${encodeURIComponent(reqId)}`, 'PATCH', cleanUpdate);
 
         // 2. Secondary sync via supabaseClient SDK
         if (supabaseClient && typeof supabaseClient.from === 'function') {
           try {
-            const { data, error } = await supabaseClient
+            await supabaseClient
               .from('broadcast_requests')
-              .update(updateData)
-              .eq('id', reqId)
-              .select();
-            if (!error && (!data || data.length === 0)) {
-              const fullReq = (AppState.broadcastRequests || []).find(x => x && x.id === reqId);
-              if (fullReq) {
-                await saveRequestToSupabase(fullReq);
-              }
-            }
+              .update(cleanUpdate)
+              .eq('id', reqId);
           } catch(sdkErr) {}
         }
         console.log('✅ Aggiornamento Supabase completato per:', reqId);
