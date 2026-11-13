@@ -9706,12 +9706,8 @@
 
         let currentReqs = [];
         try {
-          const rawReq = localStorage.getItem('printforge_broadcast_requests');
-          if (rawReq) currentReqs = JSON.parse(rawReq);
+          localStorage.removeItem('printforge_broadcast_requests');
         } catch(e) {}
-        if (!currentReqs || !Array.isArray(currentReqs) || currentReqs.length === 0) {
-          currentReqs = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
-        }
         // PURGE TOTALE RICHIESTE FAKE / DELETED / BLACKLIST
         const blacklistInitial = ["RFP-4120", "RFP-1044", "RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"];
         currentReqs = currentReqs.filter(r => r && !blacklistInitial.includes(r.id) && r.status !== 'DELETED' && r.status !== 'CANCELLATA_DEFINITIVAMENTE' && !r.isDeleted && r.clientEmail !== 'e.moretti@robotica-labs.it');
@@ -37388,30 +37384,10 @@ function renderDealChat(rfpId) {
         }
       } catch(e) {}
 
-      // Broadcast RFPs Restoration - Epurazione annunci fake/demo
+      // Reset locale: le richieste provengono ESCLUSIVAMENTE dal database Supabase
       try {
-        const blacklistPurge = ["RFP-4120", "RFP-1044", "RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"];
-        try {
-          let curB = JSON.parse(localStorage.getItem('printforge_broadcast_requests') || '[]');
-          if (Array.isArray(curB) && curB.length > 0) {
-            curB = curB.filter(x => x && x.id && !blacklistPurge.includes(x.id));
-            localStorage.setItem('printforge_broadcast_requests', JSON.stringify(curB));
-          }
-        } catch(e) {}
-        const blacklist = ["RFP-4120", "RFP-1044", "RFP-3891", "RFP-6482", "RFP-9821", "TEST-PING-1"];
-        const storedReqs = localStorage.getItem('printforge_broadcast_requests');
-        if (storedReqs) {
-          const parsed = JSON.parse(storedReqs);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            AppState.broadcastRequests = parsed.filter(req => req && req.id && !blacklist.includes(req.id) && !req.id.startsWith('USER-PROFILE-') && !req.id.startsWith('REV-') && !(req.title && req.title.startsWith('CREATOR_REVIEW:')) && req.status !== 'CERTIFIED_REVIEW' && req.status !== 'DELETED');
-          } else {
-            AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
-          }
-        } else {
-          AppState.broadcastRequests = JSON.parse(JSON.stringify(PRESET_DEMO_REQUESTS));
-        }
-        AppState.broadcastRequests = (AppState.broadcastRequests || []).filter(r => r && !blacklist.includes(r.id));
-        localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
+        localStorage.removeItem('printforge_broadcast_requests');
+        AppState.broadcastRequests = [];
       } catch (e) {}
 
       try { initLaptopFounderAccess(); } catch (e) { console.warn('Founder access:', e); }
