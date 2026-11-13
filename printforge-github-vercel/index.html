@@ -9814,6 +9814,8 @@
           'apikey': key,
           'Authorization': 'Bearer ' + key,
           'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
           ...extraHeaders
         };
         const opts = { method, headers };
@@ -11030,9 +11032,9 @@
         let data = null;
         let error = null;
 
-        // 1. Primary: Direct high-speed native REST fetch to Supabase Cloud
+        // 1. Primary: Direct high-speed native REST fetch to Supabase Cloud (Zero Cache)
         try {
-          const restRes = await rawSupabaseRest('broadcast_requests?select=*&order=created_at.desc');
+          const restRes = await rawSupabaseRest(`broadcast_requests?select=*&order=created_at.desc&_ts=${Date.now()}`);
           if (!restRes.error && Array.isArray(restRes.data)) {
             data = restRes.data;
           }
@@ -11232,7 +11234,7 @@
               (typeof localStorage !== 'undefined' && localStorage.getItem('printforge_completed_' + orderIdVal) === 'true')
             );
             const isDirectOrder = Boolean(meta.isDirectShowcase || meta.isShowcaseOrder || meta.targetCreatorId || meta.targetCreatorName);
-            const isAcc = isCompletedReq ? false : (isDirectOrder ? Boolean(meta.isAccepted === true) : Boolean(meta.isAccepted === true || (dbR.status && (dbR.status.includes("ACCETTAT") || dbR.status.includes("PRESA IN CARICO") || dbR.status.includes("LAVORAZION")))));
+            const isAcc = isCompletedReq ? false : (isDirectOrder ? Boolean(meta.isAccepted === true) : Boolean(meta.isAccepted === true || (dbR.status && (String(dbR.status).toLowerCase() === 'accepted' || dbR.status.includes("ACCETTAT") || dbR.status.includes("PRESA IN CARICO") || dbR.status.includes("LAVORAZION")))));
 
             const parsedMessages = (meta.messages && Array.isArray(meta.messages)) ? meta.messages : [];
             const parsedQcPhotos = (meta.qcPhotos && Array.isArray(meta.qcPhotos)) ? meta.qcPhotos : [];
@@ -12073,11 +12075,12 @@
     async function saveRequestToSupabase(req) {
       if (!req || !req.id) return;
       try {
-        const currentUserEmail = (AppState.user && AppState.user.email) || (typeof localStorage !== 'undefined' ? (localStorage.getItem('printforge_saved_email') || localStorage.getItem('printforge_saved_account_email')) : '') || '';
-        const currentUserId = (AppState.user && (AppState.user.userId || AppState.user.id)) || '';
+        const currentUserEmail = (AppState.user && AppState.user.isLoggedIn && AppState.user.email) ? AppState.user.email.toLowerCase().trim() : '';
+        const currentUserId = (AppState.user && AppState.user.isLoggedIn && (AppState.user.userId || AppState.user.id)) ? (AppState.user.userId || AppState.user.id) : '';
 
-        const resolvedClientEmail = req.clientEmail || currentUserEmail || '';
+        const resolvedClientEmail = (req.clientEmail || req.client_email || currentUserEmail || '').toLowerCase().trim();
         const resolvedUserId = req.userId || currentUserId || '';
+        const resolvedClientName = req.clientName || (AppState.user && AppState.user.isLoggedIn && AppState.user.name) || 'Cliente';
 
         const payloadNotes = (typeof buildNotesPayload === 'function') 
           ? buildNotesPayload(req, {
@@ -12102,9 +12105,9 @@
 
         const dbPayload = {
           id: req.id,
-          title: req.title,
-          client_name: req.clientName,
-          client_city: req.clientCity,
+          title: req.title || 'Componente 3D',
+          client_name: resolvedClientName,
+          client_city: req.clientCity || 'Milano (MI)',
           client_email: resolvedClientEmail,
           material: req.material,
           color: req.color,
@@ -23311,7 +23314,7 @@ END-ISO-10303-21;`;
     };
 
 
-    function acceptCreatorRequest(requestId) {
+    async function acceptCreatorRequest(requestId) {
       const req = AppState.broadcastRequests.find(x => x.id === requestId);
       if (!req) return;
 
@@ -23387,10 +23390,10 @@ END-ISO-10303-21;`;
         localStorage.setItem('printforge_broadcast_requests', JSON.stringify(AppState.broadcastRequests));
       } catch(e) {}
 
-      updateRequestInSupabase(req.id, {
+      await updateRequestInSupabase(req.id, {
         status: 'accepted',
         maker_name: req.maker,
-        notes: buildNotesPayload(req, {
+        notes: (typeof buildNotesPayload === 'function') ? buildNotesPayload(req, {
           isAccepted: true,
           status: 'accepted',
           assigned_creator_id: req.assigned_creator_id,
@@ -23398,7 +23401,7 @@ END-ISO-10303-21;`;
           makerName: req.maker,
           makerEmail: req.makerEmail,
           makerUserId: req.makerUserId
-        })
+        }) : JSON.stringify({ isAccepted: true, status: 'accepted', makerName: req.maker, makerEmail: req.makerEmail })
       });
 
       broadcastRealtimeEvent('request_accepted', {
@@ -29083,10 +29086,9 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       if (typeof closeUserProfileDropdown === 'function') {
         closeUserProfileDropdown();
       }
-      // PRESERVA SEMPRE I DATI PRIVATI DEL CREATOR: IBAN, PASSWORD E PROFILO PRINCIPALE
+      // PRESERVA I DATI PRIVATI DEL CREATOR SE PRESENTI
       try {
         if (AppState.user && AppState.user.email) {
-          localStorage.setItem('printforge_saved_email', AppState.user.email);
           if (AppState.user.payoutConfig) {
             const uKey = 'printforge_payout_details_' + AppState.user.email.replace(/[^a-z0-9]/g, '_');
             localStorage.setItem(uKey, JSON.stringify(AppState.user.payoutConfig));
@@ -29113,7 +29115,12 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       try {
         localStorage.removeItem('printforge_auth_session');
-        // NON cancellare printforge_saved_email, printforge_saved_pass, printforge_payout_details, printforge_portfolio_works
+        localStorage.removeItem('printforge_saved_email');
+        localStorage.removeItem('printforge_saved_account_email');
+        localStorage.removeItem('printforge_saved_account_pass');
+        localStorage.removeItem('printforge_saved_pass');
+        localStorage.removeItem('printforge_pending_google_username');
+        localStorage.removeItem('printforge_pending_auth_role');
       } catch (e) {}
 
       if (typeof supabaseClient !== 'undefined' && supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signOut === 'function') {
@@ -29165,18 +29172,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       // REQUISITO: Una volta effettuato l'accesso, non mostrare MAI più login-gate!
       if (viewId === 'login-gate') {
-        const hasReg = localStorage.getItem('printforge_has_registered') === 'true';
-        const remEmail = localStorage.getItem('printforge_saved_account_email');
-        const remPass = localStorage.getItem('printforge_saved_account_pass');
-        if (hasReg && remEmail) {
-          setGateTab('login');
-          setTimeout(() => {
-            const eEl = document.getElementById('gateUnifiedEmail');
-            const pEl = document.getElementById('gateUnifiedPass');
-            if (eEl) eEl.value = remEmail;
-            if (pEl) pEl.value = remPass || '••••••••';
-          }, 30);
-        }
+        setGateTab('login');
+        try {
+          const eEl = document.getElementById('gateUnifiedEmail');
+          const pEl = document.getElementById('gateUnifiedPass');
+          if (eEl) eEl.value = '';
+          if (pEl) pEl.value = '';
+        } catch(e) {}
         if (AppState.user && AppState.user.isLoggedIn) {
           const safeView = (AppState.user.role === 'creator') 
             ? ((typeof hasAcceptedRequest === 'function' && hasAcceptedRequest()) ? 'activity' : 'creator-requests') 
@@ -29388,6 +29390,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       updateNavigationTabs();
 
       if (viewId === 'creator-requests') {
+        if (typeof loadRequestsFromSupabase === 'function') loadRequestsFromSupabase();
         renderCreatorRequestsFeed();
       } else if (viewId === 'order-room') {
         updateEscrowRoom();
@@ -37437,51 +37440,12 @@ function renderDealChat(rfpId) {
         console.warn('Errore lettura sessione salvata:', e);
       }
 
-      // REQUISITO UTENTE FONDAMENTALE:
-      // "ricordati per chiunque che una volta che ha fatto la registrazione per la prima volta,
-      // ogni volta che entra nel sito mostragli la stessa nuvoletta di accesso ma nella sezione accedi con già i dati inseriti e la password pure ma coperta"
+      // PRIVACY LOGIN: I campi email e password partono SEMPRE completamente vuoti
       try {
-        const hasReg = localStorage.getItem('printforge_has_registered') === 'true';
-        const remEmail = localStorage.getItem('printforge_saved_account_email');
-        const remPass = localStorage.getItem('printforge_saved_account_pass');
-
-        if (hasReg && remEmail) {
-          setGateTab('login');
-          const eEl = document.getElementById('gateUnifiedEmail');
-          const pEl = document.getElementById('gateUnifiedPass');
-          if (eEl) eEl.value = remEmail;
-          if (pEl) pEl.value = remPass || '••••••••';
-
-          // Se l'utente entra nel sito senza sessione attiva, mostragli all'istante la nuvoletta di accesso precompilata
-          if (!sessionRestored) {
-            setTimeout(() => {
-              navigateTo('login-gate');
-              setGateTab('login');
-              const elEmail = document.getElementById('gateUnifiedEmail');
-              const elPass = document.getElementById('gateUnifiedPass');
-              if (elEmail) elEmail.value = remEmail;
-              if (elPass) elPass.value = remPass || '••••••••';
-            }, 60);
-          }
-        }
-      } catch(err) {}
-
-      // I campi email e password nel form di accesso iniziano vuoti solo se l'utente non ha mai effettuato una registrazione su questo dispositivo
-      try {
-        const hasReg = localStorage.getItem('printforge_has_registered') === 'true';
-        const remEmail = localStorage.getItem('printforge_saved_account_email');
-        const remPass = localStorage.getItem('printforge_saved_account_pass');
-        if (!hasReg || !remEmail) {
-          const eEl = document.getElementById('gateUnifiedEmail');
-          const pEl = document.getElementById('gateUnifiedPass');
-          if (eEl) eEl.value = '';
-          if (pEl) pEl.value = '';
-        } else {
-          const eEl = document.getElementById('gateUnifiedEmail');
-          const pEl = document.getElementById('gateUnifiedPass');
-          if (eEl) eEl.value = remEmail;
-          if (pEl) pEl.value = remPass || '••••••••';
-        }
+        const eEl = document.getElementById('gateUnifiedEmail');
+        const pEl = document.getElementById('gateUnifiedPass');
+        if (eEl) eEl.value = '';
+        if (pEl) pEl.value = '';
       } catch(e) {}
 
       if (!sessionRestored) {
