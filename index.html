@@ -9737,8 +9737,8 @@
         localStorage.removeItem('printforge_supabase_url');
         localStorage.removeItem('printforge_supabase_anon_key');
       } catch(e) {}
-      const url = (cfg.SUPABASE_URL || 'https://wlmnddsoyilgweegvswo.supabase.co').trim();
-      const key = (cfg.SUPABASE_ANON_KEY || 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2').trim();
+      const url = (cfg.SUPABASE_URL || 'https://oxvfrbpmelcpryksfcpz.supabase.co').trim();
+      const key = (cfg.SUPABASE_ANON_KEY || 'sb_publishable_KvdZ9xqCvRDhuD_fu6RPHA_RMHfewDw').trim();
       return { url, key };
     }
 
@@ -9747,9 +9747,9 @@
       try {
         const creds = (typeof getSupabaseCredentials === 'function') 
           ? getSupabaseCredentials() 
-          : { url: 'https://wlmnddsoyilgweegvswo.supabase.co', key: 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2' };
-        const base = (creds.url || 'https://wlmnddsoyilgweegvswo.supabase.co').replace(/\/+$/, '');
-        const key = creds.key || 'sb_publishable_URc7zIwnD7x1DQsaxq2_Xw_BcPuhpU2';
+          : { url: 'https://oxvfrbpmelcpryksfcpz.supabase.co', key: 'sb_publishable_KvdZ9xqCvRDhuD_fu6RPHA_RMHfewDw' };
+        const base = (creds.url || 'https://oxvfrbpmelcpryksfcpz.supabase.co').replace(/\/+$/, '');
+        const key = creds.key || 'sb_publishable_KvdZ9xqCvRDhuD_fu6RPHA_RMHfewDw';
         const headers = {
           'apikey': key,
           'Authorization': 'Bearer ' + key,
