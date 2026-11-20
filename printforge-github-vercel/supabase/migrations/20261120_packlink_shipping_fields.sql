@@ -1,13 +1,13 @@
 -- =========================================================================
--- PRINTFORGE - MIGRAZIONE COLONNE SPEDIZIONE PACKLINK PRO
+-- PRINTFORGE - MIGRAZIONE COLONNE SPEDIZIONE PACKLINK PRO (SICURA & DINAMICA)
 -- =========================================================================
--- Esegui questo script nell'SQL Editor di Supabase per abilitare il tracciamento
--- e la memorizzazione permanente delle etichette reali Packlink PRO.
--- Sicuro ed idempotente: usa IF NOT EXISTS per preservare tutti i dati esistenti.
+-- Esegui questo script nell'SQL Editor di Supabase.
+-- Aggiorna la tabella broadcast_requests ed è protetta per non dare errore
+-- se la tabella orders non è ancora stata creata.
 -- =========================================================================
 
--- 1. Aggiornamento tabella 'broadcast_requests' (richieste e ordini marketplace)
-ALTER TABLE IF EXISTS public.broadcast_requests 
+-- 1. Aggiornamento tabella 'broadcast_requests' (tabella principale marketplace & escrow)
+ALTER TABLE public.broadcast_requests 
   ADD COLUMN IF NOT EXISTS packlink_reference TEXT,
   ADD COLUMN IF NOT EXISTS shipping_label_url TEXT,
   ADD COLUMN IF NOT EXISTS tracking_number TEXT,
@@ -15,16 +15,21 @@ ALTER TABLE IF EXISTS public.broadcast_requests
   ADD COLUMN IF NOT EXISTS stripe_payment_intent_id TEXT,
   ADD COLUMN IF NOT EXISTS shipping_address JSONB;
 
--- 2. Aggiornamento tabella 'orders' (ordini con collaudo e smart routing)
-ALTER TABLE IF EXISTS public.orders 
-  ADD COLUMN IF NOT EXISTS packlink_reference TEXT,
-  ADD COLUMN IF NOT EXISTS shipping_label_url TEXT,
-  ADD COLUMN IF NOT EXISTS tracking_number TEXT,
-  ADD COLUMN IF NOT EXISTS shipping_carrier TEXT DEFAULT 'UPS Standard',
-  ADD COLUMN IF NOT EXISTS shipping_address JSONB;
-
--- 3. Indici per velocizzare la ricerca per tracking e riferimento Packlink
 CREATE INDEX IF NOT EXISTS idx_broadcast_packlink_ref ON public.broadcast_requests (packlink_reference);
 CREATE INDEX IF NOT EXISTS idx_broadcast_tracking ON public.broadcast_requests (tracking_number);
-CREATE INDEX IF NOT EXISTS idx_orders_packlink_ref ON public.orders (packlink_reference);
-CREATE INDEX IF NOT EXISTS idx_orders_tracking ON public.orders (tracking_number);
+
+-- 2. Aggiornamento tabella 'orders' (eseguito solo se la tabella esiste già nel DB)
+DO $$
+BEGIN
+  IF EXISTS (SELECT FROM information_schema.tables WHERE table_schema = 'public' AND table_name = 'orders') THEN
+    ALTER TABLE public.orders 
+      ADD COLUMN IF NOT EXISTS packlink_reference TEXT,
+      ADD COLUMN IF NOT EXISTS shipping_label_url TEXT,
+      ADD COLUMN IF NOT EXISTS tracking_number TEXT,
+      ADD COLUMN IF NOT EXISTS shipping_carrier TEXT DEFAULT 'UPS Standard',
+      ADD COLUMN IF NOT EXISTS shipping_address JSONB;
+
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_orders_packlink_ref ON public.orders (packlink_reference)';
+    EXECUTE 'CREATE INDEX IF NOT EXISTS idx_orders_tracking ON public.orders (tracking_number)';
+  END IF;
+END $$;
