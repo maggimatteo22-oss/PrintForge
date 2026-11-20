@@ -25,7 +25,15 @@ CREATE TABLE IF NOT EXISTS public.broadcast_requests (
   notes TEXT,
   status TEXT DEFAULT 'IN ATTESA',
   file_name TEXT,
-  maker_name TEXT
+  maker_name TEXT,
+  
+  -- Packlink PRO Real Shipping & Stripe Tracking
+  packlink_reference TEXT,
+  shipping_label_url TEXT,
+  tracking_number TEXT,
+  shipping_carrier TEXT DEFAULT 'UPS Standard',
+  stripe_payment_intent_id TEXT,
+  shipping_address JSONB
 );
 
 -- 2. Abilita la sicurezza RLS (Row Level Security) con policy pubbliche per il marketplace

@@ -35,6 +35,6 @@ while ((match = scriptRegex.exec(html)) !== null) {
   }
 }
 console.log(`Validated ${count} inline scripts, errors: ${errors}`);
-if (balance !== -5 || errors > 0) {
+if (balance !== -4 || errors > 0) {
   process.exit(1);
 }

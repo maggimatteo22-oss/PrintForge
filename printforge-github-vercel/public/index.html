@@ -24762,7 +24762,7 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     }
     window.confirmEscrowStep4 = confirmEscrowStep4;
 
-    function downloadPacklinkPdfLabel() {
+    async function downloadPacklinkPdfLabel() {
       if (!AppState.user || AppState.user.role !== 'creator') {
         const isEn = currentLang === 'en';
         const isEs = currentLang === 'es';
@@ -24805,241 +24805,65 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
       }
 
       const order = AppState.activeEscrowOrder || AppState.loadedRequestInStudio || {};
-      const orderId = order.id || 'RFP-6829';
-      const trackingNumber = order.trackingNumber || 'PF-UPS-892104';
-      const clientName = order.clientName || 'Cliente PrintForge';
-      const clientEmail = order.clientEmail || 'cliente@printforge.it';
-      const fullAddress = order.shippingFull || (order.shippingStreet ? `${order.shippingStreet}, ${order.shippingCap || '20121'} ${order.shippingCity || 'Milano'} (${order.shippingProv || 'MI'})` : 'Via Dante 18, 20121 Milano (MI)');
-      const makerName = order.maker || AppState.user.name || 'Maker Hub 3D';
+      const orderId = order.id || 'RFP-3891';
       const cAddr = (typeof getCreatorSavedAddress === 'function') ? getCreatorSavedAddress() : null;
-      const senderName = (cAddr && cAddr.makerName) || makerName;
-      const senderStreet = (cAddr && cAddr.street) || 'PrintForge Hub Maker';
-      const senderCap = (cAddr && cAddr.cap) || '20121';
-      const senderCity = (cAddr && cAddr.city) || 'Milano';
-      const senderProv = (cAddr && cAddr.prov) || 'MI';
-      const senderPhone = (cAddr && cAddr.phone) || '';
-      const orderTitle = order.title || 'Componente Meccanico 3D';
 
-      const labelHtml = `<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <title>Etichetta Spedizione Corriere - ${orderId}</title>
-  <style>
-    @page { size: A6 portrait; margin: 0; }
-    * { box-sizing: border-box; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Courier New", monospace;
-      margin: 0;
-      padding: 16px;
-      background: #e4e4e7;
-      color: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .print-bar {
-      margin-bottom: 12px;
-      display: flex;
-      gap: 10px;
-    }
-    .btn-print {
-      background: #000;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      font-size: 13px;
-      font-weight: bold;
-      border-radius: 8px;
-      cursor: pointer;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-    }
-    .label-box {
-      width: 105mm;
-      min-height: 148mm;
-      background: #fff;
-      border: 3px solid #000;
-      padding: 14px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .header {
-      border-bottom: 2px solid #000;
-      padding-bottom: 8px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .carrier-title {
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: -0.5px;
-    }
-    .routing-code {
-      font-size: 26px;
-      font-weight: 900;
-      text-align: right;
-    }
-    .badge {
-      display: inline-block;
-      border: 1.5px solid #000;
-      padding: 2px 6px;
-      font-size: 10px;
-      font-weight: bold;
-      margin-top: 2px;
-    }
-    .section-title {
-      font-size: 9px;
-      font-weight: 900;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #444;
-      margin-bottom: 2px;
-    }
-    .address-block {
-      border-bottom: 2px solid #000;
-      padding: 8px 0;
-    }
-    .dest-name {
-      font-size: 15px;
-      font-weight: 900;
-      margin-bottom: 2px;
-    }
-    .dest-address {
-      font-size: 13px;
-      font-weight: bold;
-      line-height: 1.35;
-    }
-    .barcode-block {
-      text-align: center;
-      padding: 12px 0 8px 0;
-      border-bottom: 2px solid #000;
-    }
-    .barcode-svg {
-      width: 100%;
-      height: 52px;
-    }
-    .tracking-code {
-      font-family: "Courier New", Courier, monospace;
-      font-size: 14px;
-      font-weight: 900;
-      letter-spacing: 2px;
-      margin-top: 4px;
-    }
-    .footer-meta {
-      font-size: 9px;
-      line-height: 1.45;
-      padding-top: 8px;
-    }
-    @media print {
-      body { background: #fff; padding: 0; }
-      .print-bar { display: none; }
-      .label-box { border: none; width: 100%; height: 100%; }
-    }
-  </style>
-</head>
-<body>
-  <div class="print-bar">
-    <button class="btn-print" onclick="window.print()">🖨️ STAMPA / SALVA PDF (A6)</button>
-  </div>
-  <div class="label-box">
-    <div>
-      <div class="header">
-        <div>
-          <div class="carrier-title">UPS STANDARD</div>
-          <div class="badge">PRIORITY DOMESTIC PARCEL</div>
-        </div>
-        <div>
-          <div class="routing-code">IT-01</div>
-          <div style="font-size: 10px; font-weight: bold; text-align: right;">POSTE / UPS NETWORK</div>
-        </div>
-      </div>
-
-      <div class="address-block" style="font-size: 10px;">
-        <div class="section-title">MITTENTE (SHIPPER / ORIGIN):</div>
-        <strong>${escapeHtml(senderName)}</strong><br>
-        ${escapeHtml(senderStreet)}<br>
-        ${escapeHtml(senderCap)} ${escapeHtml(senderCity)} (${escapeHtml(senderProv)}) - ITALIA (IT)<br>
-        ${senderPhone ? '<span style="font-size: 9.5px; color: #333;">Tel: ' + escapeHtml(senderPhone) + '<br></span>' : ''}
-        <span style="font-size: 9.5px; color: #333;">PrintForge Certified Maker Hub</span>
-      </div>
-      </div>
-
-      <div class="address-block">
-        <div class="section-title">DESTINATARIO (CONSIGNEE / SHIP TO):</div>
-        <div class="dest-name">${escapeHtml(clientName)}</div>
-        <div class="dest-address">
-          ${escapeHtml(fullAddress)}<br>
-          ITALIA (IT)
-        </div>
-        <div style="font-size: 10px; color: #333; margin-top: 4px;">Email: ${escapeHtml(clientEmail)}</div>
-      </div>
-    </div>
-
-    <div class="barcode-block">
-      <svg class="barcode-svg" viewBox="0 0 280 40" preserveAspectRatio="none">
-        <rect x="0" y="0" width="3" height="40" fill="#000"/>
-        <rect x="6" y="0" width="2" height="40" fill="#000"/>
-        <rect x="11" y="0" width="4" height="40" fill="#000"/>
-        <rect x="18" y="0" width="1" height="40" fill="#000"/>
-        <rect x="22" y="0" width="5" height="40" fill="#000"/>
-        <rect x="30" y="0" width="2" height="40" fill="#000"/>
-        <rect x="35" y="0" width="3" height="40" fill="#000"/>
-        <rect x="42" y="0" width="6" height="40" fill="#000"/>
-        <rect x="52" y="0" width="2" height="40" fill="#000"/>
-        <rect x="58" y="0" width="4" height="40" fill="#000"/>
-        <rect x="66" y="0" width="1" height="40" fill="#000"/>
-        <rect x="71" y="0" width="5" height="40" fill="#000"/>
-        <rect x="80" y="0" width="3" height="40" fill="#000"/>
-        <rect x="86" y="0" width="2" height="40" fill="#000"/>
-        <rect x="91" y="0" width="6" height="40" fill="#000"/>
-        <rect x="101" y="0" width="1" height="40" fill="#000"/>
-        <rect x="106" y="0" width="4" height="40" fill="#000"/>
-        <rect x="114" y="0" width="3" height="40" fill="#000"/>
-        <rect x="120" y="0" width="5" height="40" fill="#000"/>
-        <rect x="129" y="0" width="2" height="40" fill="#000"/>
-        <rect x="135" y="0" width="4" height="40" fill="#000"/>
-        <rect x="143" y="0" width="2" height="40" fill="#000"/>
-        <rect x="148" y="0" width="6" height="40" fill="#000"/>
-        <rect x="158" y="0" width="1" height="40" fill="#000"/>
-        <rect x="163" y="0" width="3" height="40" fill="#000"/>
-        <rect x="170" y="0" width="5" height="40" fill="#000"/>
-        <rect x="178" y="0" width="2" height="40" fill="#000"/>
-        <rect x="184" y="0" width="4" height="40" fill="#000"/>
-        <rect x="192" y="0" width="1" height="40" fill="#000"/>
-        <rect x="197" y="0" width="6" height="40" fill="#000"/>
-        <rect x="207" y="0" width="3" height="40" fill="#000"/>
-        <rect x="214" y="0" width="2" height="40" fill="#000"/>
-        <rect x="220" y="0" width="5" height="40" fill="#000"/>
-        <rect x="228" y="0" width="1" height="40" fill="#000"/>
-        <rect x="233" y="0" width="4" height="40" fill="#000"/>
-        <rect x="241" y="0" width="3" height="40" fill="#000"/>
-        <rect x="248" y="0" width="5" height="40" fill="#000"/>
-        <rect x="256" y="0" width="2" height="40" fill="#000"/>
-        <rect x="262" y="0" width="4" height="40" fill="#000"/>
-        <rect x="270" y="0" width="3" height="40" fill="#000"/>
-      </svg>
-      <div class="tracking-code">${escapeHtml(trackingNumber)}</div>
-    </div>
-
-    <div class="footer-meta">
-      <strong>RIFERIMENTO ORDINE:</strong> #${escapeHtml(orderId)} · ${escapeHtml(orderTitle)}<br>
-      <strong>CONTROLLO QUALITÀ:</strong> 3/3 FOTO COLLAUDO E IMBALLO VERIFICATI<br>
-      <strong>CUSTODIA FIDUCIARIA:</strong> PAGAMENTO BLOCCATO SU STRIPE ESCROW FINO A CONSEGNA
-    </div>
-  </div>
-</body>
-</html>`;
-
-      const win = window.open('', '_blank');
-      if (win) {
-        win.document.open();
-        win.document.write(labelHtml);
-        win.document.close();
+      const btnLabel = document.getElementById('btnDownloadPacklinkPdf');
+      const originalBtnHtml = btnLabel ? btnLabel.innerHTML : '';
+      if (btnLabel) {
+        btnLabel.disabled = true;
+        btnLabel.innerHTML = '<span class="inline-block animate-spin mr-2">⟳</span> <span>Generazione Etichetta Packlink PRO...</span>';
       }
-      AppState.labelDownloaded = true;
-      showToast("✓ Etichetta di spedizione A6 con indirizzo e barcode generata!", "success");
+
+      try {
+        const response = await fetch('/api/shipping/packlink', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'get_or_create_label',
+            orderId: orderId,
+            senderAddress: cAddr
+          })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+          throw new Error(data.error || 'Impossibile generare l\'etichetta Packlink PRO');
+        }
+
+        if (data.labelUrl) {
+          if (AppState.activeEscrowOrder) {
+            AppState.activeEscrowOrder.shippingLabelUrl = data.labelUrl;
+            if (data.trackingNumber) AppState.activeEscrowOrder.trackingNumber = data.trackingNumber;
+            if (data.carrier) AppState.activeEscrowOrder.carrier = data.carrier;
+          }
+          AppState.labelDownloaded = true;
+
+          const liveTrackingDisp = document.getElementById('liveTrackingNumDisplay');
+          if (liveTrackingDisp && data.trackingNumber) {
+            liveTrackingDisp.innerHTML = `<span class="text-emerald-400 font-bold">${escapeHtml(data.trackingNumber)}</span>`;
+          }
+          const liveCarrierBadge = document.getElementById('liveCarrierBadge');
+          if (liveCarrierBadge && data.carrier) {
+            liveCarrierBadge.innerText = data.carrier.toUpperCase();
+          }
+
+          window.open(data.labelUrl, '_blank');
+          showToast(`✓ Etichetta ufficiale Packlink PRO (${data.carrier || 'UPS'}) aperta con successo! Tracking: ${data.trackingNumber || ''}`, 'success');
+        } else {
+          showToast(`Spedizione confermata su Packlink PRO (Rif: ${data.reference || ''}). L'etichetta è in generazione, riprova tra qualche istante.`, 'info');
+        }
+      } catch (err) {
+        console.error('Packlink label error:', err);
+        showToast(`Errore Packlink PRO: ${err.message || 'Errore di rete'}`, 'error');
+      } finally {
+        if (btnLabel) {
+          btnLabel.disabled = false;
+          btnLabel.innerHTML = originalBtnHtml;
+          if (typeof lucide !== 'undefined' && lucide.createIcons) lucide.createIcons();
+        }
+      }
     }
     window.downloadPacklinkPdfLabel = downloadPacklinkPdfLabel;
 
