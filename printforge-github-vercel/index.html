@@ -8489,8 +8489,8 @@
 
         <!-- SOLO NOME UTENTE (Nessun campo email richiesto!) -->
         <div class="space-y-1">
-          <label class="text-[11px] font-mono text-zinc-300 block font-bold">Nome Utente o Azienda *</label>
-          <input type="text" id="googleModalName" required placeholder="Es. Mario Rossi / Design Studio" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
+          <label class="text-[11px] font-mono text-zinc-300 block font-bold" id="i18n-googleModalNameLabel">Nome Utente o Azienda (Opzionale)</label>
+          <input type="text" id="googleModalName" placeholder="Es. Mario Rossi / Design Studio" class="w-full bg-[#121217] border border-white/10 rounded-xl px-3.5 py-2.5 text-white font-sans text-xs focus:border-white outline-none" />
         </div>
 
         <button type="submit" class="btn-kowalski-primary w-full py-3 rounded-xl font-cyber font-bold text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 cursor-pointer active:scale-95">
@@ -27659,8 +27659,17 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
 
       let finalRole = (cloudProfile && cloudProfile.role) || pendingRole || 'client';
 
-      // Dai sempre priorità assoluta al Nome Reale verificato di Google OAuth
-      const realUserName = (meta.full_name || meta.name || '').trim() || name;
+      // Recupera eventuale username personalizzato inserito nel modale (se presente)
+      let pendingUsername = null;
+      try {
+        pendingUsername = (localStorage.getItem('printforge_pending_google_username') || '').trim();
+        localStorage.removeItem('printforge_pending_google_username');
+      } catch(e) {}
+
+      // Se il campo è vuoto, usa automaticamente full_name / name o il prefisso email di Google
+      const googleFullName = (meta.full_name || meta.name || '').trim();
+      const emailPrefixName = email.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+      const realUserName = pendingUsername || googleFullName || (cloudProfile && cloudProfile.name) || emailPrefixName || 'Utente Google';
       AppState.user = {
         userId: userId,
         id: userId,
@@ -27847,20 +27856,20 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
     async function handleGoogleModalSubmit(e) {
       if (e && e.preventDefault) e.preventDefault();
       const rawName = (document.getElementById('googleModalName')?.value || '').trim();
-      if (!rawName || rawName.length < 2) {
-        showToast(currentLang === 'it' ? 'Inserisci il tuo nome utente (almeno 2 caratteri).' : 'Please enter your username (at least 2 chars).', 'warning');
-        return;
-      }
       closeGoogleLoginModal();
       showToast(currentLang === 'it' ? 'Accesso Google in corso...' : 'Google Sign In in progress...', 'info');
 
       const chosenRole = currentGoogleModalRole || 'client';
       try {
-        localStorage.setItem('printforge_pending_google_username', rawName);
+        if (rawName) {
+          localStorage.setItem('printforge_pending_google_username', rawName);
+        } else {
+          localStorage.removeItem('printforge_pending_google_username');
+        }
         localStorage.setItem('printforge_pending_auth_role', chosenRole);
       } catch(err) {}
 
-      // Tentativo OAuth ufficiale Supabase (se configurato reindirizza direttamente all'account picker Google)
+      // Tentativo OAuth ufficiale Supabase (reindirizza direttamente all'account picker Google anche se il campo è vuoto)
       if (typeof supabaseClient !== 'undefined' && supabaseClient && supabaseClient.auth && typeof supabaseClient.auth.signInWithOAuth === 'function') {
         try {
           const { data, error } = await supabaseClient.auth.signInWithOAuth({
@@ -27878,10 +27887,13 @@ if (typeof updateOrderBreakdownQuote === "function") updateOrderBreakdownQuote()
         }
       }
 
-      // Connessione diretta con identità Google del dispositivo (nessuna richiesta di email ridondante)
-      const safeHandle = rawName.toLowerCase().replace(/[^a-z0-9]/g, '.').replace(/^\.+|\.+$/g, '') || 'utente';
-      const directGoogleEmail = `${safeHandle}@gmail.com`;
-      await executeDirectGoogleLogin(directGoogleEmail, chosenRole, rawName);
+      // Connessione diretta con identità Google se OAuth offline/fallback
+      const typedEmail = (document.getElementById('gateUnifiedEmail')?.value || '').trim();
+      const directGoogleEmail = typedEmail && typedEmail.includes('@') 
+        ? typedEmail 
+        : (rawName ? `${rawName.toLowerCase().replace(/[^a-z0-9]/g, '.')}@gmail.com` : 'google.user@gmail.com');
+      const fallbackName = rawName || (typedEmail ? typedEmail.split('@')[0] : (chosenRole === 'creator' ? 'Creator 3D' : 'Cliente'));
+      await executeDirectGoogleLogin(directGoogleEmail, chosenRole, fallbackName);
     }
     window.handleGoogleModalSubmit = handleGoogleModalSubmit;
 
